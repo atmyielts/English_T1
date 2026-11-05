@@ -1,0 +1,7 @@
+{
+  "name": "@schood/ai-core",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/mod.ts" },
+  "scripts": { "test": "deno test --no-lock src/", "check": "deno check --no-lock src/mod.ts" }
+}

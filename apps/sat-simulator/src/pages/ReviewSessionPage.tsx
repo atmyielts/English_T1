@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AskSchoodAI } from '../../../../packages/schood-ai-link/src/index.tsx';
 import type { ContentUnit } from '../domain/models';
 import { InputRenderer } from '../features/exam/InputRenderer';
 import { SAT_PRODUCT_ID } from '../lib/constants';
@@ -360,6 +361,7 @@ export const ReviewSessionPage: React.FC = () => {
         <div className="text-xs text-gray-300">
           Session <span className="font-mono">{data.session.id}</span>
         </div>
+        <AskSchoodAI source="sat" session={data.session.id}/>
       </div>
 
       <div className="shrink-0 border-b border-amber-200 bg-amber-50 px-4 sm:px-6 py-2 text-xs text-amber-900">
@@ -495,6 +497,7 @@ export const ReviewSessionPage: React.FC = () => {
                           <span className="font-semibold text-gray-900">Correct:</span> {correctSummary(u)}
                         </div>
                       ) : null}
+                      {u.is_correct === false ? <div className="mt-2"><AskSchoodAI page="explain" source="sat" session={data.session.id} item={u.id}/></div> : null}
                     </div>
                   ) : null}
                 </div>
@@ -549,6 +552,7 @@ export const ReviewSessionPage: React.FC = () => {
                         <span className="font-semibold text-gray-900">Correct:</span> {correctSummary(u)}
                       </div>
                     ) : null}
+                      {u.is_correct === false ? <div className="mt-2"><AskSchoodAI page="explain" source="sat" session={data.session.id} item={u.id}/></div> : null}
                   </div>
                 ) : null}
               </div>

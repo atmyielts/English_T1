@@ -19,6 +19,7 @@
     "apps/proctor",
     "apps/admission",
     "apps/company",
+    "apps/schood-ai",
     "apps/english-hub",
     "workers/*",
     "packages/*"

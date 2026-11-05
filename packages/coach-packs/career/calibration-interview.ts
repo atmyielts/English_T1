@@ -1,0 +1,187 @@
+import { calibrationSet, type Authored } from './calibration-kit.ts';
+
+// Calibration for `career.interview`: thirteen interview answers and role-play turns
+// from L1 to L5, in Uzbek, Russian and English, as speech-to-text returns them (one
+// answer or turn per line). Criteria order: structure, relevance, evidence, clarity,
+// language. Candidates, employers and figures are invented.
+
+const authored: Authored[] = [
+  {
+    id: 'i01-intro-cashier-uz-l1',
+    task: 'HR question for a supermarket cashier job: "Tell me about yourself."',
+    response: [
+      'Assalomu alaykum. Men Jasurman. Yigirma yoshdaman.',
+      'Ee... men ishlamoqchiman. Pul kerak.',
+      'Oldin akamning do‘konida turganman, bilmadim, bir yil chamasi.',
+      'Hammasi yaxshi edi. Boshqa gap yo‘q.',
+    ].join('\n'),
+    metrics: { wpm: 62, longPauses: 6, fillers: 3, seconds: 34 },
+    scores: [1, 1, 1, 1.5, 1.5], drift: [[0, 0.5], [0, 0, 0.5]],
+    rationale: 'No structure beyond name and age; the reason given is only money, so nothing links to the cashier role; the one relevant fact (a year in his brother\'s shop) is left vague with no detail. Short, hesitant (six long pauses) but understandable; register polite but very plain. L1 throughout.',
+  },
+  {
+    id: 'i02-conflict-ru-l1plus',
+    task: 'Behavioural question for a call-centre operator: "Tell me about a time you dealt with an angry customer."',
+    response: [
+      'Ну, клиенты бывают злые, это нормально.',
+      'Я обычно спокойная, я не ругаюсь.',
+      'Был один раз, мужчина кричал, ну я его выслушала и всё.',
+      'Типа, главное — терпение. Я терпеливая.',
+    ].join('\n'),
+    metrics: { wpm: 88, longPauses: 3, fillers: 3, seconds: 30 },
+    scores: [1.5, 2, 1, 2, 1.5], drift: [[0, 0, 0.5], [0.5]],
+    rationale: 'Opinion first, then a one-line example with no situation, task or result ("выслушала и всё"). Relevant to the call-centre topic in general. Evidence is adjectives (спокойная, терпеливая). Clear enough but thin, with fillers (ну, типа) and casual register.',
+  },
+  {
+    id: 'i03-motivation-en-l2',
+    task: 'HR question for a junior marketing assistant at a cosmetics distributor: "Why do you want to work here?"',
+    response: [
+      'I want to work here because your company is very big and famous.',
+      'Also I like marketing very much, it is my passion since school.',
+      'I think I can learn a lot of things and grow in my career.',
+      'And the salary is good, I heard from my friend.',
+    ].join('\n'),
+    metrics: { wpm: 104, longPauses: 2, fillers: 1, seconds: 28 },
+    scores: [2, 2, 1.5, 2.5, 2], drift: [[0, 0.5], [0, 0, 0.5]],
+    rationale: 'A direct answer but generic: "big and famous" and passion with no link to cosmetics distribution; the motive is what the company gives the candidate, and salary from a friend is a weak note. No evidence of the passion. Clear sentences, simple language, slightly casual.',
+  },
+  {
+    id: 'i04-teamwork-uz-l2',
+    task: 'Behavioural question for a bank intern: "Tell me about a time you worked in a team."',
+    response: [
+      'Universitetda biz to‘rt kishi bo‘lib loyiha qildik, mavzu bank kreditlari haqida edi.',
+      'Biz ma’lumot yig‘dik, taqdimot tayyorladik, hamma ishladi.',
+      'Men slaydlarni qildim, keyin hammamiz birga gapirdik.',
+      'Domla ham, guruh ham mamnun bo‘ldi deb o‘ylayman.',
+    ].join('\n'),
+    metrics: { wpm: 96, longPauses: 2, fillers: 1, seconds: 36 },
+    scores: [2, 2.5, 2, 2.5, 2.5], drift: [[0, 0, 0.5], [0.5]],
+    rationale: 'A real example with a situation and a bank-related topic, but "biz" hides her role until "slaydlarni qildim"; no task or result beyond "mamnun bo‘ldi deb o‘ylayman". Clear, neutral register.',
+  },
+  {
+    id: 'i05-accountant-ru-l2plus',
+    task: 'Role-specific question for a junior accountant at a logistics company: "How do you make sure your figures are correct at month end?"',
+    response: [
+      'Я всегда всё проверяю два раза, у меня есть свой список.',
+      'На практике в аудиторской фирме я сверяла акты с контрагентами.',
+      'Если не сходится, я ищу, где ошибка, и спрашиваю у старшего бухгалтера.',
+      'Ошибок у меня почти не было, меня хвалили.',
+    ].join('\n'),
+    metrics: { wpm: 112, longPauses: 1, fillers: 0, seconds: 32 },
+    scores: [2.5, 3, 2, 3, 3], drift: [[0, 0.5], [0, 0, 0.5]],
+    rationale: 'Relevant method (checklist, reconciliation with counterparties) and an internship context, but the answer is a list rather than a structured example, and evidence stays general ("почти не было", "хвалили"). Clear and professional enough.',
+  },
+  {
+    id: 'i06-hotel-complaint-en-l3',
+    task: 'Behavioural question for a hotel front-desk role in Samarkand: "Tell me about a time you turned a guest complaint around."',
+    response: [
+      'Last summer I worked the evening shift at a guesthouse in Bukhara.',
+      'A family from Germany arrived late and their room had no hot water, and they were very upset.',
+      'My task was to calm them down and fix it the same night.',
+      'I apologised, called the technician, and while we waited I moved them to a bigger room for free, with the owner\'s permission.',
+      'They stayed three nights and later left a good review.',
+    ].join('\n'),
+    metrics: { wpm: 118, longPauses: 1, fillers: 1, seconds: 48 },
+    scores: [3.5, 3, 3, 3.5, 3], drift: [[0, 0, 0.5], [0, 0.5]],
+    rationale: 'Clear STAR with first-person actions and a result (three nights, a good review). Relevant hospitality example, though no link to the Samarkand hotel itself. Evidence is concrete but the result is general. Clear and natural, simple vocabulary.',
+  },
+  {
+    id: 'i07-salary-uz-l3',
+    task: 'Salary negotiation role-play, the candidate\'s turns. The HR manager of an IT outsourcing company offered 9 million UZS a month for a junior QA role (practice figures).',
+    response: [
+      'Taklif uchun katta rahmat, bu ish menga juda qiziq.',
+      'Lekin men 11 million kutgan edim, chunki avtomatlashtirilgan testlarni ham yoza olaman.',
+      'Agar oylik oshmasa, unda sinov muddatidan keyin ko‘rib chiqsak bo‘ladimi?',
+      'Yaxshi, unda shartlarni yozma ravishda yuborsangiz, ertagacha javob beraman.',
+    ].join('\n'),
+    metrics: { wpm: 101, longPauses: 1, fillers: 0, seconds: 40 },
+    scores: [3, 3, 2.5, 3.5, 3.5], drift: [[0, 0, 0.5], [0.5]],
+    rationale: 'Thanks first, counters with a reason (test automation), offers an alternative (review after probation) and asks for written terms: a sound negotiation structure. The reason is relevant but not proved; no other package items. Clear, polite, confident.',
+  },
+  {
+    id: 'i08-qa-intro-ru-l3plus',
+    task: 'HR question for a junior QA engineer at a fintech start-up: "Tell me about yourself."',
+    response: [
+      'Сейчас я заканчиваю курсы по тестированию и параллельно тестирую мобильное приложение для сети аптек как фрилансер.',
+      'До этого два года работала оператором колл-центра в банке, поэтому хорошо понимаю, на что жалуются клиенты.',
+      'В последнем проекте я нашла около сорока багов перед релизом, из них шесть критических в оплате.',
+      'Хочу расти именно в финтехе, поэтому откликнулась к вам.',
+    ].join('\n'),
+    metrics: { wpm: 124, longPauses: 1, fillers: 0, seconds: 42 },
+    scores: [3.5, 4, 3.5, 3.5, 3.5], drift: [[0, 0.5], [0, 0, 0.5]],
+    rationale: 'Present, past and future in order; the call-centre background is turned into a strength for fintech and the bug count with six critical payment bugs is concrete. The motivation line is brief. Clear, professional language.',
+  },
+  {
+    id: 'i09-sales-star-en-l4',
+    task: 'Behavioural question for a key-account manager at an FMCG distributor: "Tell me about a time you won back a customer."',
+    response: [
+      'In my last role I covered forty grocery shops in Chilonzor for a dairy distributor.',
+      'One of our biggest accounts, a minimarket chain with five stores, had moved half of its orders to a competitor after two late deliveries.',
+      'I was asked to win the volume back within one quarter.',
+      'I met the owner, listened first, and found the real issue was morning deliveries arriving after nine, when their shelves were already empty.',
+      'I agreed a seven a.m. slot with our logistics team and offered a two-week trial with daily stock checks.',
+      'By the end of the quarter they were ordering from us again, about ninety percent of their earlier volume, and they added our yoghurt line.',
+    ].join('\n'),
+    metrics: { wpm: 132, longPauses: 0, fillers: 1, seconds: 66 },
+    scores: [4, 4, 4, 4, 4], drift: [[0, 0, 0.5], [0, 0.5]],
+    rationale: 'Textbook STAR: scope (forty shops, a five-store chain), a clear task with a time frame, personal actions driven by discovery, and a quantified result plus an upsell. Highly relevant to key accounts. Fluent and professional. A strong L4.',
+  },
+  {
+    id: 'i10-marketing-uz-l4',
+    task: 'Role-specific question for a digital marketing specialist at a private school: "Tell me about a campaign you are proud of."',
+    response: [
+      'O‘tgan yili bir o‘quv markazi uchun yozgi kurslarga qabul kampaniyasini olib bordim.',
+      'Maqsad iyungacha 120 ta ariza yig‘ish edi, byudjet esa cheklangan edi.',
+      'Men Instagramda ota-onalar uchun qisqa videolar va bepul sinov darsiga yozilish formasini qildim, har hafta natijani ko‘rib, eng yaxshi ishlagan videolarga pul qo‘ydim.',
+      'Natijada 168 ta ariza keldi, ulardan 74 nafari kursga yozildi.',
+      'Sizning maktabingizda ham ota-onalar asosiy qaror qabul qiluvchi, shuning uchun bu tajriba aynan shu yerda foydali deb o‘ylayman.',
+    ].join('\n'),
+    metrics: { wpm: 120, longPauses: 1, fillers: 0, seconds: 58 },
+    scores: [4, 4.5, 4, 4, 4], drift: [[0, 0.5], [0, 0, 0.5]],
+    rationale: 'Clear goal, constraint, personal actions with weekly optimisation, and numbers (168 applications, 74 enrolled). The last line ties the experience to the school\'s audience: excellent relevance. Professional Uzbek.',
+  },
+  {
+    id: 'i11-logistics-ru-l4plus',
+    task: 'Behavioural question for a logistics operations manager: "Tell me about a time you worked under extreme pressure."',
+    response: [
+      'В прошлом ноябре на складе в Сергели у нас за день до распродажи сломалась система учёта, а нужно было отгрузить около двух тысяч заказов.',
+      'Я отвечал за смену из восемнадцати человек и за то, чтобы ни один заказ не ушёл с ошибкой.',
+      'Я разделил людей на три потока, сам составил таблицу с приоритетами по районам, а сверку делали вручную по штрихкодам каждые два часа.',
+      'Мы отгрузили все заказы к восьми вечера, ошибок было семь, и все мы исправили до доставки.',
+      'После этого я предложил резервную процедуру на случай сбоя, и её сейчас используют на всех трёх складах компании.',
+    ].join('\n'),
+    metrics: { wpm: 128, longPauses: 0, fillers: 0, seconds: 62 },
+    scores: [4.5, 4.5, 4.5, 4, 4.5], drift: [[0, 0, 0.5], [0, 0.5]],
+    rationale: 'Precise situation and stakes, a defined responsibility, decisive personal actions, quantified result with honest limits (seven errors fixed) and a lasting improvement adopted company-wide. Slightly long sentences, otherwise polished.',
+  },
+  {
+    id: 'i12-finance-lead-en-l5',
+    task: 'Behavioural question for a senior financial analyst at a telecom company: "Tell me about a time you changed someone\'s mind with data."',
+    response: [
+      'Two years ago our commercial director wanted to cut the price of our basic mobile plan by fifteen percent to stop churn.',
+      'I was asked to model the impact, and my honest worry was that price was not the main reason people left.',
+      'So before building any forecast, I matched six months of churn data with call-centre reasons and found that most leavers had complained about coverage in three districts, not about price.',
+      'I presented two scenarios side by side: the price cut, which cost about four billion som a year in revenue, and fixing the coverage gaps, which cost less than a third of that.',
+      'She chose the coverage plan, churn in those districts dropped by a quarter within two quarters, and the analysis became our standard churn review.',
+      'What I took from it is to check the question before answering it.',
+    ].join('\n'),
+    metrics: { wpm: 138, longPauses: 0, fillers: 0, seconds: 74 },
+    scores: [5, 5, 5, 4.5, 5], drift: [[0, 0, 0, 0.5], [0, 0, -0.5]],
+    rationale: 'Exceptional: frames the real question, shows the candidate\'s own analytical decisions, quantifies both scenarios and the outcome, and ends with a lesson. Directly relevant to a senior analyst role. A touch long but every sentence adds value.',
+  },
+  {
+    id: 'i13-visa-en-l3',
+    task: 'Student-visa interview practice (US), the applicant\'s answers to: why this university, who pays, and plans after graduation.',
+    response: [
+      'I chose this university because it has a strong program in supply chain management and a partnership with logistics companies.',
+      'My father pays for my studies, he has his own construction materials business in Namangan for fifteen years.',
+      'After I finish, I want to come back and work in our family business, because we plan to start importing.',
+      'I think I will learn a lot there.',
+    ].join('\n'),
+    metrics: { wpm: 110, longPauses: 1, fillers: 1, seconds: 38 },
+    scores: [3, 3.5, 3, 3.5, 3], drift: [[0, 0, 0.5], [0.5]],
+    rationale: 'Answers each question directly and consistently: a specific programme reason, a clear sponsor with background, and a concrete plan that links the degree to the family business. The last sentence is filler. Clear, simple English.',
+  },
+];
+
+export const interviewCalibration = calibrationSet(['structure', 'relevance', 'evidence', 'clarity', 'language'], authored, { min: 1, max: 5 });

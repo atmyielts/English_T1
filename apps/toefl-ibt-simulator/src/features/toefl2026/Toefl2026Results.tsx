@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AskSchoodAI } from '../../../../../packages/schood-ai-link/src/index.tsx';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { useAppT, type AppKey } from '../../i18n';
 import { gradeWriting, scoreSession, toeflSpeaking, type ScoreSessionResponse } from '../../lib/platformClient';
@@ -185,6 +186,7 @@ export const Toefl2026Results: React.FC<{
           </a>
         ))}
         {steps[0] ? <Link className="t26-next-link" to={`/practice?task=${steps[0].task}`}>{t('results.practice_again')}: {taskName(steps[0].task)}</Link> : null}
+        <AskSchoodAI source="toefl" session={sessionId}/>
       </div>
 
       <h2 className="text-lg font-bold mt-6 mb-2">{t('results.task_breakdown')}</h2>

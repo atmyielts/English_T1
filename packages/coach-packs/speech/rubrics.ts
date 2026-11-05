@@ -1,0 +1,200 @@
+import type { Rubric } from '../src/types.ts';
+import { qaCalibration, talkCalibration } from './calibration.ts';
+import { SPEAKER_SCALE } from './manifest.ts';
+
+// Two rubrics, on the L1–L5 speaker scale in half steps. Descriptors are Schood's own
+// words. Talks are scored from the transcript plus the measured numbers (words per
+// minute, long pauses, fillers) when speech-to-text gives word timestamps; voice and
+// intonation need the sound itself and are never scored from a transcript.
+
+const thresholds = { exact: 0.6, adjacent: 0.95, maxMae: 0.4, maxSpread: 0.5, evidenceValid: 0.9 };
+
+export const rubrics: Rubric[] = [
+  {
+    id: 'speech.talk',
+    name: { en: 'Talk', uz: 'Nutq', ru: 'Выступление' },
+    scale: SPEAKER_SCALE,
+    overall: { round: 'step' },
+    evidence: { min: 1, max: 3 },
+    assessorNotes: 'The speaker may talk in Uzbek, Russian or English, or mix them; judge the talk in the language used and never penalise the choice of language. The transcript is what speech-to-text heard: missing punctuation is not the speaker’s fault, and fillers such as ee, aa, anu, haligi, xullas, ну, типа, короче, как бы, um, uh are real fillers the speaker said. Use the measured numbers in <schood_data kind="fluency"> for the flow criterion; a typed answer has no timing, so judge flow there from fillers, sentence length and repetition only, and be cautious. Judge structure against the format: an elevator pitch needs who-what-why-ask in under a minute; an impromptu answer needs a clear position, a reason and an example; a story needs a situation, a turning point and a meaning; a presentation needs a hook, signposted points and a close with a call to action. Never score voice or intonation. Quote the speaker word for word.',
+    criteria: [
+      {
+        id: 'structure',
+        name: { en: 'Structure: hook, points, close', uz: 'Tuzilma: kirish, fikrlar, yakun', ru: 'Структура: зацепка, тезисы, финал' },
+        short: 'Structure',
+        source: 'model',
+        node: 'structure',
+        weight: 1.3,
+        focus: 'Is there a real opening that earns attention (a question, a story, a vivid fact or picture) rather than "today I will talk about"? Are the points few, distinct and announced or numbered (first, the second reason, finally), each closed before the next? Is there a deliberate close: a one-line summary and a clear call to action, or for a story the meaning? Notice apologising openings, points that blend together, repetition, and endings like "that’s all".',
+        descriptors: [
+          { score: 1, text: 'No recognisable shape. It starts with an apology or the topic title, ideas come in the order they occur to the speaker, and it stops rather than ends ("that’s all", "sorry, I finished").' },
+          { score: 2, text: 'A topic sentence at the start and one or two ideas, but no hook and no signposts: the listener has to work out where one point ends and the next begins. The ending trails off or repeats the start.' },
+          { score: 3, text: 'A simple but clear shape: an opening line that tries to interest, two or three points the listener can follow, and a short summary at the end. The hook is generic, transitions are basic (and, also), and the call to action is missing or vague.' },
+          { score: 4, text: 'A hook that works for this audience, points announced and numbered or clearly signposted, each with its own support, and a close that sums up and asks for something specific. Small lapses: one point runs long or the close is a little abrupt.' },
+          { score: 5, text: 'Built on purpose from first to last word. The hook sets up the message, the points build on each other, transitions carry the listener, and the close lands the message with a memorable line and a clear next step. Nothing is wasted.' },
+        ],
+      },
+      {
+        id: 'clarity',
+        name: { en: 'Clarity', uz: 'Aniqlik', ru: 'Ясность' },
+        short: 'Clarity',
+        source: 'model',
+        node: 'delivery.clarity',
+        focus: 'How easy is the message to follow by ear the first time? Short spoken sentences, everyday words, terms explained, one idea per sentence, the main message stated plainly. Notice jargon, sentences that run on with many clauses, vague words (things, stuff, some problems), numbers without meaning, and the key message buried or never said.',
+        descriptors: [
+          { score: 1, text: 'Hard to follow even with effort: sentences break off or run on, words are vague or wrong, and the listener cannot say what the main message was.' },
+          { score: 2, text: 'The topic is clear but the message is not. Long, tangled sentences, unexplained terms or vague words make the listener guess; the key idea is implied rather than said.' },
+          { score: 3, text: 'Mostly clear. The main message is stated, most sentences are a manageable length, and most terms are understandable, though some sentences run long and a few words are vague or too technical for the audience.' },
+          { score: 4, text: 'Clear on first hearing. Short sentences, plain words, terms explained in a phrase, numbers given meaning (that is one in five students). Only an occasional long sentence.' },
+          { score: 5, text: 'Crystal clear and economical. Every sentence carries one idea, complex points are made simple without being simplistic, and the key message could be repeated by anyone in the room.' },
+        ],
+      },
+      {
+        id: 'flow',
+        name: { en: 'Pace, pauses and fillers', uz: 'Sur’at, pauza va to‘ldiruvchilar', ru: 'Темп, паузы и паразиты' },
+        short: 'Flow',
+        source: 'model',
+        node: 'delivery.pace',
+        focus: 'How the talk flows, from the measured numbers when given: words per minute against a comfortable 110–170, long pauses (deliberate pauses before key ideas are good; long searching silences are not), fillers per minute and per 100 words in any language, repetitions and restarts. In a typed answer judge only fillers, restarts and sentence rhythm, and do not give 5 without timing.',
+        descriptors: [
+          { score: 1, text: 'Constant hesitation: fillers in almost every sentence (more than about 12 per 100 words), long searching silences, many restarts; or a rush well above 190 words per minute that the listener cannot follow.' },
+          { score: 2, text: 'Frequent fillers (about 7–12 per 100 words) and hesitations break the flow; pace is uneven, too slow from searching (under about 90 wpm) or too fast (around 180 or more).' },
+          { score: 3, text: 'Keeps going with some effort. Fillers are noticeable (about 3–7 per 100 words), pace is acceptable but not controlled, and pauses are mostly for searching rather than for effect.' },
+          { score: 4, text: 'Smooth and controlled. Pace sits in the comfortable range, fillers are few (under about 3 per 100 words), and some pauses are clearly deliberate, before a key point or after a question.' },
+          { score: 5, text: 'Fully controlled flow. Pace varies on purpose, slowing for the key line; deliberate pauses do real work; fillers are rare enough not to be noticed.' },
+        ],
+      },
+      {
+        id: 'engagement',
+        name: { en: 'Engagement: stories and examples', uz: 'Qiziqarlilik: hikoya va misollar', ru: 'Вовлечение: истории и примеры' },
+        short: 'Engagement',
+        source: 'model',
+        node: 'content',
+        focus: 'Does the talk hold the audience? Concrete examples, a short story or moment, specific details (a person, a place, a number the speaker knows), questions to the audience, "you" language, and some contrast or surprise. Notice general claims with no example, lists of facts, and talks that never connect to the listener.',
+        descriptors: [
+          { score: 1, text: 'Only general statements or a list of facts; nothing concrete, no link to the audience. It is hard to stay interested.' },
+          { score: 2, text: 'One example or detail appears, but it is generic (for example, many people) or not connected to the point; the audience is talked at, not to.' },
+          { score: 3, text: 'At least one concrete example or short story that supports a point, and some attempt to involve the listener (a question, you). Other points stay general.' },
+          { score: 4, text: 'Each main point is backed by something concrete, there is a real story or vivid moment, and the speaker speaks to the audience’s situation. The talk is easy to remember.' },
+          { score: 5, text: 'Compelling. Stories and examples are chosen to make the point unforgettable, details are specific and true to life, and the speaker builds curiosity and moves the audience to care or act.' },
+        ],
+      },
+      {
+        id: 'language',
+        name: { en: 'Language and register', uz: 'Til va uslub', ru: 'Язык и стиль' },
+        short: 'Language',
+        source: 'model',
+        node: 'delivery.language',
+        focus: 'Accuracy and fit of the language for a talk in the chosen language: grammar, word choice, register for the audience (a jury, colleagues, parents, friends), confident rather than apologetic phrasing (I recommend, not maybe I think possibly), and rhetorical tools used well (contrast, rule of three, a strong final line). Do not punish the choice of language or a borrowed word that is normal in that context.',
+        descriptors: [
+          { score: 1, text: 'Frequent errors and wrong words get in the way of meaning; the register does not fit the audience; the speaker undermines every point (I don’t know, maybe, sorry).' },
+          { score: 2, text: 'Meaning is mostly clear but errors are frequent, the vocabulary is narrow and repeated, and hedging or apologising weakens the message.' },
+          { score: 3, text: 'Generally accurate with some slips; the register is mostly right; phrasing is plain, with occasional over-hedging or a too casual word.' },
+          { score: 4, text: 'Accurate and well chosen for the audience, with confident phrasing and a few deliberate rhetorical touches (a contrast, a set of three).' },
+          { score: 5, text: 'Precise, natural and confident, with register handled perfectly and rhetorical tools that feel natural rather than forced.' },
+        ],
+      },
+      {
+        id: 'voice',
+        name: { en: 'Voice and intonation', uz: 'Ovoz va ohang', ru: 'Голос и интонация' },
+        short: 'Voice',
+        source: 'audio',
+        node: 'delivery.voice',
+        focus: 'Vocal variety, stress, intonation and volume. These need the sound itself and are never judged from a transcript.',
+        descriptors: [
+          { score: 1, text: 'Flat or very quiet, with no stress on key words.' },
+          { score: 3, text: 'Some variety and stress, but long stretches sound read out.' },
+          { score: 5, text: 'Varied, expressive and well projected, with stress on the words that matter.' },
+        ],
+      },
+    ],
+    calibration: { thresholds, samples: talkCalibration.samples, runs: talkCalibration.runs },
+  },
+  {
+    id: 'speech.qa',
+    name: { en: 'Questions and answers', uz: 'Savol-javob', ru: 'Ответы на вопросы' },
+    scale: SPEAKER_SCALE,
+    overall: { round: 'step' },
+    evidence: { min: 1, max: 3 },
+    assessorNotes: 'This is the Q&A after a talk. Score only the speaker’s own answers, in Uzbek, Russian or English. A strong answer starts with the direct answer, gives one reason or piece of evidence, and stops; it stays calm and respectful with a hostile or repeated question, acknowledges what is fair in it, and bridges back to the speaker’s message. Saying "I don’t know, I will check and send it to you" is a good answer when the speaker does not know; inventing numbers or facts is not. Do not reward length. Quote the speaker word for word.',
+    criteria: [
+      {
+        id: 'answer',
+        name: { en: 'Answers the question asked', uz: 'Berilgan savolga javob', ru: 'Ответ на заданный вопрос' },
+        short: 'Answer',
+        source: 'model',
+        node: 'interaction.qa',
+        weight: 1.3,
+        focus: 'Does the speaker answer the actual question, directly and early? Notice dodging, answering a different easier question, repeating the talk, or burying the answer at the end.',
+        descriptors: [
+          { score: 1, text: 'Does not answer: talks around the question, repeats the talk, or misunderstands what was asked.' },
+          { score: 2, text: 'An answer is there but late, partial or to a slightly different question; the questioner has to ask again.' },
+          { score: 3, text: 'Answers the question, though not always first; sometimes drifts before getting there.' },
+          { score: 4, text: 'Answers directly in the first sentence almost every time, including the uncomfortable questions.' },
+          { score: 5, text: 'Always answers the real question, even the one behind the words, directly and honestly.' },
+        ],
+      },
+      {
+        id: 'brevity',
+        name: { en: 'Brief and focused', uz: 'Qisqa va aniq', ru: 'Кратко и по делу' },
+        short: 'Brevity',
+        source: 'model',
+        node: 'interaction.qa',
+        focus: 'Answers short enough to keep the room: about three to five sentences, one idea, then stop. Notice long monologues, many reasons where one is enough, and answers that never end.',
+        descriptors: [
+          { score: 1, text: 'Answers are either a few unclear words or long monologues that lose the room.' },
+          { score: 2, text: 'Often too long, with several points where one would do, or too short to be useful.' },
+          { score: 3, text: 'Mostly a reasonable length, with some answers that keep going after the point is made.' },
+          { score: 4, text: 'Short and focused: one main point, a reason, and a clean stop.' },
+          { score: 5, text: 'Every answer is exactly as long as it needs to be, and ends on the key line.' },
+        ],
+      },
+      {
+        id: 'evidence',
+        name: { en: 'Reasons and evidence', uz: 'Sabab va dalillar', ru: 'Аргументы и факты' },
+        short: 'Evidence',
+        source: 'model',
+        node: 'interaction.qa',
+        focus: 'Is each answer supported by a reason, an example or a figure the speaker can stand behind? Honest "I will check" beats an invented number. Notice bare claims, invented statistics and promises the speaker cannot keep.',
+        descriptors: [
+          { score: 1, text: 'Bare claims or invented figures; nothing the questioner could check or believe.' },
+          { score: 2, text: 'Some reasons, but vague (it is better, everybody knows) or not linked to the question.' },
+          { score: 3, text: 'Usually gives a reason or example, though some are general.' },
+          { score: 4, text: 'Specific reasons and examples; admits what is not known and offers to follow up.' },
+          { score: 5, text: 'Every answer rests on a clear reason, a real example or an honest limit, chosen to convince this questioner.' },
+        ],
+      },
+      {
+        id: 'composure',
+        name: { en: 'Composure and bridging', uz: 'Xotirjamlik va bog‘lash', ru: 'Самообладание и переход' },
+        short: 'Composure',
+        source: 'model',
+        node: 'interaction.qa',
+        focus: 'Under pressure, does the speaker stay calm, acknowledge what is fair, avoid getting defensive, and bridge back to their message? Notice arguing, sarcasm, over-apologising, panic and giving in to a false premise.',
+        descriptors: [
+          { score: 1, text: 'Defensive, argumentative or flustered; accepts a false premise or gives up the point.' },
+          { score: 2, text: 'Stays polite but visibly thrown; over-apologises or repeats the same defence.' },
+          { score: 3, text: 'Mostly calm; acknowledges some concerns, though bridging back to the message is clumsy.' },
+          { score: 4, text: 'Calm and steady with hard questions; acknowledges fair points and returns to the message smoothly.' },
+          { score: 5, text: 'Turns hostile questions into chances to make the case, with warmth and complete control.' },
+        ],
+      },
+      {
+        id: 'respect',
+        name: { en: 'Respect for the questioner', uz: 'Savol beruvchiga hurmat', ru: 'Уважение к спрашивающему' },
+        short: 'Respect',
+        source: 'model',
+        node: 'interaction.audience',
+        focus: 'Does the speaker treat the questioner and the room with respect: thanks them, uses their concern, checks that the answer helped, keeps an appropriate tone for an elder, a director, a parent or a peer? Notice dismissive phrases (that is a stupid question, as I already said) and talking down.',
+        descriptors: [
+          { score: 1, text: 'Dismissive or rude to the questioner, or ignores them.' },
+          { score: 2, text: 'Polite words but impatient tone (as I already said), or the wrong register for the person.' },
+          { score: 3, text: 'Respectful and polite, with a basic thanks or acknowledgement.' },
+          { score: 4, text: 'Warm and respectful; takes the concern seriously and checks that the answer helped.' },
+          { score: 5, text: 'Makes every questioner feel heard, keeps the whole room with them, and the right register for each person.' },
+        ],
+      },
+    ],
+    calibration: { thresholds, samples: qaCalibration.samples, runs: qaCalibration.runs },
+  },
+];

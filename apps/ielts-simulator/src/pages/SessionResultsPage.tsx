@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { AskSchoodAI } from '../../../../packages/schood-ai-link/src/index.tsx';
 import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
@@ -258,6 +259,7 @@ export const SessionResultsPage: React.FC = () => {
                 Review Answers
               </button>
             ) : null}
+            {sessionFinalized && !isCandidate && !isAdminSessionRoute ? <AskSchoodAI source="ielts" session={sessionId ?? null} className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-4 py-2 rounded-lg border border-gray-200 bg-white font-medium no-underline text-gray-900 hover:bg-gray-50"/> : null}
             <button
               onClick={() => navigate(backPath, { replace: true })}
               className="w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 font-medium"

@@ -192,6 +192,38 @@ try {
     assert.equal(await sql(`select count(*) from user_profiles where user_id=${q(u)};`),'1');
     await sql("alter role authenticator set pgrst.db_pre_request='public.account_api_pre_request';");
   });
+  // Service cleanup hooks (20261030140000): run in the same closure transaction,
+  // after the personal erasure, and roll the closure back if one fails.
+  const serviceHooks=readFileSync('supabase/migrations/20261030140000_account_erasure_service_hooks.sql','utf8');
+  await sql(serviceHooks);await sql(serviceHooks);
+  await sql(`create table owned_fixture_hook_calls(user_id uuid,receipt boolean,profiles bigint);
+    create function owned_fixture_hook(p_user uuid) returns jsonb language plpgsql security definer set search_path=pg_catalog,public as $$begin insert into owned_fixture_hook_calls values(p_user,exists(select 1 from account_closure_receipts where user_id=p_user),(select count(*) from user_profiles where user_id=p_user));return '{}'::jsonb;end$$;
+    create function owned_fixture_failing_hook(p_user uuid) returns jsonb language plpgsql as $$begin raise exception using errcode='P0001',message='owned_fixture_hook_failed';end$$;`);
+  const serviceHookList=list=>sql(`create or replace function account_erasure_service_hooks() returns text[] language sql immutable set search_path=pg_catalog,public as $$select ${q('{'+list.join(',')+'}')}::text[]$$;`);
+  const hookCalls=id=>sql(`select count(*) from owned_fixture_hook_calls where user_id=${q(id)};`);
+  for(const role of ['anon','authenticated','service_role'])await check(role+' cannot run the account erasure service hooks',async()=>{
+    await assert.rejects(sql(`set role ${role};select run_account_erasure_service_hooks();`),/permission denied/);
+  });
+  await check('service hooks run once, inside the closure transaction, after its personal erasure',async()=>{
+    await serviceHookList(['owned_fixture_hook']);const u=await actor();await profile(u);await close(u);
+    assert.equal(await sql(`select receipt::text||':'||profiles from owned_fixture_hook_calls where user_id=${q(u)};`),'true:0');
+    await sql(`update auth.users set email='after-closure' where id=${q(u)};`);assert.equal(await hookCalls(u),'1');
+  });
+  await check('a failing service hook rolls back the whole closure',async()=>{
+    await serviceHookList(['owned_fixture_hook','owned_fixture_failing_hook']);const u=await actor();await profile(u);
+    await assert.rejects(close(u),/owned_fixture_hook_failed/);
+    assert.equal(await sql(`select count(*) from user_profiles where user_id=${q(u)};`),'1');assert.equal(await sql(`select deleted_at is null from auth.users where id=${q(u)};`),'t');
+    assert.equal(await sql(`select count(*) from account_closure_receipts where user_id=${q(u)};`),'0');assert.equal(await hookCalls(u),'0');
+  });
+  await check('a registered service hook that is missing fails closed',async()=>{
+    await serviceHookList(['owned_fixture_missing_hook']);const u=await actor();await profile(u);
+    await assert.rejects(close(u),/account_erasure_hook_missing/);assert.equal(await sql(`select count(*) from user_profiles where user_id=${q(u)};`),'1');
+  });
+  await check('a refused closure never reaches the service hooks',async()=>{
+    await serviceHookList(['owned_fixture_hook']);const u=await actor(),t=await tenant(u);await membership(u,t);await profile(u);
+    await assert.rejects(close(u),/account_ownership_transfer_required/);assert.equal(await hookCalls(u),'0');
+  });
+  await serviceHookList([]);
   await check('old live JWT can read its own profile before closure and public access stays available',async()=>{
     const u=await actor();await profile(u);assert.equal(await asActor(u,`select count(*) from user_profiles where user_id=${q(u)};`),'1');assert.equal(await asActor(u,'select count(*) from public_catalog;'),'1');assert.equal(await sql('set role anon;select count(*) from public_catalog;'),'1');
   });

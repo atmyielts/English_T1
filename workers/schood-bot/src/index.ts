@@ -5,6 +5,7 @@
  * Schood Telegram Mini App.
  */
 import { routeEnglish } from "./english.ts";
+import { routeSchoodAI } from "./schood-ai.ts";
 import { routeSocial } from "./social.ts";
 
 export interface Env {
@@ -17,6 +18,8 @@ export interface Env {
   WEBHOOK_SECRET_PREVIOUS?: string;
   SITE_URL: string;
   WEB_APP_URL?: string;
+  /** Schood AI function service secret (SCHOOD_AI_SERVICE_SECRET); Schood AI commands are off without it. */
+  SCHOOD_AI_SERVICE_SECRET?: string;
 }
 
 type LinkedUser = { id: string; email: string; name: string };
@@ -265,6 +268,10 @@ const handleHelp = async (env: Env, chatId: number, user: LinkedUser | null) => 
     + `/drill - Vocabulary flashcards\n`
     + `/english - English: today, review and the daily quiz\n`
     + `/duel - Challenge a friend to a 60-second vocabulary duel\n`
+    + `/ai - Ask Schood AI, your tutor (Schood AI plan)\n`
+    + `/brief - Schood AI daily brief: /brief on 08:30, /brief off\n`
+    + `/aiduel - A Schood AI duel on any topic\n`
+    + `/child - For parents: your child's brief and questions\n`
     + `/me - Profile and active plans\n`
     + `/unlink - Disconnect Telegram\n`
     + `/help - This message`;
@@ -560,6 +567,9 @@ const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) =>
     tg: (method, body) => tg(env.TELEGRAM_BOT_TOKEN, method, body),
     webAppUrl: (route) => webAppUrl(env, route),
   }, update)) return;
+  // === Schood AI: /ai, /brief, /child, /aiduel, replies to Schood AI and aib: buttons (./schood-ai.ts);
+  // before homework so a reply to the tutor is never filed as a hand-in ===
+  if (await routeSchoodAI(schoodAI(env), update)) return;
   if (await routeHomework(env, update)) return;
 
   if (update.callback_query) {
@@ -605,6 +615,8 @@ const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) =>
 
   await send(env, chatId, "Unknown command. Type /help to see what I can do.", { reply_markup: webAppMarkup(env) });
 };
+
+const schoodAI = (env: Env) => ({ env, tg: (method: string, body: unknown) => tg(env.TELEGRAM_BOT_TOKEN, method, body), getUser: (id: number) => getUser(env, id) });
 
 const handleUpdate = async (env: Env, update: Record<string, unknown>): Promise<"completed" | "duplicate" | "busy"> => {
   const updateId = Number(update.update_id);

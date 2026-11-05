@@ -1,0 +1,170 @@
+import { calibrationSet, type Authored } from './calibration-kit.ts';
+
+// Calibration for `career.letter`: twelve cover letters, motivation letters and
+// emails from L1 to L5 in Uzbek, Russian and English. Criteria order: fit, specifics,
+// structure, tone, action. People, employers and figures are invented.
+
+const authored: Authored[] = [
+  {
+    id: 'l01-cover-uz-l1',
+    task: 'Cover letter for an administrator vacancy at a dental clinic.',
+    response: [
+      'Salom. Menga ish kerak, iltimos meni olinglar.',
+      'Men tirishqoq va mas’uliyatli odamman, hamma narsani tez o‘rganaman.',
+      'Javobingizni kutaman rahmat',
+    ].join('\n'),
+    scores: [1, 1, 1, 1.5, 1], drift: [[0, 0, 0.5], [0, 0, 0, 0, 0.5]],
+    rationale: 'No role or clinic named, a plea instead of a case, adjectives only, no structure, casual greeting, and only a vague wait for a reply. L1.',
+  },
+  {
+    id: 'l02-motivation-ru-l1plus',
+    task: 'Motivation letter for a summer internship at an audit firm.',
+    response: [
+      'Здравствуйте! Я студентка 3 курса экономического факультета.',
+      'Я очень хочу пройти у вас стажировку, потому что это моя мечта и я хочу развиваться.',
+      'Я уверена, что буду полезной, и я очень стараюсь во всём.',
+      'Спасибо за внимание.',
+    ].join('\n'),
+    scores: [1.5, 1, 2, 2, 1.5], drift: [[0.5], [0, 0, 0, 0.5]],
+    rationale: 'States who she is and the wish, but nothing about the firm or audit; no evidence; a basic shape with an opening and a thank-you; polite but cliché-heavy; no next step.',
+  },
+  {
+    id: 'l03-thankyou-en-l2',
+    task: 'Thank-you email after an interview for a customer-support role at an internet provider.',
+    response: [
+      'Dear Sir or Madam,',
+      'Thank you for the interview yesterday. It was very interesting for me.',
+      'I hope I answered well and I am still very interested in this job.',
+      'I am waiting for your answer.',
+      'Best regards, Kamola',
+    ].join('\n'),
+    scores: [2, 1.5, 2.5, 2.5, 2], drift: [[0, 0, 0.5], [0, 0.5]],
+    rationale: 'Generic: no interviewer name, nothing from the conversation, no reminder of fit. Correct email shape and polite but flat; the close is passive.',
+  },
+  {
+    id: 'l04-cover-uz-l2',
+    task: 'Cover letter for a junior accountant role at a furniture manufacturer.',
+    response: [
+      'Hurmatli kadrlar bo‘limi,',
+      'Men sizning kompaniyangizdagi kichik buxgalter lavozimiga ariza bermoqchiman.',
+      'Men iqtisodiyot universitetini tamomlaganman va 1C dasturini bilaman.',
+      'Amaliyot davomida bir firmada hisob-kitob ishlarida yordam berganman.',
+      'Suhbatga taklif qilsangiz, xursand bo‘lardim.',
+    ].join('\n'),
+    scores: [2.5, 2, 3, 3, 2.5], drift: [[0, 0.5], [0, 0, 0, 0, 0.5]],
+    rationale: 'Names the role, lists degree and 1C, mentions an internship; nothing about furniture manufacturing and no result. Clear short paragraphs and an appropriate tone; the close is polite but general.',
+  },
+  {
+    id: 'l05-followup-ru-l2plus',
+    task: 'Follow-up email: no reply ten days after applying for a sales manager role at a car dealership.',
+    response: [
+      'Тема: Отклик на вакансию менеджера по продажам',
+      'Добрый день, Алишер! Десять дней назад я откликнулся на вакансию менеджера по продажам в вашем салоне.',
+      'Хотел уточнить, получили ли вы моё резюме и есть ли новости.',
+      'У меня три года опыта продаж бытовой техники, и я уверен, что быстро освоюсь с автомобилями.',
+      'Буду рад ответу.',
+    ].join('\n'),
+    scores: [3, 2.5, 3, 3, 2.5], drift: [[0, 0, 0.5], [0.5]],
+    rationale: 'A named contact, a clear subject and purpose, a brief reminder of fit; the evidence is a single general line, and the ending is passive. Polite and natural.',
+  },
+  {
+    id: 'l06-cover-en-l3',
+    task: 'Cover letter for a guest relations officer at a new hotel in Tashkent.',
+    response: [
+      'Dear Ms Yusupova,',
+      'I am applying for the Guest Relations Officer role you advertised for the opening of your hotel near Amir Temur Square.',
+      'For two years I worked at a family guesthouse in Bukhara, where I welcomed groups from Europe and handled bookings in three languages.',
+      'Guests often wrote about our help with local trips in their reviews, and I enjoy solving problems before they become complaints.',
+      'I would welcome the chance to discuss how I could help your team in its first season. I am available for an interview any weekday.',
+      'Yours sincerely, Dilnoza Rakhimova',
+    ].join('\n'),
+    scores: [3.5, 3, 3.5, 3.5, 3.5], drift: [[0, 0.5], [0, 0, 0, 0.5]],
+    rationale: 'Addressed, specific about the role and the opening, relevant guesthouse experience; the evidence is real but not quantified. Well ordered, warm and professional, with a clear availability close.',
+  },
+  {
+    id: 'l07-counter-uz-l3',
+    task: 'Counter-offer email: an IT company offered a junior developer 8 million UZS a month (practice figure).',
+    response: [
+      'Hurmatli Shahzoda xonim,',
+      'Taklif uchun katta rahmat, jamoangizga qo‘shilishni chin dildan xohlayman.',
+      'Suhbatda aytilganidek, men frontend bilan birga backend vazifalarini ham bajaraman, shuning uchun 10 million so‘mni so‘ramoqchiman.',
+      'Agar bu mumkin bo‘lmasa, uch oylik sinov muddatidan keyin maoshni qayta ko‘rib chiqishni kelishib olsak bo‘ladimi?',
+      'Javobingizni kutaman.',
+    ].join('\n'),
+    scores: [3.5, 3, 3.5, 3.5, 3], drift: [[0, 0, 0.5], [0.5]],
+    rationale: 'Thanks and enthusiasm first, a reason tied to the role (backend tasks), a specific figure and an alternative: good negotiation shape. No written-terms request and a passive close. Respectful Uzbek.',
+  },
+  {
+    id: 'l08-internship-en-l3plus',
+    task: 'Motivation letter for a marketing internship at a dairy producer.',
+    response: [
+      'Dear Hiring Team,',
+      'I am a third-year marketing student at a university in Tashkent, and I am applying for your summer marketing internship.',
+      'Your new yoghurt line is popular with my classmates, and I would love to learn how you plan launches in the regions.',
+      'In a student project I surveyed 210 shoppers in three supermarkets about dairy brands and presented the results to a local brand manager.',
+      'I can use Canva and Google Sheets, and I post product reviews on my own Instagram page with 3,000 followers.',
+      'I am free from June to August and would be glad to meet at your convenience.',
+    ].join('\n'),
+    scores: [4, 3.5, 3.5, 4, 3.5], drift: [[0, 0, 0.5], [0, 0.5]],
+    rationale: 'Specific motivation about the employer\'s product and regional launches, a relevant survey project with a number; tools and an audience. Logical order; confident student tone; clear availability.',
+  },
+  {
+    id: 'l09-cover-ru-l4',
+    task: 'Cover letter for a procurement specialist at a pharmaceutical distributor.',
+    response: [
+      'Уважаемая Нигора Рустамовна!',
+      'Пишу по поводу вакансии специалиста по закупкам. Я четыре года работаю в закупках сети аптек и знаю, как важно, чтобы ходовые препараты не заканчивались.',
+      'Мне удалось сократить случаи отсутствия товара на полке с 11% до 4%, настроив еженедельный прогноз спроса по 600 позициям.',
+      'Кроме того, я пересогласовал условия с тремя поставщиками и добился отсрочки платежа 45 дней вместо 30.',
+      'Ваш переход на собственный склад в Самарканде — именно та задача, где этот опыт пригодится.',
+      'Буду рад обсудить детали на встрече; удобно в любой день после 16:00.',
+    ].join('\n'),
+    scores: [4.5, 4.5, 4, 4, 4], drift: [[0, 0, 0.5], [0, 0, 0, 0.5]],
+    rationale: 'Personal address, strong fit to the distributor\'s current project, two quantified achievements, clear paragraphs, confident tone and a concrete meeting proposal.',
+  },
+  {
+    id: 'l10-followup-en-l4',
+    task: 'Follow-up email two days after a final interview for a business analyst role at a bank.',
+    response: [
+      'Subject: Thank you, and the reporting example we discussed',
+      'Dear Mr Karimov,',
+      'Thank you for Tuesday\'s conversation with you and Ms Lee. I especially enjoyed the discussion about moving branch reports from Excel to a dashboard.',
+      'As promised, I attach a one-page example of how I did a similar change for a microfinance company, where weekly reporting time fell from two days to three hours.',
+      'I remain very interested in the role and would be happy to answer any further questions.',
+      'If it helps your timeline, I can start from the first of next month.',
+    ].join('\n'),
+    scores: [4, 4, 4, 4.5, 4], drift: [[0, 0, 0, -0.5], [0, 0.5]],
+    rationale: 'Recalls a specific point from the interview, keeps a promise with evidence (two days to three hours), clear subject and structure, polished tone, and a useful start-date close.',
+  },
+  {
+    id: 'l11-scholarship-uz-l4plus',
+    task: 'Motivation letter for a master\'s scholarship in public health.',
+    response: [
+      'Hurmatli stipendiya komissiyasi,',
+      'Men Qashqadaryo viloyatidagi tuman shifoxonasida uch yildan beri hamshira bo‘lib ishlayman va jamoat salomatligi bo‘yicha magistratura uchun ushbu stipendiyaga ariza beraman.',
+      'Ish davomida qandli diabet bilan og‘rigan bemorlar ko‘pincha nazoratga qaytmasligini ko‘rdim, shuning uchun tuman poliklinikasi bilan birga SMS-eslatma tizimini yo‘lga qo‘ydik.',
+      'Olti oyda nazoratga keladigan bemorlar ulushi 40 foizdan 65 foizga oshdi.',
+      'Magistraturada epidemiologiya va sog‘liqni saqlash siyosatini o‘rganib, viloyatimizda shunday dasturlarni kengaytirmoqchiman.',
+      'Suhbatga tayyorman va tavsiya xatlarini ham taqdim eta olaman.',
+    ].join('\n'),
+    scores: [4.5, 5, 4.5, 4, 4], drift: [[0, 0, 0.5], [0, 0, 0, 0.5]],
+    rationale: 'A compelling, specific case: a real problem, the applicant\'s own initiative, a measured outcome (40% to 65%) and a clear plan that links study to impact at home. Excellent structure; sincere, professional tone.',
+  },
+  {
+    id: 'l12-cover-en-l5',
+    task: 'Cover letter for a country operations manager at an international logistics company opening in Uzbekistan.',
+    response: [
+      'Dear Ms Andersen,',
+      'Your plan to open a cross-dock hub in Tashkent next spring is the kind of build I have spent the last five years doing, and I am applying to lead it as Country Operations Manager.',
+      'At a regional courier company I opened two sorting centres from empty buildings to full operation in under seven months each, hiring and training 140 staff.',
+      'On-time delivery rose from 86% to 97%, and cost per parcel fell by a fifth after I introduced zone-based routing and daily performance huddles.',
+      'I also negotiated customs brokerage terms for the Kazakhstan border that cut average clearance from three days to one.',
+      'I know the local labour market, the regulators and the roads, and I would welcome a conversation about your first-year targets. I am in Tashkent and can meet whenever suits your schedule.',
+      'Yours sincerely, Bekzod Tursunov',
+    ].join('\n'),
+    scores: [5, 5, 5, 5, 4.5], drift: [[0, 0, 0, -0.5], [0, -0.5]],
+    rationale: 'Opens with the employer\'s own plan, proves the fit with precise, relevant results, flows perfectly from claim to proof to offer, and closes confidently. L5.',
+  },
+];
+
+export const letterCalibration = calibrationSet(['fit', 'specifics', 'structure', 'tone', 'action'], authored, { min: 1, max: 5 });

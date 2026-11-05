@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { AskSchoodAI } from "../../../../packages/schood-ai-link/src/index.tsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PracticeTopNav } from "../components/PracticeTopNav";
 import { QuestionCard } from "../components/QuestionCard";
@@ -80,6 +81,7 @@ const ResultsWorkspace = ({ accessToken, attemptId }: { accessToken: string; att
           <div className="row-actions">
             <Link className="btn solid" to="/notebook">{t('results.openNotebook')}</Link>
             <Link className="btn ghost" to="/plan">{t('results.toPlan')}</Link>
+            <AskSchoodAI source="sat-practice" session={attemptId}/>
           </div>
         </header>
         {loading ? <p role="status">{t('results.loading')}</p> : error ? (
