@@ -108,7 +108,7 @@ const sendTelegram: NonNullable<Parameters<typeof createSchoodAIHandler>[0]['sen
   try {
     const response = await fetch(`${url}/functions/v1/send-telegram`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${serviceRole}`, apikey: anon, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${serviceRole}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: input.userId, text: input.text, notification_type: `schood_ai.${input.kind}`, parse_mode: null,
         ...(input.dedupeKey ? { dedupe_key: `schood_ai.${input.kind}:${input.dedupeKey}` } : {}),
@@ -127,11 +127,18 @@ const sendTelegram: NonNullable<Parameters<typeof createSchoodAIHandler>[0]['sen
 };
 
 // ctx.auth.telegramLink: telegram-link takes the service-role bearer from other functions, so the
-// coach bots never need the Telegram workers' shared secret.
+// coach bots never need the Telegram workers' shared secret. Service-role calls send no `apikey`:
+// the gateway refuses an anon `apikey` beside a service-role bearer ("Conflicting API keys").
 async function telegramLink(input: { action: 'status' | 'validate'; chatId: string; token?: string }) {
+  // Status is one read, answered here as telegram-link would (one hop less on every coach message).
+  if (input.action === 'status') {
+    const { data, error } = await service.from('users').select('id,email,full_name').eq('telegram_chat_id', input.chatId).maybeSingle();
+    if (error) return { status: 500, data: null };
+    return { status: 200, data: { linked: Boolean(data), user: data ? { id: data.id, name: data.full_name || data.email } : null } };
+  }
   const response = await fetch(`${url}/functions/v1/telegram-link`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${serviceRole}`, apikey: anon, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${serviceRole}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: input.action, chat_id: input.chatId, ...(input.token ? { token: input.token } : {}) }),
     signal: AbortSignal.timeout(8_000),
   });

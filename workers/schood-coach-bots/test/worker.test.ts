@@ -18,7 +18,7 @@ const HOOK = { ielts: 'hook-secret-ielts-0123', speaking: 'hook-secret-speaking-
 const LINKED = '700100', UNLINKED = '700999';
 
 interface Sent { url: URL; method: string; headers: Headers; body: Record<string, unknown> }
-interface Options { functionStatus?: number; functionBody?: unknown; telegramStatus?: (method: string) => number; deliveries?: Delivery[] | null; env?: Record<string, string> }
+interface Options { functionStatus?: number; functionBody?: unknown; telegramStatus?: (method: string) => number; deliveries?: Delivery[] | null; env?: Record<string, string>; avatars?: Record<string, string> }
 
 function stack(options: Options = {}) {
   const sent: Sent[] = [];
@@ -51,7 +51,7 @@ function stack(options: Options = {}) {
     COACH_BOT_TOKEN_IELTS: TOKEN.ielts, COACH_WEBHOOK_SECRET_IELTS: HOOK.ielts, COACH_BOT_TOKEN_SPEAKING: TOKEN.speaking, COACH_WEBHOOK_SECRET_SPEAKING: HOOK.speaking,
     ...options.env,
   };
-  const worker = createWorker({ env, packs: loadPacks(), fetch, now: () => new Date('2026-11-02T06:00:00Z') });
+  const worker = createWorker({ env, packs: loadPacks(), fetch, now: () => new Date('2026-11-02T06:00:00Z'), avatars: options.avatars });
   let updateId = 1;
   const hook = (pack: string, update: Record<string, unknown>, secret: string | null = HOOK[pack as 'ielts'] ?? '') => worker.fetch(new Request(`https://coach-bots.schood.online/tg/${pack}`, {
     method: 'POST', headers: { 'content-type': 'application/json', ...(secret === null ? {} : { 'x-telegram-bot-api-secret-token': secret }) }, body: JSON.stringify({ update_id: updateId++, ...update }),
@@ -197,4 +197,15 @@ Deno.test('worker: the bot setup script asks Telegram for exactly what the coach
     for (const call of calls.filter((entry) => entry.method === 'setMyDescription')) assert(String(call.body.description).length <= 512 && String(call.body.description).length > 0, 'description fits');
     equal((calls.at(-1)!.body.menu_button as { web_app: { url: string } }).web_app.url, `https://ai.schood.online/coach/${pack.manifest.id}`, 'the Mini App button');
   }
+});
+
+Deno.test('worker: the cron gives each bot a short menu button and, once, its avatar when it has none', async () => {
+  const s = stack({ avatars: { ielts: btoa('jpeg-bytes') } });
+  await s.worker.cron();
+  const methods = s.telegramCalls();
+  assert(methods.includes('setChatMenuButton') && methods.includes('getUserProfilePhotos') && methods.includes('setMyProfilePhoto'), 'menu button, photo check, avatar');
+  const menu = s.sent.find((entry) => entry.url.pathname.endsWith('/setChatMenuButton'))!;
+  equal((menu.body.menu_button as { text: string }).text, 'Open', 'a short button leaves room for the message box');
+  await s.worker.cron();
+  equal(s.telegramCalls().filter((method) => method === 'setMyProfilePhoto').length, 1, 'once per isolate');
 });
