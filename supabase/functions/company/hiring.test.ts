@@ -8,7 +8,7 @@ import {
   type ChoiceItem, type Question,
 } from './hiring/bank/index.ts';
 import {
-  ADAPTIVE_STAGES, STAGE_SIZE, advance, closeAll, createSections, nextStageLevel, scoreSection, stageEstimate,
+  ADAPTIVE_STAGES, STAGE_SIZE, advance, closeAll, createSections, nextStageLevel, pageIds, scoreSection, stageEstimate,
   type Answers, type Section,
 } from './hiring/engine.ts';
 import { parseGrade } from './hiring/grading.ts';
@@ -277,8 +277,15 @@ function world(options: { ai?: 'ok' | 'down'; testsLimit?: number | null } = {})
 
 const linkToken = (link: string) => link.split('/t/')[1];
 
+/** The bank item behind an id the page was served. Tests can look it up in the stored attempt; the page cannot. */
+function bankIdOf(db: FakeDb, attemptId: string, pageId: string): string {
+  const items = db.rows('company_attempts').find((row) => row.id === attemptId)!.items as Section[];
+  for (const [bank, page] of pageIds(items)) if (page === pageId) return bank;
+  throw new Error(`no bank item behind ${pageId}`);
+}
+
 /** Plays a whole test through the public routes, answering objective questions right. */
-async function takeTest(call: ReturnType<typeof world>['call'], token: string, who: { name: string; email: string }, right = true) {
+async function takeTest(db: FakeDb, call: ReturnType<typeof world>['call'], token: string, who: { name: string; email: string }, right = true) {
   const started = await call('POST', `public/t/${token}/start`, { body: { ...who, phone: '+998 90 123 45 67', consent: true } });
   assertEquals(started.status, 200, JSON.stringify(started.body));
   const key = started.body.key as string;
@@ -287,12 +294,12 @@ async function takeTest(call: ReturnType<typeof world>['call'], token: string, w
     const section = view.section;
     const answers: Record<string, unknown> = {};
     for (const item of section.items ?? []) {
-      const bank = CHOICES.get(item.id)!;
+      const bank = CHOICES.get(bankIdOf(db, view.id, item.id))!;
       const key = item.options.indexOf(bank.options[bank.answer]);
       answers[item.id] = right ? key : (key + 1) % item.options.length;
     }
     for (const passage of section.passages ?? []) for (const question of passage.questions) {
-      const bank = QUESTIONS.get(question.id)!.question;
+      const bank = QUESTIONS.get(bankIdOf(db, view.id, question.id))!.question;
       const key = question.options.indexOf(bank.options[bank.answer]);
       answers[question.id] = right ? key : (key + 1) % question.options.length;
     }
@@ -335,7 +342,7 @@ Deno.test('routes: a candidate takes the test end to end, AI grades, HR decides,
   assertEquals([intro.status, intro.body.open, intro.body.test.company, intro.body.test.speaking], [200, true, 'Silk Road Hotels', true]);
   assertEquals((await call('POST', `public/t/${token}/start`, { body: { name: 'Aziza', email: 'aziza@mail.uz', consent: false } })).body.code, 'consent_required');
 
-  const { key, view } = await takeTest(call, token, { name: 'Aziza Rakhimova', email: 'Aziza@Mail.uz' });
+  const { key, view } = await takeTest(db, call, token, { name: 'Aziza Rakhimova', email: 'Aziza@Mail.uz' });
   assertEquals(view.status, 'graded');
   assertEquals(calls.sort(), ['company-speaking-grade', 'company-writing-grade']);
   assert(view.result.certificate_code.length === 10);
@@ -374,9 +381,9 @@ Deno.test('routes: a candidate takes the test end to end, AI grades, HR decides,
 });
 
 Deno.test('routes: when AI is down the attempt waits; HR grades again or scores by hand', async () => {
-  const { call, setAi } = world({ ai: 'down' });
+  const { db, call, setAi } = world({ ai: 'down' });
   const created = await call('POST', `orgs/${ORG}/assessments`, { user: HR_ADMIN, body: { title: 'Sales agent', job_role: 'sales', skills: ['grammar', 'writing', 'speaking'] } });
-  const { view } = await takeTest(call, linkToken(created.body.link), { name: 'Timur', email: 'timur@mail.uz' });
+  const { view } = await takeTest(db, call, linkToken(created.body.link), { name: 'Timur', email: 'timur@mail.uz' });
   assertEquals(view.status, 'submitted');
   assertEquals(view.result, null);
   const id = (await call('GET', `orgs/${ORG}/assessments/${created.body.assessment.id}`, { user: HR_ADMIN })).body.attempts[0].id;
@@ -480,7 +487,10 @@ Deno.test('routes: placement campaigns, my/tests contract, member level and acti
   assertEquals((await call('GET', `orgs/${ORG}/my/attempts/${attemptId}`, { user: OTHER })).status, 404);
   for (let guard = 0; guard < 20 && view.status === 'started'; guard++) {
     const answers: Record<string, unknown> = {};
-    for (const item of view.section.items ?? []) answers[item.id] = item.options.indexOf(CHOICES.get(item.id)!.options[CHOICES.get(item.id)!.answer]);
+    for (const item of view.section.items ?? []) {
+      const bank = CHOICES.get(bankIdOf(db, attemptId, item.id))!;
+      answers[item.id] = item.options.indexOf(bank.options[bank.answer]);
+    }
     for (const task of view.section.tasks ?? []) answers[task.id] = 'Dear team, the new check-in procedure starts on Monday. Please read the guide.';
     view = (await call('POST', `orgs/${ORG}/my/attempts/${attemptId}/next`, { user: EMPLOYEE, body: { answers } })).body.attempt;
   }
@@ -897,7 +907,7 @@ Deno.test('routes: answers Postgres cannot store are cleaned, a member with a lo
   const task = started.body.attempt.section.tasks[0].id;
   const saved = await call('POST', 'public/attempts/save', { body: { key: started.body.key, answers: { [task]: 'Dear\u0000 team \ud83d' } } });
   assertEquals(saved.status, 200);
-  assertEquals(attemptRows(db)[0].answers, { [task]: 'Dear team ' });
+  assertEquals(attemptRows(db)[0].answers, { [bankIdOf(db, String(attemptRows(db)[0].id), task)]: 'Dear team ' });
   for (const closes_at of ['0000-01-01T00:00:00Z', '+275760-01-01T00:00:00Z', 'soon']) {
     const refused = await call('POST', `orgs/${ORG}/assessments`, { user: HR_ADMIN, body: { title: 'Odd date', skills: ['grammar'], closes_at } });
     assertEquals([refused.status, refused.body.field], [400, 'closes_at'], closes_at);
@@ -909,4 +919,120 @@ Deno.test('routes: answers Postgres cannot store are cleaned, a member with a lo
 Deno.test('AI feedback that Postgres could not store is cleaned', () => {
   const parsed = parseGrade('writing', { criteria: { task: 50, organisation: 50, grammar: 50, vocabulary: 50 }, strengths: ['Clear\u0000 opening', '\u0000'], improvements: [], summary: 'Fine\ud83d' }, 'en', false)!;
   assertEquals([parsed.feedback.strengths, parsed.feedback.summary], [['Clear opening'], 'Fine']);
+});
+
+// ---------------------------------------------------------------- what the test page is told
+
+const BANK_IDS = [...CHOICES.keys(), ...QUESTIONS.keys(), ...READING.map((text) => text.id), ...LISTENING.map((text) => text.id), ...WRITING.map((task) => task.id), ...SPEAKING.map((task) => task.id)];
+/** Fails when a served payload names a bank item or a level. */
+function assertNoBankTrace(payload: unknown, where: string) {
+  const text = JSON.stringify(payload);
+  for (const id of BANK_IDS) assert(!text.includes(`"${id}"`), `${where}: bank id ${id}`);
+  assert(!/\b[a-z]+-(pre_a1|a1|a2|b1|b2|c1|c2)\b/i.test(text), `${where}: a level in an id: ${text.slice(0, 400)}`);
+  assert(!/"[a-z]+-[a-z0-9-]*(pre_a1|a1|a2|b1|b2|c1|c2)[a-z0-9-]*"/i.test(text), `${where}: a level in an id: ${text.slice(0, 400)}`);
+  assert(!text.includes('"level"'), `${where}: a level field`);
+  assert(!text.includes('"answer"'), `${where}: an answer key`);
+}
+
+Deno.test('routes: the page never sees a bank id or a level, and ids stay the same within an attempt', async () => {
+  const { db, call } = world();
+  const { token } = await hiringTest(call, { skills: ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'] });
+  const started = await startAs(call, token, 'opaque@mail.uz');
+  const key = started.body.key as string;
+  let view = started.body.attempt;
+  const attemptId = view.id as string;
+  assertNoBankTrace(started.body, 'start');
+  const seen = new Set<string>();
+  const sections: string[] = [];
+  for (let guard = 0; guard < 30 && view.status === 'started'; guard++) {
+    const section = view.section;
+    sections.push(section.skill);
+    const ids: string[] = [
+      ...(section.items ?? []).map((item: { id: string }) => item.id),
+      ...(section.passages ?? []).flatMap((passage: { id: string; questions: { id: string }[] }) => [passage.id, ...passage.questions.map((question) => question.id)]),
+      ...(section.tasks ?? []).map((task: { id: string }) => task.id),
+    ];
+    for (const id of ids) {
+      assert(!seen.has(id), `${id} used twice in one attempt`);
+      seen.add(id);
+      assert(/^[pqt]\d+(-\d+)+$/.test(id), `not an opaque id: ${id}`);
+    }
+    // Reloading the page (resume) gives the same ids.
+    const before = await call('POST', 'public/attempts/state', { body: { key } });
+    assertEquals(before.body.attempt.section, section, 'stable across a reload');
+    assertNoBankTrace(before.body, `state ${section.skill}`);
+
+    const answers: Record<string, unknown> = {};
+    for (const item of section.items ?? []) {
+      const bank = CHOICES.get(bankIdOf(db, attemptId, item.id))!;
+      answers[item.id] = item.options.indexOf(bank.options[bank.answer]);
+    }
+    for (const passage of section.passages ?? []) for (const question of passage.questions) {
+      const bank = QUESTIONS.get(bankIdOf(db, attemptId, question.id))!.question;
+      answers[question.id] = question.options.indexOf(bank.options[bank.answer]);
+    }
+    for (const task of section.tasks ?? []) answers[task.id] = section.skill === 'writing' ? 'Dear guest, thank you for choosing our hotel.' : { transcript: 'Good evening and welcome to the hotel.', mode: 'speech' };
+    const integrity: Record<string, unknown> = {};
+    if (section.skill === 'listening') integrity.plays = { [section.passages[0].id]: 2, 'l-a2-01': 9, 'not-served': 9 };
+    const saved = await call('POST', 'public/attempts/save', { body: { key, answers, integrity } });
+    assertEquals(saved.status, 200);
+
+    // Stored by bank id, so grading and the HR report work as they always did; shown back by page id.
+    const stored = db.rows('company_attempts').find((row) => row.id === attemptId)!;
+    for (const id of ids.filter((value) => !value.startsWith('p'))) assert(bankIdOf(db, attemptId, id) in (stored.answers as Record<string, unknown>), `${id} stored by bank id`);
+    assert(Object.keys(stored.answers as Record<string, unknown>).every((id) => !/^[pqt]\d/.test(id)), 'no page id stored');
+    const after = await call('POST', 'public/attempts/state', { body: { key } });
+    assertEquals(after.body.attempt.answers, answers, 'resume shows the saved answers');
+    assertNoBankTrace(after.body, `after save ${section.skill}`);
+    if (section.skill === 'listening') {
+      const script = bankIdOf(db, attemptId, section.passages[0].id);
+      assert(script.startsWith('l-'), script);
+      assertEquals((stored.integrity as { plays: Record<string, number> }).plays, { [script]: 2 }, 'plays stored by script; ids the attempt never served are dropped');
+      assertEquals(after.body.attempt.plays, { [section.passages[0].id]: 2 }, 'plays shown by page id');
+    }
+    const last = view.current === view.sections.length - 1 && (!section.stages || section.stage === section.stages);
+    const step = await call('POST', last ? 'public/attempts/submit' : 'public/attempts/next', { body: { key, answers } });
+    assertEquals(step.status, 200, JSON.stringify(step.body));
+    view = step.body.attempt;
+    if (view.status === 'started') assertNoBankTrace(view, `next ${section.skill}`);
+  }
+  assertEquals(sections.filter((skill) => skill === 'grammar').length, ADAPTIVE_STAGES);
+  // All right: grammar moved up each stage, exactly as it does when the engine reads the bank ids.
+  const stored = db.rows('company_attempts').find((row) => row.id === attemptId)!;
+  const grammar = (stored.items as Section[]).find((section) => section.skill === 'grammar')!;
+  assertEquals(grammar.stages!.map((stage) => stage.level), ['b1', 'b2', 'c1']);
+  assertEquals((stored.skill_results as Record<string, { correct?: number; total?: number }>).grammar.correct, STAGE_SIZE * ADAPTIVE_STAGES, 'answers given by page id were marked against the bank');
+  assertEquals([view.status, stored.status], ['graded', 'graded']);
+});
+
+Deno.test('routes: a member test is served without bank ids too, and an answer sent by bank id is not accepted', async () => {
+  const { db, call } = world();
+  const created = await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { kind: 'placement', title: 'Placement', skills: ['grammar', 'writing'], audience: { type: 'departments', ids: [FRONT] } } });
+  assertEquals(created.status, 200, JSON.stringify(created.body));
+  const started = await call('POST', `orgs/${ORG}/my/attempts`, { user: EMPLOYEE, body: { assessment_id: created.body.assessment.id } });
+  assertEquals(started.status, 200, JSON.stringify(started.body));
+  assertNoBankTrace(started.body, 'member start');
+  const attemptId = started.body.attempt.id as string;
+  const first = started.body.attempt.section.items[0];
+  const bankId = bankIdOf(db, attemptId, first.id);
+  await call('POST', `orgs/${ORG}/my/attempts/${attemptId}/save`, { user: EMPLOYEE, body: { answers: { [bankId]: 1 } } });
+  assertEquals(db.rows('company_attempts').find((row) => row.id === attemptId)!.answers, {}, 'bank ids are not an id the page has');
+  await call('POST', `orgs/${ORG}/my/attempts/${attemptId}/save`, { user: EMPLOYEE, body: { answers: { [first.id]: 1 } } });
+  assertEquals(db.rows('company_attempts').find((row) => row.id === attemptId)!.answers, { [bankId]: 1 });
+  const again = await call('GET', `orgs/${ORG}/my/attempts/${attemptId}`, { user: EMPLOYEE });
+  assertEquals(again.body.attempt.answers, { [first.id]: 1 });
+  assertNoBankTrace(again.body, 'member state');
+});
+
+Deno.test('page ids are unique in an attempt, and adding a stage does not move them', () => {
+  let rand = 7;
+  const rng = () => (rand = (rand * 16807) % 2147483647) / 2147483647;
+  const options = { jobRole: 'general' as const, rng, now: 'x', fallback: 'b1' as const };
+  const sections = createSections(['grammar', 'reading', 'writing'], options);
+  const before = pageIds(sections);
+  const moved = advance(sections, {}, {}, options).sections;
+  const after = pageIds(moved);
+  for (const [bank, page] of before) assertEquals(after.get(bank), page);
+  assert(after.size > before.size);
+  assertEquals(new Set(after.values()).size, after.size);
 });

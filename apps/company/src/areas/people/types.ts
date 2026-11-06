@@ -32,12 +32,21 @@ export interface ImportResult {
   expires_at?: string;
 }
 export interface DepartmentStats extends Department { created_at: string | null; people: number; invited: number; seats: number }
-export interface JoinPreview {
-  state: InviteState | 'joined' | 'closed' | 'paused' | 'ended';
+/** A link that cannot be used says only that, with the company's name. */
+export interface JoinClosed {
+  state: Exclude<InviteState, 'open'> | 'closed' | 'paused' | 'ended';
+  org: { name: string };
+  signed_in: boolean;
+}
+export interface JoinUsable {
+  state: 'open' | 'joined';
   kind: 'personal' | 'link';
   org: { id: string; name: string; industry: string; city: string | null };
   role: string; department: string | null; job_role: string; full_name: string | null; email_hint: string | null;
   expires_at: string; signed_in: boolean; home: string | null;
 }
+export type JoinPreview = JoinClosed | JoinUsable;
+/** What routes that change English access add when the sync failed. */
+export interface AccessSynced { access_sync_failed?: boolean }
 export interface SettingsData { org: Org; usage: Usage; admins: Member[]; member: Member | null; pilot_tests: number }
 export interface LeadForm { pilot_tests: number; self_serve: boolean; interests: string[] }

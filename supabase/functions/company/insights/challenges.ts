@@ -5,7 +5,7 @@ import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { check, CompanyError, UUID, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, oneOf, text } from '../util.ts';
-import { activitySummary, addDays, dayStart, DAY, displayName, fetchAll, isDate, isLearner, localDate, shortName, viewerOf, type Viewer } from './common.ts';
+import { activitySummary, addDays, canSee, dayStart, DAY, displayName, fetchAll, isDate, isLearner, localDate, shortName, viewerOf, type Viewer } from './common.ts';
 
 export const METRICS = ['points', 'minutes', 'lessons'] as const;
 export type Metric = (typeof METRICS)[number];
@@ -220,7 +220,7 @@ async function standings(ctx: Ctx, challenge: ChallengeRow) {
     total: ranked.reduce((sum, row) => sum + row.value, 0),
     departments: departmentRows,
     people: people.map((row) => ({
-      rank: row.rank, member_id: viewer.lead ? row.member.id : null, name: nameFor(row.member),
+      rank: row.rank, member_id: viewer.lead && canSee(viewer, row.member) ? row.member.id : null, name: nameFor(row.member),
       department: row.member.department_id ? departmentName.get(row.member.department_id) ?? null : null, value: row.value, me: row.member.id === viewer.memberId,
     })),
     me: viewer.memberId ? {

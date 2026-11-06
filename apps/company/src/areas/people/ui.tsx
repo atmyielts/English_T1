@@ -90,6 +90,32 @@ export function LinkResult({ link, message, title, note }: { link: string; messa
   </div>;
 }
 
+/** A change that went through while the Schood English access sync did not: says so, and retries. */
+export function AccessSyncIssue({ message, retry, onFixed, children }: { message: string; retry: () => Promise<{ access_sync_failed?: boolean }>; onFixed: () => void | Promise<void>; children?: React.ReactNode }) {
+  const t = useAppT(), problem = useProblem();
+  const [busy, setBusy] = useState(false), [failed, setFailed] = useState('');
+  async function again() {
+    setBusy(true); setFailed('');
+    try {
+      const result = await retry();
+      if (result.access_sync_failed) setFailed(t('people.accessSync.stillFailing'));
+      else await onFixed();
+    } catch (cause) {
+      setFailed(problem(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <div className="people-sync-issue" role="alert">
+    <p>{message}</p>
+    {failed && <p>{failed}</p>}
+    <div className="company-actions">
+      <button type="button" disabled={busy} onClick={() => void again()}>{busy ? t('app.loading') : t('people.accessSync.retry')}</button>
+      {children}
+    </div>
+  </div>;
+}
+
 /** Saves text as a file (CSV of links, templates). */
 export function download(name: string, content: string, type = 'text/csv;charset=utf-8') {
   const blob = new Blob(['﻿', content], { type });

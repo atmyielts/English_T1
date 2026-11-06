@@ -52,7 +52,7 @@ export const staffEn = {
   'staff.leads.source.company_seats': 'Seat request from a workspace',
   'staff.plan.save': 'Save plan',
   'staff.plan.saved': 'Plan saved. Access re-synced for {count|one:# person|other:# people}.',
-  'staff.plan.savedNoSync': 'Plan saved, but the access re-sync failed. Save again to retry.',
+  'staff.plan.savedNoSync': 'Plan saved, but Schood English access could not be updated for this workspace, so people may keep or lack access until it is. Try again now. Schood also checks this every night.',
   'staff.audit.title': 'Audit log',
   'staff.audit.lead': 'Every HR and staff change across workspaces, newest first.',
   'staff.audit.filter': 'Kind of change',

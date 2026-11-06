@@ -59,7 +59,7 @@ export interface Profile {
     sessions: { id: string; title: string; kind: string; starts_at: string; duration_minutes: number }[];
   };
   english: null | {
-    level: LevelCode | null; target: LevelCode | null; daily_goal_minutes: number | null; days: number; activities: number; minutes: number; active_days: number; xp: number;
+    level: LevelCode | null; since: string; days: number; activities: number; minutes: number; active_days: number; xp: number;
     reviews: number | null; badges: number | null; skills: Record<string, { activities: number; minutes: number; accuracy: number | null }>;
     weeks: { week: string; minutes: number; activities: number }[]; last_at: string | null;
   };
@@ -99,7 +99,7 @@ export interface ChallengeList { today: string; challenges: Challenge[]; departm
 export interface Standings {
   challenge: Challenge; today: string; days_left: number; starts_in: number; participants: number; active: number; total: number;
   departments: { id: string; name: string; participants: number; active: number; total: number; average: number; rank: number }[];
-  people: { rank: number; member_id: string | null; name: string; department: string | null; value: number; me: boolean }[];
+  people: { rank: number; member_id: string | null; name: string | null; department: string | null; value: number; me: boolean }[];
   me: { participating: boolean; sharing: boolean; rank: number | null; value: number } | null;
   can_manage: boolean;
 }

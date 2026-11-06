@@ -48,7 +48,7 @@ export const coreEn = {
   'create.submit': 'Create workspace',
   'create.closed': 'New workspaces are opened by Schood. Leave a request on the main page.',
   'consent.title': 'Share your English progress with {company}?',
-  'consent.body': 'Your company will see your level, test results, lessons and time spent learning. It will not see your private messages to the AI tutor. You can ask HR to remove you at any time.',
+  'consent.body': 'Your company will see your current level, test results and lessons, and your Schood English activity from the day you agree. It will not see what you did in Schood English before that, or your private messages to the AI tutor. You can ask HR to remove you at any time.',
   'consent.accept': 'I agree',
   'consent.later': 'Not now',
   'status.pilot': 'Pilot',

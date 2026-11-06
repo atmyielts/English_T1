@@ -15,6 +15,8 @@ export class FakeDb {
   uniques: Record<string, { columns: string[]; where?: (row: Row) => boolean }[]> = {};
   /** The longest id list any `.in()` filter carried: real filters go in the URL, so long lists break at the gateway. */
   longestIn = 0;
+  /** PostgREST's db-max-rows: a read returns at most this many rows however few it asked for. Off unless a test sets it. */
+  maxRows: number | null = null;
   rpcs: Record<string, (args: Record<string, unknown>) => unknown> = {};
   /** `${table}.${embed}` → how to join, e.g. 'company_members.company_orgs'. */
   relations: Record<string, Relation> = {
@@ -164,6 +166,7 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: { code?: string; 
     for (const { column, ascending } of [...this.orders].reverse()) result.sort((a, b) => (ascending ? 1 : -1) * compare(a[column], b[column]));
     const count = result.length;
     result = result.slice(this.skip, this.max === null ? undefined : this.skip + this.max);
+    if (this.mode === 'select' && this.db.maxRows !== null) result = result.slice(0, this.db.maxRows);
     if (this.headOnly) return { data: null, error: null, count };
     const data = result.map((row) => this.project(row));
     if (this.singleMode) {

@@ -32,11 +32,13 @@
 - **An ended contract makes a workspace read-only.** Once `contract_ends_at` has passed, writes are refused with `contract_ended` (403) like a pause, whatever the status says. Nobody new can join and no test can start, seats stop working and Schood English access ends with the contract. Attempts already started may still finish. People can still read their results and export reports. Only staff can extend the contract.
 - **A seat is a separate, hidden product.** It grants its own entitlement row on the hidden company-seat product (`c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07`, source `company`). It never reads or changes a learner's own purchase: a seat and a purchase are different rows, on different products, and neither touches the other.
 - **Minutes people report themselves are capped.** Lesson retries and glossary practice count at most 180 minutes per person per Tashkent day, so more clicks cannot top a minutes challenge.
+- **A team link never gives more than its own role.** A person with a higher pending role needs their own personal link.
+- **Accepted limits (first release).** A writing or speaking task's word or time target hints at its difficulty, though section locks stop earlier answers from changing. `max_attempts` can be passed by one when different candidates start at the same moment. Account closure erases the verified address wherever it appears and names on rows tied to the person's membership, not a name typed into a free-text note without the address.
 - **Prices:** not published, quote based. **No invented prices, testimonials or outcome claims anywhere.**
 - **Levels:** reported as "Schood estimate" on the CEFR scale, never as an official certificate.
 
 **Privacy:**
-- An employee must agree before the company sees their progress (`company_members.consent_at`). Until then, HR sees only membership and test results of tests the company ran.
+- An employee must agree before the company sees their progress (`company_members.consent_at`). Until then, HR sees only membership and test results of tests the company ran. Schood English activity counts only from the later of joining and agreeing; the current level estimate is the one exception, and the consent text says so.
 - Candidates agree to processing before starting.
 - Private AI-tutor chats in Schood English are never shown to the company.
 

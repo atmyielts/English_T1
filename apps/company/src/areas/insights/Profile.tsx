@@ -154,8 +154,8 @@ function EnglishBlock({ english }: { english: NonNullable<ProfileData['english']
   const skills = Object.entries(english.skills).sort((a, b) => b[1].minutes - a[1].minutes);
   return <>
     <div className="company-grid insights-kpis">
-      <Kpi label={t('insights.english.level')} value={<LevelBadge level={english.level}/>} note={english.target ? t('insights.english.target', { level: LEVEL_SHORT[english.target] }) : t('insights.english.noTarget')}/>
-      <Kpi label={t('insights.english.minutes', { days: english.days })} value={f.minutes(english.minutes)} note={english.daily_goal_minutes ? t('insights.english.goal', { minutes: english.daily_goal_minutes }) : t('insights.english.activeDays', { count: english.active_days })}/>
+      <Kpi label={t('insights.english.level')} value={<LevelBadge level={english.level}/>}/>
+      <Kpi label={t('insights.english.minutes', { days: english.days })} value={f.minutes(english.minutes)}/>
       <Kpi label={t('insights.english.activities')} value={f.num(english.activities)} note={t('insights.english.activeDays', { count: english.active_days })}/>
       <Kpi label={t('insights.english.xp')} value={f.num(english.xp)} note={[english.reviews ? t('insights.english.reviews', { count: english.reviews }) : '', english.badges ? t('insights.english.badges', { count: english.badges }) : ''].filter(Boolean).join(' · ') || undefined}/>
     </div>
@@ -176,5 +176,6 @@ function EnglishBlock({ english }: { english: NonNullable<ProfileData['english']
         {english.last_at && <p className="hint">{t('insights.profile.lastActive', { date: f.date(english.last_at) })}</p>}
       </div>
     </div>
+    <p className="hint">{t('insights.english.since', { date: f.date(english.since) })}</p>
   </>;
 }

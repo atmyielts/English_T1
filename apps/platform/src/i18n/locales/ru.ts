@@ -359,6 +359,7 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'account.access.activeUntil': 'Активно до {date}',
   'account.access.activeNoExpiry': 'Активно (без срока)',
   'account.access.managePlan': 'Управлять планом',
+  'account.access.fromCompany': 'Предоставлено вашей компанией.',
   'account.access.exploreService': 'Посмотреть планы для этого сервиса.',
   'account.access.viewPlans': 'Посмотреть планы',
   'account.notifications.label': 'Уведомления',

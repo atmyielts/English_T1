@@ -2,7 +2,10 @@ import { assert, assertEquals, assertExists, assertStringIncludes } from 'jsr:@s
 import { routes as insights } from './insights.ts';
 import { csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
 import { assignmentsInScope } from './insights/overview.ts';
+import { englishSummary, englishVisibleFrom } from './insights/english.ts';
+import { localDate, shortName } from './insights/common.ts';
 import { FakeDb, testHandler } from './testing.ts';
+import type { Db } from './types.ts';
 import { findLesson } from './training/tracks/index.ts';
 import type { AiCall, MemberRow } from './types.ts';
 
@@ -189,7 +192,8 @@ Deno.test('Schood English activity is read for seated, consenting members and sk
   const anna = await call('GET', `orgs/${ORG}/members/${member(4)}/profile`, { user: ADMIN });
   const english = anna.body.english;
   assertExists(english);
-  assertEquals([english.level, english.target, english.daily_goal_minutes], ['b1', 'b2', 20]);
+  assertEquals(english.level, 'b1');
+  assertEquals(['target', 'daily_goal_minutes'].filter((field) => field in english), [], 'their own targets stay private');
   assertEquals([english.activities, english.minutes, english.active_days], [2, 15, 1]);
   assertEquals(english.xp, 18); // best of the two reading tries the same day: 10 + 8
   assertEquals(english.skills.reading.accuracy, 65);
@@ -502,4 +506,101 @@ Deno.test('a manager counts company-wide assignments among their overdue ones', 
   const viewer = { hr: false, lead: true, manager: true, memberId: 'm0', departmentId: 'd1' };
   const members = [{ id: 'm1' }] as MemberRow[];
   assertEquals(assignmentsInScope(rows, viewer, members).map((entry) => entry.id), ['all', 'mine', 'person']);
+});
+
+Deno.test('the company sees Schood English activity only from when the person joined and agreed', async () => {
+  const { db, call } = setup();
+  const EN = 'f0000000-0000-4000-8000-000000000001';
+  const seed = (joined: string, consented: string) => {
+    const row = db.rows('company_members').find((entry) => entry.id === member(4))!;
+    row.joined_at = joined;
+    row.consent_at = consented;
+  };
+  db.rows('languages').push({ id: EN, code: 'en' });
+  db.rows('learner_language_goals').push({ user_id: ANNA, language_id: EN, current_cefr_estimate: 'B1', target_cefr: 'B2', daily_time_minutes: 20 });
+  db.rows('learning_attempts').push(
+    { id: 'old1', user_id: ANNA, language_id: EN, content_item_id: 'c1', service_key: 'reading', status: 'scored', time_spent_seconds: 3000, correctness_ratio: 0.9, submitted_at: ago(40) },
+    { id: 'old2', user_id: ANNA, language_id: EN, content_item_id: 'c2', service_key: 'grammar', status: 'scored', time_spent_seconds: 600, correctness_ratio: 0.9, submitted_at: ago(6) },
+    { id: 'new1', user_id: ANNA, language_id: EN, content_item_id: 'c3', service_key: 'listening', status: 'scored', time_spent_seconds: 600, correctness_ratio: 0.5, submitted_at: ago(1) },
+  );
+  db.rows('learner_review_answer_log').push(
+    { id: 1, user_id: ANNA, language_id: EN, answered_at: ago(6) },
+    { id: 2, user_id: ANNA, language_id: EN, answered_at: ago(1) },
+  );
+  db.rows('learner_badges').push(
+    { badge_key: 'lifetime', user_id: ANNA, language_id: EN, earned_at: ago(200) },
+    { badge_key: 'recent', user_id: ANNA, language_id: EN, earned_at: ago(1) },
+  );
+
+  // Consent came after joining: consent is the bound. The other way round: joining is.
+  for (const [joined, consented] of [[ago(30), ago(3)], [ago(3), ago(30)]]) {
+    seed(joined, consented);
+    const profile = await call('GET', `orgs/${ORG}/members/${member(4)}/profile`, { user: MANAGER });
+    const english = profile.body.english;
+    assertEquals([english.activities, english.minutes, english.active_days, english.xp], [1, 10, 1, 15], 'only what came after');
+    assertEquals(Object.keys(english.skills), ['listening']);
+    assertEquals([english.reviews, english.badges], [1, 1], 'reviews and badges have a date, so they are bounded');
+    assertEquals(english.last_at, ago(1));
+    assertEquals(english.since, ago(3));
+    assertEquals(english.level, 'b1', 'the consent text promises the current level');
+    assert(!('target' in english) && !('daily_goal_minutes' in english), 'their own targets stay private');
+    assert(!JSON.stringify(english).includes('old'), 'no trace of the earlier activity');
+    // No bar for any week before the person agreed.
+    assert(english.weeks.length >= 1 && english.weeks.length <= 2, JSON.stringify(english.weeks));
+    assert(english.weeks.every((week: { week: string }) => week.week >= weekOf(localDate(ago(3)))));
+    assertEquals(english.weeks.reduce((sum: number, week: { minutes: number }) => sum + week.minutes, 0), 10);
+  }
+
+  // Someone who has been in the workspace for a while gets all eight bars and the usual window.
+  seed(ago(300), ago(300));
+  const long = (await call('GET', `orgs/${ORG}/members/${member(4)}/profile`, { user: ADMIN })).body.english;
+  assertEquals([long.weeks.length, long.activities, long.reviews, long.badges], [8, 2, 2, 2]);
+  assertEquals(long.weeks.reduce((sum: number, week: { minutes: number }) => sum + week.minutes, 0), 70, 'the bars reach further back than the 30-day totals');
+
+  // The bound holds even if a row slips past the query.
+  seed(ago(3), ago(3));
+  assertEquals(englishVisibleFrom({ joined_at: ago(3), consent_at: null }, NOW).toISOString(), ago(3));
+  assertEquals(englishVisibleFrom({ joined_at: null, consent_at: ago(2) }, NOW).toISOString(), ago(2));
+  assertEquals(englishVisibleFrom({ joined_at: null, consent_at: null }, NOW).toISOString(), NOW.toISOString(), 'with neither, nothing yet');
+  const direct = await englishSummary(new FakeDb({ languages: [{ id: EN, code: 'en' }], learning_attempts: [{ id: 'x', user_id: ANNA, language_id: EN, status: 'scored', service_key: 'reading', time_spent_seconds: 60, submitted_at: ago(20) }] }) as unknown as Db, ANNA, NOW, new Date(ago(3)));
+  assertEquals(direct!.activities, 0);
+});
+
+Deno.test('challenge standings: no email fallback for a nameless colleague, and a manager gets ids only for their department', async () => {
+  const { db, call } = setup();
+  const created = await call('POST', `orgs/${ORG}/challenges`, { user: ADMIN, body: { title: 'Names', metric: 'minutes', starts_on: '2026-10-01', ends_on: '2026-10-31' } });
+  assertEquals(created.status, 200, JSON.stringify(created.body));
+  const id = created.body.challenge.id;
+  // Chen (Sales) has no name, as after a team link where the name is optional.
+  const chenRow = db.rows('company_members').find((row) => row.id === member(6))!;
+  chenRow.full_name = null;
+  chenRow.email = 'secret.local.part@silk.example';
+  chenRow.consent_at = ago(50);
+  const rowOf = (body: { people: { name: string | null; member_id: string | null; department: string | null }[] }, department: string) => body.people.find((row) => row.department === department);
+
+  // A colleague in another department: a neutral name the app labels, no part of the email.
+  const anna = (await call('GET', `orgs/${ORG}/challenges/${id}`, { user: ANNA })).body;
+  assertEquals(rowOf(anna, 'Sales')!.name, null);
+  assert(!JSON.stringify(anna).includes('secret.local.part'), 'no email anywhere');
+  assertEquals(rowOf(anna, 'Sales')!.member_id, null);
+  // HR may see the email, so they get it.
+  const hr = (await call('GET', `orgs/${ORG}/challenges/${id}`, { user: ADMIN })).body;
+  assertEquals(rowOf(hr, 'Sales')!.name, 'secret.local.part@silk.example');
+  assertEquals(rowOf(hr, 'Sales')!.member_id, member(6));
+  // A manager: ids and full names only in their own department; everyone else is abbreviated with no id.
+  const manager = (await call('GET', `orgs/${ORG}/challenges/${id}`, { user: MANAGER })).body;
+  assertEquals(rowOf(manager, 'Sales')!.member_id, null);
+  assertEquals(rowOf(manager, 'Sales')!.name, null);
+  const own = manager.people.filter((row: { department: string | null }) => row.department === 'Front office');
+  assert(own.length > 0);
+  assert(own.every((row: { member_id: string | null }) => row.member_id !== null), 'own department keeps its links');
+  // Those ids open; the withheld one would have been a 404.
+  assertEquals((await call('GET', `orgs/${ORG}/members/${own[0].member_id}/profile`, { user: MANAGER })).status, 200);
+  assertEquals((await call('GET', `orgs/${ORG}/members/${member(6)}/profile`, { user: MANAGER })).status, 404);
+  // An employee never gets ids, not even their own.
+  assert(anna.people.every((row: { member_id: string | null }) => row.member_id === null));
+  // A one-word name stays a name.
+  assertEquals(shortName({ full_name: 'Malika' }), 'Malika');
+  assertEquals(shortName({ full_name: 'Malika Yusupova Karim' }), 'Malika K.');
+  assertEquals(shortName({ full_name: '   ' }), null);
 });

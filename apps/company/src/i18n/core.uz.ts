@@ -48,7 +48,7 @@ export const coreUz: Record<CoreKey, string> = {
   'create.submit': 'Yaratish',
   'create.closed': 'Yangi ish maydonlarini Schood ochadi. Bosh sahifada so‘rov qoldiring.',
   'consent.title': 'Ingliz tilidagi natijalaringizni {company} bilan ulashasizmi?',
-  'consent.body': 'Kompaniya darajangiz, test natijalari, darslar va o‘qishga ketgan vaqtni ko‘radi. AI repetitorga yozgan shaxsiy xabarlaringizni ko‘rmaydi. Istalgan vaqtda HR’dan sizni olib tashlashni so‘rashingiz mumkin.',
+  'consent.body': 'Kompaniya joriy darajangiz, test natijalari va darslarni, shuningdek rozilik bergan kuningizdan boshlab Schood English’dagi faoliyatingizni ko‘radi. Bundan oldin Schood English’da nima qilganingizni va AI repetitorga yozgan shaxsiy xabarlaringizni ko‘rmaydi. Istalgan vaqtda HR’dan sizni olib tashlashni so‘rashingiz mumkin.',
   'consent.accept': 'Roziman',
   'consent.later': 'Hozir emas',
   'status.pilot': 'Pilot',

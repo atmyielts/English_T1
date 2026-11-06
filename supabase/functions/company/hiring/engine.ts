@@ -145,6 +145,38 @@ export function servedIds(sections: Section[]): Set<string> {
   return ids;
 }
 
+/**
+ * What the test page calls each bank item of this attempt: its place in the attempt. A
+ * bank id names the level ("g-b1-12"), and the level of the next stage tells a candidate
+ * how the last one went. Places say nothing of the kind, and they stay the same while the
+ * attempt runs, because sections keep their order and stages and items are only added.
+ * Everything stored stays on bank ids; only what crosses to the page uses these.
+ */
+export function pageIds(sections: Section[]): Map<string, string> {
+  const ids = new Map<string, string>();
+  sections.forEach((section, at) => {
+    section.stages?.forEach((stage, stageAt) => stage.items.forEach((item, itemAt) => ids.set(item.id, `q${at}-${stageAt}-${itemAt}`)));
+    section.passages?.forEach((passage, passageAt) => {
+      ids.set(passage.id, `p${at}-${passageAt}`);
+      passage.questions.forEach((question, itemAt) => ids.set(question.id, `q${at}-${passageAt}-${itemAt}`));
+    });
+    section.tasks?.forEach((task, itemAt) => ids.set(task.id, `t${at}-${itemAt}`));
+  });
+  return ids;
+}
+
+/** A map keyed by the page's ids turned into one keyed by bank ids. Ids this attempt never served are dropped. */
+export function toBankKeys(sections: Section[], input: unknown): Record<string, unknown> {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return {};
+  const bank = new Map([...pageIds(sections)].map(([bankId, pageId]) => [pageId, bankId]));
+  const out: Record<string, unknown> = {};
+  for (const [id, value] of Object.entries(input)) {
+    const bankId = bank.get(id);
+    if (bankId) out[bankId] = value;
+  }
+  return out;
+}
+
 /** The level to aim the next section at: the mean of the objective scores so far. */
 export function estimateLevel(results: Results, fallback: BankLevel): BankLevel {
   const scores = (['grammar', 'vocabulary', 'reading', 'listening'] as Skill[])

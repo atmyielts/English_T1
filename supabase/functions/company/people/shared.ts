@@ -10,7 +10,10 @@ export const DAY = 86_400_000;
 export const PERSONAL_DAYS = 14;
 /** How long an owner invitation from Schood staff stays open. */
 export const OWNER_DAYS = 30;
-export const INVITE_COLUMNS = 'id,org_id,member_id,kind,role,department_id,job_role,max_uses,uses,expires_at,revoked_at,created_by,created_at';
+/** Higher means more power; used wherever a change or a link could raise someone. */
+export const ROLE_RANK: Record<'owner' | 'admin' | 'manager' | 'employee', number> = { employee: 0, manager: 1, admin: 2, owner: 3 };
+
+export const INVITE_COLUMNS = 'id,org_id,member_id,kind,role,department_id,job_role,max_uses,uses,expires_at,revoked_at,created_by,created_at,token_issued_at';
 
 export interface InviteRow {
   id: string;
@@ -26,6 +29,8 @@ export interface InviteRow {
   revoked_at: string | null;
   created_by: string | null;
   created_at: string;
+  /** When the current token was made: on create and on renew. `created_at` stays for lists and audit. */
+  token_issued_at: string;
 }
 export type InviteState = 'open' | 'expired' | 'revoked' | 'used_up';
 
@@ -51,8 +56,9 @@ export async function issueInvite(ctx: Ctx, row: {
   department_id: string | null; job_role: string; max_uses: number | null; expires_at: string;
 }): Promise<{ invite: InviteRow; link: string }> {
   const raw = token();
-  // created_at comes from the same clock as removed_at: joining compares the two, and the database's clock can differ.
-  const invite = check<InviteRow>(await ctx.db.from('company_invites').insert({ ...row, uses: 0, revoked_at: null, token_hash: await sha256(raw), created_by: ctx.user, created_at: ctx.now().toISOString() }).select(INVITE_COLUMNS).single());
+  // token_issued_at comes from the same clock as removed_at: joining compares the two, and the database's clock can differ.
+  const at = ctx.now().toISOString();
+  const invite = check<InviteRow>(await ctx.db.from('company_invites').insert({ ...row, uses: 0, revoked_at: null, token_hash: await sha256(raw), created_by: ctx.user, created_at: at, token_issued_at: at }).select(INVITE_COLUMNS).single());
   return { invite, link: joinLink(ctx, raw) };
 }
 
@@ -130,9 +136,9 @@ export function dateOrNull(value: unknown, field: string): string | null {
   return value;
 }
 
-/** Revokes every open personal invitation of a member (after removal or re-issue). */
-export async function revokeMemberInvites(ctx: Ctx, memberId: string): Promise<void> {
-  check(await ctx.db.from('company_invites').update({ revoked_at: ctx.now().toISOString() }).eq('member_id', memberId).is('revoked_at', null));
+/** Revokes every open personal invitation of a member (after removal or re-issue). Returns how many there were. */
+export async function revokeMemberInvites(ctx: Ctx, memberId: string): Promise<number> {
+  return check<{ id: string }[]>(await ctx.db.from('company_invites').update({ revoked_at: ctx.now().toISOString() }).eq('member_id', memberId).is('revoked_at', null).select('id')).length;
 }
 
 /** Seats in use: seated members who are not removed. */

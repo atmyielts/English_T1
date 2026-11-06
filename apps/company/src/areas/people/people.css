@@ -139,6 +139,8 @@
 .people-join-consent .check{margin-top:.5rem}
 .people-join-closed{border:1px solid #fde68a;background:#fffbeb;border-radius:16px;padding:1rem}
 .people-join-closed p{margin:0;color:#78350f}
+.people-sync-issue{border:1px solid #fecaca;background:#fef2f2;border-radius:16px;padding:1rem;margin:0 0 1rem}
+.people-sync-issue p{margin:0 0 .6rem;color:#7f1d1d}
 .people-join-signin{border:1px solid var(--line);border-radius:20px;background:#fff;padding:1.25rem;display:grid;gap:.75rem}
 .people-join-signin p{margin:0}
 

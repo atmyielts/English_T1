@@ -119,10 +119,10 @@ export async function loadScope(ctx: Ctx): Promise<{ viewer: Viewer; members: Me
 export const isLearner = (member: MemberRow): boolean => member.status === 'active' && member.role !== 'owner' && member.role !== 'admin';
 
 export const displayName = (member: Pick<MemberRow, 'full_name' | 'email'>): string => member.full_name?.trim() || member.email || '—';
-/** "Malika Y." — for standings shown to colleagues. */
-export const shortName = (member: Pick<MemberRow, 'full_name' | 'email'>): string => {
+/** "Malika Y." for standings shown to colleagues. Null without a name: they may not see the email, so the app shows "Colleague". */
+export const shortName = (member: Pick<MemberRow, 'full_name'>): string | null => {
   const parts = (member.full_name ?? '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return (member.email ?? '—').split('@')[0];
+  if (!parts.length) return null;
   return parts.length === 1 ? parts[0] : `${parts[0]} ${parts[parts.length - 1][0]}.`;
 };
 

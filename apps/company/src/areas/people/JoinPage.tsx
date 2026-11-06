@@ -7,8 +7,8 @@ import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate } from '../../router.tsx';
 import { useSession } from '../../session.tsx';
-import type { JoinPreview } from './types.ts';
-import { useDates, useProblem } from './ui.tsx';
+import type { AccessSynced, JoinPreview } from './types.ts';
+import { AccessSyncIssue, useDates, useProblem } from './ui.tsx';
 
 export function JoinPage({ token }: { token: string }) {
   const t = useAppT(), problem = useProblem(), { day } = useDates();
@@ -18,6 +18,7 @@ export function JoinPage({ token }: { token: string }) {
   const [consent, setConsent] = useState(false);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false), [failure, setFailure] = useState('');
+  const [syncedHome, setSyncedHome] = useState<string | null>(null);
   const signedIn = Boolean(session.user);
   const load = useCallback(async () => {
     try {
@@ -33,9 +34,10 @@ export function JoinPage({ token }: { token: string }) {
     event.preventDefault();
     setBusy(true); setFailure('');
     try {
-      const result = await api<{ home: string }>(`join/${encodeURIComponent(token)}`, { method: 'POST', body: { consent: true, full_name: name.trim() || null } });
+      const result = await api<{ home: string } & AccessSynced>(`join/${encodeURIComponent(token)}`, { method: 'POST', body: { consent: true, full_name: name.trim() || null } });
       await session.refresh();
-      navigate(result.home);
+      if (result.access_sync_failed) setSyncedHome(result.home);
+      else navigate(result.home);
     } catch (cause) {
       setFailure(problem(cause));
       await load();
@@ -51,9 +53,26 @@ export function JoinPage({ token }: { token: string }) {
   </section>;
   if (!preview || session.user === undefined) return <p role="status" className="company-narrow">{t('app.loading')}</p>;
 
+  if (syncedHome) return <section className="company-narrow people-join" aria-labelledby="join-title">
+    <p className="eyebrow">{t('people.join.eyebrow')}</p>
+    <h1 id="join-title">{t('people.join.alreadyTitle', { company: preview.org.name })}</h1>
+    <AccessSyncIssue message={t('people.accessSync.joined', { company: preview.org.name })} retry={() => api<AccessSynced>('me/access/sync', { method: 'POST' })} onFixed={() => navigate(syncedHome)}>
+      <Link className="button-link quiet" to={syncedHome}>{t('people.accessSync.continue')}</Link>
+    </AccessSyncIssue>
+  </section>;
+
+  if (preview.state !== 'open' && preview.state !== 'joined') return <section className="company-narrow people-join" aria-labelledby="join-title">
+    <p className="eyebrow">{t('people.join.eyebrow')}</p>
+    <h1 id="join-title">{t('people.join.title', { company: preview.org.name })}</h1>
+    <div className="people-join-closed" role="alert">
+      <h2>{t(`people.join.state.${preview.state}.title` as AppKey)}</h2>
+      <p>{t(`people.join.state.${preview.state}.body` as AppKey, { company: preview.org.name })}</p>
+    </div>
+    {failure && <p className="error" role="alert">{failure}</p>}
+  </section>;
+
   const { org } = preview;
   const roleText = t(`role.${preview.role}` as AppKey);
-  const closed = !['open', 'joined'].includes(preview.state);
   return <section className="company-narrow people-join" aria-labelledby="join-title">
     <p className="eyebrow">{t('people.join.eyebrow')}</p>
     <h1 id="join-title">{preview.state === 'joined' ? t('people.join.alreadyTitle', { company: org.name }) : t('people.join.title', { company: org.name })}</h1>
@@ -69,11 +88,6 @@ export function JoinPage({ token }: { token: string }) {
       <p className="notice" role="status">{t('people.join.already')}</p>
       <p><Link className="button-link" to={preview.home ?? `/w/${org.id}`}>{t('people.join.open')}</Link></p>
     </>}
-
-    {closed && <div className="people-join-closed" role="alert">
-      <h2>{t(`people.join.state.${preview.state}.title` as AppKey)}</h2>
-      <p>{t(`people.join.state.${preview.state}.body` as AppKey, { company: org.name })}</p>
-    </div>}
 
     {preview.state === 'open' && <>
       <div className="people-join-what">

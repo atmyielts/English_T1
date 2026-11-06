@@ -8,7 +8,7 @@ import { contractEnded } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type OrgRow } from '../types.ts';
 import { readableCode } from '../util.ts';
 import {
-  ADAPTIVE_STAGES, GRACE_MS, PRODUCTION, activeIndex, advance, closeAll, cleanAnswers, createSections, editableIds, pendingSkills, toBankLevel,
+  ADAPTIVE_STAGES, GRACE_MS, PRODUCTION, activeIndex, advance, closeAll, cleanAnswers, createSections, editableIds, pageIds, pendingSkills, toBankKeys, toBankLevel,
   type Answers, type Results, type Section, type ServedChoice,
 } from './engine.ts';
 import type { BankLevel } from './bank/index.ts';
@@ -147,8 +147,12 @@ function atPosition(items: Section[], at: unknown): boolean {
 export async function saveAttempt(ctx: Ctx, attempt: AttemptRow, body: Record<string, unknown>): Promise<AttemptRow> {
   if (attempt.status !== 'started') throw new CompanyError('attempt_finished', 'This test has already been submitted.', 409);
   const section = attempt.items[activeIndex(attempt.items)];
-  const answers = { ...attempt.answers, ...cleanAnswers(section, body.answers) };
-  return await write(ctx, attempt, { answers, integrity: mergeIntegrity(attempt.integrity, body.integrity) }, { status: 'started' });
+  const answers = { ...attempt.answers, ...cleanAnswers(section, toBankKeys(attempt.items, body.answers)) };
+  // Plays are stored by listening script, like everything else; the page knows the script by its page id.
+  const signals = body.integrity && typeof body.integrity === 'object' && !Array.isArray(body.integrity)
+    ? { ...body.integrity, plays: toBankKeys(attempt.items, (body.integrity as Record<string, unknown>).plays) }
+    : body.integrity;
+  return await write(ctx, attempt, { answers, integrity: mergeIntegrity(attempt.integrity, signals) }, { status: 'started' });
 }
 
 /** Saves, then opens the next adaptive stage or the next section. Ends the test after the last one. */
@@ -274,11 +278,11 @@ export async function expireIfOverdue(ctx: Ctx, attempt: AttemptRow, assessment:
   }
 }
 
-const publicChoice = (item: ServedChoice) => ({ id: item.id, prompt: item.prompt, options: item.options });
-
-/** The active section as the test page sees it: no keys, no levels, only what can still be answered. */
-export function publicSection(section: Section | undefined) {
+/** The active section as the test page sees it: no keys, no levels and no bank ids (see pageIds), only what can still be answered. */
+export function publicSection(section: Section | undefined, ids: Map<string, string>) {
   if (!section) return null;
+  const pageId = (id: string) => ids.get(id) ?? '';
+  const publicChoice = (item: ServedChoice) => ({ id: pageId(item.id), prompt: item.prompt, options: item.options });
   if (section.stages) {
     return { skill: section.skill, stage: section.stages.length, stages: ADAPTIVE_STAGES, items: section.stages[section.stages.length - 1].items.map(publicChoice) };
   }
@@ -286,13 +290,13 @@ export function publicSection(section: Section | undefined) {
     return {
       skill: section.skill,
       passages: section.passages.map((passage) => ({
-        id: passage.id, genre: passage.genre, title: passage.title,
+        id: pageId(passage.id), genre: passage.genre, title: passage.title,
         ...(passage.text !== undefined ? { text: passage.text } : { lines: passage.lines }),
         questions: passage.questions.map(publicChoice),
       })),
     };
   }
-  return { skill: section.skill, tasks: (section.tasks ?? []).map((task) => ({ id: task.id, prompt: task.prompt, points: task.points, target: task.target })) };
+  return { skill: section.skill, tasks: (section.tasks ?? []).map((task) => ({ id: pageId(task.id), prompt: task.prompt, points: task.points, target: task.target })) };
 }
 
 /** What a test taker sees of their attempt. Results only when graded and allowed. */
@@ -300,6 +304,8 @@ export function attemptView(ctx: Ctx, attempt: AttemptRow, assessment: Assessmen
   const index = activeIndex(attempt.items);
   const section = attempt.items[index];
   const editable = new Set(editableIds(section));
+  const ids = pageIds(attempt.items);
+  const onPage = <T>(entries: [string, T][]) => Object.fromEntries(entries.flatMap(([id, value]): [string, T][] => ids.has(id) ? [[ids.get(id)!, value]] : []));
   const results = attempt.status === 'graded' && options.showResult ? {
     overall_level: attempt.overall_level, overall_score: attempt.overall_score, certificate_code: attempt.certificate_code,
     skills: Object.fromEntries(attempt.items.map((entry) => [entry.skill, { level: attempt.skill_results[entry.skill]?.level ?? null, score: attempt.skill_results[entry.skill]?.score ?? null }])),
@@ -311,9 +317,9 @@ export function attemptView(ctx: Ctx, attempt: AttemptRow, assessment: Assessmen
     now: ctx.now().toISOString(), grace_seconds: GRACE_MS / 1000,
     sections: attempt.items.map((entry) => ({ skill: entry.skill, status: entry.status })),
     current: index,
-    section: attempt.status === 'started' ? publicSection(section) : null,
-    answers: Object.fromEntries(Object.entries(attempt.answers).filter(([id]) => editable.has(id))),
-    plays: attempt.integrity.plays ?? {},
+    section: attempt.status === 'started' ? publicSection(section, ids) : null,
+    answers: onPage(Object.entries(attempt.answers).filter(([id]) => editable.has(id))),
+    plays: onPage(Object.entries(attempt.integrity.plays ?? {})),
     result: results,
   };
 }

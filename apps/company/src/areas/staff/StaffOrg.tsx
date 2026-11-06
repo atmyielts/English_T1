@@ -5,7 +5,7 @@ import { ORG_STATUSES } from '../../../../../packages/company-core/src/mod.ts';
 import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
-import { LinkResult, Meter, useDates, useProblem } from '../people/ui.tsx';
+import { AccessSyncIssue, LinkResult, Meter, useDates, useProblem } from '../people/ui.tsx';
 import { AuditTable, StaffFrame, type StaffOrgDetail } from './common.tsx';
 
 /** A stored contract end (end of a Tashkent day) as the date input shows it. */
@@ -18,6 +18,7 @@ export function StaffOrgPage({ orgId }: { orgId: string }) {
   const [owner, setOwner] = useState({ email: '', full_name: '' });
   const [ownerLink, setOwnerLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
+  const [syncFailed, setSyncFailed] = useState(false);
   const load = useCallback(async () => {
     try {
       const next = await api<StaffOrgDetail>(`staff/orgs/${orgId}`);
@@ -43,12 +44,13 @@ export function StaffOrgPage({ orgId }: { orgId: string }) {
     event.preventDefault();
     setBusy(true); setError(''); setNotice('');
     try {
-      const response = await api<{ synced: number | null }>(`staff/orgs/${orgId}`, { method: 'PATCH', body: {
+      const response = await api<{ synced: number | null; access_sync_failed?: boolean }>(`staff/orgs/${orgId}`, { method: 'PATCH', body: {
         status: plan.status, seats_limit: Number(plan.seats_limit || 0), tests_limit: plan.unlimited ? null : Number(plan.tests_limit || 0),
         contract_ends_at: plan.contract_ends_at || null, ai_daily_limit: plan.ai_daily_limit === '' ? null : Number(plan.ai_daily_limit),
         schood_contact_email: plan.contact_email.trim() || null, schood_contact_phone: plan.contact_phone.trim() || null,
       } });
-      setNotice(response.synced === null ? t('staff.plan.savedNoSync') : t('staff.plan.saved', { count: response.synced }));
+      setSyncFailed(Boolean(response.access_sync_failed));
+      if (!response.access_sync_failed) setNotice(t('staff.plan.saved', { count: response.synced ?? 0 }));
       await load();
     } catch (cause) {
       setError(problem(cause));
@@ -74,6 +76,12 @@ export function StaffOrgPage({ orgId }: { orgId: string }) {
   return <StaffFrame title={org.name} lead={`${t(`industry.${org.industry}` as AppKey)} · ${t(`size.${org.size_band}` as AppKey)}${org.city ? ` · ${org.city}` : ''}`}
     actions={<Link className="button-link" to={`/w/${org.id}`}>{t('staff.org.open')}</Link>}>
     {notice && <p className="notice" role="status">{notice}</p>}
+    {syncFailed && <AccessSyncIssue message={t('staff.plan.savedNoSync')} retry={async () => {
+      // Saving nothing re-syncs everyone in the workspace.
+      const response = await api<{ synced: number | null; access_sync_failed?: boolean }>(`staff/orgs/${orgId}`, { method: 'PATCH', body: {} });
+      if (!response.access_sync_failed) setNotice(t('staff.plan.saved', { count: response.synced ?? 0 }));
+      return response;
+    }} onFixed={() => setSyncFailed(false)}/>}
     {error && <p className="error" role="alert">{error}</p>}
     <div className="company-grid staff-stats">
       <div className="company-stat"><strong>{counts.people}</strong><span>{t('staff.org.people')}</span></div>

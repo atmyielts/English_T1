@@ -8,7 +8,7 @@ import { appliesTo, ASSIGNMENT_COLUMNS, type AssignmentRow } from '../training/a
 import { findLesson } from '../training/tracks/index.ts';
 import { check, CompanyError, UUID, type MemberRow, type Route } from '../types.ts';
 import { addDays, canSee, dayStart, fetchAll, localDate, meetsTarget, shares, viewerOf, weekOf } from './common.ts';
-import { englishSummary } from './english.ts';
+import { englishSummary, englishVisibleFrom } from './english.ts';
 import { optional } from './overview.ts';
 
 interface AttemptRow { id: string; assessment_id: string; status: string; overall_level: string | null; overall_score: number | null; skill_results: Record<string, { score?: unknown; level?: unknown }> | null; started_at: string; submitted_at: string | null; graded_at: string | null; certificate_code: string | null }
@@ -114,7 +114,7 @@ export const routes: Route[] = [
         };
       }
 
-      const english = detail && member.seat && member.user_id ? await englishSummary(ctx.db, member.user_id, now) : null;
+      const english = detail && member.seat && member.user_id ? await englishSummary(ctx.db, member.user_id, now, englishVisibleFrom(member, now)) : null;
       const departmentRow = department ? (department as { data: { id: string; name: string } | null }).data : null;
       return {
         member: { ...member, department_name: departmentRow?.name ?? null },

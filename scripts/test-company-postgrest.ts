@@ -86,8 +86,9 @@ const BUNDLE = '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa';
 const SEAT_PRODUCT = 'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07';
 const OWNER = uid(1), ADMIN = uid(2), MANAGER = uid(3), EMP1 = uid(4), EMP2 = uid(5), EMP3 = uid(6), EMP4 = uid(7), EMP5 = uid(8), EMP6 = uid(9), EMP7 = uid(10),
   OTHER_OWNER = uid(11), STAFF = uid(12), NEW_OWNER = uid(13), EMP8 = uid(14), EMP9 = uid(15), EMP10 = uid(16), EMP11 = uid(17), EMP12 = uid(18),
-  CLOSING_OWNER = uid(19), CLOSING_ADMIN = uid(20), SOLO_OWNER = uid(21), DOUBLE_JOINER = uid(22), LAST_USE_JOINER = uid(23);
-const USERS = [OWNER, ADMIN, MANAGER, EMP1, EMP2, EMP3, EMP4, EMP5, EMP6, EMP7, OTHER_OWNER, STAFF, NEW_OWNER, EMP8, EMP9, EMP10, EMP11, EMP12, CLOSING_OWNER, CLOSING_ADMIN, SOLO_OWNER, DOUBLE_JOINER, LAST_USE_JOINER];
+  CLOSING_OWNER = uid(19), CLOSING_ADMIN = uid(20), SOLO_OWNER = uid(21), DOUBLE_JOINER = uid(22), LAST_USE_JOINER = uid(23), SYNC_OWNER = uid(24), SYNC_A = uid(25), SYNC_B = uid(26);
+const LINK_HOLDER = uid(94), TEAM_LINK_USER = uid(95);
+const USERS = [LINK_HOLDER, TEAM_LINK_USER, OWNER, ADMIN, MANAGER, EMP1, EMP2, EMP3, EMP4, EMP5, EMP6, EMP7, OTHER_OWNER, STAFF, NEW_OWNER, EMP8, EMP9, EMP10, EMP11, EMP12, CLOSING_OWNER, CLOSING_ADMIN, SOLO_OWNER, DOUBLE_JOINER, LAST_USE_JOINER, SYNC_OWNER, SYNC_A, SYNC_B];
 const emailOf = (id: string) => `user${Number(id.slice(-2))}@example.uz`;
 
 // What a Supabase project has before any migration: roles, schema usage, and default
@@ -583,8 +584,53 @@ async function scenario(port: number, serviceJwt: string) {
     const jasur = S.imported.find((row: any) => row.email === 'jasur@example.uz');
     const invited = await call('PATCH', `${o()}/people/${need(jasur?.member_id, 'invited person')}`, { as: ADMIN, body: { email: 'jasur.new@example.uz', role: 'manager' } });
     eq('invited email changed', invited.body?.member?.email, 'jasur.new@example.uz');
+    eq('the link already sent stopped', invited.body?.link_revoked, true);
+    await eqSql('no open link left', `select count(*) from company_invites where member_id='${jasur.member_id}' and revoked_at is null`, '0');
+    const stale = await call('POST', `join/${tokenOf(jasur.link)}`, { label: 'the link sent to the old address', as: EMP12, body: { consent: true }, expect: 410 });
+    eq('old link refused', stale.body?.code, 'invite_revoked');
+    await eqSql('still invited', `select status from company_members where id='${jasur.member_id}'`, 'invited');
+    const withdrawn = await call('GET', `join/${tokenOf(jasur.link)}`, { label: 'a withdrawn link shows only that' });
+    eq('nothing about the invitee', withdrawn.body, { state: 'revoked', org: { name: 'Silk Road Hotels' }, signed_in: false });
     await call('PATCH', `${o()}/people/${jasur.member_id}`, { label: 'email taken', as: ADMIN, body: { email: emailOf(EMP5) }, expect: 409 });
+    const unchanged = await call('PATCH', `${o()}/people/${jasur.member_id}`, { label: 'the same email again', as: ADMIN, body: { email: 'jasur.new@example.uz' } });
+    eq('nothing to stop', unchanged.body?.link_revoked ?? null, null);
+    const offered = (await call('GET', `${o()}/people`, { as: ADMIN })).body?.members?.find((row: any) => row.id === jasur.member_id)?.invite;
+    eq('the list offers a new link', offered?.state, 'revoked');
+    const renewedJasur = await call('POST', `${o()}/invites/${need(offered?.id, 'withdrawn invite')}/renew`, { as: ADMIN });
     await eqSql('invite placeholder role follows', `select role from company_invites where member_id='${jasur.member_id}' and revoked_at is null`, 'manager');
+    const lowered = await call('PATCH', `${o()}/people/${jasur.member_id}`, { label: 'a lower role keeps the link', as: ADMIN, body: { role: 'employee' } });
+    eq('nothing to stop on a lower role', lowered.body?.link_revoked ?? null, null);
+    await eqSql('placeholder follows down', `select role from company_invites where member_id='${jasur.member_id}' and revoked_at is null`, 'employee');
+    eq('that link still opens', (await call('GET', `join/${tokenOf(need(renewedJasur.body?.link, 'renewed link'))}`)).body?.state, 'open');
+
+    const toRaise = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Held Link', email: 'held.link@example.uz', role: 'employee' } });
+    const raised = await call('PATCH', `${o()}/people/${need(toRaise.body?.member?.id, 'pending person')}`, { as: OWNER, body: { role: 'owner' } });
+    eq('raised to owner stops the link', [raised.body?.member?.role, raised.body?.link_revoked], ['owner', true]);
+    const held = await call('POST', `join/${tokenOf(toRaise.body?.link)}`, { label: 'the link an admin kept', as: EMP12, body: { consent: true }, expect: 410 });
+    eq('no way in', held.body?.code, 'invite_revoked');
+    await eqSql('nobody became owner', `select status||'|'||(user_id is null) from company_members where id='${toRaise.body.member.id}'`, 'invited|true');
+    await call('POST', `${o()}/invites/${toRaise.body.invite.id}/renew`, { label: 'an admin cannot renew an owner link', as: ADMIN, expect: 403 });
+    const ownerRenewed = await call('POST', `${o()}/invites/${toRaise.body.invite.id}/renew`, { as: OWNER });
+    eq('the owner gets a new link', ownerRenewed.body?.invite?.state, 'open');
+    await call('DELETE', `${o()}/people/${toRaise.body.member.id}`, { label: 'tidy up', as: OWNER });
+
+    // Someone joins through a held link after the owner's page loaded: the stale form must not make them owner.
+    const staleForm = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Stale Form', email: 'stale.form@example.uz', role: 'employee' } });
+    await call('POST', `join/${tokenOf(staleForm.body?.link)}`, { label: 'the held link is used', as: LINK_HOLDER, body: { consent: true } });
+    const staleSave = await call('PATCH', `${o()}/people/${staleForm.body.member.id}`, { label: 'the form still showed invited', as: OWNER, body: { if_status: 'invited', role: 'owner' }, expect: 409 });
+    eq('the owner is told', staleSave.body?.code, 'person_changed');
+    await eqSql('nobody became owner from a stale form', `select role||'|'||status from company_members where id='${staleForm.body.member.id}'`, 'employee|active');
+    await call('DELETE', `${o()}/people/${staleForm.body.member.id}`, { label: 'tidy up', as: OWNER });
+
+    // A team link never gives more than its own role, even when the account matches a raised pending row.
+    const raisedByEmail = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Raised By Email', email: emailOf(TEAM_LINK_USER), role: 'employee' } });
+    await call('PATCH', `${o()}/people/${raisedByEmail.body.member.id}`, { as: OWNER, body: { role: 'owner' } });
+    const teamLink = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', role: 'employee', max_uses: 5 } });
+    const teamJoin = await call('POST', `join/${tokenOf(need(teamLink.body?.link, 'team link'))}`, { label: 'a team link onto a raised row', as: TEAM_LINK_USER, body: { consent: true }, expect: 409 });
+    eq('a personal link is needed', teamJoin.body?.code, 'personal_link_needed');
+    await eqSql('the raised row stays pending', `select role||'|'||status||'|'||(user_id is null) from company_members where id='${raisedByEmail.body.member.id}'`, 'owner|invited|true');
+    await eqSql('the team link kept its use', `select uses from company_invites where id='${teamLink.body.invite.id}'`, '0');
+    await call('DELETE', `${o()}/people/${raisedByEmail.body.member.id}`, { label: 'tidy up', as: OWNER });
 
     await call('PATCH', `${o()}/people/${S.ownerMember}`, { label: 'admin cannot demote owner', as: ADMIN, body: { role: 'admin' }, expect: 403 });
     await call('PATCH', `${o()}/people/${S.ownerMember}`, { label: 'last owner cannot be demoted', as: OWNER, body: { role: 'admin' }, expect: 409 });
@@ -621,6 +667,16 @@ async function scenario(port: number, serviceJwt: string) {
     const newer = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general' } });
     await call('POST', `join/${tokenOf(need(newer.body?.link, 'newer link'))}`, { label: 'back through a newer team link', as: EMP7, body: { consent: true, full_name: 'Timur' } });
     await eqSql('active again', `select status||'|'||(removed_at is null) from company_members where org_id='${S.org}' and user_id='${EMP7}'`, 'active|true');
+
+    // A team link renewed after someone left brings them back; created_at stays for lists and audit.
+    const renewable = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general' } });
+    await call('POST', `${o()}/people/me/leave`, { as: EMP7 });
+    await call('POST', `join/${tokenOf(need(renewable.body?.link, 'renewable link'))}`, { label: 'that link is from before they left', as: EMP7, body: { consent: true }, expect: 410 });
+    const renewedTeam = await call('POST', `${o()}/invites/${renewable.body.invite.id}/renew`, { as: ADMIN });
+    await eqSql('token_issued_at moved, created_at did not', `select token_issued_at > created_at from company_invites where id='${renewable.body.invite.id}'`, 't');
+    eq('created_at kept in the answer', renewedTeam.body?.invite?.created_at, renewable.body?.invite?.created_at);
+    await call('POST', `join/${tokenOf(need(renewedTeam.body?.link, 'renewed team link'))}`, { label: 'back through the renewed link', as: EMP7, body: { consent: true, full_name: 'Timur' } });
+    await eqSql('active again through the renewed link', `select status from company_members where org_id='${S.org}' and user_id='${EMP7}'`, 'active');
 
     // Removed person, whose email HR invited again, comes back through a team link.
     await call('POST', `${o()}/people/me/leave`, { as: EMP7 });
@@ -794,6 +850,7 @@ async function scenario(port: number, serviceJwt: string) {
     S.attemptA = started.body.attempt.id;
     eq('test reserved', Number(await sql(`select tests_used from company_orgs where id='${S.org}'`)), Number(usedBefore) + 1);
     ok('no answer key served', !JSON.stringify(started.body.attempt.section).includes('"answer"'));
+    ok('no bank id or level served', !/"[a-z]+-(a1|a2|b1|b2|c1|c2)\b|"level"/.test(JSON.stringify(started.body)), started.body?.attempt?.section);
     await call('POST', `public/t/${S.testToken}/start`, { label: 'same email twice', body: { name: 'Nodir Again', email: 'nodir@example.uz', consent: true }, ip: '192.0.2.11', expect: 409 });
     await call('POST', 'public/attempts/state', { label: 'bad key', body: { key: 'nope' }, expect: 404 });
     // A candidate who lost their key: HR makes a private link and the old key stops working.
@@ -1237,6 +1294,16 @@ async function scenario(port: number, serviceJwt: string) {
     await call('GET', `${o()}/insights/people`, { label: 'manager', as: MANAGER });
     await call('GET', `${o()}/insights/people`, { label: 'employee', as: EMP1, expect: 403 });
 
+    // The seeded activity is from before this person joined and agreed, so the company does not see it.
+    const before = await call('GET', `${o()}/members/${S.emp1Member}/profile`, { label: 'only their earlier activity so far', as: ADMIN });
+    eq('earlier activity is not shown', [before.body?.english?.activities, before.body?.english?.badges, before.body?.english?.reviews, before.body?.english?.level], [0, 0, 0, 'b1']);
+    ok('their own targets stay private', before.body?.english && !('target' in before.body.english) && !('daily_goal_minutes' in before.body.english), before.body?.english);
+    await sql(`
+      insert into public.learning_attempts (user_id, language_id, product_id, content_item_id, service_key, status, time_spent_seconds, correctness_ratio, overall_score, submitted_at)
+        values ('${EMP1}', '20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000003', 'grammar', 'scored', 600, 0.8, 0.8, now() + interval '1 minute');
+      insert into public.learner_review_answer_log (user_id, language_id, review_item_id, correct, answered_at) values ('${EMP1}', '20000000-0000-4000-8000-000000000001', gen_random_uuid(), true, now() + interval '1 minute');
+      insert into public.learner_badges (user_id, language_id, badge_key, earned_at) values ('${EMP1}', '20000000-0000-4000-8000-000000000001', 'second_step', now() + interval '1 minute');
+    `);
     const shared = await call('GET', `${o()}/members/${S.emp1Member}/profile`, { as: ADMIN });
     eq('with consent', shared.body?.detail, true);
     ok('English summary read', shared.body?.english?.activities === 1 && shared.body?.english?.badges === 1 && shared.body?.english?.reviews === 1 && shared.body?.english?.level === 'b1', shared.body?.english);
@@ -1402,7 +1469,8 @@ async function scenario(port: number, serviceJwt: string) {
     const started = await call('POST', `public/t/${tokenOf(writing.body?.link)}/start`, { body: { name: 'Nul Candidate', email: 'nul@example.uz', consent: true }, ip: '192.0.2.70' });
     const taskId = need(started.body?.attempt?.section?.tasks?.[0]?.id, 'writing task');
     await call('POST', 'public/attempts/save', { label: "NUL in a candidate's answer", body: { key: started.body?.key, answers: { [taskId]: nul } } });
-    await eqSql('the answer is kept without it', `select answers->>'${taskId}' from company_attempts where id='${started.body?.attempt?.id}'`, 'AB name');
+    await eqSql('the answer is kept without it', `select value from company_attempts, jsonb_each_text(answers) where id='${started.body?.attempt?.id}'`, 'AB name');
+    await eqSql('stored by bank id, not the id the page uses', `select key <> '${taskId}' from company_attempts, jsonb_each_text(answers) where id='${started.body?.attempt?.id}'`, 't');
     await call('POST', 'public/attempts/save', { label: 'an answer cut through an emoji', body: { key: started.body?.key, answers: { [taskId]: `${'x'.repeat(5999)}\u{1F600}` } } });
     // A one-item list passes oneOf (it compares String(value)) and is then stored as it came.
     await call('POST', 'orgs', { label: 'a list where one value belongs (CHECK column)', as: EMP7, body: { name: 'List Size', size_band: ['1-50'] }, expect: refused });
@@ -1708,6 +1776,77 @@ async function scenario(port: number, serviceJwt: string) {
     const staffView = await call('GET', 'staff/orgs?ownerless=1', { as: STAFF });
     ok('staff are shown the orphan', staffView.body?.orgs?.some((row: any) => row.id === solo.body?.org?.id), staffView.body?.ownerless);
     eq('detail says nobody', (await call('GET', `staff/orgs/${solo.body?.org?.id}`, { as: STAFF })).body?.owner_state, 'none');
+  });
+
+  await area('a failed access sync: told, retried, repaired', async () => {
+    const seatRow = (user: string) => sql(`select coalesce(string_agg(is_active::text, ','), 'none') from entitlements where user_id='${user}' and resource_id='${SEAT_PRODUCT}'`);
+    const healthy = await sql(`select pg_get_functiondef('public.company_sync_english_access(uuid)'::regprocedure)`);
+    const outage = () => sql(`create or replace function public.company_sync_english_access(p_user uuid) returns text language plpgsql security definer set search_path = public as $f$ begin raise exception 'outage'; end $f$;`);
+    const restore = () => sql(`${healthy};`);
+    const hurt = { allowLog: /company_sync/, allowDb: /outage/ };
+    const made = await call('POST', 'orgs', { as: SYNC_OWNER, body: { name: 'Outage Co', full_name: 'Sync Owner' } });
+    const orgId = need(made.body?.org?.id, 'outage org');
+    await call('PATCH', `staff/orgs/${orgId}`, { as: STAFF, body: { status: 'active', seats_limit: 5 } });
+    const invite = await call('POST', `orgs/${orgId}/invites`, { as: SYNC_OWNER, body: { full_name: 'Sync One', email: emailOf(SYNC_A) } });
+    await call('POST', `join/${tokenOf(invite.body?.link)}`, { as: SYNC_A, body: { consent: true } });
+    const second = await call('POST', `orgs/${orgId}/invites`, { as: SYNC_OWNER, body: { full_name: 'Sync Two', email: emailOf(SYNC_B) } });
+    await call('POST', `join/${tokenOf(second.body?.link)}`, { as: SYNC_B, body: { consent: true } });
+    const memberA = need(invite.body?.member?.id, 'first member'), memberB = need(second.body?.member?.id, 'second member');
+    await call('POST', `orgs/${orgId}/people/${memberA}/seat`, { as: SYNC_OWNER, body: { seat: true } });
+    await call('POST', `orgs/${orgId}/people/${memberB}/seat`, { as: SYNC_OWNER, body: { seat: true } });
+    eq('seats granted', [await seatRow(SYNC_A), await seatRow(SYNC_B)], ['true', 'true']);
+
+    try {
+      await outage();
+      const off = await call('POST', `orgs/${orgId}/people/${memberA}/seat`, { label: 'seat off during the outage', as: SYNC_OWNER, body: { seat: false }, ...hurt });
+      eq('seat off says so', [off.status, off.body?.member?.seat, off.body?.access_sync_failed], [200, false, true]);
+      eq('access still on', await seatRow(SYNC_A), 'true');
+      await eqSql('audit records it', `select details->>'access' from company_audit where action='member.seat_off' and target='${memberA}'`, 'failed');
+      const left = await call('POST', `orgs/${orgId}/people/me/leave`, { label: 'leaving during the outage', as: SYNC_B, ...hurt });
+      eq('leave says so', [left.body?.left, left.body?.access_sync_failed], [true, true]);
+      const stillDown = await call('POST', 'me/access/sync', { label: 'their own retry during the outage', as: SYNC_B, ...hurt });
+      eq('retry says so', [stillDown.body?.access, stillDown.body?.access_sync_failed], ['failed', true]);
+    } finally {
+      await restore();
+    }
+    const repaired = await call('POST', `orgs/${orgId}/people/${memberA}/seat`, { label: 'the same click once healthy', as: SYNC_OWNER, body: { seat: false } });
+    eq('repaired by repeating it', [repaired.body?.access_sync_failed ?? null, await seatRow(SYNC_A)], [null, 'false']);
+    const own = await call('POST', 'me/access/sync', { as: SYNC_B });
+    eq('their own retry repaired it', [own.body?.access, own.body?.access_sync_failed ?? null, await seatRow(SYNC_B)], ['revoked', null, 'false']);
+
+    // Removal during an outage, repaired by the nightly job rather than by anyone clicking.
+    await call('POST', `orgs/${orgId}/people/${memberA}/seat`, { label: 'seat again', as: SYNC_OWNER, body: { seat: true } });
+    eq('seat back on', await seatRow(SYNC_A), 'true');
+    try {
+      await outage();
+      const removed = await call('DELETE', `orgs/${orgId}/people/${memberA}`, { label: 'removal during the outage', as: SYNC_OWNER, ...hurt });
+      eq('removal says so', [removed.status, removed.body?.member?.status, removed.body?.access_sync_failed], [200, 'removed', true]);
+    } finally {
+      await restore();
+    }
+    eq('access still on after the failed removal', await seatRow(SYNC_A), 'true');
+    const repair = await db.rpc('company_reconcile_english_access', { p_limit: 1000 });
+    ok('the nightly repair runs through PostgREST', !repair.error && repair.data?.failed === 0 && repair.data?.revoked >= 1, repair);
+    eq('the nightly repair revoked it', await seatRow(SYNC_A), 'false');
+    const again = await db.rpc('company_reconcile_english_access');
+    eq('a second pass finds nothing', [again.data?.revoked, again.data?.failed], [0, 0]);
+
+    // Staff changing a workspace during an outage.
+    await sql(`create or replace function public.company_sync_org_access(p_org uuid) returns integer language plpgsql security definer set search_path = public as $f$ begin raise exception 'outage'; end $f$;`);
+    const staffDown = await call('PATCH', `staff/orgs/${orgId}`, { label: 'suspend during the outage', as: STAFF, body: { status: 'suspended' }, allowLog: /company_sync_org/, allowDb: /outage/ });
+    eq('staff are told', [staffDown.status, staffDown.body?.synced, staffDown.body?.access_sync_failed], [200, null, true]);
+    await sql(`create or replace function public.company_sync_org_access(p_org uuid) returns integer language plpgsql security definer set search_path = public as $f$
+      declare v_user uuid; v_count integer := 0;
+      begin
+        for v_user in select distinct user_id from public.company_members where org_id = p_org and user_id is not null loop
+          perform public.company_sync_english_access(v_user);
+          v_count := v_count + 1;
+        end loop;
+        return v_count;
+      end;
+    $f$;`);
+    const staffRetry = await call('PATCH', `staff/orgs/${orgId}`, { label: 'saving nothing retries', as: STAFF, body: {} });
+    ok('retry re-synced', staffRetry.body?.synced >= 1 && !staffRetry.body?.access_sync_failed, staffRetry.body);
   });
 
   await area('last: closing a workspace', async () => {

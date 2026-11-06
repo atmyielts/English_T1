@@ -70,8 +70,13 @@ async function ownerInvite(ctx: Ctx, org: OrgRow, email: string | null, full_nam
   if (email) member = check<MemberRow | null>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('email', email).neq('status', 'removed').maybeSingle());
   if (member && member.status === 'active') throw new CompanyError('member_exists', 'This person is already in the workspace.', 409, { field: 'owner_email' });
   if (member) {
-    if (member.role !== 'owner') member = check<MemberRow>(await ctx.db.from('company_members').update({ role: 'owner' }).eq('id', member.id).select(MEMBER_COLUMNS).single());
+    // Before the row changes, so the old link never sees the new role.
     await revokeMemberInvites(ctx, member.id);
+    if (member.role !== 'owner') {
+      // Only while still pending: someone joining through a link in between must not become owner.
+      member = check<MemberRow | null>(await ctx.db.from('company_members').update({ role: 'owner' }).eq('id', member.id).eq('status', 'invited').select(MEMBER_COLUMNS).maybeSingle());
+      if (!member) throw new CompanyError('member_exists', 'This person is already in the workspace.', 409, { field: 'owner_email' });
+    }
   } else {
     member = checkUnique<MemberRow>(await ctx.db.from('company_members').insert({
       org_id: org.id, email, full_name, role: 'owner', status: 'invited', seat: false, invited_by: ctx.user, invited_at: ctx.now().toISOString(),
@@ -212,7 +217,11 @@ export const routes: Route[] = [
         setSetting('schood_contact_phone', phone);
       }
       if (settingKeys.length) patch.settings = settings;
-      if (!Object.keys(patch).length) return { org, synced: null };
+      // Nothing to change, but saving again retries a sync that failed.
+      if (!Object.keys(patch).length) {
+        const synced = await syncOrg(ctx, org.id);
+        return { org, usage: await usage(ctx.db, org), synced, ...(synced === null ? { access_sync_failed: true } : {}) };
+      }
       const updated = check<OrgRow>(await ctx.db.from('company_orgs').update(patch).eq('id', org.id).select(ORG_COLUMNS).single());
       const synced = await syncOrg(ctx, org.id);
       const before = org as unknown as Record<string, unknown>, after = updated as unknown as Record<string, unknown>;
@@ -222,7 +231,7 @@ export const routes: Route[] = [
         ...settingKeys.map((key) => [key, { from: oldSettings[key] ?? null, to: newSettings[key] ?? null }]),
       ]);
       await ctx.audit('staff.org_updated', org.id, { ...changes, synced });
-      return { org: updated, usage: await usage(ctx.db, updated), synced };
+      return { org: updated, usage: await usage(ctx.db, updated), synced, ...(synced === null ? { access_sync_failed: true } : {}) };
     },
   },
   {

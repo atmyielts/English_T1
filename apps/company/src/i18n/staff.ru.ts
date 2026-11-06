@@ -53,7 +53,7 @@ export const staffRu: Record<StaffKey, string> = {
   'staff.leads.source.company_seats': 'Запрос мест из кабинета',
   'staff.plan.save': 'Сохранить тариф',
   'staff.plan.saved': 'Тариф сохранён. Доступ пересчитан: {count}.',
-  'staff.plan.savedNoSync': 'Тариф сохранён, но пересчитать доступ не удалось. Сохраните ещё раз.',
+  'staff.plan.savedNoSync': 'Тариф сохранён, но доступ к Schood English для этого кабинета обновить не удалось: пока это не сделано, у людей может оставаться или отсутствовать доступ. Попробуйте ещё раз. Schood также проверяет это каждую ночь.',
   'staff.audit.title': 'Журнал действий',
   'staff.audit.lead': 'Все изменения HR и Schood по кабинетам, сначала новые.',
   'staff.audit.filter': 'Тип изменения',

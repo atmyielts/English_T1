@@ -8,11 +8,13 @@ import { Link, useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
 import { ImportPanel } from './ImportPanel.tsx';
 import { TeamLinksPanel } from './TeamLinks.tsx';
-import type { PeopleList, PersonRow } from './types.ts';
-import { LinkResult, Meter, useDates, useProblem } from './ui.tsx';
+import type { AccessSynced, PeopleList, PersonRow } from './types.ts';
+import { AccessSyncIssue, LinkResult, Meter, useDates, useProblem } from './ui.tsx';
 
 type Panel = 'invite' | 'import' | 'links' | null;
 type Filters = { q: string; department: string; role: string; level: string; seat: string; status: string };
+/** Someone's change went through but their English access did not follow; `retry` repeats the same call. */
+type SyncIssue = { id: string; name: string; retry: () => Promise<AccessSynced> };
 const NO_FILTERS: Filters = { q: '', department: '', role: '', level: '', seat: '', status: '' };
 
 export function PeoplePage() {
@@ -25,6 +27,7 @@ export function PeoplePage() {
   const { query } = useLocation();
   const [filters, setFilters] = useState<Filters>(() => ({ ...NO_FILTERS, department: query.get('department') ?? '' }));
   const [notice, setNotice] = useState('');
+  const [syncIssue, setSyncIssue] = useState<SyncIssue | null>(null);
   const showRemoved = filters.status === 'removed';
   const load = useCallback(async () => {
     try {
@@ -83,6 +86,8 @@ export function PeoplePage() {
     </div>}
 
     {notice && <p className="notice" role="status">{notice}</p>}
+    {syncIssue && <AccessSyncIssue message={t('people.accessSync.failed', { name: syncIssue.name })} retry={syncIssue.retry}
+      onFixed={async () => { const { name } = syncIssue; setSyncIssue(null); await changed(t('people.accessSync.fixed', { name })); }}/>}
     {editable && data.members.length <= 3 && !panel && <GettingStarted orgId={org.id} departments={data.departments.length} people={data.members.length} links={data.links.length} onPanel={setPanel}/>}
     {panel === 'invite' && <InvitePanel data={data} onDone={() => changed()} onClose={() => setPanel(null)}/>}
     {panel === 'import' && <ImportPanel orgId={org.id} onDone={() => changed()} onClose={() => setPanel(null)}/>}
@@ -133,7 +138,7 @@ export function PeoplePage() {
               <th scope="col">{t('people.field.status')}</th>
               {editable && <th scope="col"><span className="visually-hidden">{t('people.col.actions')}</span></th>}
             </tr></thead>
-            <tbody>{shown.map((row) => <PersonLine key={row.id} row={row} data={data} editable={editable} departmentName={departmentName.get(row.department_id ?? '') ?? null} onChanged={changed}/>)}</tbody>
+            <tbody>{shown.map((row) => <PersonLine key={row.id} row={row} data={data} editable={editable} departmentName={departmentName.get(row.department_id ?? '') ?? null} onChanged={changed} onSyncIssue={setSyncIssue}/>)}</tbody>
           </table>
         </div>}
     </section>
@@ -202,7 +207,7 @@ function InvitePanel({ data, onDone, onClose }: { data: PeopleList; onDone: () =
   </section>;
 }
 
-function PersonLine({ row, data, editable, departmentName, onChanged }: { row: PersonRow; data: PeopleList; editable: boolean; departmentName: string | null; onChanged: (message?: string) => Promise<void> }) {
+function PersonLine({ row, data, editable, departmentName, onChanged, onSyncIssue }: { row: PersonRow; data: PeopleList; editable: boolean; departmentName: string | null; onChanged: (message?: string) => Promise<void>; onSyncIssue: React.Dispatch<React.SetStateAction<SyncIssue | null>> }) {
   const t = useAppT(), problem = useProblem(), { day } = useDates();
   const { org, member: me, staff } = useWorkspace();
   const [mode, setMode] = useState<'view' | 'edit' | 'remove'>('view');
@@ -212,19 +217,28 @@ function PersonLine({ row, data, editable, departmentName, onChanged }: { row: P
   const ownerLocked = row.role === 'owner' && !canOwners;
   const removed = row.status === 'removed';
   const name = row.full_name || row.email || t('people.unnamed');
+  /** Runs a change; an action that returns text says that instead of `message`. */
   async function run(action: () => Promise<unknown>, message?: string) {
     setBusy(true); setError('');
     try {
-      await action();
+      const said = await action();
       setMode('view');
-      await onChanged(message);
+      await onChanged(typeof said === 'string' ? said : message);
     } catch (cause) {
       setError(problem(cause));
     } finally {
       setBusy(false);
     }
   }
-  const seat = () => run(() => api(`orgs/${org.id}/people/${row.id}/seat`, { method: 'POST', body: { seat: !row.seat } }), row.seat ? t('people.seat.offDone', { name }) : t('people.seat.onDone', { name }));
+  /** A change that moves English access: a failed sync is shown above the list, with the same call as its retry. */
+  const accessChange = (call: () => Promise<AccessSynced>, message: string) => run(async () => {
+    const result = await call();
+    onSyncIssue((current) => result.access_sync_failed ? { id: row.id, name, retry: call } : current?.id === row.id ? null : current);
+  }, message);
+  const seat = () => {
+    const wanted = !row.seat;
+    return accessChange(() => api<AccessSynced>(`orgs/${org.id}/people/${row.id}/seat`, { method: 'POST', body: { seat: wanted } }), wanted ? t('people.seat.onDone', { name }) : t('people.seat.offDone', { name }));
+  };
   const renew = () => run(async () => {
     const response = await api<{ link: string }>(`orgs/${org.id}/invites/${row.invite!.id}/renew`, { method: 'POST' });
     setLink(response.link);
@@ -267,11 +281,17 @@ function PersonLine({ row, data, editable, departmentName, onChanged }: { row: P
     {(mode !== 'view' || error || link) && <tr className="people-detail-row"><td colSpan={cols}>
       {link && <LinkResult link={link} title={t('people.invite.ready', { name })} message={t('people.share.personal', { company: org.name })}/>}
       {mode === 'edit' && <EditPerson row={row} data={data} canOwners={canOwners} busy={busy} onCancel={() => setMode('view')}
-        onSave={(body) => run(() => api(`orgs/${org.id}/people/${row.id}`, { method: 'PATCH', body }), t('people.edit.saved', { name }))}/>}
+        onSave={(body) => run(async () => {
+          const saved = await api<{ link_revoked?: boolean }>(`orgs/${org.id}/people/${row.id}`, { method: 'PATCH', body });
+          if (!saved.link_revoked) return undefined;
+          // Any link still on screen is the one that just stopped working.
+          setLink(null);
+          return t('people.link.stopped', { name, action: t('people.action.newLink') });
+        }, t('people.edit.saved', { name }))}/>}
       {mode === 'remove' && <div className="people-confirm" role="alertdialog" aria-labelledby={`remove-${row.id}`}>
         <p id={`remove-${row.id}`}><strong>{t('people.remove.title', { name })}</strong> {t('people.remove.body')}</p>
         <div className="company-actions">
-          <button type="button" className="people-danger-solid" disabled={busy} onClick={() => void run(() => api(`orgs/${org.id}/people/${row.id}`, { method: 'DELETE' }), t('people.remove.done', { name }))}>{t('people.remove.confirm')}</button>
+          <button type="button" className="people-danger-solid" disabled={busy} onClick={() => void accessChange(() => api<AccessSynced>(`orgs/${org.id}/people/${row.id}`, { method: 'DELETE' }), t('people.remove.done', { name }))}>{t('people.remove.confirm')}</button>
           <button type="button" className="quiet" onClick={() => setMode('view')}>{t('common.cancel')}</button>
         </div>
       </div>}
@@ -292,7 +312,7 @@ function EditPerson({ row, data, canOwners, busy, onSave, onCancel }: { row: Per
   function submit(event: FormEvent) {
     event.preventDefault();
     const body: Record<string, unknown> = {
-      full_name: form.full_name || null, department_id: form.department_id || null, job_role: form.job_role,
+      if_status: row.status, full_name: form.full_name || null, department_id: form.department_id || null, job_role: form.job_role,
       target_level: form.target_level || null, target_date: form.target_date || null,
     };
     if (!roleLocked && form.role !== row.role) body.role = form.role;

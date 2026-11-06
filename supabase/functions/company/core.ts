@@ -16,6 +16,9 @@ export async function syncAccess(db: Db, userId: string | null): Promise<string>
   return String(data);
 }
 
+/** What a route adds to its answer so HR or staff hear about a failed sync and can retry. */
+export const accessSyncFlag = (access: string): { access_sync_failed?: true } => access === 'failed' ? { access_sync_failed: true } : {};
+
 export async function seatsUsed(db: Db, orgId: string): Promise<number> {
   const { count, error } = await db.from('company_members').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('seat', true).neq('status', 'removed');
   if (error) throw new Error(error.message);
@@ -72,6 +75,15 @@ export const routes: Route[] = [
         self_serve: ctx.env.selfServe,
         workspaces: members.filter((row) => row.company_orgs && row.company_orgs.status !== 'closed').map(({ company_orgs, ...member }) => ({ org: company_orgs, member })),
       };
+    },
+  },
+  {
+    // Retry for the signed-in person's own Schood English access, for when a sync failed and
+    // they have no workspace route left to repeat (they just left it).
+    method: 'POST', path: 'me/access/sync', access: 'user',
+    async handle(ctx) {
+      const access = await syncAccess(ctx.db, ctx.user);
+      return { access, ...accessSyncFlag(access) };
     },
   },
   {

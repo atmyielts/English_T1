@@ -64,8 +64,8 @@ export const routes: Route[] = [
 
       const since = weekStart(now);
       const windowStart = daysAgo(new Date(`${tashkentDay(now)}T00:00:00+05:00`), 6);
-      const activity = check<{ kind: string; minutes: number; created_at: string }[]>(
-        await ctx.db.from('company_activity').select('kind,minutes,created_at').eq('member_id', member.id).gte('created_at', (windowStart < since ? windowStart : since).toISOString()),
+      const activity = await fetchAll<{ kind: string; minutes: number; created_at: string }>(
+        () => ctx.db.from('company_activity').select('kind,minutes,created_at').eq('member_id', member.id).gte('created_at', (windowStart < since ? windowStart : since).toISOString()).order('id'),
       );
       const thisWeek = activity.filter((row) => row.created_at >= since.toISOString());
       const days = Array.from({ length: 7 }, (_, index) => {

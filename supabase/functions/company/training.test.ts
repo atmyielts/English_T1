@@ -645,3 +645,15 @@ Deno.test('assigning to people reads every member past the 1,000-row limit', asy
   const made = await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'people', track_code: 'general', member_ids: [last] } });
   assertEquals([made.status, made.body.created], [200, 1]);
 });
+
+Deno.test('home: the week reads every activity row, past the 1000 rows PostgREST returns at a time', async () => {
+  const now = new Date('2026-10-14T09:00:00+05:00');
+  const { db, call } = setup({ now: () => now });
+  db.maxRows = 1000;
+  // More rows than one page, all today: an unpaged read would count only the first 1000.
+  for (let index = 0; index < 1500; index++) db.rows('company_activity').push({ id: index + 1, org_id: ORG, member_id: M.employee, user_id: EMPLOYEE, kind: 'lesson', minutes: 1, points: 0, created_at: new Date(now.getTime() - index * 1000).toISOString() });
+  const home = await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE });
+  assertEquals(home.status, 200);
+  assertEquals(home.body.week.minutes, 1500);
+  assertEquals(home.body.week.days.at(-1).minutes, 1500);
+});

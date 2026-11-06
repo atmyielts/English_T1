@@ -116,7 +116,7 @@ function StandingsView({ challenge, departments, onEdit, onChanged }: { challeng
           <BarList label={t('insights.challenges.byPerson')} format={unit} highlight={data.people.find((row) => row.me) ? 'me' : undefined}
             rows={data.people.map((row, index) => ({
               key: row.me ? 'me' : `${row.rank}-${index}`,
-              label: <>{`${row.rank}. `}{lead && row.member_id ? <Link to={`/w/${org.id}/people/${row.member_id}`}>{row.name}</Link> : row.name}{row.me ? ` (${t('insights.challenges.you')})` : ''}{row.department ? <small> · {row.department}</small> : null}</>,
+              label: <>{`${row.rank}. `}{lead && row.member_id ? <Link to={`/w/${org.id}/people/${row.member_id}`}>{row.name ?? t('insights.challenges.colleague')}</Link> : row.name ?? t('insights.challenges.colleague')}{row.me ? ` (${t('insights.challenges.you')})` : ''}{row.department ? <small> · {row.department}</small> : null}</>,
               value: row.value,
             }))}/>
           {!lead && <p className="hint">{t('insights.challenges.namesNote')}</p>}

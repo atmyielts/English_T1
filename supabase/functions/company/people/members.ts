@@ -1,7 +1,7 @@
 // People in a workspace: the list (HR sees everyone, a manager their department),
 // CSV import, edits, learning seats, removal and leaving.
-import { HR_ROLES, LEAD_ROLES } from '../../../../packages/company-core/src/mod.ts';
-import { syncAccess, usage } from '../core.ts';
+import { HR_ROLES, LEAD_ROLES, type OrgRole } from '../../../../packages/company-core/src/mod.ts';
+import { accessSyncFlag, syncAccess, usage } from '../core.ts';
 import { contractEnded, MEMBER_COLUMNS } from '../handler.ts';
 import { check, checkUnique, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, text, email as readEmail } from '../util.ts';
@@ -9,7 +9,30 @@ import { readImport, MAX_IMPORT_ROWS } from './csv.ts';
 import {
   actsAsOwner, assertOwnerRemains, dateOrNull, DAY, departmentIn, fetchAll, guardError, INVITE_COLUMNS, inviteRoleFor, inviteState, issueInvite, isHr,
   jobRole, levelOrNull, loadMember, memberExists, orgRole, PERSONAL_DAYS, revokeMemberInvites, seatCount, type InviteRow,
+  ROLE_RANK,
 } from './shared.ts';
+
+
+
+const personChanged = () => new CompanyError('person_changed', 'This person changed since you opened the page. Reload and check before saving.', 409);
+
+/**
+ * Whether this edit of someone who has not joined must stop the link they were sent.
+ * Whoever holds that link would join with the new role or under the corrected address,
+ * so a raised role or a really changed email ends it. Saving an unchanged form does not.
+ */
+function endsLink(member: MemberRow, patch: Record<string, unknown>): boolean {
+  if (member.status !== 'invited') return false;
+  if (patch.role && ROLE_RANK[patch.role as OrgRole] > ROLE_RANK[member.role]) return true;
+  return 'email' in patch && (patch.email ?? null) !== (member.email ?? null);
+}
+
+/** Someone's Schood English access after a change that needed no write: a sync that failed earlier gets another go. */
+async function repairAccess(ctx: Ctx, member: MemberRow) {
+  const access = await syncAccess(ctx.db, member.user_id);
+  if (access === 'revoked' || access === 'granted') await ctx.audit('member.access_repaired', member.id, { access });
+  return accessSyncFlag(access);
+}
 
 /** Columns HR edits; `email` and `full_name` only matter before the person joins. */
 async function applyEdit(ctx: Ctx, member: MemberRow, input: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -60,16 +83,22 @@ export const memberRoutes: Route[] = [
       }
       const departments = check<{ id: string; name: string }[]>(await ctx.db.from('company_departments').select('id,name').eq('org_id', org.id).order('name'));
       let invites: InviteRow[] = [];
-      if (hr) invites = await fetchAll<InviteRow>(() => ctx.db.from('company_invites').select(INVITE_COLUMNS).eq('org_id', org.id).is('revoked_at', null).order('created_at', { ascending: false }).order('id'));
+      if (hr) invites = await fetchAll<InviteRow>(() => ctx.db.from('company_invites').select(INVITE_COLUMNS).eq('org_id', org.id).order('created_at', { ascending: false }).order('id'));
       const now = ctx.now();
-      const personal = new Map(invites.filter((invite) => invite.kind === 'personal' && invite.member_id).map((invite) => [invite.member_id!, invite]));
+      // Each invited person's open link, or else their latest one: a withdrawn link can be renewed.
+      const personal = new Map<string, InviteRow>();
+      for (const invite of invites) {
+        if (invite.kind !== 'personal' || !invite.member_id) continue;
+        const held = personal.get(invite.member_id);
+        if (!held || (held.revoked_at && !invite.revoked_at)) personal.set(invite.member_id, invite);
+      }
       return {
         members: members.map((row) => {
           const invite = row.status === 'invited' ? personal.get(row.id) : undefined;
           return { ...row, invite: invite ? { id: invite.id, expires_at: invite.expires_at, state: inviteState(invite, now) } : null };
         }),
         departments,
-        links: invites.filter((invite) => invite.kind === 'link').map((invite) => ({ ...invite, state: inviteState(invite, now) })),
+        links: invites.filter((invite) => invite.kind === 'link' && !invite.revoked_at).map((invite) => ({ ...invite, state: inviteState(invite, now) })),
         usage: hr ? await usage(ctx.db, org) : null,
         status: org.status,
         scope: hr ? 'all' : 'department',
@@ -131,14 +160,20 @@ export const memberRoutes: Route[] = [
       const org = ctx.org!, input = obj(body);
       const member = await loadMember(ctx, org.id, params.member);
       if (member.status === 'removed') throw new CompanyError('member_removed', 'This person was removed from the workspace.', 409);
+      // The form says what it showed: someone may have joined through their link since the page loaded.
+      if (input.if_status !== undefined && input.if_status !== member.status) throw personChanged();
       const patch = await applyEdit(ctx, member, input);
       if (!Object.keys(patch).length) return { member };
-      let updated: MemberRow;
+      // Before the row changes, so the old link never sees the new role or address.
+      const linksEnded = endsLink(member, patch) ? await revokeMemberInvites(ctx, member.id) : 0;
+      let updated: MemberRow | null;
       try {
-        updated = checkUnique<MemberRow>(await ctx.db.from('company_members').update(patch).eq('id', member.id).select(MEMBER_COLUMNS).single(), memberExists);
+        // Only the row as it was read: a join landing in between must not inherit this edit.
+        updated = checkUnique<MemberRow | null>(await ctx.db.from('company_members').update(patch).eq('id', member.id).eq('status', member.status).select(MEMBER_COLUMNS).maybeSingle(), memberExists);
       } catch (cause) {
         guardError(cause);
       }
+      if (!updated!) throw personChanged();
       // A demotion raced with another one: put it back rather than leave no owner.
       if (patch.role && member.role === 'owner' && member.status === 'active' && !(await assertOwnerStill(ctx, member))) {
         check(await ctx.db.from('company_members').update({ role: 'owner' }).eq('id', member.id));
@@ -149,8 +184,9 @@ export const memberRoutes: Route[] = [
         check(await ctx.db.from('company_invites').update({ role: inviteRoleFor(updated!.role) }).eq('member_id', member.id).is('revoked_at', null));
       }
       const changes = Object.fromEntries(Object.keys(patch).map((key) => [key, { from: (member as unknown as Record<string, unknown>)[key] ?? null, to: patch[key] }]));
-      await ctx.audit('member.updated', member.id, changes);
-      return { member: updated! };
+      await ctx.audit('member.updated', member.id, { ...changes, ...(linksEnded ? { link_revoked: true } : {}) });
+      // The caller makes a new link with the renew route, as owner or staff when the row is an owner's.
+      return { member: updated!, ...(linksEnded ? { link_revoked: true } : {}) };
     },
   },
   {
@@ -161,7 +197,10 @@ export const memberRoutes: Route[] = [
       if (typeof input.seat !== 'boolean') throw new CompanyError('invalid_field', 'seat must be true or false.', 400, { field: 'seat' });
       const member = await loadMember(ctx, org.id, params.member);
       if (member.status === 'removed') throw new CompanyError('member_removed', 'This person was removed from the workspace.', 409);
-      if (member.seat === input.seat) return { member, usage: await usage(ctx.db, org) };
+      if (member.seat === input.seat) {
+        const flag = await repairAccess(ctx, member);
+        return { member, usage: await usage(ctx.db, org), ...flag };
+      }
       if (input.seat) {
         if (org.status !== 'active') throw new CompanyError('seats_inactive', 'Learning seats are available once Schood activates your agreement.', 409, { status: org.status });
         // The handler already stops HR once the contract has ended, so only Schood staff get here.
@@ -176,7 +215,7 @@ export const memberRoutes: Route[] = [
       }
       const access = await syncAccess(ctx.db, member.user_id);
       await ctx.audit(input.seat ? 'member.seat_on' : 'member.seat_off', member.id, { access });
-      return { member: updated, usage: await usage(ctx.db, org) };
+      return { member: updated, usage: await usage(ctx.db, org), ...accessSyncFlag(access) };
     },
   },
   {
@@ -185,7 +224,7 @@ export const memberRoutes: Route[] = [
     async handle(ctx, params) {
       const org = ctx.org!;
       const member = await loadMember(ctx, org.id, params.member);
-      if (member.status === 'removed') return { member };
+      if (member.status === 'removed') return { member, ...await repairAccess(ctx, member) };
       if (member.role === 'owner' && !actsAsOwner(ctx)) throw new CompanyError('owner_protected', 'Only an owner can remove an owner.', 403);
       await assertOwnerRemains(ctx.db, org.id, member);
       let updated: MemberRow;
@@ -197,7 +236,7 @@ export const memberRoutes: Route[] = [
       await revokeMemberInvites(ctx, member.id);
       const access = await syncAccess(ctx.db, member.user_id);
       await ctx.audit('member.removed', member.id, { name: member.full_name, email: member.email, access });
-      return { member: updated! };
+      return { member: updated!, ...accessSyncFlag(access) };
     },
   },
   {
@@ -214,7 +253,8 @@ export const memberRoutes: Route[] = [
       }
       const access = await syncAccess(ctx.db, member.user_id);
       await ctx.audit('member.left', member.id, { access });
-      return { left: true };
+      // They are no longer in this workspace, so POST me/access/sync is their retry.
+      return { left: true, ...accessSyncFlag(access) };
     },
   },
 ];

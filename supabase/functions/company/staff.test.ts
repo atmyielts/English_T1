@@ -174,3 +174,22 @@ Deno.test('a fractional audit limit does not reach the database', async () => {
   const { call } = setup();
   assertEquals((await call('GET', 'staff/audit?limit=1.5', { user: STAFF })).status, 200);
 });
+
+Deno.test('a failed access sync after a plan change is reported, and saving nothing retries it', async () => {
+  const { db, orgSyncs, call } = setup();
+  const healthy = db.rpcs.company_sync_org_access;
+  db.rpcs.company_sync_org_access = () => { throw new Error('outage'); };
+  for (const body of [{ status: 'suspended' }, { status: 'closed' }, { contract_ends_at: '2026-01-01' }]) {
+    const saved = await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body });
+    assertEquals([saved.status, saved.body.synced, saved.body.access_sync_failed], [200, null, true], JSON.stringify(body));
+  }
+  assertEquals((db.rows('company_audit').at(-1)!.details as Record<string, unknown>).synced, null);
+  // A retry with no changes while it is still down says so.
+  const still = await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body: {} });
+  assertEquals([still.status, still.body.synced, still.body.access_sync_failed], [200, null, true]);
+  db.rpcs.company_sync_org_access = healthy;
+  orgSyncs.length = 0;
+  const retried = await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body: {} });
+  assertEquals([retried.status, retried.body.synced, retried.body.access_sync_failed, orgSyncs], [200, 2, undefined, [ORG]]);
+  assertEquals(retried.body.usage.seats_limit, 0);
+});

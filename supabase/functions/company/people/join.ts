@@ -2,11 +2,11 @@
 // invitee sees the company before signing in); POST accepts it for the signed-in
 // person, records their consent and syncs their Schood English access.
 // Accepting twice, or as someone already in the workspace, changes nothing.
-import { syncAccess } from '../core.ts';
+import { accessSyncFlag, syncAccess } from '../core.ts';
 import { contractEnded, MEMBER_COLUMNS, ORG_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type OrgRow, type Route } from '../types.ts';
 import { obj, sha256, text } from '../util.ts';
-import { INVITE_COLUMNS, inviteState, revokeMemberInvites, type InviteRow, type InviteState } from './shared.ts';
+import { INVITE_COLUMNS, inviteState, revokeMemberInvites, ROLE_RANK, type InviteRow, type InviteState } from './shared.ts';
 
 const TOKEN = /^[A-Za-z0-9_-]{16,128}$/;
 const CLAIM_TRIES = 5;
@@ -41,10 +41,10 @@ async function context(ctx: Ctx, invite: InviteRow) {
 function stateOf(ctx: Ctx, invite: InviteRow, { org, target, own }: Awaited<ReturnType<typeof context>>): JoinState {
   if (org.status === 'closed') return 'closed';
   if (own?.status === 'active') return 'joined';
-  // A team link from before someone was removed (or left) does not bring them back;
-  // that takes a newer link or a personal invitation. Checked before the claim, so
-  // no use is burned and the preview agrees.
-  if (invite.kind === 'link' && own?.status === 'removed' && own.removed_at && new Date(invite.created_at).getTime() <= new Date(own.removed_at).getTime()) return 'revoked';
+  // A team link whose token is from before someone was removed (or left) does not bring
+  // them back; that takes a link made or renewed since, or a personal invitation. Checked
+  // before the claim, so no use is burned and the preview agrees.
+  if (invite.kind === 'link' && own?.status === 'removed' && own.removed_at && !(Date.parse(invite.token_issued_at) > Date.parse(own.removed_at))) return 'revoked';
   if (invite.kind === 'personal') {
     if (!target || target.status === 'removed') return 'revoked';
     if (target.status === 'active') return 'used_up';
@@ -144,13 +144,17 @@ async function admit(ctx: Ctx, org: OrgRow, invite: InviteRow, target: MemberRow
   const accountEmail = ctx.email?.trim().toLowerCase() || null;
   if (invite.kind === 'personal' && target) {
     if (own) return await bringBack(ctx, own, target, accountEmail, typedName, at);
-    return await changed(ctx.db.from('company_members').update({
+    const email = await firstFreeEmail(ctx, org.id, target.id, accountEmail, target.email);
+    const update = ctx.db.from('company_members').update({
       user_id: ctx.user, status: 'active', joined_at: at, consent_at: target.consent_at ?? at,
-      full_name: target.full_name ?? typedName,
-      email: await firstFreeEmail(ctx, org.id, target.id, accountEmail, target.email),
-    }).eq('id', target.id).eq('status', 'invited'));
+      full_name: target.full_name ?? typedName, email,
+    }).eq('id', target.id).eq('status', 'invited').eq('role', target.role);
+    // HR raising the role or correcting the address stops this link; a join already on its way stops here.
+    return await changed(target.email === null ? update.is('email', null) : update.eq('email', target.email));
   }
   const invited = accountEmail ? check<MemberRow[]>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('email', accountEmail).eq('status', 'invited')) : [];
+  // A team link never gives more than its own role: a higher pending role needs that person's own link.
+  if (invited[0] && ROLE_RANK[invited[0].role] > ROLE_RANK[invite.role]) throw new CompanyError('personal_link_needed', 'Use the personal link HR sent you for this role.', 409);
   // HR already invited this email again: join as that person, keep HR's settings.
   if (own && invited[0]) return await bringBack(ctx, own, { ...invited[0], department_id: invited[0].department_id ?? invite.department_id }, accountEmail, typedName, at);
   if (own) {
@@ -181,18 +185,23 @@ export const joinRoutes: Route[] = [
       const invite = await findInvite(ctx, params.token);
       const found = await context(ctx, invite);
       const { org, target, own } = found;
-      const department_id = target?.department_id ?? invite.department_id;
-      const department = department_id ? check<{ name: string } | null>(await ctx.db.from('company_departments').select('name').eq('id', department_id).maybeSingle()) : null;
       const state = stateOf(ctx, invite, found);
+      // Anyone can hold an old link, and it ends what it could show: a link that cannot be
+      // used says so and names the company, not who it was for.
+      if (state !== 'open' && state !== 'joined') return { state, org: { name: org.name }, signed_in: Boolean(ctx.user) };
+      // Someone already in the workspace sees their own place, whoever this link was made for.
+      const person = state === 'joined' ? own : target;
+      const department_id = person?.department_id ?? (state === 'joined' ? null : invite.department_id);
+      const department = department_id ? check<{ name: string } | null>(await ctx.db.from('company_departments').select('name').eq('id', department_id).maybeSingle()) : null;
       return {
         state,
         kind: invite.kind,
         org: { id: org.id, name: org.name, industry: org.industry, city: org.city },
-        role: target?.role ?? invite.role,
+        role: person?.role ?? invite.role,
         department: department?.name ?? null,
-        job_role: target?.job_role ?? invite.job_role,
-        full_name: target?.full_name ?? null,
-        email_hint: maskEmail(target?.email ?? null),
+        job_role: person?.job_role ?? invite.job_role,
+        full_name: person?.full_name ?? null,
+        email_hint: maskEmail(person?.email ?? null),
         expires_at: invite.expires_at,
         signed_in: Boolean(ctx.user),
         home: state === 'joined' && own ? home(org.id, own.role) : null,
@@ -210,7 +219,8 @@ export const joinRoutes: Route[] = [
       const found = await context(ctx, invite);
       const { org, target, own } = found;
       const state = stateOf(ctx, invite, found);
-      if (state === 'joined') return { state, already: true, org_id: org.id, home: home(org.id, own!.role) };
+      // Nothing to change, but an access sync that failed earlier gets another go.
+      if (state === 'joined') return { state, already: true, org_id: org.id, home: home(org.id, own!.role), ...accessSyncFlag(await syncAccess(ctx.db, ctx.user)) };
       if (state !== 'open') {
         const [code, message, status] = CLOSED[state];
         throw new CompanyError(code, message, status);
@@ -243,7 +253,7 @@ export const joinRoutes: Route[] = [
       // A personal link can be accepted from another address; HR can see that here.
       const invitedEmail = invite.kind === 'personal' && target?.email && target.email !== member.email ? { invited_email: target.email } : {};
       await ctx.audit('member.joined', member.id, { via: invite.kind, invite: invite.id, access, ...invitedEmail });
-      return { state: 'joined', already: false, org_id: org.id, role: member.role, home: home(org.id, member.role) };
+      return { state: 'joined', already: false, org_id: org.id, role: member.role, home: home(org.id, member.role), ...accessSyncFlag(access) };
     },
   },
 ];

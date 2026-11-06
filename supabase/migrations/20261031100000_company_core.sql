@@ -390,14 +390,89 @@ begin
 end;
 $$;
 
+-- Repairs what a failed sync left behind (the routes report such a failure, and this
+-- is the safety net): (1) a live seat grant for someone with no qualifying seat is
+-- revoked; (2) a qualifying seat with no live grant is granted. Everything goes
+-- through company_sync_english_access, one person at a time, at most p_limit people
+-- per pass, so a bad row is counted and skipped and the next run picks up the rest.
+-- Someone with no active tenant cannot be granted anything, so they are left out and
+-- cannot use up the batch.
+create or replace function public.company_reconcile_english_access(p_limit integer default 1000)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_seat_product constant uuid := 'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07';
+  v_limit integer := least(greatest(coalesce(p_limit, 1000), 1), 5000);
+  v_user uuid;
+  v_result text;
+  v_revoked integer := 0;
+  v_granted integer := 0;
+  v_failed integer := 0;
+begin
+  for v_user in
+    select distinct e.user_id from public.entitlements e
+    where e.resource_type = 'product' and e.resource_id = v_seat_product and e.is_active
+      and not exists (
+        select 1 from public.company_members m join public.company_orgs o on o.id = m.org_id
+        where m.user_id = e.user_id and m.status = 'active' and m.seat
+          and o.status = 'active' and (o.contract_ends_at is null or o.contract_ends_at > now()))
+    order by e.user_id limit v_limit
+  loop
+    begin
+      v_result := public.company_sync_english_access(v_user);
+      if v_result = 'revoked' then v_revoked := v_revoked + 1; end if;
+    exception when others then
+      v_failed := v_failed + 1;
+    end;
+  end loop;
+
+  for v_user in
+    select distinct m.user_id from public.company_members m join public.company_orgs o on o.id = m.org_id
+    where m.user_id is not null and m.status = 'active' and m.seat
+      and o.status = 'active' and (o.contract_ends_at is null or o.contract_ends_at > now())
+      and exists (select 1 from public.tenant_memberships t where t.user_id = m.user_id and t.status = 'active')
+      and not exists (
+        select 1 from public.entitlements e
+        where e.user_id = m.user_id and e.resource_type = 'product' and e.resource_id = v_seat_product
+          and e.is_active and (e.ends_at is null or e.ends_at > now()))
+    order by m.user_id limit v_limit
+  loop
+    begin
+      v_result := public.company_sync_english_access(v_user);
+      if v_result in ('granted', 'updated') then v_granted := v_granted + 1; end if;
+    exception when others then
+      v_failed := v_failed + 1;
+    end;
+  end loop;
+  return jsonb_build_object('revoked', v_revoked, 'granted', v_granted, 'failed', v_failed);
+end;
+$$;
+
 revoke all on function public.company_consume_ai(uuid, integer) from public, anon, authenticated;
 revoke all on function public.company_reserve_test(uuid) from public, anon, authenticated;
 revoke all on function public.company_sync_english_access(uuid) from public, anon, authenticated;
 revoke all on function public.company_sync_org_access(uuid) from public, anon, authenticated;
+revoke all on function public.company_reconcile_english_access(integer) from public, anon, authenticated;
 grant execute on function public.company_consume_ai(uuid, integer) to service_role;
 grant execute on function public.company_reserve_test(uuid) to service_role;
 grant execute on function public.company_sync_english_access(uuid) to service_role;
 grant execute on function public.company_sync_org_access(uuid) to service_role;
+grant execute on function public.company_reconcile_english_access(integer) to service_role;
+
+-- Run the repair nightly where pg_cron is installed (03:25 Tashkent = 22:25 UTC).
+do $$
+begin
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    if exists (select 1 from cron.job where jobname = 'company-reconcile-english-access') then
+      perform cron.unschedule('company-reconcile-english-access');
+    end if;
+    perform cron.schedule('company-reconcile-english-access', '25 22 * * *', 'select public.company_reconcile_english_access()');
+  end if;
+end
+$$;
 
 -- When the last active owner's row goes (account closure deletes it by user_id),
 -- the longest-serving active admin takes over, so the workspace keeps someone who
@@ -426,10 +501,78 @@ drop trigger if exists company_members_owner_succession on public.company_member
 create trigger company_members_owner_succession after delete on public.company_members
 for each row execute function public.company_promote_after_owner_left();
 
+-- A member row is only ever hard-deleted by account closure or with its whole workspace
+-- (leaving and removal keep the row). Audit rows about that person keep what happened
+-- but lose the name and contact details, which only the row's id can find.
+create or replace function public.company_scrub_audit_after_member_deleted()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.company_audit
+  set details = details - array['name','full_name','email','owner_email','from','to','candidate_name','candidate_email','phone','invited_email']
+  where target = old.id::text and jsonb_typeof(details) = 'object';
+  return null;
+end;
+$$;
+revoke all on function public.company_scrub_audit_after_member_deleted() from public, anon, authenticated, service_role;
+drop trigger if exists company_members_scrub_audit on public.company_members;
+create trigger company_members_scrub_audit after delete on public.company_members
+for each row execute function public.company_scrub_audit_after_member_deleted();
+
+-- Replaces every string in a jsonb value that holds the address p_pattern matches
+-- (object keys too). Anything else stays as it is, and a scalar or an array at the top
+-- is fine. Nesting deeper than any route writes is replaced whole if it holds the address.
+create or replace function public.company_scrub_jsonb(p_value jsonb, p_pattern text, p_depth integer default 0)
+returns jsonb
+language plpgsql
+immutable
+set search_path = pg_catalog, public
+as $$
+declare
+  v_type text := jsonb_typeof(p_value);
+  v_out jsonb;
+  v_key text;
+  v_item jsonb;
+begin
+  if v_type = 'string' then
+    return case when lower(p_value #>> '{}') ~ p_pattern then to_jsonb('[erased]'::text) else p_value end;
+  end if;
+  if v_type is distinct from 'array' and v_type is distinct from 'object' then
+    return p_value;
+  end if;
+  if p_depth >= 32 then
+    return case when lower(p_value::text) ~ p_pattern then to_jsonb('[erased]'::text) else p_value end;
+  end if;
+  if v_type = 'array' then
+    v_out := '[]'::jsonb;
+    for v_item in select value from jsonb_array_elements(p_value) loop
+      v_out := v_out || jsonb_build_array(public.company_scrub_jsonb(v_item, p_pattern, p_depth + 1));
+    end loop;
+    return v_out;
+  end if;
+  v_out := '{}'::jsonb;
+  for v_key, v_item in select key, value from jsonb_each(p_value) loop
+    v_out := v_out || jsonb_build_object(
+      case when lower(v_key) ~ p_pattern then '[erased]' else v_key end,
+      public.company_scrub_jsonb(v_item, p_pattern, p_depth + 1));
+  end loop;
+  return v_out;
+end;
+$$;
+revoke all on function public.company_scrub_jsonb(jsonb, text, integer) from public, anon, authenticated, service_role;
+
 -- Account closure, after the user_id tables in the registry below are erased: the
 -- person's verified email and name also sit in rows no user_id reaches. Billing
 -- contact, sales leads, audit details, unaccepted invitations and hiring tests they
 -- took as a candidate lose them; scores and the companies' own records stay.
+-- This runs inside the BEFORE UPDATE trigger of the closure itself: the provider writes
+-- the obfuscated email and deleted_at in one UPDATE, and until that trigger returns
+-- auth.users still shows the old row, so the address read here is the real one.
+-- Audit rows are found by a fast substring test, then matched on address boundaries,
+-- so closing ann@corp.test leaves the record of joann@corp.test alone.
 create or replace function public.company_erase_account(p_user uuid)
 returns jsonb
 language plpgsql
@@ -438,9 +581,11 @@ set search_path = pg_catalog, public
 as $$
 declare
   v_email text;
+  v_pattern text;
   v_billing integer := 0;
   v_leads integer := 0;
   v_audit integer := 0;
+  v_details integer := 0;
   v_invited integer := 0;
   v_candidate integer := 0;
 begin
@@ -452,17 +597,32 @@ begin
   end if;
   update public.company_orgs set billing_email = null where lower(billing_email) = v_email;
   get diagnostics v_billing = row_count;
-  update public.company_leads set name = '-', email = null, phone = null, need = null, notes = null where lower(email) = v_email;
+  update public.company_leads set name = '-', email = null, phone = null, need = null, notes = null, job_title = null where lower(email) = v_email;
   get diagnostics v_leads = row_count;
-  update public.company_audit
-  set details = details - array['name','full_name','email','owner_email','from','to','candidate_name','candidate_email','phone']
-  where strpos(lower(details::text), v_email) > 0;
+  v_pattern := '(?<![a-z0-9._%+-])' || regexp_replace(v_email, '([^[:alnum:]])', '\\\1', 'g') || '(?![a-z0-9_%+-]|[.-][a-z0-9])';
+  with hit as (
+    select id, details as before, public.company_scrub_jsonb(details, v_pattern) as clean
+    from public.company_audit
+    where strpos(lower(details::text), v_email) > 0
+  )
+  update public.company_audit a
+  set details = case when jsonb_typeof(hit.clean) = 'object'
+    then hit.clean - array['name','full_name','email','owner_email','from','to','candidate_name','candidate_email','phone']
+    else hit.clean end
+  from hit
+  where a.id = hit.id and hit.clean is distinct from hit.before;
+  get diagnostics v_details = row_count;
+  -- Staff notes on other leads may quote the address; the note stays, the address goes.
+  update public.company_leads
+  set notes = regexp_replace(lower(notes), v_pattern, '[erased]', 'g'), need = regexp_replace(lower(need), v_pattern, '[erased]', 'g')
+  where strpos(lower(coalesce(notes, '') || ' ' || coalesce(need, '')), v_email) > 0
+    and (lower(coalesce(notes, '')) ~ v_pattern or lower(coalesce(need, '')) ~ v_pattern);
   delete from public.company_members where lower(email) = v_email and user_id is null and status <> 'active';
   get diagnostics v_invited = row_count;
   update public.company_attempts set candidate_name = null, candidate_email = null, candidate_phone = null, notes = null
   where lower(candidate_email) = v_email;
   get diagnostics v_candidate = row_count;
-  return jsonb_build_object('billing', v_billing, 'leads', v_leads, 'audit_rows', v_audit, 'invited', v_invited, 'candidate_attempts', v_candidate);
+  return jsonb_build_object('billing', v_billing, 'leads', v_leads, 'audit_rows', v_audit, 'audit_details', v_details, 'invited', v_invited, 'candidate_attempts', v_candidate);
 end;
 $$;
 revoke all on function public.company_erase_account(uuid) from public, anon, authenticated, service_role;

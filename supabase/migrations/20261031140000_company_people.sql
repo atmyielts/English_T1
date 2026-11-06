@@ -4,6 +4,8 @@
 --   * a guard so an update never leaves a workspace without an active owner
 --     (the people routes check it too; this closes the race between two tabs);
 --   * the fields the landing demo form and the staff leads pipeline use;
+--   * when an invitation's current token was issued (renewing a team link replaces
+--     the token and keeps created_at, which lists and the audit trail use);
 --   * indexes for the per-address daily limit on demo requests, lead timelines
 --     (kept in company_audit) and personal invitations.
 -- Seat limits are enforced by the people routes (count, write, re-count and roll
@@ -13,6 +15,7 @@
 alter table public.company_leads add column if not exists job_title text;
 alter table public.company_leads add column if not exists interests text[] not null default '{}'::text[];
 alter table public.company_leads add column if not exists follow_up_at date;
+alter table public.company_invites add column if not exists token_issued_at timestamptz not null default now();
 do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'company_leads_job_title_check') then

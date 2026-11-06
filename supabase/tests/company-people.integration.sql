@@ -108,4 +108,15 @@ begin
   assert (select count(*) from pg_trigger where tgname = 'company_members_owner_guard') = 1, 'owner guard once';
 end
 $$;
+do $$
+declare
+  org uuid;
+  invite uuid;
+begin
+  insert into public.company_orgs(name) values ('Issued') returning id into org;
+  insert into public.company_invites(org_id, kind, token_hash, expires_at, created_at) values (org, 'link', 'issued-hash', now() + interval '1 day', now() - interval '9 days') returning id into invite;
+  assert (select token_issued_at >= now() - interval '1 minute' and created_at < now() - interval '8 days' from public.company_invites where id = invite), 'token_issued_at defaults to now, created_at stays';
+  assert (select is_nullable = 'NO' from information_schema.columns where table_name = 'company_invites' and column_name = 'token_issued_at'), 'token_issued_at always set';
+end
+$$;
 select 'company people: ok';

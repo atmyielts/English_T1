@@ -6,7 +6,7 @@ import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate } from '../../router.tsx';
 import { useSession, useWorkspace } from '../../session.tsx';
 import type { SettingsData } from './types.ts';
-import { Meter, useDates, useProblem } from './ui.tsx';
+import { AccessSyncIssue, Meter, useDates, useProblem } from './ui.tsx';
 
 export function SettingsPage() {
   const t = useAppT(), problem = useProblem(), { day } = useDates();
@@ -16,6 +16,7 @@ export function SettingsPage() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [leaving, setLeaving] = useState(false);
+  const [leftUnsynced, setLeftUnsynced] = useState(false);
   const load = useCallback(async () => {
     try {
       const next = await api<SettingsData>(`orgs/${workspace.org.id}/settings`);
@@ -47,12 +48,17 @@ export function SettingsPage() {
       setBusy(false);
     }
   }
+  async function afterLeaving() {
+    await session.refresh();
+    navigate('/w');
+  }
   async function leave() {
     setBusy(true); setError('');
     try {
-      await api(`orgs/${org.id}/people/me/leave`, { method: 'POST' });
-      await session.refresh();
-      navigate('/w');
+      const result = await api<{ access_sync_failed?: boolean }>(`orgs/${org.id}/people/me/leave`, { method: 'POST' });
+      // Stay here to report a failed access sync: refreshing the session would close this page.
+      if (result.access_sync_failed) setLeftUnsynced(true);
+      else await afterLeaving();
     } catch (cause) {
       setError(problem(cause));
       setLeaving(false);
@@ -124,7 +130,9 @@ export function SettingsPage() {
 
       {me && <section aria-labelledby="leave-title" className="people-span-section people-leave">
         <h2 id="leave-title">{t('people.settings.leaveTitle')}</h2>
-        {canLeave ? <>
+        {leftUnsynced ? <AccessSyncIssue message={t('people.accessSync.left', { company: org.name })} retry={() => api<{ access_sync_failed?: boolean }>('me/access/sync', { method: 'POST' })} onFixed={afterLeaving}>
+          <button type="button" className="quiet" onClick={() => void afterLeaving()}>{t('people.accessSync.continue')}</button>
+        </AccessSyncIssue> : canLeave ? <>
           <p className="hint">{t('people.settings.leaveLead', { company: org.name })}</p>
           {leaving ? <div className="company-actions">
             <button type="button" className="people-danger-solid" disabled={busy} onClick={() => void leave()}>{t('people.settings.leaveConfirm')}</button>

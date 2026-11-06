@@ -53,7 +53,7 @@ export const staffUz: Record<StaffKey, string> = {
   'staff.leads.source.company_seats': 'Kabinetdan o‘rin so‘rovi',
   'staff.plan.save': 'Tarifni saqlash',
   'staff.plan.saved': 'Tarif saqlandi. Kirish qayta hisoblandi: {count}.',
-  'staff.plan.savedNoSync': 'Tarif saqlandi, lekin kirishni qayta hisoblab bo‘lmadi. Yana saqlang.',
+  'staff.plan.savedNoSync': 'Tarif saqlandi, lekin bu kabinet uchun Schood English’ga kirishni yangilab bo‘lmadi: yangilanmaguncha odamlarda kirish qolishi yoki bo‘lmasligi mumkin. Yana urinib ko‘ring. Schood buni har kecha ham tekshiradi.',
   'staff.audit.title': 'Amallar jurnali',
   'staff.audit.lead': 'Kabinetlar bo‘yicha HR va Schood qilgan barcha o‘zgarishlar, avval yangilari.',
   'staff.audit.filter': 'O‘zgarish turi',

@@ -107,7 +107,7 @@ export const inviteRoutes: Route[] = [
       if (invite.revoked_at) throw new CompanyError('invite_closed', 'This link was revoked. Create a new one.', 409);
       const days = int(input.expires_days, 'expires_days', { min: 1, max: 90, optional: true }) ?? 14;
       const raw = token();
-      const updated = check<InviteRow>(await ctx.db.from('company_invites').update({ token_hash: await sha256(raw), expires_at: new Date(now.getTime() + days * DAY).toISOString() }).eq('id', invite.id).select(INVITE_COLUMNS).single());
+      const updated = check<InviteRow>(await ctx.db.from('company_invites').update({ token_hash: await sha256(raw), expires_at: new Date(now.getTime() + days * DAY).toISOString(), token_issued_at: now.toISOString() }).eq('id', invite.id).select(INVITE_COLUMNS).single());
       await ctx.audit('invite.renewed', invite.id, { kind: 'link', days });
       return { invite: { ...updated, state: inviteState(updated, now) }, link: joinLink(ctx, raw) };
     },

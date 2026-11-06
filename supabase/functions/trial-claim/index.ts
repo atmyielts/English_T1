@@ -1,6 +1,6 @@
 ﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { isExamBundleProductId } from "../_shared/product-bundles.ts";
+import { withoutBundleTrial, withoutHiddenProductTrial } from "../_shared/trial-eligibility.ts";
 
 type JsonObject = Record<string, unknown>;
 
@@ -165,9 +165,6 @@ const loadContext = async (
   return { userId, tenantId, settings: settings as PlatformSettings };
 };
 
-const withoutBundleTrial = <T extends { trial_enabled: boolean }>(config: T, productId: string): T =>
-  isExamBundleProductId(productId) ? { ...config, trial_enabled: false } : config;
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "GET" && req.method !== "POST") return json(405, { error: "Method not allowed" });
@@ -196,17 +193,19 @@ serve(async (req) => {
       if ("status" in ctx) return json(ctx.status, { error: ctx.error, code: "auth_failed", details: (ctx as any).details ?? null });
 
       const { userId, tenantId, settings } = ctx;
-      // Bundles are a purchase-only discount; trials stay on the individual products.
-      const effective = withoutBundleTrial(resolveEffectiveTrialConfig(settings, productId), productId);
 
       const { data: product, error: productErr } = await sb
         .from("products")
-        .select("id,name,status")
+        .select("id,name,status,metadata")
         .eq("id", productId)
         .eq("status", "active")
         .maybeSingle();
       if (productErr) return json(500, { error: "Failed to load product", details: productErr });
       if (!product) return json(404, { error: "Product not found" });
+
+      // Bundles are a purchase-only discount; trials stay on the individual products.
+      // Hidden products are not on offer at all, whatever a per-product override says.
+      const effective = withoutHiddenProductTrial(withoutBundleTrial(resolveEffectiveTrialConfig(settings, productId), productId), product);
 
       const { data: claim, error: claimErr } = await sb
         .from("trial_claims")
@@ -273,12 +272,13 @@ serve(async (req) => {
 
     const { data: product, error: productErr } = await sb
       .from("products")
-      .select("id,name,status")
+      .select("id,name,status,metadata")
       .eq("id", productId)
       .eq("status", "active")
       .maybeSingle();
     if (productErr) return json(500, { error: "Failed to load product", details: productErr });
     if (!product) return json(404, { error: "Product not found" });
+    if (!withoutHiddenProductTrial(effective, product).trial_enabled) return json(409, { error: "Trial is disabled" });
 
     const { data: existingEnt, error: existingEntErr } = await sb
       .from("entitlements")
