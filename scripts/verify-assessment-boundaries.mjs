@@ -4,7 +4,7 @@ import path from 'node:path';
 import ts from 'typescript';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const services = ['assessment-cloud', 'exam', 'proctor', 'admission'];
+const services = ['assessment-cloud', 'exam', 'proctor', 'admission', 'company'];
 const protectedApps = ['platform', 'academy'];
 const violations = [];
 const normalize = value => value.replaceAll('\\', '/');

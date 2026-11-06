@@ -147,7 +147,7 @@ const TelegramLinkCard: React.FC<{ acquisitionSessionId?: string | null }> = ({ 
   );
 };
 import { getMe, type MeResponse } from '../lib/platformClient';
-import { filterVisibleProducts, productSlug } from '../lib/productVisibility';
+import { filterVisibleProducts, heldProducts, isArchivedProduct, isCompanySeat, productSlug } from '../lib/productVisibility';
 import { isExternalUrl, sanitizeReturnTo } from '../lib/returnTo';
 import { SiteHeader, type SiteHeaderAction, type SiteHeaderNavItem } from '../components/layout/SiteHeader';
 import { useI18n } from '../i18n';
@@ -214,23 +214,10 @@ export const AccountPage: React.FC = () => {
     return fallback;
   }, [t]);
 
-  const productMap = useMemo(() => {
-    const map = new Map<string, ProductRow>();
-    for (const p of products) map.set(p.id, p);
-    return map;
-  }, [products]);
-
-  const productEntitlements = useMemo(() => {
-    return (entitlements ?? [])
-      .filter((e) => e.resource_type === 'product' && e.resource_id)
-      .map((e) => ({ entitlement: e, product: e.resource_id ? productMap.get(e.resource_id) ?? null : null }));
-  }, [entitlements, productMap]);
-
-  const visibleProductEntitlements = useMemo(() => {
-    return productEntitlements.filter(
-      (item): item is { entitlement: MeResponse['entitlements'][number]; product: ProductRow } => !!item.product,
-    );
-  }, [productEntitlements]);
+  // What someone already holds is named even when the product is not for sale (a company seat).
+  // The filter is for the list of things to browse.
+  const browseProducts = useMemo(() => filterVisibleProducts(products), [products]);
+  const visibleProductEntitlements = useMemo(() => heldProducts(entitlements ?? [], products), [entitlements, products]);
 
   useEffect(() => {
     const run = async () => {
@@ -265,7 +252,7 @@ export const AccountPage: React.FC = () => {
         setRole(String(me.user.role ?? 'user'));
         setTenantName(me.current_tenant?.name ?? null);
         setEntitlements(me.entitlements ?? []);
-        setProducts(filterVisibleProducts((productsRes.data ?? []) as ProductRow[]));
+        setProducts((productsRes.data ?? []) as ProductRow[]);
 
         const profile = (profileRes.data ?? null) as ProfileRow | null;
         const um = (data.session?.user?.user_metadata ?? {}) as Record<string, unknown>;
@@ -499,23 +486,27 @@ export const AccountPage: React.FC = () => {
                                 ? t('account.access.activeUntil', { date: fmt(entitlement.ends_at) || t('common.na') })
                                 : t('account.access.activeNoExpiry')}
                             </div>
+                            {isCompanySeat(product) ? <div className="text-sm text-gray-600 mt-1">{t('account.access.fromCompany')}</div> : null}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => goPricing(product)}
-                            className="px-4 py-2 rounded-full border border-gray-900 text-sm font-semibold"
-                          >
-                            {t('account.access.managePlan')}
-                          </button>
+                          {/* Pricing has nothing for a product that is not on sale. */}
+                          {isArchivedProduct(product) ? null : (
+                            <button
+                              type="button"
+                              onClick={() => goPricing(product)}
+                              className="px-4 py-2 rounded-full border border-gray-900 text-sm font-semibold"
+                            >
+                              {t('account.access.managePlan')}
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : null}
 
-                {visibleProductEntitlements.length === 0 && products.length > 0 ? (
+                {visibleProductEntitlements.length === 0 && browseProducts.length > 0 ? (
                   <div className="mt-4 space-y-3">
-                    {products.map((product) => (
+                    {browseProducts.map((product) => (
                       <div key={product.id} className="rounded-2xl border border-gray-900/15 bg-white p-4">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div>

@@ -1,0 +1,86 @@
+// Original Schood workplace grammar items (A1–C2), one gap each, answer keys server-side only.
+import type { ChoiceItem } from './types.ts';
+
+export const GRAMMAR: ChoiceItem[] = [
+  // A1: to be, present simple, there is/are, articles, plurals, can, prepositions, possessives
+  { id: 'g-a1-01', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'Dilnoza ___ the new receptionist at the hotel.', options: ['is', 'are', 'am', 'be'], answer: 0 },
+  { id: 'g-a1-02', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'Our office ___ at nine o\'clock every morning.', options: ['open', 'opens', 'opening', 'to open'], answer: 1 },
+  { id: 'g-a1-03', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'There ___ two printers on the second floor.', options: ['is', 'be', 'are', 'has'], answer: 2 },
+  { id: 'g-a1-04', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'Rustam is ___ engineer at a factory in Navoi.', options: ['a', 'some', 'an', 'any'], answer: 2 },
+  { id: 'g-a1-05', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'I ___ speak English and Russian, but not Chinese.', options: ['cans', 'can to', 'am can', 'can'], answer: 3 },
+  { id: 'g-a1-06', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'The team meeting is ___ Monday at 10 a.m.', options: ['in', 'at', 'on', 'to'], answer: 2 },
+  { id: 'g-a1-07', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'Please put the invoices ___ the top drawer of my desk.', options: ['at', 'in', 'of', 'for'], answer: 1 },
+  { id: 'g-a1-08', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'This is Malika. ___ office is next to the kitchen.', options: ['She', 'Him', 'Hers', 'Her'], answer: 3 },
+  { id: 'g-a1-09', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'We have three new ___ in the sales team this month.', options: ['employees', 'employee', 'employee\'s', 'an employee'], answer: 0 },
+  { id: 'g-a1-10', skill: 'grammar', level: 'a1', job_role: 'general', prompt: 'What time ___ the shop close on Saturdays?', options: ['do', 'is', 'are', 'does'], answer: 3 },
+
+  // A2: past simple, present continuous, comparatives, going to, countable/uncountable, some/any, have to, frequency
+  { id: 'g-a2-01', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Jasur ___ the client in Bukhara last Tuesday.', options: ['visit', 'visits', 'visited', 'has visited'], answer: 2 },
+  { id: 'g-a2-02', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Sorry, Aziza can\'t come to the phone. She ___ a presentation right now.', options: ['gives', 'gave', 'give', 'is giving'], answer: 3 },
+  { id: 'g-a2-03', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'The new laptop is ___ than the old one, so I finish my reports sooner.', options: ['faster', 'more fast', 'fast', 'fastest'], answer: 0 },
+  { id: 'g-a2-04', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Of all our branches, the Tashkent branch had ___ sales last year.', options: ['the higher', 'the highest', 'the most high', 'more high'], answer: 1 },
+  { id: 'g-a2-05', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'We ___ hire two new drivers next month. The decision is already made.', options: ['going to', 'will to', 'are going to', 'are go'], answer: 2 },
+  { id: 'g-a2-06', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Could you give me some ___ about the new delivery schedule?', options: ['informations', 'an information', 'information', 'many information'], answer: 2 },
+  { id: 'g-a2-07', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'There isn\'t ___ paper in the printer. Can you add some?', options: ['some', 'any', 'no', 'many'], answer: 1 },
+  { id: 'g-a2-08', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'All employees ___ wear an ID badge in the building.', options: ['has to', 'must to', 'having to', 'have to'], answer: 3 },
+  { id: 'g-a2-09', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Malika ___ to the office by bus, but today she took a taxi.', options: ['goes usually', 'usually goes', 'usually go', 'go usually'], answer: 1 },
+  { id: 'g-a2-10', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'How ___ boxes did the supplier deliver this morning?', options: ['much', 'lot', 'any', 'many'], answer: 3 },
+  { id: 'g-a2-11', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Did you ___ the email to the supplier yesterday?', options: ['sent', 'sends', 'send', 'sending'], answer: 2 },
+  { id: 'g-a2-12', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'This month\'s sales are not as good ___ last month\'s.', options: ['than', 'like', 'that', 'as'], answer: 3 },
+  { id: 'g-a2-13', skill: 'grammar', level: 'a2', job_role: 'general', prompt: 'Jasur always speaks to customers very ___.', options: ['politely', 'polite', 'politeness', 'more polite'], answer: 0 },
+
+  // B1: present perfect vs past simple, conditionals 1/2, passive, relatives, gerund/infinitive, used to, reported speech, modals
+  { id: 'g-b1-01', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'I ___ in this bank since 2019.', options: ['work', 'worked', 'have worked', 'am working'], answer: 2 },
+  { id: 'g-b1-02', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'We ___ the contract with our Turkish partner last week.', options: ['have signed', 'signed', 'sign', 'had sign'], answer: 1 },
+  { id: 'g-b1-03', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'If the shipment arrives today, I ___ you immediately.', options: ['would call', 'called', 'calling', 'will call'], answer: 3 },
+  { id: 'g-b1-04', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'If I ___ the manager, I would give everyone a longer lunch break.', options: ['were', 'am', 'will be', 'would be'], answer: 0 },
+  { id: 'g-b1-05', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'All online orders ___ within 24 hours of payment.', options: ['process', 'are processing', 'are processed', 'processes'], answer: 2 },
+  { id: 'g-b1-06', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'The new accounting software ___ by our IT team last month.', options: ['installed', 'was installed', 'has installed', 'is installing'], answer: 1 },
+  { id: 'g-b1-07', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'The customer ___ complained yesterday has called again.', options: ['which', 'whose', 'who', 'what'], answer: 2 },
+  { id: 'g-b1-08', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'Would you mind ___ the door for the delivery driver?', options: ['open', 'to open', 'opened', 'opening'], answer: 3 },
+  { id: 'g-b1-09', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'We decided ___ a new supplier because of the repeated delays.', options: ['to find', 'finding', 'find', 'found'], answer: 0 },
+  { id: 'g-b1-10', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'Before the new system, we ___ write all the invoices by hand.', options: ['use to', 'used to', 'were used to', 'using to'], answer: 1 },
+  { id: 'g-b1-11', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'Aziza said that she ___ the report the next day.', options: ['will send', 'sends', 'has sent', 'would send'], answer: 3 },
+  { id: 'g-b1-12', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'You look very tired after the night shift. You ___ go home and rest.', options: ['must to', 'should', 'ought', 'had'], answer: 1 },
+  { id: 'g-b1-13', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'Visitors ___ smoke anywhere in the hospital building. It is strictly forbidden.', options: ['don\'t have to', 'needn\'t', 'mustn\'t', 'haven\'t to'], answer: 2 },
+  { id: 'g-b1-14', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'This is the hotel ___ we held our annual conference.', options: ['where', 'which', 'who', 'what'], answer: 0 },
+  { id: 'g-b1-15', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'Have you ___ the new price list to the sales team yet?', options: ['send', 'sended', 'sending', 'sent'], answer: 3 },
+  { id: 'g-b1-16', skill: 'grammar', level: 'b1', job_role: 'general', prompt: 'I\'m looking forward ___ you at the conference in Tashkent.', options: ['to meet', 'to meeting', 'meeting', 'meet'], answer: 1 },
+
+  // B2: third conditional, past perfect, modal passive, reported questions, wish, causative, future continuous/perfect, linkers
+  { id: 'g-b2-01', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'If we ___ the order earlier, the goods would have arrived on time.', options: ['placed', 'have placed', 'had placed', 'would place'], answer: 2 },
+  { id: 'g-b2-02', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'By the time the auditors arrived, the accountant ___ all the documents.', options: ['prepared', 'has prepared', 'is preparing', 'had prepared'], answer: 3 },
+  { id: 'g-b2-03', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'All customer complaints ___ within three working days.', options: ['must answer', 'must be answered', 'must answered', 'must be answering'], answer: 1 },
+  { id: 'g-b2-04', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'The client asked me when ___.', options: ['the delivery would arrive', 'would the delivery arrive', 'will the delivery arrive', 'did the delivery arrive'], answer: 0 },
+  { id: 'g-b2-05', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'I wish I ___ more time to prepare for tomorrow\'s presentation.', options: ['have', 'will have', 'would have', 'had'], answer: 3 },
+  { id: 'g-b2-06', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'We are having the air conditioning ___ before the summer.', options: ['repair', 'repaired', 'to repair', 'repairing'], answer: 1 },
+  { id: 'g-b2-07', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'Don\'t call Malika at 3 p.m. She ___ the board meeting then.', options: ['will have attended', 'attended', 'will be attending', 'has attended'], answer: 2 },
+  { id: 'g-b2-08', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'By the end of December, we ___ over 10,000 orders this year.', options: ['will have processed', 'will process', 'are processing', 'processed'], answer: 0 },
+  { id: 'g-b2-09', skill: 'grammar', level: 'b2', job_role: 'general', prompt: '___ the heavy snow, all the trucks arrived in Tashkent on time.', options: ['Although', 'However', 'Even', 'Despite'], answer: 3 },
+  { id: 'g-b2-10', skill: 'grammar', level: 'b2', job_role: 'general', prompt: '___ the hotel was fully booked, the manager found a room for the VIP guest.', options: ['Despite', 'In spite', 'Although', 'However'], answer: 2 },
+  { id: 'g-b2-11', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'Rustam ___ for the company for ten years when he was promoted to director.', options: ['has worked', 'had been working', 'is working', 'works'], answer: 1 },
+  { id: 'g-b2-12', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'The report ___ by the time the meeting starts tomorrow.', options: ['will finish', 'will have been finished', 'has been finished', 'is finishing'], answer: 1 },
+  { id: 'g-b2-13', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'We won\'t ship the goods ___ the customer pays in advance.', options: ['if', 'without', 'except', 'unless'], answer: 3 },
+  { id: 'g-b2-14', skill: 'grammar', level: 'b2', job_role: 'general', prompt: 'Excuse me, could you tell me where ___?', options: ['the meeting room is', 'is the meeting room', 'the meeting room it is', 'is located the meeting room'], answer: 0 },
+
+  // C1: inversion, clefts, past deduction, participle clauses, subjunctive, mixed conditionals, nominalisation, hedging
+  { id: 'g-c1-01', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'Not only ___ the deadline, but they also went over budget.', options: ['they missed', 'did they miss', 'they did miss', 'missed they'], answer: 1 },
+  { id: 'g-c1-02', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'Under no circumstances ___ customer passwords be shared over the phone.', options: ['should', 'do', 'are', 'have'], answer: 0 },
+  { id: 'g-c1-03', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'It was the delay at customs ___ caused us to lose the client.', options: ['what', 'where', 'that', 'who'], answer: 2 },
+  { id: 'g-c1-04', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'The courier ___ the address down wrongly; the parcel went to Chirchiq instead of Chilanzar.', options: ['must write', 'can have written', 'should write', 'must have written'], answer: 3 },
+  { id: 'g-c1-05', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'Jasur can\'t ___ my email last night; he would have replied by now.', options: ['have read', 'read', 'had read', 'having read'], answer: 0 },
+  { id: 'g-c1-06', skill: 'grammar', level: 'c1', job_role: 'general', prompt: '___ the figures twice, the auditor signed the report.', options: ['Checked', 'Having checked', 'Having been checked', 'Being checked'], answer: 1 },
+  { id: 'g-c1-07', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'The board recommends that every branch ___ its security procedures by June.', options: ['reviewed', 'will review', 'review', 'reviewing'], answer: 2 },
+  { id: 'g-c1-08', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'If Dilnoza had accepted the job offer from Almaty, she ___ in Kazakhstan now.', options: ['would have lived', 'had lived', 'will live', 'would be living'], answer: 3 },
+  { id: 'g-c1-09', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'The ___ to postpone the merger surprised many investors.', options: ['decide', 'decision', 'decided', 'deciding'], answer: 1 },
+  { id: 'g-c1-10', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'The latest figures ___ to suggest that demand is slowing in the region.', options: ['are seeming', 'would seemed', 'seems', 'would seem'], answer: 3 },
+  { id: 'g-c1-11', skill: 'grammar', level: 'c1', job_role: 'general', prompt: '___ in 1998, the bank now has branches in every region of Uzbekistan.', options: ['Founded', 'Founding', 'Having founded', 'To found'], answer: 0 },
+  { id: 'g-c1-12', skill: 'grammar', level: 'c1', job_role: 'general', prompt: 'Were it not ___ the IT team\'s quick response, we would be dealing with a major data loss now.', options: ['by', 'of', 'for', 'with'], answer: 2 },
+
+  // C2: subtle inversion, fronting, rare formal structures
+  { id: 'g-c2-01', skill: 'grammar', level: 'c2', job_role: 'general', prompt: 'Such ___ the demand for the new savings account that the bank had to hire extra staff.', options: ['were', 'did', 'was', 'had'], answer: 2 },
+  { id: 'g-c2-02', skill: 'grammar', level: 'c2', job_role: 'general', prompt: 'Only after the contract had been signed ___ the hidden costs.', options: ['we discovered', 'we did discover', 'had discovered we', 'did we discover'], answer: 3 },
+  { id: 'g-c2-03', skill: 'grammar', level: 'c2', job_role: 'general', prompt: 'Try ___ we might, we could not persuade the supplier to lower the price.', options: ['so', 'as', 'even', 'despite'], answer: 1 },
+  { id: 'g-c2-04', skill: 'grammar', level: 'c2', job_role: 'general', prompt: 'The proposal, ___ merits notwithstanding, was rejected by the committee.', options: ['its', 'whose', 'it\'s', 'their'], answer: 0 },
+  { id: 'g-c2-05', skill: 'grammar', level: 'c2', job_role: 'general', prompt: 'Rarely ___ a negotiation with a new partner conclude so smoothly.', options: ['has', 'have', 'is', 'does'], answer: 3 },
+];

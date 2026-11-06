@@ -346,6 +346,7 @@ export const en = {
   'account.access.activeUntil': 'Active until {date}',
   'account.access.activeNoExpiry': 'Active (no expiry set)',
   'account.access.managePlan': 'Manage plan',
+  'account.access.fromCompany': 'Provided by your company.',
   'account.access.exploreService': 'Explore plans for this service.',
   'account.access.viewPlans': 'View plans',
   'account.notifications.label': 'Notifications',

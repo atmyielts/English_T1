@@ -4,7 +4,7 @@ import { supabase, platformUrl } from '../lib/supabase';
 import { edge, ApiError } from '../lib/api';
 import { buildPlatformHref } from '../lib/navigation';
 import { deletePack } from '../lib/offline/store';
-import { ENGLISH_BUNDLE, SKILLS, isCefr, type CefrLevel, type SkillKey } from '../lib/skills';
+import { ENGLISH_BUNDLE, ENGLISH_COMPANY_SEAT, SKILLS, isCefr, type CefrLevel, type SkillKey } from '../lib/skills';
 
 type Entitlement = {
   resource_type: string;
@@ -83,7 +83,7 @@ const isActive = (entry: Entitlement, now: number): boolean => {
 const unlockedSkills = (entitlements: Entitlement[]): Set<SkillKey> => {
   const now = Date.now();
   const active = entitlements.filter((entry) => entry.resource_type === 'product' && isActive(entry, now));
-  if (active.some((entry) => entry.resource_id === ENGLISH_BUNDLE.productId || entry.resource_id === ENGLISH_BUNDLE.productSlug)) {
+  if (active.some((entry) => [ENGLISH_BUNDLE.productId, ENGLISH_BUNDLE.productSlug, ENGLISH_COMPANY_SEAT.productId, ENGLISH_COMPANY_SEAT.productSlug].includes(String(entry.resource_id) as never))) {
     return new Set(SKILLS.map((skill) => skill.key));
   }
   return new Set(

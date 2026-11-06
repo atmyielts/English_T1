@@ -44,5 +44,17 @@ export const isArchivedProduct = (product: ProductLike): boolean => {
   return isArchivedProductSlug(productSlug(product));
 };
 
+/** Each product someone holds, with its entitlement: from all products, because holding one is not browsing for one. */
+export const heldProducts = <E extends { resource_type: string; resource_id?: string | null }, P extends { id: string }>(entitlements: E[], products: P[]): { entitlement: E; product: P }[] => {
+  const byId = new Map(products.map((product) => [product.id, product]));
+  return entitlements.flatMap((entitlement) => {
+    const product = entitlement.resource_type === 'product' && entitlement.resource_id ? byId.get(entitlement.resource_id) : undefined;
+    return product ? [{ entitlement, product }] : [];
+  });
+};
+
+/** Schood English access provided by an employer through Company English: never sold, shown only to whoever holds it. */
+export const isCompanySeat = (product: ProductLike): boolean => asRecord(product.metadata).kind === 'company_seat';
+
 export const filterVisibleProducts = <T extends ProductLike>(products: T[]): T[] =>
   products.filter((product) => !isArchivedProduct(product));

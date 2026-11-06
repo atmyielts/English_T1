@@ -250,6 +250,11 @@ verify_jwt = false
 [functions.admission]
 verify_jwt = false
 
+# Schood Company English validates user sessions inside its request handler;
+# candidate tests, certificate checks and demo requests are public.
+[functions.company]
+verify_jwt = false
+
 # Schood AI validates user sessions (or the Telegram worker's service secret) inside its request handler.
 [functions.schood-ai]
 verify_jwt = false

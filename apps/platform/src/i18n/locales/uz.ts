@@ -343,6 +343,7 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   'account.access.activeUntil': '{date} gacha faol',
   'account.access.activeNoExpiry': 'Faol (muddatsiz)',
   'account.access.managePlan': 'Tarifni boshqarish',
+  'account.access.fromCompany': 'Kompaniyangiz tomonidan berilgan.',
   'account.access.exploreService': "Bu xizmat uchun tariflarni ko‘ring.",
   'account.access.viewPlans': 'Tariflarni ko‘rish',
   'account.notifications.label': 'Bildirishnomalar',
