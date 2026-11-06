@@ -1,5 +1,8 @@
 // People area text (people, departments, settings, join, onboarding). Keys start with "people.".
+import { peopleOpsEn } from './people.ops.en.ts';
+
 export const peopleEn = {
+  ...peopleOpsEn,
   'people.nav.people': 'People',
   'people.nav.departments': 'Departments',
   'people.nav.settings': 'Settings',

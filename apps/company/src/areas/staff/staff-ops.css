@@ -1,0 +1,33 @@
+/* Revenue, health, leads views and read-only view (ops). Classes start with "staff-". */
+.staff-reasons{list-style:none;margin:0;padding:0;display:grid;gap:.15rem;font-size:.78rem;color:var(--muted)}
+.staff-bars{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
+.staff-bars li{display:grid;grid-template-columns:minmax(90px,170px) minmax(40px,1fr) auto;gap:.6rem;align-items:center;font-size:.85rem}
+.staff-bars strong{white-space:nowrap}
+.staff-bar{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden;display:block}
+.staff-bar span{display:block;height:100%;background:var(--navy);border-radius:inherit}
+@media (max-width:520px){.staff-bars li{grid-template-columns:minmax(0,1fr) auto}.staff-bars .staff-bar{grid-column:1/-1;order:3}}
+.staff-call{display:flex;justify-content:space-between;align-items:center;gap:.75rem 1rem;flex-wrap:wrap;padding:.9rem 1.1rem}
+.staff-call a{color:var(--navy)}
+.staff-call-contact{display:flex;gap:.25rem .9rem;flex-wrap:wrap}
+.staff-call .staff-lead-meta button{min-height:32px;padding:.2rem .7rem;font-size:.78rem}
+.staff-health td{font-size:.82rem}
+.staff-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.9rem}
+.staff-chart{margin:0;background:rgb(255 255 255/.85);border:1px solid var(--control);border-radius:16px;padding:.8rem 1rem;min-width:0}
+.staff-chart figcaption{font-size:.8rem;font-weight:650;margin-bottom:.5rem}
+.staff-chart-bars{display:flex;align-items:flex-end;gap:3px;height:80px}
+.staff-chart-bars span{flex:1 1 0;height:100%;display:flex;align-items:flex-end;min-width:0}
+.staff-chart-bars i{display:block;width:100%;min-height:2px;background:var(--navy);border-radius:3px 3px 0 0}
+.staff-chart-range{display:flex;justify-content:space-between;margin:.35rem 0 0;font-size:.72rem;color:var(--muted)}
+.staff-chart-range strong{color:#111827}
+.staff-invoice-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;min-width:0}
+.staff-invoice-line{border:1px solid var(--control);border-radius:14px;padding:.6rem .9rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.6rem;align-items:end;min-width:0}
+.staff-invoice-line legend{font-size:.78rem;padding:0 .3rem;color:var(--muted)}
+.staff-view-banner{margin:0;padding:.8rem 1rem;border:2px solid #b45309;border-radius:14px;background:#fffbeb;color:#78350f}
+.staff-today-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.9rem}
+.staff-today-card{background:rgb(255 255 255/.85);border:1px solid var(--control);border-radius:16px;padding:.8rem 1rem;min-width:0}
+.staff-today-card h3{margin:0;font-size:.9rem}
+.staff-today-card a{color:var(--navy);font-size:.8rem}
+.staff-today-card ul{list-style:none;margin:.5rem 0 0;padding:0;display:grid;gap:.4rem}
+.staff-today-card li{display:grid;font-size:.85rem;min-width:0}
+.staff-today-card li a{font-weight:650;font-size:.85rem;overflow-wrap:anywhere}
+.staff-today-card li span{font-size:.75rem;color:var(--muted);overflow-wrap:anywhere}

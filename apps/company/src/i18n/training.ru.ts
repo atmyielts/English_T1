@@ -1,6 +1,9 @@
 import type { TrainingKey } from './training.en.ts';
 
+import { trainingV2Ru } from './training.v2.ru.ts';
+
 export const trainingRu: Record<TrainingKey, string> = {
+  ...trainingV2Ru,
   'training.nav.me': 'Мой английский',
   'training.nav.lessons': 'Уроки',
   'training.nav.roleplay': 'Ролевые диалоги',

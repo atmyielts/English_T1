@@ -7,6 +7,7 @@ import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
 import { ImportPanel } from './ImportPanel.tsx';
+import { BulkBar, OnboardingChecklist, RequestsPanel, SavedFilters } from './PeopleOps.tsx';
 import { TeamLinksPanel } from './TeamLinks.tsx';
 import type { AccessSynced, PeopleList, PersonRow } from './types.ts';
 import { AccessSyncIssue, LinkResult, Meter, useDates, useProblem } from './ui.tsx';
@@ -23,9 +24,11 @@ export function PeoplePage() {
   const { org } = workspace;
   const [data, setData] = useState<PeopleList | null>(null);
   const [error, setError] = useState('');
-  const [panel, setPanel] = useState<Panel>(null);
   const { query } = useLocation();
-  const [filters, setFilters] = useState<Filters>(() => ({ ...NO_FILTERS, department: query.get('department') ?? '' }));
+  const [panel, setPanel] = useState<Panel>(() => query.get('panel') === 'invite' ? 'invite' : null);
+  // Links from search and the checklist arrive with a filter already chosen.
+  const [filters, setFilters] = useState<Filters>(() => ({ ...NO_FILTERS, q: query.get('q') ?? '', department: query.get('department') ?? '', seat: query.get('seat') ?? '', status: query.get('status') ?? '' }));
+  const [chosen, setChosen] = useState<Set<string>>(() => new Set());
   const [notice, setNotice] = useState('');
   const [syncIssue, setSyncIssue] = useState<SyncIssue | null>(null);
   const showRemoved = filters.status === 'removed';
@@ -59,6 +62,14 @@ export function PeoplePage() {
   const invited = data.members.filter((row) => row.status === 'invited').length;
   const filtered = Object.values(filters).some(Boolean);
   const set = (key: keyof Filters) => (event: { target: { value: string } }) => setFilters({ ...filters, [key]: event.target.value });
+  const selectable = shown.filter((row) => row.status !== 'removed');
+  const selected = data.members.filter((row) => chosen.has(row.id) && row.status !== 'removed');
+  const allChosen = selectable.length > 0 && selectable.every((row) => chosen.has(row.id));
+  const pick = (id: string, on: boolean) => setChosen((current) => {
+    const next = new Set(current);
+    if (on) next.add(id); else next.delete(id);
+    return next;
+  });
   const toggle = (next: Panel) => { setPanel(panel === next ? null : next); setNotice(''); };
   const changed = async (message?: string) => {
     if (message) setNotice(message);
@@ -83,12 +94,14 @@ export function PeoplePage() {
       <Meter label={t('people.usage.seats')} used={data.usage.seats_used} limit={data.usage.seats_limit} unlimited={t('people.usage.unlimited')}/>
       <Meter label={t('people.usage.tests')} used={data.usage.tests_used} limit={data.usage.tests_limit} unlimited={t('people.usage.unlimited')}/>
       {data.status !== 'active' && <p className="hint">{t('people.usage.pilotSeats')}</p>}
+      {data.can_edit && data.status === 'active' && data.usage.seats_limit > 0 && data.usage.seats_used >= data.usage.seats_limit && <p className="hint">{t('people.usage.seatsFull')} <Link to={`/w/${org.id}/plan`}>{t('people.usage.seatsMore')}</Link></p>}
     </div>}
 
     {notice && <p className="notice" role="status">{notice}</p>}
     {syncIssue && <AccessSyncIssue message={t('people.accessSync.failed', { name: syncIssue.name })} retry={syncIssue.retry}
       onFixed={async () => { const { name } = syncIssue; setSyncIssue(null); await changed(t('people.accessSync.fixed', { name })); }}/>}
-    {editable && data.members.length <= 3 && !panel && <GettingStarted orgId={org.id} departments={data.departments.length} people={data.members.length} links={data.links.length} onPanel={setPanel}/>}
+    {data.can_edit && <OnboardingChecklist key={data.members.length} orgId={org.id} editable={editable}/>}
+    {data.can_edit && <RequestsPanel orgId={org.id} editable={editable} onChanged={() => changed()}/>}
     {panel === 'invite' && <InvitePanel data={data} onDone={() => changed()} onClose={() => setPanel(null)}/>}
     {panel === 'import' && <ImportPanel orgId={org.id} onDone={() => changed()} onClose={() => setPanel(null)}/>}
     {panel === 'links' && <TeamLinksPanel orgId={org.id} orgName={org.name} links={data.links} departments={data.departments} onChange={() => changed()} onClose={() => setPanel(null)}/>}
@@ -124,12 +137,29 @@ export function PeoplePage() {
         </select></label>
         {filtered && <button type="button" className="quiet" onClick={() => setFilters(NO_FILTERS)}>{t('people.filter.clear')}</button>}
       </div>
+      <SavedFilters orgId={org.id} current={filters} onApply={(next) => setFilters({ ...NO_FILTERS, ...next })}/>
       <p className="hint people-count" role="status">{t('people.shown', { count: shown.length, total: data.members.length })}</p>
+      {editable && <BulkBar orgId={org.id} orgName={org.name} selected={selected} departments={data.departments} seatsActive={data.status === 'active'} onClear={() => setChosen(new Set())} onDone={() => changed()}/>}
       {error && <p className="error" role="alert">{error}</p>}
-      {shown.length === 0 ? <p className="people-empty">{filtered ? t('people.empty.filtered') : t('people.empty.none')}</p>
+      {shown.length === 0 ? <div className="people-empty">
+        <p>{filtered ? t('people.empty.filtered') : data.scope === 'department' ? t('people.empty.department') : t('people.empty.none')}</p>
+        <div className="company-actions people-empty-actions">
+          {filtered && <button type="button" className="quiet" onClick={() => setFilters(NO_FILTERS)}>{t('people.filter.clear')}</button>}
+          {!filtered && editable && <>
+            <button type="button" onClick={() => setPanel('invite')}>{t('people.action.invite')}</button>
+            <button type="button" className="quiet" onClick={() => setPanel('import')}>{t('people.action.import')}</button>
+            <button type="button" className="quiet" onClick={() => setPanel('links')}>{t('people.action.links')}</button>
+          </>}
+        </div>
+      </div>
         : <div className="company-table-wrap people-table-wrap">
           <table className="company-table people-table">
             <thead><tr>
+              {editable && <th scope="col" className="people-pick"><input type="checkbox" aria-label={t('people.bulk.selectAll')} checked={allChosen} onChange={(event) => setChosen((current) => {
+                const next = new Set(current);
+                for (const row of selectable) if (event.target.checked) next.add(row.id); else next.delete(row.id);
+                return next;
+              })}/></th>}
               <th scope="col">{t('people.col.person')}</th>
               <th scope="col">{t('people.field.department_id')}</th>
               <th scope="col">{t('people.field.role')}</th>
@@ -138,23 +168,11 @@ export function PeoplePage() {
               <th scope="col">{t('people.field.status')}</th>
               {editable && <th scope="col"><span className="visually-hidden">{t('people.col.actions')}</span></th>}
             </tr></thead>
-            <tbody>{shown.map((row) => <PersonLine key={row.id} row={row} data={data} editable={editable} departmentName={departmentName.get(row.department_id ?? '') ?? null} onChanged={changed} onSyncIssue={setSyncIssue}/>)}</tbody>
+            <tbody>{shown.map((row) => <PersonLine key={row.id} row={row} data={data} editable={editable} picked={chosen.has(row.id)} onPick={pick} departmentName={departmentName.get(row.department_id ?? '') ?? null} onChanged={changed} onSyncIssue={setSyncIssue}/>)}</tbody>
           </table>
         </div>}
     </section>
   </div>;
-}
-
-function GettingStarted({ orgId, departments, people, links, onPanel }: { orgId: string; departments: number; people: number; links: number; onPanel: (panel: Panel) => void }) {
-  const t = useAppT();
-  return <aside className="people-start" aria-labelledby="people-start-title">
-    <h2 id="people-start-title">{t('people.start.title')}</h2>
-    <ol>
-      <li className={departments ? 'done' : ''}><Link to={`/w/${orgId}/departments`}>{t('people.start.departments')}</Link></li>
-      <li className={people > 1 || links ? 'done' : ''}><button type="button" className="people-linkish" onClick={() => onPanel('links')}>{t('people.start.link')}</button> · <button type="button" className="people-linkish" onClick={() => onPanel('import')}>{t('people.start.import')}</button></li>
-      <li><Link to={`/w/${orgId}/hiring`}>{t('people.start.test')}</Link></li>
-    </ol>
-  </aside>;
 }
 
 function InvitePanel({ data, onDone, onClose }: { data: PeopleList; onDone: () => void; onClose: () => void }) {
@@ -207,7 +225,7 @@ function InvitePanel({ data, onDone, onClose }: { data: PeopleList; onDone: () =
   </section>;
 }
 
-function PersonLine({ row, data, editable, departmentName, onChanged, onSyncIssue }: { row: PersonRow; data: PeopleList; editable: boolean; departmentName: string | null; onChanged: (message?: string) => Promise<void>; onSyncIssue: React.Dispatch<React.SetStateAction<SyncIssue | null>> }) {
+function PersonLine({ row, data, editable, picked, onPick, departmentName, onChanged, onSyncIssue }: { row: PersonRow; data: PeopleList; editable: boolean; picked: boolean; onPick: (id: string, on: boolean) => void; departmentName: string | null; onChanged: (message?: string) => Promise<void>; onSyncIssue: React.Dispatch<React.SetStateAction<SyncIssue | null>> }) {
   const t = useAppT(), problem = useProblem(), { day } = useDates();
   const { org, member: me, staff } = useWorkspace();
   const [mode, setMode] = useState<'view' | 'edit' | 'remove'>('view');
@@ -244,9 +262,10 @@ function PersonLine({ row, data, editable, departmentName, onChanged, onSyncIssu
     setLink(response.link);
   });
   const seatsActive = data.status === 'active';
-  const cols = editable ? 7 : 6;
+  const cols = editable ? 8 : 6;
   return <>
     <tr className={removed ? 'people-removed' : ''}>
+      {editable && <td className="people-pick">{!removed && <input type="checkbox" aria-label={t('people.bulk.selectOne', { name })} checked={picked} onChange={(event) => onPick(row.id, event.target.checked)}/>}</td>}
       <td data-label={t('people.col.person')}>
         <strong className="people-name">{name}{me && row.id === me.id ? ` · ${t('people.you')}` : ''}</strong>
         {row.email && row.full_name && <span className="people-email">{row.email}</span>}
@@ -281,8 +300,9 @@ function PersonLine({ row, data, editable, departmentName, onChanged, onSyncIssu
     {(mode !== 'view' || error || link) && <tr className="people-detail-row"><td colSpan={cols}>
       {link && <LinkResult link={link} title={t('people.invite.ready', { name })} message={t('people.share.personal', { company: org.name })}/>}
       {mode === 'edit' && <EditPerson row={row} data={data} canOwners={canOwners} busy={busy} onCancel={() => setMode('view')}
-        onSave={(body) => run(async () => {
+        onSave={({ extra_departments, ...body }) => run(async () => {
           const saved = await api<{ link_revoked?: boolean }>(`orgs/${org.id}/people/${row.id}`, { method: 'PATCH', body });
+          if (extra_departments) await api(`orgs/${org.id}/people/${row.id}/departments`, { method: 'PUT', body: { department_ids: extra_departments } });
           if (!saved.link_revoked) return undefined;
           // Any link still on screen is the one that just stopped working.
           setLink(null);
@@ -307,6 +327,7 @@ function EditPerson({ row, data, canOwners, busy, onSave, onCancel }: { row: Per
     target_level: row.target_level ?? '', target_date: row.target_date ?? '',
   });
   const set = (key: keyof typeof form) => (event: { target: { value: string } }) => setForm({ ...form, [key]: event.target.value });
+  const [extra, setExtra] = useState<string[]>(() => data.manager_departments?.[row.id] ?? []);
   const roleLocked = row.role === 'owner' && !canOwners;
   const roles = canOwners ? ['owner', 'admin', 'manager', 'employee'] : ['admin', 'manager', 'employee'];
   function submit(event: FormEvent) {
@@ -317,6 +338,7 @@ function EditPerson({ row, data, canOwners, busy, onSave, onCancel }: { row: Per
     };
     if (!roleLocked && form.role !== row.role) body.role = form.role;
     if (row.status === 'invited' && form.email !== (row.email ?? '')) body.email = form.email || null;
+    if (form.role === 'manager' && row.role === 'manager') body.extra_departments = extra.filter((id) => id !== form.department_id);
     onSave(body);
   }
   return <form className="people-form-grid people-edit" onSubmit={submit} aria-label={t('people.edit.title', { name: row.full_name ?? row.email ?? '' })}>
@@ -336,6 +358,13 @@ function EditPerson({ row, data, canOwners, busy, onSave, onCancel }: { row: Per
       {LEVELS.map((level) => <option key={level} value={level}>{t(`level.${level}` as AppKey)}</option>)}
     </select></label>
     <label>{t('people.field.target_date')}<input type="date" value={form.target_date} onChange={set('target_date')}/></label>
+    {row.role === 'manager' && form.role === 'manager' && data.departments.length > 1 && <fieldset className="people-span people-manager-departments">
+      <legend>{t('people.manager.departments')}</legend>
+      <p className="hint">{t('people.manager.lead')}</p>
+      {data.departments.filter((department) => department.id !== form.department_id).map((department) => <label key={department.id} className="check">
+        <input type="checkbox" checked={extra.includes(department.id)} onChange={(event) => setExtra(event.target.checked ? [...extra, department.id] : extra.filter((id) => id !== department.id))}/>{department.name}
+      </label>)}
+    </fieldset>}
     <div className="people-form-actions">
       <button disabled={busy}>{t('common.save')}</button>
       <button type="button" className="quiet" onClick={onCancel}>{t('common.cancel')}</button>

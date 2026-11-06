@@ -7,6 +7,7 @@ import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
+import { toCsv } from './csv.ts';
 import { canSpeak, speak, stopSpeaking } from './speech.ts';
 
 export interface Localized { en: string; ru: string; uz: string }
@@ -164,6 +165,16 @@ export function useMinutes() {
       return minutes;
     },
   };
+}
+
+/** Saves rows as a CSV file in the browser. */
+export function downloadCsv(name: string, rows: unknown[][]) {
+  const url = URL.createObjectURL(new Blob([toCsv(rows)], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export const DIFFICULTY_CLASS: Record<string, string> = { easy: 'good', medium: 'warn', hard: 'bad' };

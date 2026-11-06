@@ -6,6 +6,7 @@
 import { ORG_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type OrgRow, type Route } from '../types.ts';
 import { fetchAll } from '../insights/common.ts';
+import { attachCandidate, CANDIDATE_COLUMNS, withinLimit, type CandidateRow } from './ats.ts';
 import { email, obj, sha256, text, token } from '../util.ts';
 import {
   ASSESSMENT_COLUMNS, ATTEMPT_COLUMNS, attemptView, closed, expireIfOverdue, nextStep, orgOpen, saveAttempt, settingsOf, startAttempt, submitAttempt,
@@ -16,19 +17,33 @@ import { suggestedMinutes } from './shared.ts';
 
 /** At most this many starts per hour from one address on one test. */
 export const STARTS_PER_HOUR = 5;
+/** Generous, since a recruiting event may share one address; it only stops someone scanning for links. */
+export const LINK_VIEWS_PER_HOUR = 600;
 const REFUSED = 'hiring.start_refused';
 const LINK = /^[A-Za-z0-9_-]{20,64}$/;
 const KEY = /^[A-Za-z0-9_-]{20,64}$/;
 const CODE = /^[A-HJ-NP-Z2-9]{10}$/;
 
-async function byLink(ctx: Ctx, raw: string): Promise<{ assessment: AssessmentRow; org: OrgRow }> {
+/** The test behind a link: the test's open link, or one candidate's personal link. */
+async function byLink(ctx: Ctx, raw: string): Promise<{ assessment: AssessmentRow; org: OrgRow; candidate: CandidateRow | null }> {
   if (!LINK.test(raw)) throw new CompanyError('link_not_found', 'This test link is not valid.', 404);
-  const assessment = check<AssessmentRow | null>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('link_token_hash', await sha256(raw)).eq('kind', 'hiring').maybeSingle());
+  const hash = await sha256(raw);
+  let assessment = check<AssessmentRow | null>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('link_token_hash', hash).eq('kind', 'hiring').maybeSingle());
+  let candidate: CandidateRow | null = null;
+  if (!assessment) {
+    candidate = check<CandidateRow | null>(await ctx.db.from('company_candidates').select(CANDIDATE_COLUMNS).eq('invite_token_hash', hash).maybeSingle());
+    if (candidate) assessment = check<AssessmentRow | null>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('id', candidate.assessment_id).eq('kind', 'hiring').maybeSingle());
+  }
   if (!assessment) throw new CompanyError('link_not_found', 'This test link is not valid.', 404);
   const org = check<OrgRow | null>(await ctx.db.from('company_orgs').select(ORG_COLUMNS).eq('id', assessment.org_id).maybeSingle());
   if (!org) throw new CompanyError('link_not_found', 'This test link is not valid.', 404);
-  return { assessment, org };
+  return { assessment, org, candidate };
 }
+
+/** A personal link's latest attempt. */
+const attemptOf = async (ctx: Ctx, candidate: CandidateRow): Promise<AttemptRow | null> => candidate.attempt_id
+  ? check<AttemptRow | null>(await ctx.db.from('company_attempts').select(ATTEMPT_COLUMNS).eq('id', candidate.attempt_id).eq('org_id', candidate.org_id).maybeSingle())
+  : null;
 
 /** The candidate's attempt from their private key, closed first if its time ran out. */
 async function byKey(ctx: Ctx, body: unknown): Promise<{ attempt: AttemptRow; assessment: AssessmentRow; org: OrgRow; input: Record<string, unknown> }> {
@@ -69,20 +84,32 @@ const candidateView = (ctx: Ctx, attempt: AttemptRow, assessment: AssessmentRow,
 
 export const routes: Route[] = [
   {
-    // What the candidate sees before starting.
+    // What the candidate sees before starting. Opening a personal link is tracked for HR.
     method: 'GET', path: 'public/t/:token', access: 'public',
     async handle(ctx, params) {
-      const { assessment, org } = await byLink(ctx, params.token);
+      if (!(await withinLimit(ctx, 'link', LINK_VIEWS_PER_HOUR))) throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
+      const { assessment, org, candidate } = await byLink(ctx, params.token);
       const open = !closed(assessment, ctx.now()) && orgOpen(org, ctx.now());
       const skills = orderSkills(assessment.skills);
+      let personal: { name: string | null; email: string | null; phone: string | null; status: 'new' | 'running' | 'finished' } | null = null;
+      if (candidate && org.status !== 'closed') {
+        const { error } = await ctx.db.from('company_candidates').update({ opened_at: ctx.now().toISOString() }).eq('id', candidate.id).is('opened_at', null);
+        if (error) console.error(JSON.stringify({ company_hiring: 'opened_failed', error: error.message }));
+        const attempt = await attemptOf(ctx, candidate);
+        personal = {
+          name: candidate.name, email: candidate.email, phone: candidate.phone,
+          status: attempt?.status === 'started' ? 'running' : attempt?.status === 'submitted' || attempt?.status === 'graded' ? 'finished' : 'new',
+        };
+      }
       return {
+        personal,
         test: {
           company: org.name, title: assessment.title, job_role: assessment.job_role, skills,
           time_limit_minutes: assessment.time_limit_minutes, suggested_minutes: suggestedMinutes(skills), closes_at: assessment.closes_at,
           show_level: settingsOf(assessment).show_level === true, speaking: skills.includes('speaking'), listening: skills.includes('listening'),
           locale: (org.settings as Record<string, unknown>)?.locale ?? 'ru',
         },
-        open,
+        open: open || (org.status !== 'closed' && personal?.status === 'running'),
       };
     },
   },
@@ -90,13 +117,33 @@ export const routes: Route[] = [
     method: 'POST', path: 'public/t/:token/start', access: 'public',
     async handle(ctx, params, body) {
       const input = obj(body);
-      const { assessment, org } = await byLink(ctx, params.token);
+      if (!(await withinLimit(ctx, 'start', LINK_VIEWS_PER_HOUR))) throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
+      const { assessment, org, candidate } = await byLink(ctx, params.token);
+      // Paused workspaces may finish an existing test; closed ones must not
+      // return a replacement access key or test content through a personal link.
+      if (org.status === 'closed') throw new CompanyError('org_closed', 'This workspace is closed.', 403);
+      if (candidate) {
+        // A personal link is proof of who this is: it reopens a running test on any device,
+        // with a new key, and never starts a second test after a finished one.
+        ctx.org = org;
+        const earlier = await attemptOf(ctx, candidate);
+        const current = earlier ? await expireIfOverdue(ctx, earlier, assessment, org, null, false) : null;
+        if (current?.status === 'started') {
+          const key = token(24);
+          check(await ctx.db.from('company_attempts').update({ access_token_hash: await sha256(key) }).eq('id', current.id).eq('org_id', org.id));
+          await ctx.audit('hiring.candidate_resumed', current.id, { assessment: assessment.id });
+          return { key, ...candidateView(ctx, current, assessment, org) };
+        }
+        if (current?.status === 'submitted' || current?.status === 'graded') throw new CompanyError('test_taken', 'You have already completed this test.', 409);
+      }
       if (closed(assessment, ctx.now()) || !orgOpen(org, ctx.now())) throw new CompanyError('test_closed', 'This test is closed.', 409);
       if (input.consent !== true) throw new CompanyError('consent_required', 'Please agree to the processing of your answers first.', 400, { field: 'consent' });
-      const name = text(input.name, 'name', { min: 2, max: 120 })!;
-      const address = email(input.email, 'email')!;
-      const phone = text(input.phone, 'phone', { max: 40, optional: true });
-      if (await startsThisHour(ctx, assessment, org) >= STARTS_PER_HOUR) {
+      const name = text(input.name ?? candidate?.name, 'name', { min: 2, max: 120 })!;
+      // A personal link was made for one address, so it cannot be used to test under another.
+      const address = candidate?.email ?? email(input.email, 'email')!;
+      const phone = text(input.phone ?? candidate?.phone, 'phone', { max: 40, optional: true });
+      // Everyone at a recruiting event may share one network: a personal link is its own limit.
+      if (!candidate && await startsThisHour(ctx, assessment, org) >= STARTS_PER_HOUR) {
         throw new CompanyError('too_many_starts', 'Too many tests were started from this network. Try again in an hour.', 429);
       }
       ctx.org = org;
@@ -120,6 +167,14 @@ export const routes: Route[] = [
         if (cause instanceof CompanyError && cause.code === 'attempt_exists') throw await cannotStart(ctx, assessment, org);
         throw cause;
       }
+      if (candidate && !candidate.email) {
+        // Invited by phone only: they gave their address now.
+        const { error } = await ctx.db.from('company_candidates').update({ attempt_id: attempt.id, email: address, name, phone, opened_at: candidate.opened_at ?? ctx.now().toISOString() }).eq('id', candidate.id);
+        if (error) {
+          console.error(JSON.stringify({ company_hiring: 'candidate_attach_failed', error: error.message }));
+          await ctx.db.from('company_candidates').update({ attempt_id: attempt.id }).eq('id', candidate.id);
+        }
+      } else await attachCandidate(ctx, attempt);
       await ctx.audit('hiring.candidate_started', attempt.id, { assessment: assessment.id });
       return { key, ...candidateView(ctx, attempt, assessment, org) };
     },

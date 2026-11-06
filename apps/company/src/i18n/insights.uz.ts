@@ -1,3 +1,4 @@
+import { insightsMoreUz } from './insights.more.uz.ts';
 import type { InsightsKey } from './insights.en.ts';
 
 export const insightsUz: Record<InsightsKey, string> = {
@@ -435,4 +436,5 @@ export const insightsUz: Record<InsightsKey, string> = {
   'insights.error.session_has_attendance': 'Bu mashg‘ulot uchun davomat allaqachon belgilangan.',
   'insights.error.session_not_found': 'Mashg‘ulot topilmadi.',
   'insights.error.session_not_started': 'Davomatni mashg‘ulot boshlangandan keyin belgilash mumkin.',
+  ...insightsMoreUz,
 };

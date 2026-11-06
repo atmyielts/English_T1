@@ -4,6 +4,8 @@ import { insightsEn } from '../../../apps/company/src/i18n/insights.en.ts';
 import { insightsRu } from '../../../apps/company/src/i18n/insights.ru.ts';
 import { insightsUz } from '../../../apps/company/src/i18n/insights.uz.ts';
 import { peopleEn } from '../../../apps/company/src/i18n/people.en.ts';
+import { peopleRu } from '../../../apps/company/src/i18n/people.ru.ts';
+import { peopleUz } from '../../../apps/company/src/i18n/people.uz.ts';
 import { routes as core } from './core.ts';
 import { routes as training } from './training.ts';
 import { validateTrack, normalizeAnswer, type Exercise } from './training/content.ts';
@@ -97,8 +99,10 @@ Deno.test('exercises reach the learner without answer keys and are checked on th
   assertEquals(checkExercise(gap, 'nonsense').correct, 0);
   assertEquals(normalizeAnswer('It’s  fine!'), "it's fine");
   for (const track of TRACKS) for (const lesson of track.lessons) {
-    const json = JSON.stringify(lesson.exercises.map((exercise) => publicExercise(exercise, lesson.code)));
-    assert(!json.includes('"answer') && !json.includes('"pairs"'), lesson.code);
+    // Keys, not text: an option may well begin with the word "answer".
+    const keys = (value: unknown): string[] => Array.isArray(value) ? value.flatMap(keys) : value && typeof value === 'object' ? Object.entries(value).flatMap(([key, item]) => [key, ...keys(item)]) : [];
+    const shownKeys = keys(lesson.exercises.map((exercise) => publicExercise(exercise, lesson.code)));
+    assert(!shownKeys.includes('answer') && !shownKeys.includes('answers') && !shownKeys.includes('pairs'), lesson.code);
   }
 });
 
@@ -107,7 +111,7 @@ Deno.test('tracks list, lesson view and progress through the lesson player', asy
   const list = await call('GET', `orgs/${ORG}/tracks`, { user: EMPLOYEE });
   assertEquals(list.status, 200);
   assertEquals(list.body.recommended, 'hospitality');
-  assertEquals(list.body.tracks.length, 11);
+  assertEquals(list.body.tracks.length, JOB_ROLES.length);
   const track = await call('GET', `orgs/${ORG}/tracks/hospitality`, { user: EMPLOYEE });
   assertEquals(track.body.lessons[0].status, 'new');
   assertEquals((await call('GET', `orgs/${ORG}/tracks/astronaut`, { user: EMPLOYEE })).status, 404);
@@ -181,7 +185,7 @@ Deno.test('a role-play runs turn by turn, keeps work on AI failure and ends with
   const ai: AiCall = (request, fallback) => roleplayAi({ turn: failTurn })(request, fallback);
   const { db, call, aiCalls } = setup({ ai, aiAllowed: () => allowed });
   const list = await call('GET', `orgs/${ORG}/roleplay`, { user: EMPLOYEE });
-  assertEquals(list.body.tracks.length, 11);
+  assertEquals(list.body.tracks.length, JOB_ROLES.length);
   const scenario = list.body.tracks.find((track: { code: string }) => track.code === 'hospitality').scenarios[0].code;
   const started = await call('POST', `orgs/${ORG}/roleplay`, { user: EMPLOYEE, body: { scenario, locale: 'ru' } });
   const id = started.body.session.id;
@@ -377,7 +381,7 @@ Deno.test('lessons and AI practice need a learning seat; browsing and HR tools d
 
   // What a seat unlocks stays visible, and the pages know it is locked.
   const tracks = await call('GET', `orgs/${ORG}/tracks`, { user: OTHER });
-  assertEquals([tracks.status, tracks.body.can_learn, tracks.body.tracks.length], [200, false, 11]);
+  assertEquals([tracks.status, tracks.body.can_learn, tracks.body.tracks.length], [200, false, JOB_ROLES.length]);
   const track = await call('GET', `orgs/${ORG}/tracks/hospitality`, { user: OTHER });
   assertEquals([track.status, track.body.can_learn, track.body.lessons[0].status], [200, false, 'new']);
   for (const page of ['roleplay', 'writing', 'glossary']) assertEquals((await call('GET', `orgs/${ORG}/${page}`, { user: OTHER })).body.can_learn, false, page);
@@ -578,9 +582,10 @@ Deno.test('assignment dates follow Tashkent, like My English and the overview', 
 
 Deno.test('every activity kind has a label in every language; a person not found says only that', () => {
   assert(ACTIVITY_KINDS.includes('lesson_retry'));
+  const people: Record<string, Record<string, string>> = { en: peopleEn, ru: peopleRu, uz: peopleUz };
   for (const [locale, catalogue] of Object.entries({ en: insightsEn, ru: insightsRu, uz: insightsUz }) as [string, Record<string, string>][]) {
     for (const kind of ACTIVITY_KINDS) assert(catalogue[`insights.kind.${kind}`], `${locale}: ${kind}`);
-    assert(!('insights.error.member_not_found' in catalogue), locale);
+    assertEquals(catalogue['insights.error.member_not_found'], people[locale]['people.error.member_not_found'], `${locale}: missing and out-of-scope people use the same generic message`);
   }
   assertEquals(peopleEn['people.error.member_not_found'], 'Person not found.');
 });

@@ -39,6 +39,9 @@ export function Overview() {
         <p className="insights-lead">{t('insights.overview.lead', { date: f.date(data.today) })}</p>
       </div>
       <div className="company-actions">
+        <Link className="button-link quiet" to={`/w/${org.id}/skills-gap`}>{t('insights.overview.linkGap')}</Link>
+        <Link className="button-link quiet" to={`/w/${org.id}/at-risk`}>{t('insights.overview.linkRisk')}</Link>
+        {hr && <Link className="button-link quiet" to={`/w/${org.id}/executive`}>{t('insights.overview.linkExec')}</Link>}
         <Link className="button-link" to={`/w/${org.id}/reports`}>{t('insights.overview.openReport')}</Link>
       </div>
     </header>

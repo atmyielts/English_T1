@@ -1,6 +1,9 @@
 import type { TrainingKey } from './training.en.ts';
 
+import { trainingV2Uz } from './training.v2.uz.ts';
+
 export const trainingUz: Record<TrainingKey, string> = {
+  ...trainingV2Uz,
   'training.nav.me': 'Mening ingliz tilim',
   'training.nav.lessons': 'Darslar',
   'training.nav.roleplay': 'Rolli suhbat',

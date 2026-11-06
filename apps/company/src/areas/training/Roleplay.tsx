@@ -18,14 +18,29 @@ interface Feedback {
 interface Session {
   id: string; track_code: string; status: 'active' | 'ended'; turns: Turn[]; learner_turns: number; max_turns: number;
   feedback: Feedback | null; score: number | null; minutes: number; created_at: string; ended_at: string | null; scenario: ScenarioView | null;
+  difficulty?: Difficulty | null; hints?: number; max_hints?: number; replay_of?: string | null; custom?: boolean;
 }
+type Difficulty = 'easy' | 'medium' | 'hard';
+interface ScoreHistory { code: string; title: Localized | null; attempts: { id: string; score: number; difficulty: Difficulty | null; created_at: string }[]; best: number; last: number; first: number }
 interface Overview {
-  recommended: string; can_learn: boolean; seat_reason?: SeatReason | null; max_turns: number;
+  recommended: string; first_group?: string | null; history?: ScoreHistory[]; can_learn: boolean; seat_reason?: SeatReason | null; max_turns: number;
   tracks: { code: string; title: Localized; scenarios: ScenarioView[] }[];
   sessions: { id: string; scenario_code: string; title: Localized | null; status: string; score: number | null; learner_turns: number; created_at: string }[];
 }
 
-function ScenarioCard({ scenario, onStart, busy, open }: { scenario: ScenarioView; onStart: () => void; busy: boolean; open: boolean }) {
+/** Scores across attempts, oldest first. The numbers are also written out for screen readers. */
+function ScoreLine({ scores, label }: { scores: number[]; label: string }) {
+  const width = 120, height = 32;
+  if (scores.length < 2) return null;
+  const x = (index: number) => 4 + index * ((width - 8) / (scores.length - 1));
+  const y = (score: number) => height - 4 - score / 100 * (height - 8);
+  return <svg className="training-p-spark" viewBox={`0 0 ${width} ${height}`} width={width} height={height} role="img" aria-label={label}>
+    <polyline fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" points={scores.map((score, index) => `${x(index)},${y(score)}`).join(' ')}/>
+    <circle cx={x(scores.length - 1)} cy={y(scores[scores.length - 1])} r="3" fill="currentColor"/>
+  </svg>;
+}
+
+function ScenarioCard({ scenario, onStart, busy, open, best }: { scenario: ScenarioView; onStart: () => void; busy: boolean; open: boolean; best?: number }) {
   const t = useAppT(), pick = useLocalized();
   return <li className="training-scenario">
     <div>
@@ -33,6 +48,7 @@ function ScenarioCard({ scenario, onStart, busy, open }: { scenario: ScenarioVie
       <span className={`company-badge ${DIFFICULTY_CLASS[scenario.difficulty]}`}>{t(`training.difficulty.${scenario.difficulty}` as AppKey)}</span>
     </div>
     <p>{pick(scenario.goal)}</p>
+    {best !== undefined && <span className="hint">{t('training.roleplay.best', { score: best })}</span>}
     {open && <button type="button" disabled={busy} onClick={onStart}>{t('training.roleplay.start')}</button>}
   </li>;
 }
@@ -45,8 +61,9 @@ export function RoleplayHome() {
   const { data, error } = useLoad<Overview>(`orgs/${org.id}/roleplay`);
   const [track, setTrack] = useState<string | null>(null);
   const [busy, setBusy] = useState(false), [startError, setStartError] = useState('');
+  const [difficulty, setDifficulty] = useState<'' | Difficulty>(() => readLocal('training.roleplay.difficulty', ''));
   if (!data) return <Loading error={error}/>;
-  const chosen = track ?? data.recommended;
+  const chosen = track ?? data.first_group ?? data.recommended;
   const asked = query.get('scenario');
   const featured = asked ? data.tracks.flatMap((entry) => entry.scenarios).find((scenario) => scenario.code === asked) : undefined;
   const current = data.tracks.find((entry) => entry.code === chosen) ?? data.tracks[0];
@@ -55,13 +72,15 @@ export function RoleplayHome() {
     if (!member) { setStartError(t('training.notMember')); return; }
     setBusy(true); setStartError('');
     try {
-      const { session } = await api<{ session: Session }>(`orgs/${org.id}/roleplay`, { method: 'POST', body: { scenario: code, locale } });
+      const { session } = await api<{ session: Session }>(`orgs/${org.id}/roleplay`, { method: 'POST', body: { scenario: code, locale, difficulty: difficulty || null } });
       navigate(`/w/${org.id}/roleplay/${session.id}`);
     } catch (cause) {
       setStartError(problem(cause));
       setBusy(false);
     }
   }
+  const history = data.history ?? [];
+  const bestOf = (code: string) => history.find((entry) => entry.code === code)?.best;
 
   return <div className="training-page">
     <header className="training-head">
@@ -86,11 +105,34 @@ export function RoleplayHome() {
             {data.tracks.map((entry) => <option key={entry.code} value={entry.code}>{pick(entry.title)}{entry.code === data.recommended ? ` — ${t('training.learn.yourRole')}` : ''}</option>)}
           </select>
         </label>
+        <label>{t('training.roleplay.difficulty')}
+          <select value={difficulty} onChange={(event) => { const value = event.target.value as '' | Difficulty; setDifficulty(value); writeLocal('training.roleplay.difficulty', value || null); }}>
+            <option value="">{t('training.roleplay.difficultyDefault')}</option>
+            {(['easy', 'medium', 'hard'] as const).map((value) => <option key={value} value={value}>{t(`training.difficulty.${value}` as AppKey)}</option>)}
+          </select>
+        </label>
       </div>
       <ul className="training-scenarios">
-        {current.scenarios.map((scenario) => <ScenarioCard key={scenario.code} scenario={scenario} busy={busy} open={data.can_learn} onStart={() => void start(scenario.code)}/>)}
+        {current.scenarios.map((scenario) => <ScenarioCard key={scenario.code} scenario={scenario} busy={busy} open={data.can_learn} best={bestOf(scenario.code)} onStart={() => void start(scenario.code)}/>)}
       </ul>
     </section>
+
+    {history.length > 0 && <section className="training-card" aria-labelledby="training-scores">
+      <h2 id="training-scores">{t('training.roleplay.scores')}</h2>
+      <ul className="training-list">
+        {history.map((entry) => {
+          const name = entry.title ? pick(entry.title) : entry.code;
+          const scores = entry.attempts.map((attempt) => attempt.score);
+          return <li key={entry.code}>
+            <div>
+              <strong>{name}</strong>
+              <span>{t('training.roleplay.scoreLine', { attempts: entry.attempts.length, best: entry.best, last: entry.last })}{entry.attempts.length > 1 && entry.last > entry.first ? ` · ${t('training.roleplay.improved', { points: entry.last - entry.first })}` : ''}</span>
+            </div>
+            <ScoreLine scores={scores} label={t('training.roleplay.scoreChart', { title: name, scores: scores.join(', ') })}/>
+          </li>;
+        })}
+      </ul>
+    </section>}
 
     <section className="training-card" aria-labelledby="training-recent">
       <h2 id="training-recent">{t('training.roleplay.recent')}</h2>
@@ -125,6 +167,8 @@ export function RoleplaySession({ id }: { id: string }) {
   const session = data?.session ?? null;
   const [seatGone, setSeatGone] = useState<SeatReason | null>(null);
   const locked = seatGone !== null || data?.can_learn === false;
+  const [hint, setHint] = useState<{ say?: string; why?: string; aim?: string | null } | null>(null);
+  const [earlier, setEarlier] = useState(() => readLocal<string>(`training.roleplay.${id}.earlier`, ''));
 
   useEffect(() => { log.current?.lastElementChild?.scrollIntoView({ block: 'nearest' }); }, [session?.turns.length]);
   useEffect(() => () => { listener.current?.stop(); stopSpeaking(); }, []);
@@ -166,6 +210,8 @@ export function RoleplaySession({ id }: { id: string }) {
       const message = aiMessage(result.status);
       if (message) { setFailure(t(message)); return; }
       saveDraft('');
+      setHint(null);
+      if (earlier) { setEarlier(''); writeLocal(`training.roleplay.${id}.earlier`, null); }
       setMode('typed');
       if (result.done) setEnded(true);
       const reply = result.session.turns[result.session.turns.length - 1];
@@ -197,11 +243,40 @@ export function RoleplaySession({ id }: { id: string }) {
     }
   }
 
+  async function askHint() {
+    setBusy(true); setFailure('');
+    try {
+      const result = await api<{ status: AiStatus; say?: string; why?: string; aim?: string | null; hints?: number }>(`orgs/${org.id}/roleplay/${id}/hint`, { method: 'POST', body: { locale }, timeoutMs: 45000 });
+      setHint({ say: result.say, why: result.why, aim: result.aim });
+      if (session && typeof result.hints === 'number') set({ ...data!, session: { ...session, hints: result.hints } });
+      if (result.status !== 'ok' && !result.aim) setFailure(t(aiMessage(result.status) ?? 'training.ai.unavailable'));
+    } catch (cause) {
+      if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
+      else setFailure(problem(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Back to this moment with the same character, to answer better. */
+  async function replay(turn: number) {
+    setBusy(true); setFailure('');
+    try {
+      const result = await api<{ session: Session; original: string }>(`orgs/${org.id}/roleplay/${id}/replay`, { method: 'POST', body: { turn, locale } });
+      writeLocal(`training.roleplay.${result.session.id}.earlier`, result.original);
+      navigate(`/w/${org.id}/roleplay/${result.session.id}`);
+    } catch (cause) {
+      if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
+      else setFailure(problem(cause));
+      setBusy(false);
+    }
+  }
+
   async function again() {
     if (!scenario) return;
     setBusy(true);
     try {
-      const { session: next } = await api<{ session: Session }>(`orgs/${org.id}/roleplay`, { method: 'POST', body: { scenario: scenario.code, locale } });
+      const { session: next } = await api<{ session: Session }>(`orgs/${org.id}/roleplay`, { method: 'POST', body: { scenario: scenario.code, locale, difficulty: session?.difficulty ?? null } });
       navigate(`/w/${org.id}/roleplay/${next.id}`);
     } catch (cause) {
       if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
@@ -214,7 +289,8 @@ export function RoleplaySession({ id }: { id: string }) {
     <p className="training-crumbs"><Link to={`/w/${org.id}/roleplay`}>{t('training.nav.roleplay')}</Link></p>
     <header className="training-head">
       <h1>{scenario ? pick(scenario.title) : t('training.roleplay.title')}</h1>
-      {scenario && <p>{pick(scenario.goal)} <span className={`company-badge ${DIFFICULTY_CLASS[scenario.difficulty]}`}>{t(`training.difficulty.${scenario.difficulty}` as AppKey)}</span></p>}
+      {scenario && <p>{pick(scenario.goal)} <span className={`company-badge ${DIFFICULTY_CLASS[session.difficulty ?? scenario.difficulty]}`}>{t(`training.difficulty.${session.difficulty ?? scenario.difficulty}` as AppKey)}</span>
+        {session.replay_of && <> <span className="company-badge">{t('training.roleplay.replayBadge')}</span></>}</p>}
     </header>
     {scenario && <details className="training-brief">
       <summary>{t('training.roleplay.brief')}</summary>
@@ -236,6 +312,7 @@ export function RoleplaySession({ id }: { id: string }) {
           <p lang="en">{turn.text}</p>
           {turn.role === 'ai' && <ListenButton text={turn.text}/>}
           {turn.tip && <p className="training-tip"><span aria-hidden="true">💡</span> {turn.tip}</p>}
+          {turn.role === 'learner' && !locked && session.status === 'ended' && <button type="button" className="quiet training-p-replay" disabled={busy} onClick={() => void replay(index)}>↺ {t('training.roleplay.replay')}<span className="visually-hidden"> {turn.text.slice(0, 40)}</span></button>}
         </li>)}
         {busy && session.status === 'active' && <li className="training-turn is-ai is-typing" aria-label={t('training.roleplay.thinking')}><p>…</p></li>}
       </ol>
@@ -243,6 +320,16 @@ export function RoleplaySession({ id }: { id: string }) {
       {failure && <p className="error" role="alert">{failure}</p>}
       {notice && <p className="notice" role="status">{notice}</p>}
       {!locked && (ended || (session.status === 'active' && turnsLeft === 0)) && session.status === 'active' && <p className="notice" role="status">{t('training.roleplay.readyToFinish')}</p>}
+
+      {canTalk && earlier && <p className="training-p-earlier"><strong>{t('training.roleplay.earlier')}</strong> <span lang="en">{earlier}</span></p>}
+
+      {canTalk && hint && <div className="training-p-hint" role="status">
+        {hint.say ? <>
+          <p><strong>{t('training.roleplay.hintSay')}</strong> <span lang="en">{hint.say}</span></p>
+          {hint.why && <p className="hint">{hint.why}</p>}
+          <button type="button" className="quiet" onClick={() => { saveDraft(hint.say!); setHint(null); }}>{t('training.roleplay.hintUse')}</button>
+        </> : hint.aim && <p><strong>{t('training.roleplay.hintAim')}</strong> <span lang="en">{hint.aim}</span></p>}
+      </div>}
 
       {canTalk && <form onSubmit={send} className="training-reply">
         <label>{t('training.roleplay.reply')}
@@ -256,6 +343,7 @@ export function RoleplaySession({ id }: { id: string }) {
           {canRecognize() && <button type="button" className={listening ? '' : 'quiet'} aria-pressed={listening} disabled={busy} onClick={voice}>
             {listening ? `■ ${t('training.voice.stop')}` : `🎤 ${t('training.voice.speak')}`}
           </button>}
+          <button type="button" className="quiet" disabled={busy || (session.hints ?? 0) >= (session.max_hints ?? 5)} onClick={() => void askHint()}>{t('training.roleplay.hint', { left: Math.max(0, (session.max_hints ?? 5) - (session.hints ?? 0)) })}</button>
           <button type="button" className="quiet" disabled={busy || session.learner_turns === 0} onClick={() => void finish()}>{t('training.roleplay.finish')}</button>
         </div>
         {listening && <p className="hint" role="status">{t('training.voice.listening')}</p>}
@@ -294,6 +382,7 @@ export function RoleplaySession({ id }: { id: string }) {
         <ul className="training-checklist">{session.feedback.checklist.map((item) => <li key={item.item} className={item.done ? 'is-done' : ''}><span aria-hidden="true">{item.done ? '✓' : '○'}</span> <span lang="en">{item.item}</span><span className="visually-hidden"> — {item.done ? t('training.done') : t('training.notYet')}</span></li>)}</ul>
       </>}
       {session.feedback.next_step && <p className="notice">{session.feedback.next_step}</p>}
+      {!locked && <p className="hint">{t('training.roleplay.replayHint')}</p>}
       <p className="hint">{t('training.ai.label')}</p>
       <div className="company-actions">
         {!locked && <button type="button" disabled={busy} onClick={() => void again()}>{t('training.roleplay.again')}</button>}

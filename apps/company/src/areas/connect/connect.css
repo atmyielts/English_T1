@@ -1,0 +1,104 @@
+/* Connect: notifications, reminders, API, webhooks, import, brand, privacy, audit. Classes start with "connect". */
+.connect{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem;min-width:0}
+.connect .page-heading{margin-bottom:0;align-items:flex-end;flex-wrap:wrap}
+.connect h1{margin-bottom:.25rem}
+.connect-lead{margin:0;max-width:70ch}
+.connect section>p{margin-top:0}
+.connect-h3{font-size:.95rem;margin:1.25rem 0 .4rem}
+.connect-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:.9rem;min-width:0}
+.connect-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.9rem 1rem;align-items:end;min-width:0}
+.connect-form{margin:0 0 1rem}
+.connect-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem 1rem;min-width:0}
+.connect-row h2{margin:0}
+.connect-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1.25rem;align-items:start;min-width:0}
+.connect-muted{color:var(--muted);font-weight:500;font-size:.8rem;overflow-wrap:anywhere}
+.connect-ok{color:#166534;font-weight:650;margin:0}
+.connect-empty{border:1px dashed var(--control);border-radius:16px;padding:1.25rem;text-align:center;background:rgb(255 255 255/.6);margin:.75rem 0 0}
+.connect-warn{border:1px solid #fde68a;background:#fffbeb;color:#854d0e;border-radius:12px;padding:.75rem .9rem;margin:0}
+.connect-warn p{color:inherit;margin:0 0 .5rem}
+.connect-box{border:1px solid var(--control);background:#fff;border-radius:14px;padding:.9rem 1rem}
+.connect-box p{margin:0 0 .6rem}
+.connect-once{border:1px solid #bbf7d0;background:#f0fdf4;border-radius:16px;padding:1rem 1.1rem;display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem;margin:0 0 1rem}
+.connect-once p{margin:0;color:#14532d}
+.connect-once code{background:#fff;border:1px solid #bbf7d0;border-radius:10px;padding:.55rem .7rem;font-size:.8rem;overflow-wrap:anywhere}
+.connect-danger{color:#991b1b!important;border-color:#fca5a5!important}
+.connect-danger-solid{background:#991b1b;border-color:#7f1d1d}
+.connect-confirm{border:1px solid #fecaca;background:#fef2f2;border-radius:14px;padding:.9rem 1rem;display:grid;gap:.6rem}
+.connect-confirm p{margin:0;color:#7f1d1d}
+.connect-nowrap{white-space:nowrap}
+.connect-more{margin-top:.9rem}
+.connect-stats{margin:0 0 1rem;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.connect-details{margin:1rem 0}
+.connect-details summary{cursor:pointer;font-weight:650;font-size:.875rem}
+.connect-details ul{margin:.5rem 0 0;padding-left:1.25rem;font-size:.875rem}
+
+/* Bell */
+.connect-bell{position:relative;display:inline-flex}
+.connect-bell-button{position:relative;min-width:40px;padding:.5rem .6rem;display:inline-flex;align-items:center;justify-content:center}
+.connect-bell-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#b91c1c;color:#fff;font-size:.68rem;font-weight:700;line-height:18px;text-align:center}
+.connect-bell-panel{position:absolute;right:0;top:calc(100% + .5rem);width:min(360px,calc(100vw - 32px));max-height:min(70vh,480px);overflow:auto;background:#fff;border:1px solid var(--control);border-radius:16px;box-shadow:0 12px 32px rgb(0 0 0/.14);z-index:40;padding:.6rem}
+.connect-bell-panel p{margin:.4rem .5rem}
+.connect-bell-panel ul{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+.connect-bell-panel li button{display:grid;gap:.15rem;width:100%;text-align:left;background:none;border:0;border-radius:10px;color:#111827;font-weight:500;font-size:.82rem;line-height:1.4;padding:.55rem .6rem;min-height:0}
+.connect-bell-panel li button:hover{background:#f3f4f6;filter:none}
+.connect-bell-panel li.unread button{background:#eef2ff;font-weight:600}
+.connect-bell-panel small{color:var(--muted);font-weight:500;font-size:.72rem}
+.connect-bell-all{display:block;text-align:center;padding:.55rem;font-size:.8rem;font-weight:650;color:var(--navy)}
+@media(max-width:600px){.connect-bell{position:static}.connect-bell-panel{position:fixed;left:16px;right:16px;top:72px;width:auto}}
+
+/* Notifications */
+.connect-notices{list-style:none;margin:.9rem 0;padding:0;display:grid;gap:.5rem}
+.connect-notices li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem 1rem;border:1px solid var(--control);border-radius:14px;background:rgb(255 255 255/.8);padding:.7rem .9rem}
+.connect-notices li.unread{background:#f5f7ff;border-color:#c7d2fe}
+.connect-notice-text{flex:1 1 220px;min-width:0}
+.connect-notice-text p{margin:.15rem 0;color:#111827;overflow-wrap:anywhere}
+.connect-notice-text small{color:var(--muted);font-size:.75rem}
+
+/* Hub */
+.connect-samples{list-style:none;margin:.5rem 0 0;padding:0;display:grid;gap:.5rem}
+.connect-samples li{background:#e7f3fb;border-radius:14px 14px 14px 4px;padding:.55rem .8rem;font-size:.82rem;color:#0f172a;max-width:520px;white-space:pre-wrap;overflow-wrap:anywhere}
+.connect-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:.75rem}
+.connect-cards a{display:grid;gap:.25rem;border:1px solid var(--control);border-radius:16px;background:rgb(255 255 255/.85);padding:.9rem 1rem;text-decoration:none;color:#111827}
+.connect-cards a:hover{border-color:var(--navy)}
+.connect-cards strong{font-size:.9rem}
+.connect-cards span{font-size:.8rem;color:var(--muted)}
+
+/* API and webhooks */
+.connect-base{overflow-wrap:anywhere}
+.connect code{font-family:ui-monospace,monospace;font-size:.8em;overflow-wrap:anywhere}
+.connect-code{background:#0f172a;color:#e2e8f0;border-radius:14px;padding:.85rem 1rem;font:500 .78rem/1.6 ui-monospace,monospace;overflow-x:auto;margin:.4rem 0 .75rem;max-width:100%}
+.connect-endpoints{display:grid;grid-template-columns:minmax(0,1fr);gap:.35rem;margin:.75rem 0}
+.connect-endpoint{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.1rem .6rem;align-items:baseline;text-align:left;background:rgb(255 255 255/.85);color:#111827;border:1px solid var(--control);border-radius:12px;padding:.5rem .7rem;font-weight:500;min-height:0}
+.connect-endpoint.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.connect-endpoint small{grid-column:1/-1;color:var(--muted);font-size:.76rem;line-height:1.4}
+.connect-method{font:700 .7rem ui-monospace,monospace;border-radius:6px;padding:.1rem .35rem}
+.connect-method.get{background:#dcfce7;color:#166534}.connect-method.post{background:#e0e7ff;color:#3730a3}
+.connect-hooks{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.connect-hook{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem;border:1px solid var(--control);border-radius:16px;background:rgb(255 255 255/.85);padding:.9rem 1rem;min-width:0}
+.connect-hook p{margin:0}
+.connect-url{min-width:0;flex:1 1 200px}
+.connect-tags{display:flex;flex-wrap:wrap;gap:.3rem}
+.connect-tags .company-badge{white-space:normal}
+
+/* Brand */
+.connect-color{display:flex;gap:.6rem;align-items:center}
+.connect-color input[type=color]{width:56px;height:40px;padding:.2rem;flex:none}
+.connect-color label:last-child{flex:1;min-width:0}
+.connect-mark{display:flex;align-items:center;gap:.6rem;border-bottom:3px solid var(--control);padding:0 0 .6rem;min-width:0}
+.connect-mark img{height:36px;max-width:120px;object-fit:contain;flex:none}
+.connect-mark strong{font-size:1rem;overflow-wrap:anywhere}
+.connect-preview{background:#fff;border:1px solid var(--control);border-radius:16px;padding:1rem 1.1rem;min-width:0}
+.connect-preview h3{margin:.9rem 0 .25rem;font-size:1.05rem}
+.connect-preview p{margin:0 0 .75rem}
+.connect-preview-button{display:inline-block;color:#fff;border-radius:999px;padding:.55rem 1rem;font-weight:600;font-size:.85rem}
+
+/* Privacy and audit */
+.connect-people{margin-top:.9rem}
+.connect-person{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem;border:1px solid var(--control);border-radius:16px;background:rgb(255 255 255/.85);padding:.9rem 1rem;min-width:0}
+.connect-person p{margin:0}
+.connect-toolbar label{min-width:140px;flex:1 1 140px}
+.connect-audit-details{min-width:220px;max-width:420px}
+.connect-audit-details code{display:block;overflow-wrap:anywhere;font-size:.72rem;color:var(--muted);max-height:6.5em;overflow:hidden}
+
+/* A hidden column heading is absolutely placed: without this it would stretch the page instead of scrolling with the table. */
+.connect .company-table-wrap{position:relative}

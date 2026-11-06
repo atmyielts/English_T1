@@ -22,14 +22,17 @@ interface LessonView {
     code: string; stage: string; level: string; title: Localized; goal: Localized; phrases: Phrase[]; words: Phrase[];
     dialogue: { setting: Localized; lines: { speaker: string; text: string }[] };
     exercises: PublicExercise[];
-    mission: { kind: 'roleplay' | 'writing'; code: string; title: Localized | null; brief: Localized };
+    mission: { kind: 'roleplay' | 'writing' | 'task'; code: string | null; title: Localized | null; brief: Localized };
+    /** Company lessons have versions; progress is kept across them. */
+    version?: number | null;
   };
-  progress: { status: string; score: number | null; attempts: number; minutes: number; step: string | null } | null;
+  progress: { status: string; score: number | null; attempts: number; minutes: number; step: string | null; updated?: boolean } | null;
   pass_score: number;
 }
 interface CheckResult {
   results: { id: string; correct: number; total: number; items: { ok: boolean; expected: string }[] }[];
   correct: number; total: number; score: number; passed: boolean; first_completion: boolean; best: number; status: string; next: string | null; pass_score: number;
+  certificates?: { code: string; title: Localized }[];
 }
 type Answers = Record<string, unknown[]>;
 
@@ -46,17 +49,29 @@ function useTranslation(): [Translation, (value: Translation) => void] {
 export function LessonPlayer({ track, lesson }: { track: string; lesson: string }) {
   const t = useAppT();
   const { org } = useWorkspace();
-  const { data, error, cause, reload } = useLoad<LessonView>(`orgs/${org.id}/learn/${lesson}`);
+  const { data, error, cause, reload } = useLoad<LessonView>(`orgs/${org.id}/learn/${lesson}?track=${encodeURIComponent(track)}`);
   if (needsSeat(cause)) return <div className="training-page">
     <p className="training-crumbs"><Link to={`/w/${org.id}/learn?track=${track}`}>{t('training.lesson.backToTrack')}</Link></p>
     <SeatLocked reason={seatReasonOf(cause)}/>
   </div>;
   if (!data) return <Loading error={error}/>;
   if (data.track.code !== track) return <p className="error" role="alert">{t('training.lesson.notFound')}</p>;
-  return <Player key={lesson} org={org.id} view={data} reload={reload}/>;
+  return <Player key={`${lesson}:${data.lesson.version ?? 'built-in'}`} org={org.id} view={data} reload={reload}/>;
 }
 
-function Player({ org, view, reload }: { org: string; view: LessonView; reload: () => Promise<void> }) {
+/** HR tries a draft in the real player (/w/:org/builder/lessons/:id/preview): nothing is saved. */
+export function LessonPreview({ id }: { id: string }) {
+  const t = useAppT();
+  const { org } = useWorkspace();
+  const { data, error } = useLoad<LessonView>(`orgs/${org.id}/builder/lessons/${id}/preview`);
+  if (!data) return <Loading error={error}/>;
+  return <>
+    <p className="notice" role="note">{t('training.builder.previewNote')} <Link to={`/w/${org.id}/builder/lessons/${id}`}>{t('training.builder.backToEditor')}</Link></p>
+    <Player org={org.id} view={data} reload={() => Promise.resolve()} previewOf={id}/>
+  </>;
+}
+
+function Player({ org, view, reload, previewOf }: { org: string; view: LessonView; reload: () => Promise<void>; previewOf?: string }) {
   const t = useAppT(), pick = useLocalized();
   const { member } = useWorkspace();
   const { lesson } = view;
@@ -68,7 +83,7 @@ function Player({ org, view, reload }: { org: string; view: LessonView; reload: 
 
   // Remember the step for "Continue" (members only; staff browse without saving).
   useEffect(() => {
-    if (member) void api(`orgs/${org}/learn/${lesson.code}/start`, { method: 'POST', body: { step: step === 'mission' ? 'results' : step } }).catch(() => undefined);
+    if (member && !previewOf) void api(`orgs/${org}/learn/${lesson.code}/start?track=${encodeURIComponent(view.track.code)}`, { method: 'POST', body: { step: step === 'mission' ? 'results' : step } }).catch(() => undefined);
   }, [step]);
   useEffect(() => () => stopSpeaking(), []);
 
@@ -77,12 +92,13 @@ function Player({ org, view, reload }: { org: string; view: LessonView; reload: 
   const translate = (item: Phrase) => translation === 'off' ? '' : item[translation];
 
   return <div className="training-page training-player">
-    <p className="training-crumbs"><Link to={`/w/${org}/learn?track=${view.track.code}`}>{pick(view.track.title)}</Link> · {t('training.lesson.position', { n: view.position, total: view.track.lessons })}</p>
+    {!previewOf && <p className="training-crumbs"><Link to={`/w/${org}/learn?track=${view.track.code}`}>{pick(view.track.title)}</Link> · {t('training.lesson.position', { n: view.position, total: view.track.lessons })}</p>}
     <header className="training-head">
       <h1>{pick(lesson.title)}</h1>
       <p>{pick(lesson.goal)}</p>
       <p className="training-lesson-meta"><LevelBadge level={lesson.level}/> <span className="company-badge">{t(`training.stage.${lesson.stage}` as AppKey)}</span>
         {view.progress?.status === 'completed' && <span className="company-badge good">{t('training.lesson.statusDone', { score: view.progress.score ?? 0 })}</span>}
+        {view.progress?.updated && <span className="company-badge warn">{t('training.lesson.updated')}</span>}
       </p>
     </header>
 
@@ -126,9 +142,9 @@ function Player({ org, view, reload }: { org: string; view: LessonView; reload: 
 
       {step === 'dialogue' && <Dialogue lines={lesson.dialogue.lines} setting={pick(lesson.dialogue.setting)} rate={rate}/>}
 
-      {step === 'exercises' && <Exercises org={org} view={view} onDone={() => void reload()} onMission={() => go('mission')}/>}
+      {step === 'exercises' && <Exercises org={org} view={view} previewOf={previewOf} onDone={() => void reload()} onMission={() => go('mission')}/>}
 
-      {step === 'mission' && <Mission org={org} view={view}/>}
+      {step === 'mission' && <Mission org={org} view={view} preview={Boolean(previewOf)}/>}
     </section>
 
     <div className="company-actions training-step-nav">
@@ -180,14 +196,16 @@ function emptyAnswers(exercises: PublicExercise[]): Answers {
       : exercise.items.map(() => exercise.kind === 'choice' ? null : '')]));
 }
 
-function Exercises({ org, view, onDone, onMission }: { org: string; view: LessonView; onDone: () => void; onMission: () => void }) {
-  const t = useAppT(), problem = useErrorText();
+function Exercises({ org, view, previewOf, onDone, onMission }: { org: string; view: LessonView; previewOf?: string; onDone: () => void; onMission: () => void }) {
+  const t = useAppT(), pick = useLocalized(), problem = useErrorText();
   const { member } = useWorkspace();
   const { lesson } = view;
-  const draftKey = `training.answers.${lesson.code}`;
+  // A new version may have other exercises, so answers kept in the browser belong to one version.
+  const draftKey = previewOf ? `training.preview.${lesson.code}` : lesson.version ? `training.answers.${lesson.code}.v${lesson.version}` : `training.answers.${lesson.code}`;
   const [answers, setAnswers] = useState<Answers>(() => ({ ...emptyAnswers(lesson.exercises), ...readLocal<Answers>(draftKey, {}) }));
   const [result, setResult] = useState<CheckResult | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const [stale, setStale] = useState(false);
   const minutes = useMinutes();
   const summary = useRef<HTMLDivElement>(null);
   const update = (id: string, value: unknown[]) => {
@@ -199,16 +217,19 @@ function Exercises({ org, view, onDone, onMission }: { org: string; view: Lesson
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!member) { setError(t('training.notMember')); return; }
+    if (!member && !previewOf) { setError(t('training.notMember')); return; }
     setBusy(true); setError('');
     try {
-      const checked = await api<CheckResult>(`orgs/${org}/learn/${lesson.code}/check`, { method: 'POST', body: { answers, minutes: minutes.take() } });
+      const checked = previewOf
+        ? await api<CheckResult>(`orgs/${org}/builder/lessons/${previewOf}/preview-check`, { method: 'POST', body: { answers } })
+        : await api<CheckResult>(`orgs/${org}/learn/${lesson.code}/check?track=${encodeURIComponent(view.track.code)}`, { method: 'POST', body: { answers, minutes: minutes.take(), version: lesson.version } });
       setResult(checked);
       if (checked.passed) writeLocal(draftKey, null);
       onDone();
       queueMicrotask(() => summary.current?.focus());
     } catch (cause) {
       setError(problem(cause));
+      setStale((cause as { code?: string })?.code === 'lesson_updated');
     } finally {
       setBusy(false);
     }
@@ -229,10 +250,12 @@ function Exercises({ org, view, onDone, onMission }: { org: string; view: Lesson
       {resultOf(exercise.id) && <p className="training-score-line">{t('training.exercise.score', { correct: resultOf(exercise.id)!.correct, total: resultOf(exercise.id)!.total })}</p>}
     </fieldset>)}
     {error && <p className="error" role="alert">{error}</p>}
-    {!result ? <button disabled={busy}>{busy ? t('training.exercise.checking') : t('training.exercise.check')}</button>
+    {stale && <button type="button" onClick={onDone}>{t('app.reload')}</button>}
+    {!result ? <button disabled={busy || stale}>{busy ? t('training.exercise.checking') : t('training.exercise.check')}</button>
       : <div ref={summary} tabIndex={-1} className={result.passed ? 'notice' : 'error'} role="status">
         <p><strong>{t('training.exercise.result', { score: result.score, correct: result.correct, total: result.total })}</strong></p>
         <p>{result.passed ? (result.first_completion ? t('training.exercise.passedFirst') : t('training.exercise.passed')) : t('training.exercise.failed', { score: result.pass_score })}</p>
+        {result.certificates?.map((certificate) => <p key={certificate.code}><strong>{t('training.cert.earned', { title: pick(certificate.title) })}</strong> <Link to={`/c/${certificate.code}`}>{t('training.me.certificateOpen')}</Link></p>)}
         <div className="company-actions">
           <button type="button" className="quiet" onClick={retry}>{t('training.exercise.retry')}</button>
           <button type="button" onClick={onMission}>{t('training.exercise.toMission')}</button>
@@ -318,18 +341,18 @@ function ExerciseBody({ exercise, value, onChange, result, disabled }: { exercis
   }
 }
 
-function Mission({ org, view }: { org: string; view: LessonView }) {
+function Mission({ org, view, preview }: { org: string; view: LessonView; preview: boolean }) {
   const t = useAppT(), pick = useLocalized();
   const { mission } = view.lesson;
-  const to = mission.kind === 'roleplay' ? `/w/${org}/roleplay?scenario=${mission.code}` : `/w/${org}/writing?template=${mission.code}`;
+  const to = mission.kind === 'roleplay' ? `/w/${org}/roleplay?scenario=${mission.code}` : mission.kind === 'writing' ? (mission.code ? `/w/${org}/writing?template=${mission.code}` : `/w/${org}/writing`) : null;
   return <div className="training-mission">
     <p className="eyebrow">{t(`training.mission.${mission.kind}` as AppKey)}</p>
     {mission.title && <h3>{pick(mission.title)}</h3>}
     <p>{pick(mission.brief)}</p>
-    <div className="company-actions">
-      <Link className="button-link" to={to}>{mission.kind === 'roleplay' ? t('training.mission.startRoleplay') : t('training.mission.startWriting')}</Link>
+    {!preview && <div className="company-actions">
+      {to && <Link className="button-link" to={to}>{mission.kind === 'roleplay' ? t('training.mission.startRoleplay') : t('training.mission.startWriting')}</Link>}
       {view.next && <Link className="button-link quiet" to={`/w/${org}/learn/${view.track.code}/${view.next}`}>{t('training.lesson.next')}</Link>}
       <Link className="button-link quiet" to={`/w/${org}/learn?track=${view.track.code}`}>{t('training.lesson.backToTrack')}</Link>
-    </div>
+    </div>}
   </div>;
 }

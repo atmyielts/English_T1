@@ -7,6 +7,7 @@ import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { AccessSyncIssue, LinkResult, Meter, useDates, useProblem } from '../people/ui.tsx';
 import { AuditTable, StaffFrame, type StaffOrgDetail } from './common.tsx';
+import { StaffOrgOps } from './StaffOrgOps.tsx';
 
 /** A stored contract end (end of a Tashkent day) as the date input shows it. */
 const tashkentDate = (iso: string | null | undefined) => iso ? new Date(new Date(iso).getTime() + 5 * 3_600_000).toISOString().slice(0, 10) : '';
@@ -74,7 +75,10 @@ export function StaffOrgPage({ orgId }: { orgId: string }) {
   }
 
   return <StaffFrame title={org.name} lead={`${t(`industry.${org.industry}` as AppKey)} · ${t(`size.${org.size_band}` as AppKey)}${org.city ? ` · ${org.city}` : ''}`}
-    actions={<Link className="button-link" to={`/w/${org.id}`}>{t('staff.org.open')}</Link>}>
+    actions={<>
+      <Link className="button-link quiet" to={`/staff/orgs/${org.id}/view`}>{t('staff.view.open')}</Link>
+      <Link className="button-link" to={`/w/${org.id}`}>{t('staff.org.open')}</Link>
+    </>}>
     {notice && <p className="notice" role="status">{notice}</p>}
     {syncFailed && <AccessSyncIssue message={t('staff.plan.savedNoSync')} retry={async () => {
       // Saving nothing re-syncs everyone in the workspace.
@@ -136,6 +140,7 @@ export function StaffOrgPage({ orgId }: { orgId: string }) {
         </>}
       </section>
     </div>
+    <StaffOrgOps orgId={orgId} onPlanChanged={load}/>
     <section className="staff-section" aria-labelledby="audit-title">
       <h2 id="audit-title">{t('staff.audit.title')}</h2>
       <AuditTable rows={data.audit}/>

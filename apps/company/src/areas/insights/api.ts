@@ -64,6 +64,7 @@ export interface Profile {
     weeks: { week: string; minutes: number; activities: number }[]; last_at: string | null;
   };
   english_reason: 'no_seat' | 'no_consent' | 'not_joined' | 'no_data' | null;
+  requirement?: { level: LevelCode; skills: Record<string, LevelCode>; due_date: string | null; source: string; meets: boolean; overdue: boolean; gaps: { skill: string; have: LevelCode | null; want: LevelCode }[] } | null;
 }
 
 export interface Report {
@@ -92,13 +93,16 @@ export interface AiSummary { status: 'ok' | 'limit' | 'unavailable'; summary: { 
 
 export type ChallengeStatus = 'upcoming' | 'running' | 'finished';
 export interface Challenge {
-  id: string; title: string; description: string | null; metric: 'points' | 'minutes' | 'lessons'; starts_on: string; ends_on: string;
-  department_ids: string[]; ended_at: string | null; status: ChallengeStatus;
+  id: string; title: string; description: string | null; metric: 'points' | 'minutes' | 'lessons' | 'active_days'; starts_on: string; ends_on: string;
+  department_ids: string[]; ended_at: string | null; status: ChallengeStatus; template?: string | null; mode?: 'individual' | 'teams';
+  teams?: { id: string; name: string; department_ids: string[] }[]; prize?: string | null;
 }
 export interface ChallengeList { today: string; challenges: Challenge[]; departments: Department[]; can_manage: boolean }
 export interface Standings {
   challenge: Challenge; today: string; days_left: number; starts_in: number; participants: number; active: number; total: number;
   departments: { id: string; name: string; participants: number; active: number; total: number; average: number; rank: number }[];
+  teams: { id: string; name: string; participants: number; active: number; total: number; average: number; rank: number }[];
+  frozen_at: string | null;
   people: { rank: number; member_id: string | null; name: string | null; department: string | null; value: number; me: boolean }[];
   me: { participating: boolean; sharing: boolean; rank: number | null; value: number } | null;
   can_manage: boolean;
@@ -107,7 +111,7 @@ export interface Standings {
 export interface Session {
   id: string; title: string; kind: 'class' | 'workshop'; trainer: string | null; starts_at: string; duration_minutes: number; location: string | null; link: string | null;
   department_ids: string[]; member_ids: string[]; notes: string | null; status: 'scheduled' | 'cancelled';
-  for_me: boolean; attended: boolean | null; counts: { invited: number; present: number } | null; in_progress: boolean;
+  for_me: boolean; attended: boolean | null; counts: { invited: number; present: number } | null; in_progress: boolean; series_id?: string | null; trainer_notes?: string | null;
 }
 export interface SessionList { when: 'upcoming' | 'past'; can_manage: boolean; departments: Department[]; sessions: Session[] }
 export interface AttendanceSheet {

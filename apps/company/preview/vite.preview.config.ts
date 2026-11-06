@@ -4,6 +4,7 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { schoodDesignAssets } from '../../../packages/service-design/build-assets';
+import { companyPublicAssets } from '../site-assets-plugin';
 
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 const stubClient = here('./client.ts');
@@ -12,6 +13,7 @@ export default defineConfig({
   root: here('..'),
   plugins: [
     schoodDesignAssets(),
+    companyPublicAssets(),
     {
       name: 'company-preview',
       enforce: 'pre',

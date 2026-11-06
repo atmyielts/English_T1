@@ -18,6 +18,8 @@ import type { Skill } from '../../../../../packages/company-core/src/mod.ts';
 interface Intro {
   test: { company: string; title: string; job_role: string; skills: Skill[]; time_limit_minutes: number; suggested_minutes: number; closes_at: string | null; show_level: boolean; speaking: boolean; listening: boolean; locale: string };
   open: boolean;
+  /** A personal link: who it was made for, and how far they got. */
+  personal: { name: string | null; email: string | null; phone: string | null; status: 'new' | 'running' | 'finished' } | null;
 }
 
 const SAMPLE = 'Hello. This is a short sound check before your English test. If you can hear this clearly, you are ready.';
@@ -118,6 +120,7 @@ export function CandidatePage({ token, resumeKey }: { token: string; resumeKey?:
   if (phase === 'invalid' || !intro) return <Frame><section className="hiring-narrow"><h1>{t('hiring.candidate.invalidTitle')}</h1><p className="error" role="alert">{error || t('hiring.error.link_not_found')}</p></section></Frame>;
   const { test } = intro;
 
+  if (intro.personal?.status === 'finished') return <Frame company={test.company}><section className="hiring-narrow"><h1>{test.title}</h1><p className="notice" role="status">{t('hiring.candidate.alreadyDone', { company: test.company })}</p></section></Frame>;
   if (!intro.open) return <Frame company={test.company}><section className="hiring-narrow"><h1>{test.title}</h1><p className="error" role="alert">{t('hiring.candidate.closed', { company: test.company })}</p></section></Frame>;
 
   return <Frame company={test.company}>
@@ -132,7 +135,9 @@ export function CandidatePage({ token, resumeKey }: { token: string; resumeKey?:
       <h2>{t('hiring.take.sections')}</h2>
       <ol className="hiring-section-list">{test.skills.map((skill) => <li key={skill}><strong>{skillText(t, skill)}</strong> <span>{t(`hiring.skillInfo.${skill}` as AppKey)}</span></li>)}</ol>
       <Rules skills={test.skills}/>
-      {phase === 'intro'
+      {intro.personal?.status === 'running'
+        ? <Resume token={token} onStarted={(newKey, attempt) => { writeKey(token, newKey); setKey(newKey); setView(attempt); setPhase('running'); scrollTo(0, 0); }}/>
+        : phase === 'intro'
         ? <div className="company-actions"><button type="button" onClick={() => setPhase('details')}>{t('hiring.candidate.begin')}</button></div>
         : <Details token={token} intro={intro} onStarted={(newKey, attempt) => { writeKey(token, newKey); setKey(newKey); setView(attempt); setPhase('running'); scrollTo(0, 0); }}/>}
     </section>
@@ -151,9 +156,32 @@ export function Rules({ skills }: { skills: Skill[] }) {
   </>;
 }
 
+/** A personal link opened on another device while the test is running: carries on from where it was. */
+function Resume({ token, onStarted }: { token: string; onStarted: (key: string, attempt: AttemptView) => void }) {
+  const t = useAppT(), problem = useHiringError();
+  const [busy, setBusy] = useState(false), [error, setError] = useState('');
+  async function resume() {
+    setBusy(true); setError('');
+    try {
+      const started = await api<{ key: string; attempt: AttemptView }>(`public/t/${encodeURIComponent(token)}/start`, { method: 'POST', body: {}, auth: false, timeoutMs: 90_000 });
+      onStarted(started.key, started.attempt);
+    } catch (cause) {
+      setError(problem(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <>
+    <p className="notice" role="status">{t('hiring.candidate.resumeHere')}</p>
+    <div className="company-actions"><button type="button" disabled={busy} onClick={() => void resume()}>{busy ? t('hiring.run.working') : t('hiring.candidate.resumeButton')}</button></div>
+    {error && <p className="error" role="alert">{error}</p>}
+  </>;
+}
+
 function Details({ token, intro, onStarted }: { token: string; intro: Intro; onStarted: (key: string, attempt: AttemptView) => void }) {
   const t = useAppT(), problem = useHiringError();
-  const [form, setForm] = useState({ name: '', email: '', phone: '' });
+  const [form, setForm] = useState({ name: intro.personal?.name ?? '', email: intro.personal?.email ?? '', phone: intro.personal?.phone ?? '' });
+  const emailFixed = Boolean(intro.personal?.email);
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const { test } = intro;
@@ -177,7 +205,7 @@ function Details({ token, intro, onStarted }: { token: string; intro: Intro; onS
     <form onSubmit={submit} className="hiring-details">
       <h2>{t('hiring.candidate.detailsTitle')}</h2>
       <label>{t('hiring.candidate.name')}<input required minLength={2} maxLength={120} autoComplete="name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })}/></label>
-      <label>{t('hiring.candidate.email')}<input required type="email" maxLength={200} autoComplete="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })}/></label>
+      <label>{t('hiring.candidate.email')}<input required type="email" maxLength={200} autoComplete="email" readOnly={emailFixed} value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })}/></label>
       <label>{t('hiring.candidate.phone')}<input type="tel" maxLength={40} autoComplete="tel" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })}/></label>
       <label className="check hiring-consent"><input type="checkbox" required checked={consent} onChange={(event) => setConsent(event.target.checked)}/>
         <span>{t('hiring.candidate.consent', { company: test.company })}</span>

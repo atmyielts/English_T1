@@ -3,6 +3,7 @@ import React from 'react';
 import { lazyPage } from '../lazy.ts';
 import type { AreaRoute } from '../types.ts';
 import './hiring.css';
+import './ats.css';
 
 const CandidatePage = lazyPage(() => import('./CandidatePage.tsx'), 'CandidatePage');
 const CertificatePage = lazyPage(() => import('./CertificatePage.tsx'), 'CertificatePage');
@@ -13,6 +14,11 @@ const MyTestsPage = lazyPage(() => import('./MemberPages.tsx'), 'MyTestsPage');
 const PlacementDetailPage = lazyPage(() => import('./PlacementPages.tsx'), 'PlacementDetailPage');
 const PlacementListPage = lazyPage(() => import('./PlacementPages.tsx'), 'PlacementListPage');
 const ReportPage = lazyPage(() => import('./ReportPage.tsx'), 'ReportPage');
+const CandidateDetailPage = lazyPage(() => import('./CandidateDetailPage.tsx'), 'CandidateDetailPage');
+const AllCandidatesPage = lazyPage(() => import('./CandidateDetailPage.tsx'), 'AllCandidatesPage');
+const SharedReportPage = lazyPage(() => import('./SharePages.tsx'), 'SharedReportPage');
+const HiringSettingsPage = lazyPage(() => import('./HiringSetupPages.tsx'), 'HiringSettingsPage');
+const TestPreviewPage = lazyPage(() => import('./HiringSetupPages.tsx'), 'TestPreviewPage');
 
 const HR = ['owner', 'admin'] as const;
 const LEADS = ['owner', 'admin', 'manager'] as const;
@@ -21,6 +27,10 @@ export const routes: AreaRoute[] = [
   { path: '/w/:org/hiring', access: 'org', roles: HR, nav: { section: 'hiring', label: 'hiring.nav.tests', order: 10 }, render: () => <HiringListPage/> },
   { path: '/w/:org/hiring/:assessment', access: 'org', roles: HR, render: ({ assessment }) => <TestDetailPage key={assessment} assessmentId={assessment}/> },
   { path: '/w/:org/hiring/:assessment/:attempt', access: 'org', roles: HR, render: ({ assessment, attempt }) => <ReportPage key={attempt} assessmentId={assessment} attemptId={attempt} back="hiring"/> },
+  { path: '/w/:org/hiring-settings', access: 'org', roles: HR, nav: { section: 'hiring', label: 'hiring.nav.settings', order: 15 }, render: () => <HiringSettingsPage/> },
+  { path: '/w/:org/hiring-preview/:assessment', access: 'org', roles: HR, render: ({ assessment }) => <TestPreviewPage key={assessment} assessmentId={assessment}/> },
+  { path: '/w/:org/candidates', access: 'org', roles: HR, nav: { section: 'hiring', label: 'hiring.nav.candidates', order: 12 }, render: () => <AllCandidatesPage/> },
+  { path: '/w/:org/candidates/:candidate', access: 'org', roles: HR, render: ({ candidate }) => <CandidateDetailPage key={candidate} candidateId={candidate}/> },
   { path: '/w/:org/placement', access: 'org', roles: LEADS, nav: { section: 'hiring', label: 'hiring.nav.placement', order: 20 }, render: () => <PlacementListPage/> },
   { path: '/w/:org/placement/:assessment', access: 'org', roles: LEADS, render: ({ assessment }) => <PlacementDetailPage key={assessment} assessmentId={assessment}/> },
   { path: '/w/:org/placement/:assessment/:attempt', access: 'org', roles: LEADS, render: ({ assessment, attempt }) => <ReportPage key={attempt} assessmentId={assessment} attemptId={attempt} back="placement"/> },
@@ -28,5 +38,6 @@ export const routes: AreaRoute[] = [
   { path: '/w/:org/test/:assessment', access: 'org', render: ({ assessment }) => <MemberTestPage key={assessment} assessmentId={assessment}/> },
   { path: '/t/:token', access: 'public', bare: true, render: ({ token }) => <CandidatePage key={token} token={token}/> },
   { path: '/r/:key', access: 'public', bare: true, render: ({ key }) => <CandidatePage key={key} token={`r-${key.slice(0, 12)}`} resumeKey={key}/> },
+  { path: '/s/:key', access: 'public', bare: true, render: ({ key }) => <SharedReportPage key={key} shareKey={key}/> },
   { path: '/v/:code', access: 'public', render: ({ code }) => <CertificatePage key={code} code={code}/> },
 ];

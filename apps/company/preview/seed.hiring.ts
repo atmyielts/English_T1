@@ -12,6 +12,15 @@ import type { World } from './boot.ts';
 /** Open the candidate test in preview at /t/previewFrontDeskReceptionist2026. */
 export const PREVIEW_LINK = 'previewFrontDeskReceptionist2026';
 const LINK_HASH = '6f29ce78816d08964b96910e8c5224ad61936f53fa2f93870679d5135a466a57';
+/** Personal links and share pages to open in preview: /t/<key> and /s/<key>. */
+export const PREVIEW_INVITE = 'previewPersonalLinkAzizaKarimova2026';
+const INVITE_HASH = '68d233852e41326d8c2edafd1ffa21eac97608973b4beb2ec461f035820f3b1e';
+const INVITE_TWO = 'previewPersonalLinkBoburAlimov202601';
+const INVITE_TWO_HASH = 'fb797235981963bdd8db6e57ed87aaf131a6ad1c193628f5f769db76c2a004e6';
+export const PREVIEW_REPORT = 'previewManagerReportSilkRoadFrontDesk';
+const REPORT_HASH = '41edba3d80c634f49567fc0b3b63c8020cfa104fbd94cb007ea98428ee669c75';
+export const PREVIEW_FEEDBACK = 'previewFeedbackMadinaYuldashevaReport';
+const FEEDBACK_HASH = '4f39451cca65ed7e9463b09f03bc09aa00f7aa2ae6c17f9d9698ca4af912c58a';
 const DAY = 86_400_000;
 const ALL: Skill[] = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'];
 
@@ -134,6 +143,18 @@ function grade(payload: unknown, speaking: boolean) {
 export const ai: Record<string, (payload: unknown) => unknown> = {
   'company-writing-grade': (payload) => grade(payload, false),
   'company-speaking-grade': (payload) => grade(payload, true),
+  'company-interview-kit': (payload) => {
+    const weak = ((payload as { weak_skills?: string[] }).weak_skills ?? ['speaking'])[0];
+    return {
+      questions: [
+        { skill: weak, question: 'A guest tells you the room is not what they booked. What exactly do you say first?', follow_up: 'They ask to speak to the manager. How do you answer?', listen_for: 'Вежливо ли извиняется и предлагает ли решение, а не оправдание.' },
+        { skill: weak, question: 'Tell me about a time you had to explain a rule to someone who did not like it.', follow_up: 'What did you do when they kept arguing?', listen_for: 'Правильно ли использует прошедшее время и не теряет ли нить рассказа.' },
+        { skill: 'role', question: 'I am arriving at midnight with two children and my booking cannot be found. Please help me.', follow_up: 'I have already paid online. What happens now?', listen_for: 'Задаёт ли уточняющие вопросы и предлагает ли следующий шаг.' },
+        { skill: 'role', question: 'Please check me in: greet me, ask for what you need, and explain breakfast and wifi.', follow_up: 'I also need a late check-out. What do you say?', listen_for: 'Понятная речь и естественные фразы для работы с гостями.' },
+        { skill: 'role', question: 'Recommend what I should see in Samarkand if I only have one free afternoon.', follow_up: 'How do I get there, and how long will it take?', listen_for: 'Даёт ли конкретный совет, а не перечисляет места.' },
+      ],
+    };
+  },
 };
 
 /** Fills writing and speaking results the way the grading module would. */
@@ -167,7 +188,7 @@ export function seed(db: FakeDb, world: World) {
   const testId = '00000000-0000-4000-8000-00000000f001';
   db.rows('company_assessments').push({
     id: testId, org_id: world.orgId, kind: 'hiring', title: 'Front desk receptionist', job_role: 'hospitality', skills: ALL, min_level: 'b1',
-    time_limit_minutes: 59, status: 'open', link_token_hash: LINK_HASH, max_attempts: 100, closes_at: at(-21), settings: { show_level: true },
+    time_limit_minutes: 59, status: 'open', link_token_hash: LINK_HASH, max_attempts: 100, closes_at: at(-21), settings: { show_level: true, template: 'front_desk', skill_minimums: { grammar: 'a2', vocabulary: 'b1', reading: 'a2', listening: 'b1', writing: 'a2', speaking: 'b1' } },
     created_by: hr, created_at: at(9), updated_at: at(9),
   });
   try { localStorage.setItem(`company-hiring-link:${testId}`, JSON.stringify({ link: `${location.origin}/t/${PREVIEW_LINK}`, link_id: LINK_HASH.slice(0, 12) })); } catch { /* preview only */ }
@@ -208,6 +229,51 @@ export function seed(db: FakeDb, world: World) {
     const feedback = gradeProduction(played, submitted);
     db.rows('company_attempts').push({ ...base, status: 'graded', deadline_at: new Date(started.getTime() + 59 * 60_000).toISOString(), submitted_at: submitted, graded_at: submitted, items: played.sections, answers: played.answers, ...overall(played.results, played.sections), skill_results: played.results, ai_feedback: feedback, integrity, certificate_code: candidate.code ?? null, updated_at: submitted });
   });
+
+  // ----- The pipeline around that test: stages, invitations, notes and share links -----
+  const stageOf: Record<string, { stage: string; furthest: string }> = {
+    'Madina Yuldasheva': { stage: 'interview', furthest: 'interview' },
+    'Javohir Rasulov': { stage: 'reviewing', furthest: 'reviewing' },
+    'Dilshod Ergashev': { stage: 'rejected', furthest: 'reviewing' },
+    'Sevara Normatova': { stage: 'offer', furthest: 'offer' },
+  };
+  const candidateRow = (row: Record<string, unknown>) => ({
+    id: crypto.randomUUID(), org_id: world.orgId, assessment_id: testId, attempt_id: null, phone: null, source: 'link', invite_token_hash: null, stage: 'new', stage_at: at(1), furthest_stage: 'new',
+    invited_at: null, opened_at: null, reminded_at: null, reminders: 0, hired_at: null, interview_kit: null, anonymised_at: null, created_by: hr, created_at: at(2), updated_at: at(1), ...row,
+  });
+  const madina = '00000000-0000-4000-8000-00000000f401', sevara = '00000000-0000-4000-8000-00000000f402', javohir = '00000000-0000-4000-8000-00000000f403';
+  const fixedIds: Record<string, string> = { 'Madina Yuldasheva': madina, 'Sevara Normatova': sevara, 'Javohir Rasulov': javohir };
+  candidates.forEach((candidate, index) => {
+    const place = stageOf[candidate.name] ?? { stage: 'new', furthest: 'new' };
+    db.rows('company_candidates').push(candidateRow({
+      ...(fixedIds[candidate.name] ? { id: fixedIds[candidate.name] } : {}),
+      attempt_id: `00000000-0000-4000-8000-00000000f1${String(index).padStart(2, '0')}`, name: candidate.name, email: candidate.email, phone: candidate.phone || null, stage: place.stage, furthest_stage: place.furthest,
+      created_at: at(candidate.days), stage_at: at(Math.max(0, candidate.days - 1)), opened_at: at(candidate.days),
+    }));
+  });
+  db.rows('company_candidates').push(
+    candidateRow({ name: 'Aziza Karimova', email: 'aziza.k@mail.uz', phone: '+998 90 111 22 33', source: 'invite', invite_token_hash: INVITE_HASH, invited_at: at(2), opened_at: at(1) }),
+    candidateRow({ name: 'Bobur Alimov', email: 'bobur.a@gmail.com', source: 'invite', invite_token_hash: INVITE_TWO_HASH, invited_at: at(4), reminded_at: at(1), reminders: 1, created_at: at(4) }),
+    candidateRow({ name: 'Shahlo Rahimova', phone: '+998 93 444 55 66', email: null, source: 'invite', invite_token_hash: '0'.repeat(64), invited_at: at(1), created_at: at(1) }),
+  );
+  try {
+    localStorage.setItem('company-hiring-invite:' + String(db.rows('company_candidates').find((row) => row.name === 'Aziza Karimova')!.id), `${location.origin}/t/${PREVIEW_INVITE}`);
+    localStorage.setItem('company-hiring-invite:' + String(db.rows('company_candidates').find((row) => row.name === 'Bobur Alimov')!.id), `${location.origin}/t/${INVITE_TWO}`);
+  } catch { /* preview only */ }
+  const note = (candidate: string, kind: string, daysAgo: number, body: string | null, details: Record<string, unknown> = {}, author = hr) =>
+    db.rows('company_candidate_notes').push({ id: crypto.randomUUID(), org_id: world.orgId, candidate_id: candidate, author, kind, body, details, created_at: at(daysAgo) });
+  note(madina, 'stage', 5, null, { from: 'new', to: 'reviewing' });
+  note(madina, 'note', 4.5, 'Сильная устная часть. Говорит уверенно, понятно, без пауз.');
+  note(madina, 'stage', 4, null, { from: 'reviewing', to: 'interview' });
+  note(madina, 'message', 4, null, { kind: 'interview', locale: 'ru' });
+  note(madina, 'note', 1, 'Договорились на четверг, 11:00. Беседу ведёт Дильноза.', {}, world.personas.owner.id);
+  note(sevara, 'stage', 1, null, { from: 'interview', to: 'offer' });
+  note(sevara, 'note', 1, 'Лучший результат среди кандидатов. Готовим предложение.');
+  note(javohir, 'note', 3, 'Хорошо по чтению, письмо слабее. Рассмотреть на ночную смену.');
+  db.rows('company_share_links').push(
+    { id: crypto.randomUUID(), org_id: world.orgId, assessment_id: testId, candidate_id: null, kind: 'report', key_hash: REPORT_HASH, label: 'Для руководителя службы приёма', include_contacts: false, include_feedback: true, stages: [], expires_at: at(-10), revoked_at: null, last_opened_at: at(1), opens: 3, created_by: hr, created_at: at(4) },
+    { id: crypto.randomUUID(), org_id: world.orgId, assessment_id: testId, candidate_id: madina, kind: 'feedback', key_hash: FEEDBACK_HASH, label: null, include_contacts: false, include_feedback: true, stages: [], expires_at: at(-25), revoked_at: null, last_opened_at: null, opens: 0, created_by: hr, created_at: at(1) },
+  );
 
   // ----- Staff placement campaign for everyone, and a front-office progress check -----
   const placementId = '00000000-0000-4000-8000-00000000f002';

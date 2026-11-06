@@ -4,17 +4,20 @@
 // or testimonials: only what the product does.
 import React, { useEffect, useState } from 'react';
 import { INDUSTRIES, JOB_ROLES } from '../../../../../packages/company-core/src/mod.ts';
-import { LocaleSwitcher } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useSession } from '../../session.tsx';
 import { homeOf } from '../core/pages.tsx';
 import type { LeadForm } from '../people/types.ts';
-import { DemoForm } from './DemoForm.tsx';
+import { INDUSTRY_SLUGS } from './catalog.ts';
+import { LeadSection } from './DemoForm.tsx';
 import { HeroCard, SampleReport } from './SampleReport.tsx';
+import { faqLd, organizationLd } from './seo.ts';
+import { SiteFrame } from './SiteChrome.tsx';
 
 const PILLARS = ['hiring', 'placement', 'training', 'insights'] as const;
+const RESOURCES = [['/guide', 'guide'], ['/calculator', 'calculator'], ['/sample-report', 'sample'], ['/compare', 'compare']] as const;
 const FAQ = ['privacy', 'languages', 'ai', 'certificate', 'payment', 'data', 'candidates', 'pilot'] as const;
 
 function Icon({ name }: { name: (typeof PILLARS)[number] }) {
@@ -29,15 +32,13 @@ function Icon({ name }: { name: (typeof PILLARS)[number] }) {
 
 export function Landing() {
   const t = useAppT();
-  const { user, me } = useSession();
+  const { me } = useSession();
   const [pilot, setPilot] = useState<LeadForm | null>(null);
   useEffect(() => { api<LeadForm>('public/leads/form', { auth: false }).then(setPilot).catch(() => setPilot(null)); }, []);
   useEffect(() => {
-    document.title = t('site.meta.title');
     const id = location.hash.slice(1);
     if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());
-    return () => { document.title = t('app.title'); };
-  }, [t]);
+  }, []);
   const first = me?.workspaces[0];
   const tests = pilot?.pilot_tests ?? null;
   const selfServe = pilot?.self_serve !== false;
@@ -46,28 +47,9 @@ export function Landing() {
     : selfServe ? <Link className="button-link site-cta" to="/start">{t('site.cta.pilot')}</Link>
       : <a className="button-link site-cta" href="#demo">{t('site.cta.demo')}</a>;
 
-  return <div className="site">
-    <a className="skip-link" href="#workspace-main">{t('header.skip')}</a>
-    <header className="site-header">
-      <div className="site-header-inner">
-        <Link to="/" className="site-brand" aria-label={t('site.brandAria')}><span className="service-brand-dot" aria-hidden="true"/>Schood<span>{t('app.name')}</span></Link>
-        <nav className="site-nav" aria-label={t('site.nav.label')}>
-          <a href="#how">{t('site.nav.how')}</a>
-          <a href="#tracks">{t('site.nav.tracks')}</a>
-          <a href="#report">{t('site.nav.report')}</a>
-          <a href="#pricing">{t('site.nav.pricing')}</a>
-          <a href="#faq">{t('site.nav.faq')}</a>
-        </nav>
-        <div className="site-header-actions">
-          <LocaleSwitcher label={t('locale.label')}/>
-          {me?.staff && <Link className="button-link quiet site-hide-sm" to="/staff">{t('site.cta.staff')}</Link>}
-          {user ? (first ? <Link className="button-link" to={homeOf(first.org.id, first.member.role)}>{t('site.cta.open')}</Link> : <Link className="button-link quiet" to="/w">{t('picker.title')}</Link>)
-            : <Link className="button-link quiet" to="/w">{t('site.cta.signIn')}</Link>}
-        </div>
-      </div>
-    </header>
+  const faq = FAQ.map((item) => ({ q: t(`site.faq.${item}.q`), a: item === 'pilot' && tests !== null ? t('site.faq.pilot.aCount', { tests }) : t(`site.faq.${item}.a`) }));
 
-    <main id="workspace-main" tabIndex={-1}>
+  return <SiteFrame seo={{ title: t('site.meta.title'), description: t('site.meta.description'), path: '/', jsonLd: [organizationLd(), faqLd(faq)] }}>
       <section className="site-hero" aria-labelledby="site-hero-title">
         <div className="site-hero-text">
           <p className="site-eyebrow">{t('site.hero.eyebrow')}</p>
@@ -108,6 +90,14 @@ export function Landing() {
         </div>
       </section>
 
+      <section className="site-section site-check-band" aria-labelledby="site-check-title">
+        <div>
+          <h2 id="site-check-title" className="site-h2">{t('site.landing.check.title')}</h2>
+          <p className="site-section-lead">{t('site.landing.check.body')}</p>
+        </div>
+        <Link className="button-link site-cta" to="/check">{t('site.landing.check.cta')}</Link>
+      </section>
+
       <section className="site-section" id="how" aria-labelledby="site-how-title">
         <h2 id="site-how-title" className="site-h2">{t('site.steps.title')}</h2>
         <ol className="site-steps">
@@ -133,6 +123,14 @@ export function Landing() {
             <p className="hint">{t('site.tracks.inside')}</p>
           </div>
         </div>
+      </section>
+
+      <section className="site-section" id="industries" aria-labelledby="site-industries-title">
+        <h2 id="site-industries-title" className="site-h2">{t('site.landing.industries.title')}</h2>
+        <p className="site-section-lead">{t('site.landing.industries.lead')}</p>
+        <ul className="site-link-chips">
+          {INDUSTRY_SLUGS.map((slug) => <li key={slug}><Link to={`/for/${slug}`}>{t(`site.forIndustry.${slug}` as AppKey)}</Link></li>)}
+        </ul>
       </section>
 
       <section className="site-section site-report-section" id="report" aria-labelledby="site-report-title">
@@ -178,41 +176,26 @@ export function Landing() {
         <p><a className="button-link" href="#demo">{t('site.pricing.cta')}</a></p>
       </section>
 
+      <section className="site-section" id="resources" aria-labelledby="site-resources-title">
+        <h2 id="site-resources-title" className="site-h2">{t('site.landing.resources.title')}</h2>
+        <div className="site-cards site-cards-4">
+          {RESOURCES.map(([to, name]) => <article key={to} className="site-card">
+            <h3><Link to={to}>{t(`site.landing.${name}.title` as AppKey)}</Link></h3>
+            <p>{t(`site.landing.${name}.body` as AppKey)}</p>
+          </article>)}
+        </div>
+      </section>
+
       <section className="site-section" id="faq" aria-labelledby="site-faq-title">
         <h2 id="site-faq-title" className="site-h2">{t('site.faq.title')}</h2>
         <div className="site-faq">
           {FAQ.map((item) => <details key={item}>
             <summary>{t(`site.faq.${item}.q`)}</summary>
-            <p>{item === 'pilot' && tests !== null ? t('site.faq.pilot.aCount', { tests }) : t(`site.faq.${item}.a`)}</p>
+            <p>{faq[FAQ.indexOf(item)].a}</p>
           </details>)}
         </div>
       </section>
 
-      <section className="site-section site-demo" id="demo" aria-labelledby="site-demo-title">
-        <div className="site-demo-intro">
-          <h2 id="site-demo-title" className="site-h2">{t('site.demo.title')}</h2>
-          <p className="site-section-lead">{t('site.demo.lead')}</p>
-          <ul className="site-ticks">
-            <li>{t('site.demo.point1')}</li>
-            <li>{t('site.demo.point2')}</li>
-            <li>{t('site.demo.point3')}</li>
-          </ul>
-        </div>
-        <DemoForm selfServe={selfServe}/>
-      </section>
-    </main>
-
-    <footer className="site-footer">
-      <div>
-        <strong>Schood · {t('app.name')}</strong>
-        <p>{t('app.footer')}</p>
-      </div>
-      <nav aria-label={t('site.footer.label')}>
-        <a href="https://schood.online">schood.online</a>
-        <Link to="/w">{t('site.cta.signIn')}</Link>
-        {selfServe && <Link to="/start">{t('site.cta.pilot')}</Link>}
-        <a href="#demo">{t('site.cta.demo')}</a>
-      </nav>
-    </footer>
-  </div>;
+      <LeadSection source="landing"/>
+  </SiteFrame>;
 }

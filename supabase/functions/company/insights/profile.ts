@@ -9,6 +9,7 @@ import { findLesson } from '../training/tracks/index.ts';
 import { check, CompanyError, UUID, type MemberRow, type Route } from '../types.ts';
 import { addDays, canSee, dayStart, fetchAll, localDate, meetsTarget, shares, viewerOf, weekOf } from './common.ts';
 import { englishSummary, englishVisibleFrom } from './english.ts';
+import { latestSkills, standingOf, type AttemptWithSkills, type RequirementRow } from './framework.ts';
 import { optional } from './overview.ts';
 
 interface AttemptRow { id: string; assessment_id: string; status: string; overall_level: string | null; overall_score: number | null; skill_results: Record<string, { score?: unknown; level?: unknown }> | null; started_at: string; submitted_at: string | null; graded_at: string | null; certificate_code: string | null }
@@ -114,6 +115,11 @@ export const routes: Route[] = [
         };
       }
 
+      // What their job requires, judged on company tests, which the profile shows to everyone who may open it.
+      const requirements = await optional<RequirementRow[]>(() => ctx.db.from('company_level_requirements').select('id,org_id,job_role,department_id,level,skills,due_date,source,note').eq('org_id', org.id).limit(1000), []);
+      const graded = attempts.filter((attempt) => attempt.status === 'graded').map((attempt) => ({ ...attempt, member_id: member.id }) as unknown as AttemptWithSkills).reverse();
+      const standing = standingOf(requirements, member, member.level, latestSkills(graded).get(member.id), today);
+
       const english = detail && member.seat && member.user_id ? await englishSummary(ctx.db, member.user_id, now, englishVisibleFrom(member, now)) : null;
       const departmentRow = department ? (department as { data: { id: string; name: string } | null }).data : null;
       return {
@@ -127,6 +133,10 @@ export const routes: Route[] = [
         learning,
         english,
         english_reason: english ? null : !member.seat ? 'no_seat' : !detail ? 'no_consent' : !member.user_id ? 'not_joined' : 'no_data',
+        requirement: standing.requirement ? {
+          level: standing.requirement.level, skills: standing.requirement.skills ?? {}, due_date: standing.requirement.due_date, source: standing.requirement.source,
+          meets: standing.meets, overdue: standing.overdue, gaps: standing.gaps,
+        } : null,
       };
     },
   },

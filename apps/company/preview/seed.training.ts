@@ -1,6 +1,8 @@
 // Preview data for the training area: lesson progress, assignments, the hotel's
 // own glossary, one finished role-play and one writing check for the employee,
-// plus canned replies for the company-roleplay and company-writing-check AI.
+// plus canned replies for the company-roleplay and company-writing-check AI. Second release:
+// the hotel's own lessons, course and role-play, paths, certificates, an overdue assignment
+// and canned replies for company-lesson-draft.
 import type { FakeDb } from '../../../supabase/functions/company/testing.ts';
 import { findScenario, findTrack } from '../../../supabase/functions/company/training/tracks/index.ts';
 import type { World } from './boot.ts';
@@ -66,6 +68,8 @@ export function seed(db: FakeDb, world: World) {
   term('Turndown service', 'Preparing the room for the night in the evening.', 'Вечерняя подготовка номера', 'Kechki xona tayyorlash', 'Turndown service is from 19:00 to 21:00.', null);
   term('Amenities', 'Extra things and services for guests, such as a pool or free water.', 'Удобства для гостей', 'Mehmonlar uchun qulayliklar', 'All rooms have free amenities.', null);
 
+  seedOwnContent(db, world, { employee, hr, at, date });
+
   // One finished role-play and one writing check for the employee.
   const scenario = findScenario('hospitality-rp-room-not-ready')?.scenario;
   if (scenario) db.rows('company_roleplay_sessions').push({
@@ -110,6 +114,122 @@ export function seed(db: FakeDb, world: World) {
   });
 }
 
+const LATE_CHECK_OUT = {
+  title: { en: 'Our late check-out rule', ru: 'Наше правило позднего выезда', uz: 'Kech chiqish qoidamiz' },
+  goal: { en: 'Explain late check-out and its fee clearly to a guest.', ru: 'Понятно объяснить гостю поздний выезд и его стоимость.', uz: 'Kech chiqish va uning narxini mehmonga aniq tushuntirish.' },
+  level: 'a2',
+  phrases: [
+    { en: 'Check-out is at twelve o’clock.', ru: 'Выезд в двенадцать часов.', uz: 'Chiqish soat o‘n ikkida.' },
+    { en: 'You can stay until four for half the room rate.', ru: 'Можно остаться до четырёх за половину стоимости номера.', uz: 'Xona narxining yarmiga soat to‘rtgacha qolishingiz mumkin.' },
+    { en: 'Let me check if the room is free this afternoon.', ru: 'Позвольте проверить, свободен ли номер сегодня днём.', uz: 'Bugun tushdan keyin xona bo‘shligini tekshirib ko‘ray.' },
+    { en: 'We can keep your luggage at the desk for free.', ru: 'Мы можем бесплатно оставить ваш багаж на стойке.', uz: 'Yukingizni qabulxonada bepul saqlab turishimiz mumkin.' },
+  ],
+  words: [
+    { en: 'late check-out', ru: 'поздний выезд', uz: 'kech chiqish', note: 'noun' },
+    { en: 'room rate', ru: 'стоимость номера', uz: 'xona narxi', note: 'noun' },
+    { en: 'fee', ru: 'плата', uz: 'to‘lov', note: 'noun' },
+  ],
+  dialogue: {
+    setting: { en: 'A guest at reception on the last morning of a stay.', ru: 'Гость на стойке регистрации в последнее утро.', uz: 'Mehmon oxirgi kuni ertalab qabulxonada.' },
+    lines: [
+      { speaker: 'Guest', text: 'My flight is at nine tonight. Can I keep the room longer?' },
+      { speaker: 'Receptionist', text: 'Check-out is at twelve, but you can stay until four for half the room rate.' },
+      { speaker: 'Guest', text: 'And after four?' },
+      { speaker: 'Receptionist', text: 'We can keep your luggage at the desk for free until you leave.' },
+    ],
+  },
+  exercises: [
+    { id: 'e1', kind: 'choice', prompt: 'Choose the right answer.', items: [
+      { q: 'When is the normal check-out?', options: ['At twelve', 'At four', 'At nine'], answer: 0 },
+      { q: 'How much is a stay until four?', options: ['Free', 'Half the room rate', 'The full room rate'], answer: 1 },
+    ] },
+    { id: 'e2', kind: 'gap', prompt: 'Fill the gap.', items: [
+      { text: 'We can keep your ___ at the desk for free.', answers: ['luggage', 'bags'] },
+      { text: 'You can stay until four for half the room ___.', answers: ['rate'] },
+    ] },
+    { id: 'e3', kind: 'match', prompt: 'Match the two sides.', pairs: [['late check-out', 'leaving after twelve'], ['room rate', 'the price of a room'], ['fee', 'money you pay for a service']] },
+  ],
+  mission: { kind: 'roleplay', scenario: '', brief: { en: 'Practise this with a guest who wants to stay longer.', ru: 'Потренируйтесь с гостем, который хочет остаться подольше.', uz: 'Ko‘proq qolmoqchi bo‘lgan mehmon bilan mashq qiling.' } },
+};
+
+function seedOwnContent(db: FakeDb, world: World, { employee, hr, at, date }: { employee: Row; hr: Row; at: (daysBack: number, hours?: number) => string; date: (daysAhead: number) => string }) {
+  const { orgId, departments } = world;
+  // A custom role-play the hotel wrote itself.
+  const scenarioId = crypto.randomUUID();
+  db.rows('company_scenarios').push({
+    id: scenarioId, org_id: orgId, status: 'published', difficulty: 'medium', created_by: hr.user_id, created_at: at(18), updated_at: at(18),
+    title: { en: 'A guest asks to stay longer', ru: 'Гость просит продлить выезд', uz: 'Mehmon ko‘proq qolishni so‘raydi' },
+    goal: { en: 'Explain the rule and the fee, and offer the luggage room.', ru: 'Объяснить правило и плату и предложить камеру хранения.', uz: 'Qoida va to‘lovni tushuntirish, yuk saqlashni taklif qilish.' },
+    persona: 'Ms Laurent, a polite French guest with an evening flight. She hopes the late stay is free and asks twice.',
+    learner_role: 'A receptionist at Silk Road Hotel.', setting: 'Hotel reception at eleven in the morning, the last day of her stay.',
+    opening: 'Good morning. My flight is only at nine tonight. May I keep my room until the evening?',
+    checklist: ['Greets the guest and listens', 'States the check-out time and the fee clearly', 'Offers to keep the luggage at the desk'],
+  });
+  const scenarioCode = `cs-${scenarioId}`;
+
+  // Two published lessons in a course, and one AI draft still waiting for approval.
+  const lesson = (id: string, content: Record<string, unknown>, extra: Row = {}) => db.rows('company_lessons').push({
+    id, org_id: orgId, title: content.title, level: content.level, draft: content, published: content, status: 'published', revision: 2, published_version: 1, published_revision: 2,
+    published_at: at(15), source: 'manual', approved_at: null, created_by: hr.user_id, created_at: at(20), updated_at: at(15), ...extra,
+  });
+  const first = crypto.randomUUID(), second = crypto.randomUUID(), draft = crypto.randomUUID();
+  const lateCheckOut = { ...LATE_CHECK_OUT, mission: { ...LATE_CHECK_OUT.mission, scenario: scenarioCode } };
+  lesson(first, lateCheckOut);
+  const breakfast = {
+    ...LATE_CHECK_OUT,
+    title: { en: 'Our breakfast hours', ru: 'Часы завтрака', uz: 'Nonushta vaqti' },
+    goal: { en: 'Tell a guest when and where breakfast is served.', ru: 'Сообщить гостю, когда и где подают завтрак.', uz: 'Mehmonga nonushta qachon va qayerda berilishini aytish.' },
+    phrases: [
+      { en: 'Breakfast is from seven to ten thirty.', ru: 'Завтрак с семи до половины одиннадцатого.', uz: 'Nonushta yettidan o‘n yarimgacha.' },
+      { en: 'The restaurant is on the first floor.', ru: 'Ресторан на первом этаже.', uz: 'Restoran birinchi qavatda.' },
+    ],
+    words: [{ en: 'buffet', ru: 'шведский стол', uz: 'shved stoli', note: 'noun' }],
+    exercises: [{ id: 'e1', kind: 'gap', prompt: 'Fill the gap.', items: [{ text: 'Breakfast is from seven to ten ___.', answers: ['thirty'] }, { text: 'The restaurant is on the first ___.', answers: ['floor'] }] }],
+    mission: { kind: 'task', brief: { en: 'Tell three guests the breakfast hours today.', ru: 'Сегодня сообщите часы завтрака трём гостям.', uz: 'Bugun uchta mehmonga nonushta vaqtini ayting.' } },
+  };
+  lesson(second, breakfast);
+  const copy = (id: string, content: Record<string, unknown>) => db.rows('company_lesson_versions').push({ id: crypto.randomUUID(), org_id: orgId, lesson_id: id, version: 1, content, published_by: hr.user_id, created_at: at(15) });
+  copy(first, lateCheckOut);
+  copy(second, breakfast);
+  const pending = { ...LATE_CHECK_OUT, title: { en: 'Our pool rules', ru: 'Правила бассейна', uz: 'Basseyn qoidalari' }, mission: { kind: 'task', brief: { en: 'Explain the pool rules to a family.', ru: 'Объясните правила бассейна семье.', uz: 'Oilaga basseyn qoidalarini tushuntiring.' } } };
+  lesson(draft, pending, { published: null, status: 'draft', revision: 1, published_version: 0, published_revision: 0, published_at: null, source: 'ai', updated_at: at(1) });
+
+  const courseId = crypto.randomUUID();
+  const courseTitle = { en: 'Welcome to Silk Road Hotels', ru: 'Добро пожаловать в Silk Road Hotels', uz: 'Silk Road Hotels ga xush kelibsiz' };
+  const courseSummary = { en: 'Our own rules and services, in the English you need with guests.', ru: 'Наши правила и услуги на английском, который нужен с гостями.', uz: 'Mehmonlar bilan kerak bo‘ladigan inglizchada o‘z qoidalarimiz va xizmatlarimiz.' };
+  db.rows('company_courses').push({
+    id: courseId, org_id: orgId, title: courseTitle, summary: courseSummary, job_role: 'hospitality', lesson_ids: [first, second], status: 'published', revision: 2, published_version: 1, published_revision: 2,
+    published: { title: courseTitle, summary: courseSummary, job_role: 'hospitality', lesson_ids: [first, second] }, published_at: at(14), created_by: hr.user_id, created_at: at(20), updated_at: at(14),
+  });
+  const courseCode = `c-${courseId}`;
+
+  // The employee finished the course's first lesson; the course is assigned to the front office and is overdue.
+  db.rows('company_lesson_progress').push({
+    id: crypto.randomUUID(), org_id: orgId, member_id: employee.id, user_id: employee.user_id, track_code: courseCode, lesson_code: `co-${first}`, status: 'completed', score: 88,
+    minutes: 12, attempts: 1, data: { step: 'results', version: 1 }, completed_at: at(9), created_at: at(10), updated_at: at(9),
+  });
+  db.rows('company_assignments').push({
+    id: crypto.randomUUID(), org_id: orgId, track_code: courseCode, target_level: null, due_date: date(-2), department_id: departments.front, member_id: null,
+    note: 'New rules for this season.', status: 'active', created_by: hr.user_id, created_at: at(14), updated_at: at(14),
+  });
+
+  // Paths: Sales follows a department path; the employee has their own, with a date.
+  db.rows('company_learning_paths').push(
+    { id: crypto.randomUUID(), org_id: orgId, member_id: null, department_id: departments.sales, target_level: 'b2', due_date: date(120), steps: [{ kind: 'track', code: 'sales', stage: 'foundation' }, { kind: 'course', code: courseCode }, { kind: 'track', code: 'sales', stage: 'professional' }], status: 'active', created_by: hr.user_id, created_at: at(12), updated_at: at(12) },
+    { id: crypto.randomUUID(), org_id: orgId, member_id: employee.id, department_id: null, target_level: 'b1', due_date: date(90), steps: [{ kind: 'track', code: 'hospitality', stage: 'foundation' }, { kind: 'course', code: courseCode }, { kind: 'track', code: 'hospitality', stage: 'professional' }], status: 'active', created_by: hr.user_id, created_at: at(12), updated_at: at(12) },
+  );
+
+  // A certificate someone has already earned, and saved writing templates for the employee.
+  db.rows('company_training_certificates').push({
+    id: crypto.randomUUID(), org_id: orgId, member_id: employee.id, user_id: employee.user_id, kind: 'course', ref_code: 'c-demo', title: { en: 'Fire safety in English', ru: 'Пожарная безопасность на английском', uz: 'Yong‘in xavfsizligi inglizcha' },
+    holder_name: employee.full_name, lessons: 4, score: 91, code: 'SR7K2M9QPL', issued_at: at(21), revoked_at: null, created_at: at(21),
+  });
+  db.rows('company_writing_snippets').push(
+    { id: crypto.randomUUID(), org_id: orgId, member_id: employee.id, user_id: employee.user_id, title: 'Booking confirmed', body: 'Dear [name],\n\nThank you for your booking. We look forward to welcoming you on [date].\n\nKind regards,\nBekzod Tursunov', tone: 'formal', created_at: at(8), updated_at: at(8) },
+    { id: crypto.randomUUID(), org_id: orgId, member_id: employee.id, user_id: employee.user_id, title: 'Airport transfer', body: 'Hello [name],\n\nOur driver will meet you at arrivals with a sign with your name.\n\nBest wishes,\nBekzod', tone: 'friendly', created_at: at(6), updated_at: at(6) },
+  );
+}
+
 /** Canned AI replies so the preview shows the real flow without a provider. */
 const REPLIES = [
   'I see. And how long will that take, exactly?',
@@ -130,9 +250,21 @@ const FEEDBACK: Record<string, { summary: string; why: string; next: string }> =
 };
 
 export const ai: Record<string, (payload: unknown) => unknown> = {
+  'company-lesson-draft': (payload) => {
+    const input = payload as { step?: string; items?: { key: string }[]; source?: string };
+    if (input.items) return { items: input.items.map((item) => ({ key: item.key, ru: 'Перевод для просмотра', uz: 'Ko‘rib chiqish uchun tarjima' })) };
+    if (!input.step) return {
+      title: { en: 'A customer complains', ru: 'Клиент жалуется', uz: 'Mijoz shikoyat qilmoqda' }, goal: { en: 'Calm the customer and agree the next step.', ru: 'Успокоить клиента и договориться о следующем шаге.', uz: 'Mijozni tinchlantirish va keyingi qadamni kelishish.' },
+      persona: 'Mr Rahimov, a tired business traveller who wants a clear answer quickly.', learner_role: 'A member of the front desk team.', setting: 'At reception after a long flight.', opening: 'I have been waiting for twenty minutes. What is going on?', difficulty: 'medium',
+      checklist: ['Apologises for the wait', 'Explains the reason', 'Agrees the next step'],
+    };
+    if (input.step === 'practice') return { dialogue: LATE_CHECK_OUT.dialogue, exercises: LATE_CHECK_OUT.exercises };
+    return { title: { en: 'From your document', ru: 'По вашему документу', uz: 'Hujjatingiz asosida' }, goal: LATE_CHECK_OUT.goal, phrases: LATE_CHECK_OUT.phrases, words: LATE_CHECK_OUT.words, mission: { brief: { en: 'Use this at work today.', ru: 'Примените это сегодня на работе.', uz: 'Bugun buni ishda qo‘llang.' } } };
+  },
   'company-roleplay': (payload) => {
-    const input = payload as { learner_says?: string; turn?: number; transcript?: { speaker: string; text: string }[]; locale?: string };
+    const input = payload as { learner_says?: string; turn?: number; transcript?: { speaker: string; text: string }[]; locale?: string; hint_for?: string };
     const locale = input.locale && input.locale in FEEDBACK ? input.locale : 'ru';
+    if (input.hint_for) return { say: 'I’m very sorry, let me see what I can do for you.', why: FEEDBACK[locale].why };
     if (input.transcript) {
       const said = input.transcript.filter((turn) => turn.speaker === 'learner').map((turn) => turn.text);
       return {
