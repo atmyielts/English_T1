@@ -8,6 +8,8 @@ import { LocaleSwitcher } from '../../../packages/service-i18n/src/i18n.tsx';
 import { api, type Workspace } from './api.ts';
 import { allRoutes } from './areas/index.ts';
 import { ConsentBanner, homeOf, NotFound, SignIn } from './areas/core/pages.tsx';
+import { HeaderBell } from './areas/connect/HeaderBell.tsx';
+import { CommandPalette } from './areas/people/CommandPalette.tsx';
 import { NAV_SECTIONS, type AreaRoute } from './areas/types.ts';
 import { useAppT, useErrorText, type AppKey } from './i18n/index.ts';
 import { matchPath, navigate, useLocation } from './router.tsx';
@@ -80,6 +82,7 @@ function Chrome({ children, nav }: { children: ReactNode; nav?: ReactNode }) {
           {me.workspaces.map(({ org }) => <option key={org.id} value={org.id}>{org.name}</option>)}
         </select>
       </label>}
+      {current && user && <><CommandPalette orgId={current}/><HeaderBell orgId={current}/></>}
       {user ? <button className="quiet" onClick={() => void signOut().then(() => navigate('/'))}>{t('header.signOut')}</button>
         : user === '' && <button className="quiet" onClick={() => navigate('/w')}>{t('header.signIn')}</button>}
       <LocaleSwitcher label={t('locale.label')}/>

@@ -22,6 +22,7 @@ export const coreUz: Record<CoreKey, string> = {
   'nav.section.training': 'O‘qitish',
   'nav.section.insights': 'Tahlil',
   'nav.section.me': 'Mening ingliz tilim',
+  'nav.section.connect': 'Integratsiyalar',
   'nav.section.staff': 'Schood jamoasi',
   'signin.title': '“Kompaniyalar uchun ingliz tili”ga kirish',
   'signin.lead': 'Schood akkauntingizdan foydalaning. Xodimlar Schood English’ga ham shu akkaunt bilan kiradi.',

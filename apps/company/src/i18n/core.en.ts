@@ -22,6 +22,7 @@ export const coreEn = {
   'nav.section.training': 'Training',
   'nav.section.insights': 'Insights',
   'nav.section.me': 'My English',
+  'nav.section.connect': 'Connect',
   'nav.section.staff': 'Schood staff',
   'signin.title': 'Sign in to Company English',
   'signin.lead': 'Use your Schood account. Employees use the same account for Schood English.',

@@ -22,6 +22,7 @@ export const coreRu: Record<CoreKey, string> = {
   'nav.section.training': 'Обучение',
   'nav.section.insights': 'Аналитика',
   'nav.section.me': 'Мой английский',
+  'nav.section.connect': 'Интеграции',
   'nav.section.staff': 'Команда Schood',
   'signin.title': 'Вход в «Английский для компаний»',
   'signin.lead': 'Используйте аккаунт Schood. Сотрудники входят в Schood English с тем же аккаунтом.',
