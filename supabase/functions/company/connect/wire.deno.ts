@@ -33,7 +33,7 @@ function emailAdapter(): EmailAdapter | undefined {
   const user = (Deno.env.get('GMAIL_SMTP_EMAIL') ?? '').trim(), pass = (Deno.env.get('GMAIL_SMTP_APP_PASSWORD') ?? '').trim();
   if (!user || !pass) return undefined;
   return async ({ to, subject, text }) => {
-    const nodemailer = await import('npm:nodemailer@10.2.1');
+    const nodemailer = await import('./smtp.deno.ts');
     // One IPv4 address, for the reason Academy gives: nodemailer races address families and Deno drops that handshake.
     const addresses = await Deno.resolveDns('smtp.gmail.com', 'A').catch(() => [] as string[]);
     const transport = nodemailer.createTransport({
