@@ -4,7 +4,9 @@
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "company"
+    "company",
+    "english-hub",
+    "platform"
   ],
   "migrations": [
     "20261031100000_company_core.sql",
@@ -13,10 +15,31 @@
     "20261031140000_company_people.sql"
   ],
   "edgeFunctions": [
-    "company"
+    "company",
+    "trial-claim",
+    "hub",
+    "admin-english-ops",
+    "grammar-remediation",
+    "immersion-missions",
+    "listening-content",
+    "reading-articles",
+    "speaking-studio",
+    "vocabulary-notebook",
+    "writing-workbench"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [],
+  "sharedEdgeConsumers": [
+    "admin-english-ops",
+    "grammar-remediation",
+    "hub",
+    "immersion-missions",
+    "listening-content",
+    "reading-articles",
+    "speaking-studio",
+    "trial-claim",
+    "vocabulary-notebook",
+    "writing-workbench"
+  ],
   "requiredSecrets": [
     "COMPANY_ALLOWED_ORIGINS",
     "COMPANY_APP_URL",
@@ -24,32 +47,46 @@
   ],
   "rolloutOrder": [
     "pages",
+    "function:trial-claim",
     "migration:20261031100000_company_core.sql",
     "migration:20261031120000_company_training.sql",
     "migration:20261031130000_company_insights.sql",
     "migration:20261031140000_company_people.sql",
+    "function:hub",
+    "function:admin-english-ops",
+    "function:grammar-remediation",
+    "function:immersion-missions",
+    "function:listening-content",
+    "function:reading-articles",
+    "function:speaking-studio",
+    "function:vocabulary-notebook",
+    "function:writing-workbench",
     "secret:COMPANY_ALLOWED_ORIGINS",
-    "secret:COMPANY_SELF_SERVE",
     "secret:COMPANY_APP_URL",
+    "secret:COMPANY_SELF_SERVE",
     "function:company"
   ],
   "manualFollowUps": [
-    "Pages: before merging, create the Pages project once (wrangler pages project create schood-company --production-branch main) so the merge deploy of apps/company succeeds; after merging, run the 'Configure Schood Company English Domain' workflow to bind company.schood.online. Until the function is deployed the app shows a connection error; the landing page renders without it.",
-    "Database: supabase db push --linked --include-all from an isolated copy of the installed migrations plus only the four company migrations (20261031100000, 20261031120000, 20261031130000, 20261031140000), keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. Purely additive: new company_* tables (RLS on, service role only), functions company_sync_english_access / company_sync_org_access / company_reserve_test / company_consume_ai / company_purge_training_drafts / company_activity_summary, and account_personal_erasure_tables() gains the company tables.",
+    "Pages: the empty project schood-company already exists, so the merge deploy ships apps/company, apps/english-hub (recognises the company-seat product) and apps/platform (Account page shows a company seat). After merging, run the 'Configure Schood Company English Domain' workflow to bind company.schood.online. Until the function is deployed, signed-in pages show a connection error; the landing page renders without it.",
+    "Trials first: supabase functions deploy trial-claim --project-ref bbjawctnqrufvnesdsel so it refuses hidden products before the hidden seat product exists.",
+    "Database: supabase db push --linked --include-all from an isolated copy of the installed migrations plus only the four company migrations (20261031100000, 20261031120000, 20261031130000, 20261031140000), keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. Additive: new company_* tables (RLS on, service role only), a hidden product 'English All Skills (company seat)' with no plans, company_* functions, the erasure registry and hook gain the company tables, and two nightly pg_cron jobs if pg_cron is installed (training draft purge, English access reconcile).",
+    "English functions, before any seat exists (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy hub; supabase functions deploy admin-english-ops; supabase functions deploy grammar-remediation; supabase functions deploy immersion-missions; supabase functions deploy listening-content; supabase functions deploy reading-articles; supabase functions deploy speaking-studio; supabase functions deploy vocabulary-notebook; supabase functions deploy writing-workbench. They now treat the company-seat product as all skills. They also pick up one additive duel change from Schood AI (english-duel-service.ts), which is unchanged unless a duel brings its own questions.",
     "Secrets (--project-ref bbjawctnqrufvnesdsel): supabase secrets set COMPANY_ALLOWED_ORIGINS=https://company.schood.online; supabase secrets set COMPANY_SELF_SERVE=true; supabase secrets set COMPANY_APP_URL=https://company.schood.online. Optional, with defaults: COMPANY_PILOT_TESTS (10), COMPANY_AI_DAILY_LIMIT (300 AI calls per workspace per day).",
-    "Edge: supabase functions deploy company --project-ref bbjawctnqrufvnesdsel (verify_jwt=false in config.toml; the function checks sessions itself). It uses the existing English AI gateway, so OPENROUTER/English AI settings already in place apply and calls are logged in english_ai_calls.",
-    "Commercial: pilots are self-serve (10 tests, no learning seats). Learning seats, test limits and contract dates are set by Schood staff at /staff; a seat grants the Schood English All Skills entitlement with source 'company'."
+    "Edge: supabase functions deploy company --project-ref bbjawctnqrufvnesdsel (verify_jwt=false in config.toml; the function checks sessions itself). AI goes through the existing English gateway, so calls are logged in english_ai_calls and each company-* feature can be switched off in the English control centre.",
+    "Commercial: pilots are self-serve (10 tests, no seats, no lessons or AI practice). Seats, test limits and contract dates are set by Schood staff at /staff. A seat is a separate hidden entitlement row with source 'company' and never touches a learner's purchase."
   ],
   "verification": [
     "supabase migration list --linked shows the four 20261031 company migrations applied and the 9 #220 payment migrations still pending.",
-    "Anon REST select on company_orgs and company_members returns 401/permission denied (no anon or authenticated grants).",
-    "GET https://<project>.supabase.co/functions/v1/company/me without a session returns 401 unauthorized; GET .../company/public/v/UNKNOWN returns 404; POST .../company/public/leads with an empty body returns 400.",
-    "https://company.schood.online renders the landing page in en/ru/uz; /t/unknowntoken shows the link-not-active message.",
-    "With a staff account: /staff lists workspaces; a test pilot can be created at /start and shows 10 tests in Settings."
+    "Anon REST select on company_orgs and company_members is refused (no anon or authenticated grants); public plans list has no plan for product c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07.",
+    "POST /functions/v1/trial-claim?product_id=c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07 with a session never creates an entitlement.",
+    "GET /functions/v1/company/me without a session returns 401; GET /functions/v1/company/public/v/UNKNOWN returns 404; POST /functions/v1/company/public/leads with an empty body returns 400; a browser preflight from https://company.schood.online is allowed and one from another origin is not.",
+    "GET /functions/v1/hub/today without a session still returns 401, and english.schood.online loads.",
+    "https://company.schood.online renders the landing page in en, ru and uz; /t/unknowntoken shows the link-not-active message; a deep link reloads without a 404.",
+    "Owner, signed in with a real account: create a pilot at /start, make a hiring test, take it from a private window, see the graded result; /staff lists the workspace for a Schood admin; give a seat to a test employee and confirm Schood English unlocks, then remove it and confirm it locks."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-company to the previous deployment, or remove the company.schood.online custom domain.",
-    "migration": "Leave the additive tables in place; to stop access set every company_orgs.status to 'suspended' and run select public.company_sync_org_access(id) from company_orgs, which revokes company-granted English entitlements and restores learners' own rows.",
-    "edge": "supabase functions delete company (or deploy a stub returning 503); no other function depends on it."
+    "pages": "Cloudflare Pages rollback of schood-company, schood-english and schood-platform to the previous deployment, or remove the company.schood.online custom domain.",
+    "migration": "Leave the additive tables in place. To stop access: set every company_orgs.status to 'suspended' and run select public.company_sync_org_access(id) from public.company_orgs, which switches off every seat row and touches no purchase.",
+    "edge": "supabase functions delete company, or redeploy the previous main commit of the English functions and trial-claim (a696a9fb); no other function depends on company."
   }
 }
