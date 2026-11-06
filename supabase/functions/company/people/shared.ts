@@ -3,7 +3,7 @@
 import { isJobRole, isLevel, isOrgRole, type JobRole, type Level, type OrgRole } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { check, CompanyError, UUID, type Ctx, type Db, type MemberRow, type OrgRow } from '../types.ts';
-import { sha256, token } from '../util.ts';
+import { isCalendarDate, sha256, token } from '../util.ts';
 
 export const DAY = 86_400_000;
 /** How long a personal invitation stays open. */
@@ -51,7 +51,8 @@ export async function issueInvite(ctx: Ctx, row: {
   department_id: string | null; job_role: string; max_uses: number | null; expires_at: string;
 }): Promise<{ invite: InviteRow; link: string }> {
   const raw = token();
-  const invite = check<InviteRow>(await ctx.db.from('company_invites').insert({ ...row, uses: 0, revoked_at: null, token_hash: await sha256(raw), created_by: ctx.user }).select(INVITE_COLUMNS).single());
+  // created_at comes from the same clock as removed_at: joining compares the two, and the database's clock can differ.
+  const invite = check<InviteRow>(await ctx.db.from('company_invites').insert({ ...row, uses: 0, revoked_at: null, token_hash: await sha256(raw), created_by: ctx.user, created_at: ctx.now().toISOString() }).select(INVITE_COLUMNS).single());
   return { invite, link: joinLink(ctx, raw) };
 }
 
@@ -70,9 +71,9 @@ export async function fetchAll<T>(build: () => { range: (from: number, to: numbe
 }
 
 export async function loadMember(ctx: Ctx, orgId: string, memberId: string): Promise<MemberRow> {
-  if (!UUID.test(memberId)) throw new CompanyError('member_not_found', 'This person is not in the workspace.', 404);
+  if (!UUID.test(memberId)) throw new CompanyError('member_not_found', 'Person not found.', 404);
   const member = check<MemberRow | null>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', orgId).eq('id', memberId).maybeSingle());
-  if (!member) throw new CompanyError('member_not_found', 'This person is not in the workspace.', 404);
+  if (!member) throw new CompanyError('member_not_found', 'Person not found.', 404);
   return member;
 }
 
@@ -125,11 +126,7 @@ export function levelOrNull(value: unknown, field: string): Level | null {
 /** A calendar date (YYYY-MM-DD) or null. */
 export function dateOrNull(value: unknown, field: string): string | null {
   if (value === undefined || value === null || value === '') return null;
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(`${value}T00:00:00Z`))) {
-    throw new CompanyError('invalid_field', `${field} must be a date (YYYY-MM-DD).`, 400, { field });
-  }
-  const year = Number(value.slice(0, 4));
-  if (year < 2020 || year > 2100) throw new CompanyError('invalid_field', `${field} is out of range.`, 400, { field });
+  if (!isCalendarDate(value)) throw new CompanyError('invalid_field', `${field} must be a date (YYYY-MM-DD).`, 400, { field });
   return value;
 }
 
@@ -144,6 +141,9 @@ export async function seatCount(db: Db, orgId: string): Promise<number> {
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
+
+/** The answer when a unique index finds the email taken after the check above it (two HR tabs at once). */
+export const memberExists = () => new CompanyError('member_exists', 'Someone with this email is already in the workspace.', 409, { field: 'email' });
 
 /** Sets the workspace on ctx so audit rows carry its id (user and staff routes). */
 export function useOrg(ctx: Ctx, org: OrgRow): void {

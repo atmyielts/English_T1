@@ -192,6 +192,9 @@ create table if not exists public.company_attempts (
 create index if not exists company_attempts_assessment_idx on public.company_attempts (assessment_id, created_at desc);
 create index if not exists company_attempts_org_idx on public.company_attempts (org_id, status);
 create index if not exists company_attempts_member_idx on public.company_attempts (member_id) where member_id is not null;
+-- One running attempt per person per test: a double start becomes a conflict before it uses up a second test.
+create unique index if not exists company_attempts_started_member_uq on public.company_attempts (assessment_id, member_id) where status = 'started' and member_id is not null;
+create unique index if not exists company_attempts_started_email_uq on public.company_attempts (assessment_id, candidate_email) where status = 'started' and candidate_email is not null;
 
 -- Job-role track lessons a member has worked through.
 create table if not exists public.company_lesson_progress (
@@ -237,7 +240,7 @@ create table if not exists public.company_activity (
   org_id uuid not null references public.company_orgs(id) on delete cascade,
   member_id uuid references public.company_members(id) on delete cascade,
   user_id uuid references public.users(id) on delete set null,
-  kind text not null check (kind in ('lesson','roleplay','writing','test','glossary','session','english')),
+  kind text not null check (kind in ('lesson','lesson_retry','roleplay','writing','test','glossary','session','english')),
   minutes integer not null default 0 check (minutes between 0 and 600),
   points integer not null default 0 check (points between 0 and 10000),
   ref text,

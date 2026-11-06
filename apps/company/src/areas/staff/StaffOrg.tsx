@@ -102,7 +102,8 @@ export function StaffOrgPage({ orgId }: { orgId: string }) {
       </section>
       <section aria-labelledby="owners-title">
         <h2 id="owners-title">{t('staff.org.admins')}</h2>
-        {data.org.status !== 'closed' && !data.admins.some((row) => row.role === 'owner' && row.status === 'active') && <p className="notice" role="status">{t('staff.org.noOwner')}</p>}
+        {data.org.status !== 'closed' && data.owner_state === 'none' && <p className="notice" role="status">{t('staff.org.noOwner')}</p>}
+        {data.org.status !== 'closed' && data.owner_state === 'invited' && <p className="hint" role="status">{t('staff.org.ownerInvited')}</p>}
         {data.admins.length === 0 ? <p className="hint">{t('staff.org.noAdmins')}</p> : <ul className="people-admins">
           {data.admins.map((row) => <li key={row.id}>
             <div><strong>{row.full_name || row.email || '—'}</strong><span>{row.email ?? ''}</span></div>

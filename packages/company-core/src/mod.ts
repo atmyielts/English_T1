@@ -85,7 +85,7 @@ export const ASSESSMENT_KINDS = ['hiring', 'placement', 'progress'] as const;
 export type AssessmentKind = (typeof ASSESSMENT_KINDS)[number];
 
 /** What a row in company_activity records; insights and challenges sum these. */
-export const ACTIVITY_KINDS = ['lesson', 'roleplay', 'writing', 'test', 'glossary', 'session', 'english'] as const;
+export const ACTIVITY_KINDS = ['lesson', 'lesson_retry', 'roleplay', 'writing', 'test', 'glossary', 'session', 'english'] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
 /**

@@ -14,6 +14,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.89.0';
 import { createCompanyHandler } from '../supabase/functions/company/handler.ts';
 import { allRoutes } from '../supabase/functions/company/routes.ts';
 import { TRACKS } from '../supabase/functions/company/training/tracks/index.ts';
+import { ACTIVITY_KINDS } from '../packages/company-core/src/mod.ts';
+import { DAILY_SELF_REPORTED_MINUTES } from '../supabase/functions/company/training/shared.ts';
 import type { AiCall, Route } from '../supabase/functions/company/types.ts';
 
 // PostgREST is pinned to what production runs (supabase/.temp/rest-version). Production
@@ -78,10 +80,14 @@ async function signJwt(role: string): Promise<string> {
 // ---------------------------------------------------------------------------
 const uid = (n: number) => `00000000-0000-4000-8000-0000000000${String(n).padStart(2, '0')}`;
 const tid = (n: number) => `10000000-0000-4000-8000-0000000000${String(n).padStart(2, '0')}`;
+/** What a learner buys for themselves: a row a company seat must never touch. */
 const BUNDLE = '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa';
+/** The hidden product a company seat grants. */
+const SEAT_PRODUCT = 'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07';
 const OWNER = uid(1), ADMIN = uid(2), MANAGER = uid(3), EMP1 = uid(4), EMP2 = uid(5), EMP3 = uid(6), EMP4 = uid(7), EMP5 = uid(8), EMP6 = uid(9), EMP7 = uid(10),
-  OTHER_OWNER = uid(11), STAFF = uid(12), NEW_OWNER = uid(13), EMP8 = uid(14), EMP9 = uid(15), EMP10 = uid(16), EMP11 = uid(17), EMP12 = uid(18);
-const USERS = [OWNER, ADMIN, MANAGER, EMP1, EMP2, EMP3, EMP4, EMP5, EMP6, EMP7, OTHER_OWNER, STAFF, NEW_OWNER, EMP8, EMP9, EMP10, EMP11, EMP12];
+  OTHER_OWNER = uid(11), STAFF = uid(12), NEW_OWNER = uid(13), EMP8 = uid(14), EMP9 = uid(15), EMP10 = uid(16), EMP11 = uid(17), EMP12 = uid(18),
+  CLOSING_OWNER = uid(19), CLOSING_ADMIN = uid(20), SOLO_OWNER = uid(21), DOUBLE_JOINER = uid(22), LAST_USE_JOINER = uid(23);
+const USERS = [OWNER, ADMIN, MANAGER, EMP1, EMP2, EMP3, EMP4, EMP5, EMP6, EMP7, OTHER_OWNER, STAFF, NEW_OWNER, EMP8, EMP9, EMP10, EMP11, EMP12, CLOSING_OWNER, CLOSING_ADMIN, SOLO_OWNER, DOUBLE_JOINER, LAST_USE_JOINER];
 const emailOf = (id: string) => `user${Number(id.slice(-2))}@example.uz`;
 
 // What a Supabase project has before any migration: roles, schema usage, and default
@@ -104,7 +110,7 @@ alter default privileges in schema public grant all on functions to anon, authen
 // 20261023090000 (current_cefr_estimate), 20261024121000 (review log, badges), 20261026160200 (channel).
 // products and learning_content_registry_items exist only as foreign-key targets.
 const ENGLISH_DDL = `
-create table public.products (id uuid primary key default gen_random_uuid());
+create table if not exists public.products (id uuid primary key default gen_random_uuid());
 create table public.learning_content_registry_items (id uuid primary key default gen_random_uuid());
 create table public.languages (
   id uuid primary key default gen_random_uuid(), code text not null unique, name text not null,
@@ -221,7 +227,7 @@ const failures: Failure[] = [];
 const logs: string[] = [];
 const dbFailures: string[] = [];
 const coverage = new Map<string, { statuses: Set<number>; ok: boolean }>();
-let currentArea = 'setup', requests = 0, assertions = 0, dbRequests = 0, transportRetries = 0;
+let currentArea = 'setup', requests = 0, assertions = 0, dbRequests = 0, transportRetries = 0, longestUrl = 0;
 const key = (route: Pick<Route, 'method' | 'path'>) => `${route.method} ${route.path}`;
 for (const route of allRoutes) coverage.set(key(route), { statuses: new Set(), ok: false });
 
@@ -610,15 +616,20 @@ async function scenario(port: number, serviceJwt: string) {
     // Leaving, then coming back on a team link.
     await call('POST', `${o()}/people/me/leave`, { as: EMP7 });
     await eqSql('left', `select status||'|'||seat from company_members where org_id='${S.org}' and user_id='${EMP7}'`, 'removed|false');
-    await call('POST', `join/${S.openLink}`, { label: 'back through the team link', as: EMP7, body: { consent: true, full_name: 'Timur' } });
+    const refusedBack = await call('POST', `join/${S.openLink}`, { label: 'a link from before they left does not bring them back', as: EMP7, body: { consent: true }, expect: 410 });
+    eq('old link refused', refusedBack.body?.code, 'invite_revoked');
+    const newer = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general' } });
+    await call('POST', `join/${tokenOf(need(newer.body?.link, 'newer link'))}`, { label: 'back through a newer team link', as: EMP7, body: { consent: true, full_name: 'Timur' } });
     await eqSql('active again', `select status||'|'||(removed_at is null) from company_members where org_id='${S.org}' and user_id='${EMP7}'`, 'active|true');
 
     // Removed person, whose email HR invited again, comes back through a team link.
     await call('POST', `${o()}/people/me/leave`, { as: EMP7 });
     const reinvited = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Timur Again', email: emailOf(EMP7), job_role: 'general' } });
     eq('re-invited', reinvited.status, 200);
-    await call('POST', `join/${S.openLink}`, { label: 'removed person with a fresh personal invite joins by team link', as: EMP7, body: { consent: true } });
-    await sql(`update company_members set status='active', removed_at=null where org_id='${S.org}' and user_id='${EMP7}' and status='removed' and not exists (select 1 from company_members x where x.org_id='${S.org}' and lower(x.email)='${emailOf(EMP7)}' and x.status<>'removed')`);
+    const newest = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general' } });
+    await call('POST', `join/${tokenOf(need(newest.body?.link, 'newest link'))}`, { label: 'removed person with a fresh personal invite joins by team link', as: EMP7, body: { consent: true } });
+    await eqSql('one person, on the old row, with HR details', `select string_agg(status, ',' order by status) from company_members where org_id='${S.org}' and lower(email)='${emailOf(EMP7)}' and status<>'removed'`, 'active');
+    await eqSql('the prepared row is retired', `select status from company_members where id='${reinvited.body?.member?.id}'`, 'removed');
   });
 
   await area('settings', async () => {
@@ -652,7 +663,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('PATCH', `staff/orgs/${S.org}`, { label: 'no change', as: STAFF, body: {} });
 
     const seat = (member: string, on: boolean, expect: Expect = 200) => call('POST', `${o()}/people/${member}/seat`, { as: OWNER, body: { seat: on }, expect });
-    const ent = (user: string) => `select is_active||'|'||source from entitlements where user_id='${user}' and resource_type='product' and resource_id='${BUNDLE}'`;
+    const ent = (user: string) => `select is_active||'|'||source from entitlements where user_id='${user}' and resource_type='product' and resource_id='${SEAT_PRODUCT}'`;
     const seated = await seat(S.emp1Member, true);
     eq('seat count', seated.body?.usage?.seats_used, 1);
     await eqSql('entitlement granted', ent(EMP1), 'true|company');
@@ -660,9 +671,10 @@ async function scenario(port: number, serviceJwt: string) {
     await eqSql('entitlement revoked', ent(EMP1), 'false|company');
     await seat(S.emp1Member, true);
     await eqSql('entitlement back', ent(EMP1), 'true|company');
-    await eqSql('ends with the contract', `select to_char(ends_at at time zone 'Asia/Tashkent','YYYY-MM-DD HH24:MI') from entitlements where user_id='${EMP1}'`, '2030-12-31 23:59');
+    await eqSql('ends with the contract', `select to_char(ends_at at time zone 'Asia/Tashkent','YYYY-MM-DD HH24:MI') from entitlements where user_id='${EMP1}' and resource_id='${SEAT_PRODUCT}'`, '2030-12-31 23:59');
+    await eqSql('the seat product is hidden', `select metadata->>'hidden' from products where id='${SEAT_PRODUCT}'`, 'true');
 
-    // A person who bought English themselves: taken over, then restored.
+    // A person who bought English themselves: their row is never read or changed.
     const memberOf = async (user: string) => need(await sql(`select id from company_members where org_id='${S.org}' and user_id='${user}'`), `member of ${user}`);
     S.emp2Member = await memberOf(EMP2);
     S.emp3Member = await memberOf(EMP3);
@@ -671,30 +683,53 @@ async function scenario(port: number, serviceJwt: string) {
     S.managerMember = await memberOf(MANAGER);
     S.adminMember = await memberOf(ADMIN);
     await sql(`insert into entitlements (user_id, tenant_id, resource_type, resource_id, is_active, ends_at, source) values ('${EMP2}', '${tid(5)}', 'product', '${BUNDLE}', true, now() + interval '10 days', 'click')`);
+    const purchase = (user: string) => `select md5(row_to_json(e)::text) from entitlements e where user_id='${user}' and resource_id='${BUNDLE}'`;
+    const bought = await sql(purchase(EMP2));
+    ok('purchase row exists', bought.length === 32, bought);
     await seat(S.emp2Member, true);
-    await eqSql('taken over', `select source||'|'||(value->'company_previous'->>'source') from entitlements where user_id='${EMP2}'`, 'company|click');
+    await eqSql('the seat is its own row', ent(EMP2), 'true|company');
+    await eqSql('the purchase is untouched by a seat', purchase(EMP2), bought);
     await seat(S.emp2Member, false);
-    await eqSql('restored', `select source||'|'||is_active||'|'||(ends_at > now())||'|'||(value ? 'company_previous') from entitlements where user_id='${EMP2}'`, 'click|true|true|false');
+    await eqSql('seat off ends only the seat', ent(EMP2), 'false|company');
+    await eqSql('the purchase is untouched by seat off', purchase(EMP2), bought);
     await sql(`insert into entitlements (user_id, tenant_id, resource_type, resource_id, is_active, ends_at, source) values ('${EMP3}', '${tid(6)}', 'product', '${BUNDLE}', true, null, 'click')`);
+    const open = await sql(purchase(EMP3));
     await seat(S.emp3Member, true);
-    await eqSql('own open-ended access stays', ent(EMP3), 'true|click');
+    await eqSql('own open-ended access stays', purchase(EMP3), open);
+    await eqSql('and the seat sits beside it', ent(EMP3), 'true|company');
     await seat(S.emp2Member, true);
     await seat(S.emp4Member, true, 409);
     await call('PATCH', `staff/orgs/${S.org}`, { label: 'seats below used', as: STAFF, body: { seats_limit: 1 }, expect: 409 });
     const direct = await db.rpc('company_sync_english_access', { p_user: uid(99) });
-    eq('sync of a user with no tenant', direct.data, 'no_tenant');
+    eq('sync of someone with no seat', direct.data, 'none');
+    await sql(`insert into public.users (id, role) values ('${uid(98)}', 'user'); insert into company_members (org_id, user_id, email, role, status, seat) values ('${S.org}', '${uid(98)}', 'no.tenant@example.uz', 'employee', 'active', true);`);
+    eq('sync of a seated user with no tenant', (await db.rpc('company_sync_english_access', { p_user: uid(98) })).data, 'no_tenant');
+    await sql(`delete from company_members where user_id='${uid(98)}'`);
 
     // Suspended: writes refused, reads allowed, access gone; active again restores it.
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { status: 'suspended' } });
     await eqSql('suspension revokes', ent(EMP1), 'false|company');
     await call('GET', `${o()}`, { label: 'suspended read', as: EMP1 });
     await call('POST', `${o()}/learn/${TRACKS[0].lessons[0].code}/start`, { label: 'suspended write', as: EMP1, body: {}, expect: 403 });
+    const paused = await call('GET', `${o()}/learn/${TRACKS[0].lessons[0].code}`, { label: 'a seat in a paused workspace', as: EMP1, expect: 402 });
+    eq('paused reason', [paused.body?.code, paused.body?.reason], ['seat_required', 'paused']);
+    eq('catalogue says why', (await call('GET', `${o()}/tracks`, { as: EMP1 })).body?.seat_reason, 'paused');
     await call('POST', `join/${S.openLink}`, { label: 'suspended join', as: EMP8, body: { consent: true }, expect: 403 });
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { status: 'active' } });
     await eqSql('active again restores', ent(EMP1), 'true|company');
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { contract_ends_at: '2020-01-31' } });
-    await seat(S.emp4Member, true, 409);
+    await eqSql('an ended contract revokes the seat', ent(EMP1), 'false|company');
+    const endedHr = await seat(S.emp4Member, true, 403);
+    eq('HR is read-only', endedHr.body?.code, 'contract_ended');
+    const endedStaff = await call('POST', `${o()}/people/${S.emp4Member}/seat`, { label: 'staff cannot seat past the contract', as: STAFF, body: { seat: true }, expect: 409 });
+    eq('staff told why', endedStaff.body?.code, 'seats_contract_ended');
+    const endedLesson = await call('GET', `${o()}/learn/${TRACKS[0].lessons[0].code}`, { label: 'a seat after the contract', as: EMP1, expect: 402 });
+    eq('ended reason', endedLesson.body?.reason, 'contract_ended');
+    eq('join preview says ended', (await call('GET', `join/${S.openLink}`, { as: EMP8 })).body?.state, 'ended');
+    const endedJoin = await call('POST', `join/${S.openLink}`, { label: 'joining after the contract', as: EMP8, body: { consent: true }, expect: 403 });
+    eq('join refused', endedJoin.body?.code, 'contract_ended');
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { contract_ends_at: '2030-12-31', seats_limit: 10 } });
+    await eqSql('a renewed contract restores it', ent(EMP1), 'true|company');
     await seat(S.emp4Member, true);
     await seat(S.managerMember, true);
     await seat(S.emp5Member, true);
@@ -719,10 +754,16 @@ async function scenario(port: number, serviceJwt: string) {
     await eqSql('lead won and linked', `select status||'|'||(org_id='${S.staffOrg}') from company_leads where id='${lead}'`, 'won|true');
     await call('POST', 'staff/orgs', { label: 'lead already has a workspace', as: STAFF, body: { lead_id: lead, name: 'Again', owner_email: 'a@b.example' }, expect: 409 });
     await call('POST', 'staff/orgs', { label: 'no owner', as: STAFF, body: { name: 'No Owner Ltd' }, expect: 400 });
+    const waiting = await call('GET', 'staff/orgs', { as: STAFF });
+    const row = waiting.body?.orgs?.find((org: any) => org.id === S.staffOrg);
+    eq('owner invited is not an orphan', [row?.ownerless, row?.owner_invited], [false, true]);
+    ok('the filter finds only real orphans', !(await call('GET', 'staff/orgs?ownerless=1', { as: STAFF })).body?.orgs?.some((org: any) => org.id === S.staffOrg));
+    eq('detail says invited', (await call('GET', `staff/orgs/${S.staffOrg}`, { as: STAFF })).body?.owner_state, 'invited');
     const fresh = await call('POST', `staff/orgs/${S.staffOrg}/owner-invite`, { as: STAFF, body: { email: emailOf(NEW_OWNER), full_name: 'Aziz Karimov' } });
     await call('POST', `join/${tokenOf(opened.body?.link)}`, { label: 'first owner link replaced', as: NEW_OWNER, body: { consent: true }, expect: 410 });
     const owned = await call('POST', `join/${tokenOf(need(fresh.body?.link, 'owner link'))}`, { as: NEW_OWNER, body: { consent: true } });
     eq('joined as owner', owned.body?.role, 'owner');
+    eq('detail says active', (await call('GET', `staff/orgs/${S.staffOrg}`, { as: STAFF })).body?.owner_state, 'active');
     await call('POST', `staff/orgs/${S.staffOrg}/owner-invite`, { label: 'already in', as: STAFF, body: { email: emailOf(NEW_OWNER) }, expect: 409 });
     await call('POST', `staff/orgs/${S.staffOrg}/owner-invite`, { label: 'by name only', as: STAFF, body: { full_name: 'Second Owner' } });
     await call('GET', 'staff/audit', { as: STAFF });
@@ -755,6 +796,16 @@ async function scenario(port: number, serviceJwt: string) {
     ok('no answer key served', !JSON.stringify(started.body.attempt.section).includes('"answer"'));
     await call('POST', `public/t/${S.testToken}/start`, { label: 'same email twice', body: { name: 'Nodir Again', email: 'nodir@example.uz', consent: true }, ip: '192.0.2.11', expect: 409 });
     await call('POST', 'public/attempts/state', { label: 'bad key', body: { key: 'nope' }, expect: 404 });
+    // A candidate who lost their key: HR makes a private link and the old key stops working.
+    const lost = await call('POST', `public/t/${S.testToken}/start`, { body: { name: 'Lost Key', email: 'lost.key@example.uz', consent: true }, ip: '192.0.2.12' });
+    const access = await call('POST', `${o()}/attempts/${need(lost.body?.attempt?.id, 'lost attempt')}/access`, { as: ADMIN });
+    const newKey = tokenOf(need(access.body?.link, 'access link'));
+    ok('a private link', String(access.body?.link).includes('/r/'), access.body);
+    await call('POST', 'public/attempts/state', { label: 'the old key stopped working', body: { key: lost.body?.key }, expect: 404 });
+    eq('the new key works', (await call('POST', 'public/attempts/state', { body: { key: newKey } })).body?.attempt?.id, lost.body?.attempt?.id);
+    await call('POST', `${o()}/attempts/${S.attemptA}/access`, { label: 'running attempts only: the first is running', as: EMP1, expect: 403 });
+    await call('POST', 'public/attempts/submit', { body: { key: newKey, answers: answersFor(lost.body?.attempt?.section) } });
+    await call('POST', `${o()}/attempts/${lost.body?.attempt?.id}/access`, { label: 'a finished attempt has no new link', as: ADMIN, expect: 409 });
     await call('POST', 'public/attempts/state', { label: 'unknown key', body: { key: 'A'.repeat(32) }, expect: 404 });
     const state = await call('POST', 'public/attempts/state', { body: { key } });
     eq('state', state.body?.attempt?.status, 'started');
@@ -996,6 +1047,10 @@ async function scenario(port: number, serviceJwt: string) {
     await call('GET', `${o()}/tracks/nope`, { label: 'unknown track', as: EMP1, expect: 404 });
     const lesson = track.lessons[0], second = track.lessons[1];
     S.lesson = lesson.code;
+    const pilot = await call('GET', `orgs/${S.otherOrg}/learn/${lesson.code}`, { label: 'a pilot includes tests only', as: OTHER_OWNER, expect: 402 });
+    eq('pilot reason', pilot.body?.reason, 'pilot');
+    const noSeat = await call('GET', `${o()}/learn/${lesson.code}`, { label: 'no seat', as: ADMIN, expect: 402 });
+    eq('no seat reason', noSeat.body?.reason, 'no_seat');
     const opened = await call('GET', `${o()}/learn/${lesson.code}`, { as: EMP1 });
     ok('no answers in the lesson', !JSON.stringify(opened.body?.lesson?.exercises).includes('"answer"'));
     eq('no progress', opened.body?.progress, null);
@@ -1011,7 +1066,8 @@ async function scenario(port: number, serviceJwt: string) {
     const failed = await call('POST', `${o()}/learn/${second.code}/check`, { label: 'check without start, failing', as: EMP1, body: { answers: {}, minutes: 500 } });
     eq('not passed', [failed.body?.passed, failed.body?.status], [false, 'started']);
     await eqSql('minutes clamped', `select minutes from company_lesson_progress where member_id='${S.emp1Member}' and lesson_code='${second.code}'`, '60');
-    await eqSql('lesson activity', `select count(*) from company_activity where member_id='${S.emp1Member}' and kind='lesson'`, '3');
+    await eqSql('one lesson completed', `select count(*) from company_activity where member_id='${S.emp1Member}' and kind='lesson'`, '1');
+    await eqSql('other checks are retries', `select count(*) from company_activity where member_id='${S.emp1Member}' and kind='lesson_retry'`, '2');
     await call('POST', `${o()}/learn/${lesson.code}/check`, { label: 'staff cannot learn', as: STAFF, body: { answers: {} }, expect: 403 });
     await call('GET', `${o()}/tracks`, { label: 'staff browses', as: STAFF });
     await call('GET', `${o()}/learn/${lesson.code}`, { label: 'staff browses', as: STAFF });
@@ -1145,6 +1201,30 @@ async function scenario(port: number, serviceJwt: string) {
     ok('home certificates', home.body?.certificates?.length >= 1, home.body?.certificates);
     ok('home totals', home.body?.totals?.roleplays >= 1 && home.body?.totals?.writing >= 1, home.body?.totals);
     await call('GET', `${o()}/my/home`, { label: 'staff without membership', as: STAFF, expect: 403 });
+
+    // A company-wide assignment counts among a manager's overdue ones.
+    await sql(`update company_assignments set due_date='2020-01-01' where id='${id}'`);
+    const overdue = await call('GET', `${o()}/insights/overview`, { label: 'manager with a company-wide assignment overdue', as: MANAGER });
+    ok('manager sees it overdue', overdue.body?.todo?.some((row: any) => row.kind === 'overdue_assignments'), overdue.body?.todo);
+    await sql(`update company_assignments set due_date='2030-01-01' where id='${id}'`);
+  });
+
+  await area('activity: every kind, and the daily cap on minutes people report', async () => {
+    // The kinds the catalogue names are the kinds the table takes.
+    for (const kind of ACTIVITY_KINDS) await sql(`begin; insert into company_activity (org_id, kind) values ('${S.org}', '${kind}'); rollback;`);
+    const beyond = await run('docker', ['exec', '-i', DB, 'psql', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1', '-q', '-c', `insert into company_activity (org_id, kind) values ('${S.org}', 'nonsense')`]);
+    ok('a kind outside the list is refused', beyond.code !== 0, beyond.out);
+
+    const lesson = TRACKS.find((entry) => entry.code === 'sales')!.lessons[0].code;
+    const claimed = `select coalesce(sum(minutes),0) from company_activity where member_id='${S.emp4Member}' and kind in ('lesson_retry','glossary')`;
+    for (let click = 0; click < 4; click++) await call('POST', `${o()}/learn/${lesson}/check`, { label: 'clicking Check for minutes', as: EMP4, body: { answers: {}, minutes: 60 } });
+    await eqSql('stops at the daily cap', claimed, String(DAILY_SELF_REPORTED_MINUTES));
+    await call('POST', `${o()}/glossary/practice`, { label: 'practice for minutes', as: EMP4, body: { mode: 'cards', seen: 3, known: 1, minutes: 30 } });
+    await eqSql('glossary shares the cap', claimed, String(DAILY_SELF_REPORTED_MINUTES));
+    await eqSql('the clicks still count as events', `select count(*) from company_activity where member_id='${S.emp4Member}' and kind='lesson_retry'`, '4');
+    await sql(`update company_activity set created_at = created_at - interval '2 days' where member_id='${S.emp4Member}' and kind in ('lesson_retry','glossary')`);
+    await call('POST', `${o()}/learn/${lesson}/check`, { label: 'a new day', as: EMP4, body: { answers: {}, minutes: 10 } });
+    await eqSql('a new day has its own allowance', `select minutes from company_activity where member_id='${S.emp4Member}' and kind='lesson_retry' order by id desc limit 1`, '10');
   });
 
   await area('insights: overview, people, profiles', async () => {
@@ -1311,13 +1391,19 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', `${o()}/assessments`, { label: 'closes_at far in the future', as: ADMIN, body: { title: 'Far future', closes_at: '+100000-01-01T00:00:00Z' }, expect: refused });
     // NUL characters: valid JSON, refused by every Postgres text and jsonb column.
     const nul = 'A\u0000B name';
-    await call('POST', 'public/leads', { label: 'NUL in a public form', body: { name: nul, company: 'Nul Co', phone: '+998901234567' }, ip: '203.0.113.90', expect: notServerError });
-    await call('POST', `${o()}/departments`, { label: 'NUL in a name', as: ADMIN, body: { name: nul }, expect: notServerError });
-    await call('POST', `${o()}/writing/check`, { label: 'NUL in a draft', as: EMP1, body: { text: `${WRITING} ${nul}` }, expect: notServerError });
+    await call('POST', 'public/leads', { label: 'NUL in a public form', body: { name: nul, company: 'Nul Co', phone: '+998901234567' }, ip: '203.0.113.90', expect: 400 });
+    await call('POST', `${o()}/departments`, { label: 'NUL in a name', as: ADMIN, body: { name: nul }, expect: 400 });
+    await call('POST', `${o()}/departments`, { label: 'a lone surrogate in a name', as: ADMIN, body: { name: 'Bad \ud83d name' }, expect: 400 });
+    await call('POST', `${o()}/writing/check`, { label: 'NUL in a draft', as: EMP1, body: { text: `${WRITING} ${nul}` }, expect: 400 });
+    await call('POST', `${o()}/assessments`, { label: 'year zero', as: ADMIN, body: { title: 'Year zero', closes_at: '0000-01-01T00:00:00Z' }, expect: 400 });
+    await call('GET', `${o()}/reports/monthly?from=0000-01-01&to=0000-02-01`, { label: 'report in year zero', as: ADMIN, expect: 400 });
+    await call('PATCH', `${o()}/assignments/${S.assignment}`, { label: 'due date in year zero', as: ADMIN, body: { due_date: '0000-01-01' }, expect: 400 });
     const writing = await call('POST', `${o()}/assessments`, { as: ADMIN, body: { title: 'Writing only', skills: ['writing'] } });
     const started = await call('POST', `public/t/${tokenOf(writing.body?.link)}/start`, { body: { name: 'Nul Candidate', email: 'nul@example.uz', consent: true }, ip: '192.0.2.70' });
     const taskId = need(started.body?.attempt?.section?.tasks?.[0]?.id, 'writing task');
-    await call('POST', 'public/attempts/save', { label: "NUL in a candidate's answer", body: { key: started.body?.key, answers: { [taskId]: nul } }, expect: notServerError });
+    await call('POST', 'public/attempts/save', { label: "NUL in a candidate's answer", body: { key: started.body?.key, answers: { [taskId]: nul } } });
+    await eqSql('the answer is kept without it', `select answers->>'${taskId}' from company_attempts where id='${started.body?.attempt?.id}'`, 'AB name');
+    await call('POST', 'public/attempts/save', { label: 'an answer cut through an emoji', body: { key: started.body?.key, answers: { [taskId]: `${'x'.repeat(5999)}\u{1F600}` } } });
     // A one-item list passes oneOf (it compares String(value)) and is then stored as it came.
     await call('POST', 'orgs', { label: 'a list where one value belongs (CHECK column)', as: EMP7, body: { name: 'List Size', size_band: ['1-50'] }, expect: refused });
     await call('PATCH', `${o()}/attempts/${S.attemptA}`, { label: 'a list where one value belongs (CHECK column)', as: ADMIN, body: { decision: ['hold'] }, expect: refused });
@@ -1326,7 +1412,7 @@ async function scenario(port: number, serviceJwt: string) {
     // A web address that URL() makes longer than the column's 500 characters.
     await call('POST', `${o()}/sessions`, { label: 'link that grows when normalised', as: ADMIN, body: { title: 'Long link', starts_at: new Date(Date.now() + 3_600_000).toISOString(), link: `https://example.uz/${'é'.repeat(300)}` }, expect: refused });
     // A fractional limit reaches PostgREST.
-    await call('GET', 'staff/audit?limit=1.5', { label: 'fractional limit', as: STAFF, expect: (status) => status < 500 });
+    await call('GET', 'staff/audit?limit=1.5', { label: 'fractional limit', as: STAFF });
 
     // Someone who joined by team link without giving a name.
     const nameless = await call('POST', `join/${need(S.openLink, 'open link')}`, { label: 'join without a name', as: EMP8, body: { consent: true } });
@@ -1334,7 +1420,7 @@ async function scenario(port: number, serviceJwt: string) {
     const taking = await call('POST', `${o()}/my/attempts`, { label: 'nameless member starts a test', as: EMP8, body: { assessment_id: S.placement } });
     const done = await call('POST', `${o()}/my/attempts/${need(taking.body?.attempt?.id, 'nameless attempt')}/submit`, { label: 'nameless member submits', as: EMP8, body: {} });
     const certificate = await call('GET', `public/v/${need(done.body?.attempt?.result?.certificate_code, 'nameless certificate')}`, { label: 'public certificate of a nameless member' });
-    ok('public certificate shows no email address', !String(certificate.body?.certificate?.name ?? '').includes('@'), `certificate name: ${certificate.body?.certificate?.name}`);
+    eq('public certificate has no name rather than an email address', certificate.body?.certificate?.name, null);
     // And one with a long account email (the column for the name allows 120 characters, an email 200).
     const long = await call('POST', `join/${S.openLink}`, { label: 'join without a name', as: EMP9, body: { consent: true } });
     eq('joined', long.body?.state, 'joined');
@@ -1356,14 +1442,44 @@ async function scenario(port: number, serviceJwt: string) {
     const noCrash = (status: number) => status < 500;
     const twice = <T>(work: () => Promise<T>) => Promise.all([work(), work()]);
     const track = TRACKS.find((entry) => entry.code === 'hospitality')!;
-    await twice(() => call('POST', `${o()}/departments`, { label: 'same department twice', as: ADMIN, body: { name: 'Race Department' }, expect: noCrash }));
-    await twice(() => call('POST', `${o()}/glossary`, { label: 'same term twice', as: ADMIN, body: { term: 'Race term', meaning: 'A term' }, expect: noCrash }));
-    await twice(() => call('POST', `${o()}/invites`, { label: 'same invitation twice', as: ADMIN, body: { full_name: 'Race Person', email: 'race.person@example.uz' }, expect: noCrash }));
-    await twice(() => call('POST', `${o()}/learn/${track.lessons[5].code}/start`, { label: 'opening a lesson twice', as: EMP3, body: { step: 'phrases' }, expect: noCrash }));
-    await twice(() => call('POST', `${o()}/learn/${track.lessons[6].code}/check`, { label: 'checking a new lesson twice', as: EMP3, body: { answers: {}, minutes: 1 }, expect: noCrash }));
+    // A conflict the route turns into its own answer is not a swallowed error.
+    const handled = /23505/;
+    const dept = await twice(() => call('POST', `${o()}/departments`, { label: 'same department twice', as: ADMIN, body: { name: 'Race Department' }, expect: [200, 409], allowDb: handled }));
+    eq('one department', dept.map((reply) => reply.status).sort(), [200, 409]);
+    const term = await twice(() => call('POST', `${o()}/glossary`, { label: 'same term twice', as: ADMIN, body: { term: 'Race term', meaning: 'A term' }, expect: [200, 409], allowDb: handled }));
+    eq('one term', term.map((reply) => reply.status).sort(), [200, 409]);
+    const person = await twice(() => call('POST', `${o()}/invites`, { label: 'same invitation twice', as: ADMIN, body: { full_name: 'Race Person', email: 'race.person@example.uz' }, expect: [200, 409], allowDb: handled }));
+    eq('one invitation', person.map((reply) => reply.status).sort(), [200, 409]);
+    await twice(() => call('POST', `${o()}/learn/${track.lessons[5].code}/start`, { label: 'opening a lesson twice', as: EMP3, body: { step: 'phrases' }, allowDb: handled }));
+    await twice(() => call('POST', `${o()}/learn/${track.lessons[6].code}/check`, { label: 'checking a new lesson twice', as: EMP3, body: { answers: {}, minutes: 1 }, allowDb: handled }));
+    await eqSql('both checks counted on one row', `select count(*) from company_lesson_progress where member_id='${S.emp3Member}' and lesson_code='${track.lessons[6].code}'`, '1');
+
+    // Passing checks at once: one lesson, whether the row exists yet or was started first.
+    const general = TRACKS.find((entry) => entry.code === 'general')!;
+    for (const [lesson, started] of [[track.lessons[7], false], [general.lessons[0], true]] as const) {
+      if (started) await call('POST', `${o()}/learn/${lesson.code}/start`, { as: EMP3, body: {} });
+      const checks = await Promise.all([1, 2, 3, 4].map(() => call('POST', `${o()}/learn/${lesson.code}/check`, { label: 'passing checks at once', as: EMP3, body: { answers: lessonAnswers(lesson), minutes: 2 }, allowDb: handled })));
+      eq('one first completion', checks.filter((reply) => reply.body?.first_completion).length, 1);
+      await eqSql('one lesson logged', `select count(*) from company_activity where member_id='${S.emp3Member}' and kind='lesson' and ref='${lesson.code}'`, '1');
+      await eqSql('the rest are retries', `select count(*) from company_activity where member_id='${S.emp3Member}' and kind='lesson_retry' and ref='${lesson.code}'`, '3');
+      await eqSql('one completed row', `select string_agg(status, ',') from company_lesson_progress where member_id='${S.emp3Member}' and lesson_code='${lesson.code}'`, 'completed');
+    }
+
+    // Accepting a team link twice: both requests end joined, on one row, for one use.
     const link = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general' } });
-    await twice(() => call('POST', `join/${tokenOf(link.body?.link)}`, { label: 'accepting a team link twice', as: EMP10, body: { consent: true }, expect: noCrash }));
-    await eqSql('one membership', `select count(*) from company_members where org_id='${S.org}' and user_id='${EMP10}'`, '1');
+    const accepted = await twice(() => call('POST', `join/${tokenOf(link.body?.link)}`, { label: 'accepting a team link twice', as: DOUBLE_JOINER, body: { consent: true }, allowDb: handled }));
+    eq('both joined', accepted.map((reply) => reply.body?.state), ['joined', 'joined']);
+    await eqSql('one membership', `select count(*) from company_members where org_id='${S.org}' and user_id='${DOUBLE_JOINER}'`, '1');
+    await eqSql('one use', `select uses from company_invites where id='${link.body?.invite?.id}'`, '1');
+    // The unique index itself, so the route's handling of its error code is tied to what PostgREST really says.
+    const dupMember = await db.from('company_members').insert({ org_id: S.org, user_id: DOUBLE_JOINER, role: 'employee', status: 'active' });
+    dbFailures.pop();
+    eq('a second row for the person is refused as 23505', dupMember.error?.code, '23505');
+    // The last use, pressed twice by one person.
+    const lastUse = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general', max_uses: 1 } });
+    const lastUsed = await twice(() => call('POST', `join/${tokenOf(lastUse.body?.link)}`, { label: 'the last use of a link, pressed twice', as: LAST_USE_JOINER, body: { consent: true }, allowDb: handled }));
+    eq('both joined on the last use', lastUsed.map((reply) => reply.body?.state), ['joined', 'joined']);
+    await eqSql('the last use counted once', `select uses from company_invites where id='${lastUse.body?.invite?.id}'`, '1');
 
     // The last use of a link goes to one person.
     const single = await call('POST', `${o()}/invites`, { as: ADMIN, body: { kind: 'link', job_role: 'general', max_uses: 1 } });
@@ -1382,12 +1498,23 @@ async function scenario(port: number, serviceJwt: string) {
 
     // One person pressing start twice.
     const beforeMember = Number(await sql(`select tests_used from company_orgs where id='${S.org}'`));
-    await twice(() => call('POST', `${o()}/my/attempts`, { label: 'pressing start twice (staff test)', as: EMP7, body: { assessment_id: S.placement }, expect: noCrash }));
+    const memberStarts = await twice(() => call('POST', `${o()}/my/attempts`, { label: 'pressing start twice (staff test)', as: EMP7, body: { assessment_id: S.placement }, allowDb: handled }));
+    eq('both tabs resume one attempt', memberStarts[0].body?.attempt?.id, memberStarts[1].body?.attempt?.id);
     await eqSql('one running attempt', `select count(*) from company_attempts a join company_members m on m.id=a.member_id where m.user_id='${EMP7}' and a.org_id='${S.org}' and a.assessment_id='${S.placement}' and a.status='started'`, '1');
     eq('one test used', Number(await sql(`select tests_used from company_orgs where id='${S.org}'`)), beforeMember + 1);
     const beforeCandidate = Number(await sql(`select tests_used from company_orgs where id='${S.org}'`));
-    await twice(() => call('POST', `public/t/${token}/start`, { label: 'pressing start twice (candidate)', body: { name: 'Twice', email: 'twice@example.uz', consent: true }, ip: '192.0.2.90', expect: noCrash }));
+    const candidateStarts = await twice(() => call('POST', `public/t/${token}/start`, { label: 'pressing start twice (candidate)', body: { name: 'Twice', email: 'twice@example.uz', consent: true }, ip: '192.0.2.90', expect: [200, 409], allowDb: handled }));
+    eq('one start, one refusal', candidateStarts.map((reply) => reply.status).sort(), [200, 409]);
+    eq('the refusal does not say why', candidateStarts.find((reply) => reply.status === 409)?.body?.code, 'cannot_start');
     await eqSql('one attempt per email', `select count(*) from company_attempts where assessment_id='${test.body?.assessment?.id}' and candidate_email='twice@example.uz'`, '1');
+    // The indexes the start route relies on, with the code its catch looks for.
+    const dupStart = await db.from('company_attempts').insert({ org_id: S.org, assessment_id: test.body?.assessment?.id, candidate_email: 'twice@example.uz', status: 'started', deadline_at: new Date(Date.now() + 3_600_000).toISOString() });
+    dbFailures.pop();
+    eq('a second running attempt for an email is 23505', dupStart.error?.code, '23505');
+    const memberAttempt = await sql(`select member_id from company_attempts where assessment_id='${S.placement}' and status='started' and member_id is not null limit 1`);
+    const dupMemberStart = await db.from('company_attempts').insert({ org_id: S.org, assessment_id: S.placement, member_id: memberAttempt, status: 'started', deadline_at: new Date(Date.now() + 3_600_000).toISOString() });
+    dbFailures.pop();
+    eq('a second running attempt for a member is 23505', dupMemberStart.error?.code, '23505');
     eq('one test used', Number(await sql(`select tests_used from company_orgs where id='${S.org}'`)), beforeCandidate + 1);
 
     // Two tabs saving one attempt.
@@ -1398,7 +1525,7 @@ async function scenario(port: number, serviceJwt: string) {
     // Seats within the limit.
     const seats = Number(await sql(`select count(*) from company_members where org_id='${S.org}' and seat and status<>'removed'`));
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { seats_limit: seats + 1 } });
-    const [a, b] = [await sql(`select id from company_members where org_id='${S.org}' and user_id='${EMP10}'`), await sql(`select id from company_members where org_id='${S.org}' and user_id='${EMP6}'`)];
+    const [a, b] = [await sql(`select id from company_members where org_id='${S.org}' and user_id='${DOUBLE_JOINER}'`), await sql(`select id from company_members where org_id='${S.org}' and user_id='${EMP6}'`)];
     await Promise.all([a, b].map((member) => call('POST', `${o()}/people/${member}/seat`, { label: 'the last seat', as: OWNER, body: { seat: true }, expect: [200, 409] })));
     const after = Number(await sql(`select count(*) from company_members where org_id='${S.org}' and seat and status<>'removed'`));
     ok('never over the seat limit', after <= seats + 1, `${after} seats with a limit of ${seats + 1}`);
@@ -1439,7 +1566,7 @@ async function scenario(port: number, serviceJwt: string) {
     eq('hiring list counts every candidate', (await call('GET', `${path}/assessments`, { as: STAFF })).body?.assessments?.find((row: any) => row.id === testId)?.stats?.total, 1200);
     const lines = String((await call('GET', `${path}/assessments/${testId}/export`, { as: STAFF })).body?.csv ?? '').trim().split('\r\n').length;
     eq('hiring CSV has every candidate', lines, 1201);
-    eq('report export has everyone', (await call('GET', `${path}/reports/export?kind=people`, { as: STAFF })).body?.rows, 1500);
+    eq('report export has everyone, the invited owner too', (await call('GET', `${path}/reports/export?kind=people`, { as: STAFF })).body?.rows, 1501);
     eq('attempts export has everyone', (await call('GET', `${path}/reports/export?kind=attempts`, { as: STAFF })).body?.rows, 1200);
     await call('GET', `${path}/insights/overview`, { label: 'overview of a large company', as: STAFF });
     await call('GET', `${path}/reports/monthly`, { label: 'report of a large company', as: STAFF });
@@ -1450,6 +1577,29 @@ async function scenario(port: number, serviceJwt: string) {
     eq('all marked', marked.body?.added, 1500);
     const large = await call('POST', `${path}/assignments`, { label: 'assigning 500 people', as: STAFF, body: { scope: 'people', member_ids: present.slice(0, 500), track_code: 'general' } });
     eq('all assigned', large.body?.created, 500);
+    const taken = await call('PUT', `${path}/sessions/${session.body?.session?.id}/attendance`, { label: 'taking back 1,400 people', as: STAFF, body: { present: present.slice(0, 100) } });
+    eq('taken back', taken.body?.removed, 1400);
+    await eqSql('their activity went too', `select count(*) from company_activity where org_id='${org}' and kind='session'`, '100');
+    const chosen = await call('POST', `${path}/placement`, { label: 'a campaign for 1,500 chosen people', as: STAFF, body: { title: 'Chosen', skills: ['grammar'], audience: { type: 'members', ids: present } } });
+    eq('all chosen', chosen.body?.assessment?.settings?.audience?.ids?.length, 1500);
+    await call('POST', `${path}/placement`, { label: 'a stranger among 1,500 people', as: STAFF, body: { title: 'Chosen', skills: ['grammar'], audience: { type: 'members', ids: [...present.slice(0, 1499), uid(97)] } }, expect: 400 });
+    const invitedToClass = await call('POST', `${path}/sessions`, { label: 'a class for 500 people', as: STAFF, body: { title: 'Big class', starts_at: new Date(Date.now() + 3_600_000).toISOString(), member_ids: present.slice(0, 500) } });
+    eq('all invited', invitedToClass.body?.session?.member_ids?.length, 500);
+
+    // Many workspaces, assessments and sessions: the lists that build id filters.
+    await sql(`insert into company_orgs (name, status, created_by) select 'Bulk '||g, 'pilot', '${STAFF}' from generate_series(1, 250) g;
+      insert into company_members (org_id, role, status, email, full_name, user_id, joined_at) select o.id, 'owner', 'active', 'o'||row_number() over ()||'@bulk.example', 'Bulk Owner', null, now() from company_orgs o where o.name like 'Bulk %';
+      insert into company_audit (org_id, actor, action) select o.id, u.id, 'bulk.event' from company_orgs o join public.users u on true where o.name like 'Bulk %' and u.id='${STAFF}';`);
+    const orgList = await call('GET', 'staff/orgs', { label: 'more than 100 workspaces', as: STAFF });
+    ok('every workspace has its numbers', (orgList.body?.orgs ?? []).filter((row: any) => String(row.name).startsWith('Bulk ')).every((row: any) => row.people === 1), orgList.body?.orgs?.length);
+    await call('GET', 'staff/audit?limit=500', { label: 'audit naming more than 100 workspaces', as: STAFF });
+    await sql(`insert into company_assessments (org_id, kind, title, status) select '${org}', 'placement', 'Bulk campaign '||g, 'open' from generate_series(1, 150) g;
+      insert into company_assessments (org_id, kind, title, status) select '${org}', 'hiring', 'Bulk hiring '||g, 'open' from generate_series(1, 150) g;
+      insert into company_sessions (org_id, title, starts_at, duration_minutes) select '${org}', 'Bulk session '||g, now() + interval '1 day', 30 from generate_series(1, 150) g;`);
+    await call('GET', `${path}/placement`, { label: 'more than 100 campaigns', as: STAFF });
+    await call('GET', `${path}/assessments`, { label: 'more than 100 hiring tests', as: STAFF });
+    await call('GET', `${path}/sessions`, { label: 'more than 100 sessions', as: STAFF });
+    ok('no request URL over 8 KB', longestUrl <= 8192, `${longestUrl} characters`);
   });
 
   await area('refusals: every route, wrong role and wrong workspace', async () => {
@@ -1514,10 +1664,56 @@ async function scenario(port: number, serviceJwt: string) {
     await call('GET', 'staff/audit?org=not-a-uuid', { label: 'malformed org filter is ignored', as: STAFF });
   });
 
+  await area('account closure: delete by user_id, then the hook', async () => {
+    await eqSql('the hook is registered', `select 'company_erase_account' = any(public.account_erasure_service_hooks())`, 't');
+    await eqSql('service_role may not call the hook', `select has_function_privilege('service_role', 'public.company_erase_account(uuid)', 'execute')`, 'f');
+    const closing = emailOf(CLOSING_OWNER);
+    await sql(`insert into auth.users (id, email, email_confirmed_at) values ('${CLOSING_OWNER}', '${closing}', now()), ('${SOLO_OWNER}', '${emailOf(SOLO_OWNER)}', now());`);
+    const made = await call('POST', 'orgs', { as: CLOSING_OWNER, body: { name: 'Closing Co', full_name: 'Closing Owner' } });
+    const orgId = need(made.body?.org?.id, 'closing org');
+    await call('PATCH', `staff/orgs/${orgId}`, { as: STAFF, body: { status: 'active', seats_limit: 5, contract_ends_at: '2030-01-01' } });
+    const adminInvite = await call('POST', `orgs/${orgId}/invites`, { as: CLOSING_OWNER, body: { full_name: 'Second In Command', email: emailOf(CLOSING_ADMIN), role: 'admin' } });
+    await call('POST', `join/${tokenOf(adminInvite.body?.link)}`, { as: CLOSING_ADMIN, body: { consent: true } });
+    await call('POST', `orgs/${orgId}/people/${made.body?.member?.id}/seat`, { label: 'the closing person has a seat', as: CLOSING_OWNER, body: { seat: true } });
+    await eqSql('seat granted', `select is_active from entitlements where user_id='${CLOSING_OWNER}' and resource_id='${SEAT_PRODUCT}'`, 't');
+    await call('POST', `orgs/${orgId}/learn/${TRACKS[0].lessons[0].code}/check`, { label: 'some history', as: CLOSING_OWNER, body: { answers: {}, minutes: 3 } });
+    const test = await call('POST', `orgs/${orgId}/assessments`, { as: CLOSING_OWNER, body: { title: 'Took one as a candidate', skills: ['grammar'], min_level: 'a2' } });
+    const candidate = await call('POST', `public/t/${tokenOf(test.body?.link)}/start`, { body: { name: 'Closing Person', email: closing, phone: '+998901112233', consent: true }, ip: '192.0.2.200' });
+    await call('POST', 'public/attempts/submit', { body: { key: candidate.body?.key, answers: answersFor(candidate.body?.attempt?.section) } });
+    // Elsewhere: an invitation not yet accepted, a demo request, and audit text naming them.
+    const elsewhere = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Closing Person', email: closing } });
+    await call('POST', 'public/leads', { body: { name: 'Closing Person', company: 'Closing Lead', email: closing, phone: '+998901112233', need: 'Tell me more.' }, ip: '203.0.113.200' });
+
+    // What account closure does: the registered tables by user_id, then the hook.
+    for (const table of ['company_roleplay_sessions', 'company_writing_checks', 'company_activity', 'company_lesson_progress', 'company_attempts', 'company_members']) {
+      await sql(`delete from public.${table} where user_id='${CLOSING_OWNER}'`);
+    }
+    await eqSql('the longest-serving admin became owner', `select role from company_members where org_id='${orgId}' and user_id='${CLOSING_ADMIN}'`, 'owner');
+    const hook = JSON.parse(await sql(`select public.company_erase_account('${CLOSING_OWNER}')`));
+    ok('the hook reports its work', hook.billing === 1 && hook.leads === 1 && hook.invited === 1 && hook.candidate_attempts === 1, hook);
+    await eqSql('billing contact gone', `select billing_email is null from company_orgs where id='${orgId}'`, 't');
+    await eqSql('lead anonymised', `select name||'|'||(email is null)||'|'||(phone is null)||'|'||(need is null) from company_leads where company='Closing Lead'`, '-|true|true|true');
+    await eqSql('invitation gone', `select count(*) from company_members where id='${elsewhere.body?.member?.id}'`, '0');
+    await eqSql('candidate details gone, result kept', `select (candidate_name is null)||'|'||(candidate_email is null)||'|'||(candidate_phone is null)||'|'||(overall_level is not null) from company_attempts where id='${candidate.body?.attempt?.id}'`, 'true|true|true|true');
+    await eqSql('audit no longer names them', `select count(*) from company_audit where actor='${CLOSING_OWNER}' or strpos(lower(details::text), '${closing}') > 0`, '0');
+    await eqSql('no learning rows left', `select (select count(*) from company_activity where user_id='${CLOSING_OWNER}')+(select count(*) from company_lesson_progress where user_id='${CLOSING_OWNER}')`, '0');
+    await call('GET', `orgs/${orgId}`, { label: 'the workspace still runs', as: CLOSING_ADMIN });
+    const again = JSON.parse(await sql(`select public.company_erase_account('${CLOSING_OWNER}')`));
+    eq('running the hook again finds nothing', [again.billing, again.leads, again.invited, again.candidate_attempts], [0, 0, 0, 0]);
+
+    // A sole owner with no admin leaves a real orphan, which staff are shown.
+    const solo = await call('POST', 'orgs', { as: SOLO_OWNER, body: { name: 'Solo Co' } });
+    await sql(`delete from public.company_members where user_id='${SOLO_OWNER}'`);
+    await sql(`select public.company_erase_account('${SOLO_OWNER}')`);
+    const staffView = await call('GET', 'staff/orgs?ownerless=1', { as: STAFF });
+    ok('staff are shown the orphan', staffView.body?.orgs?.some((row: any) => row.id === solo.body?.org?.id), staffView.body?.ownerless);
+    eq('detail says nobody', (await call('GET', `staff/orgs/${solo.body?.org?.id}`, { as: STAFF })).body?.owner_state, 'none');
+  });
+
   await area('last: closing a workspace', async () => {
     await call('POST', `${o()}/people/me/leave`, { label: 'an ordinary leave still works', as: EMP5 });
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { status: 'closed' } });
-    await eqSql('close revokes access', `select is_active from entitlements where user_id='${EMP1}'`, 'f');
+    await eqSql('close revokes access', `select is_active from entitlements where user_id='${EMP1}' and resource_id='${SEAT_PRODUCT}'`, 'f');
     await call('GET', `${o()}`, { label: 'closed', as: EMP1, expect: 403 });
     await call('GET', `${o()}`, { label: 'staff still reads', as: STAFF });
     const me = await call('GET', 'me', { as: OWNER });
@@ -1541,6 +1737,7 @@ async function main(): Promise<number> {
     if (url.hostname !== '127.0.0.1') throw new Error(`Refusing to reach ${url.hostname}`);
     url.pathname = url.pathname.replace(/^\/rest\/v1/, '');
     dbRequests++;
+    longestUrl = Math.max(longestUrl, url.pathname.length + url.search.length);
     // Docker Desktop's port proxy now and then drops a kept-alive connection before PostgREST
     // sees the request. That is the test rig, not the product, so try again; the count is reported.
     let response: Response | null = null;
@@ -1580,7 +1777,7 @@ async function main(): Promise<number> {
   const reached = all.filter(([, entry]) => entry.ok);
   const refusedOnly = all.filter(([, entry]) => !entry.ok && entry.statuses.size);
   const never = all.filter(([, entry]) => !entry.statuses.size);
-  console.log(`\n================ Coverage: ${reached.length}/${all.length} routes reached a 2xx (${requests} requests, ${dbRequests} PostgREST calls, ${transportRetries} transport retries, ${assertions} assertions)`);
+  console.log(`\n================ Coverage: ${reached.length}/${all.length} routes reached a 2xx (${requests} requests, ${dbRequests} PostgREST calls, ${transportRetries} transport retries, ${assertions} assertions, longest URL ${longestUrl} characters)`);
   for (const [name, entry] of refusedOnly) console.log(`  refused only  ${name}  [${[...entry.statuses].join(',')}]`);
   for (const [name] of never) console.log(`  NEVER CALLED  ${name}`);
   console.log(`AI calls: ${JSON.stringify(aiCalls)}`);

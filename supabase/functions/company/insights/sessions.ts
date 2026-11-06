@@ -5,7 +5,7 @@ import { HR_ROLES, LEAD_ROLES } from '../../../../packages/company-core/src/mod.
 import { logActivity } from '../core.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { check, CompanyError, UUID, type Ctx, type MemberRow, type Route } from '../types.ts';
-import { int, obj, oneOf, text } from '../util.ts';
+import { inChunks, int, obj, oneOf, text } from '../util.ts';
 import { DAY, displayName, fetchAll, loadScope, viewerOf, type Viewer } from './common.ts';
 
 export const SESSION_KINDS = ['class', 'workshop'] as const;
@@ -55,8 +55,10 @@ async function audience(ctx: Ctx, input: Record<string, unknown>, current: Sessi
     if (found.length !== departmentIds.length) throw new CompanyError('invalid_field', 'Choose departments of this workspace.', 400, { field: 'department_ids' });
   }
   if (memberIds.length && (input.member_ids !== undefined)) {
-    const found = check<{ id: string }[]>(await ctx.db.from('company_members').select('id').eq('org_id', ctx.org!.id).neq('status', 'removed').in('id', memberIds));
-    if (found.length !== memberIds.length) throw new CompanyError('invalid_field', 'Choose people of this workspace.', 400, { field: 'member_ids' });
+    // Compared here: a list of up to 500 ids does not fit in a GET filter.
+    const found = await fetchAll<{ id: string }>(() => ctx.db.from('company_members').select('id').eq('org_id', ctx.org!.id).neq('status', 'removed').order('id'));
+    const known = new Set(found.map((row) => row.id));
+    if (memberIds.some((id) => !known.has(id))) throw new CompanyError('invalid_field', 'Choose people of this workspace.', 400, { field: 'member_ids' });
   }
   return { department_ids: departmentIds, member_ids: memberIds };
 }
@@ -67,7 +69,10 @@ function link(value: unknown): string | null {
   let url: URL;
   try { url = new URL(raw); } catch { throw new CompanyError('invalid_field', 'link must be a web address.', 400, { field: 'link' }); }
   if (url.protocol !== 'https:') throw new CompanyError('invalid_field', 'link must start with https://', 400, { field: 'link' });
-  return url.toString();
+  // Encoding can lengthen it past what the column holds.
+  const normal = url.toString();
+  if (normal.length > 500) throw new CompanyError('invalid_field', 'link is too long.', 400, { field: 'link' });
+  return normal;
 }
 
 function startsAt(value: unknown, now: Date): string {
@@ -85,6 +90,9 @@ async function load(ctx: Ctx, id: string): Promise<SessionRow> {
 }
 
 const activityRef = (sessionId: string) => `session:${sessionId}`;
+
+/** Everyone marked present. A town hall can pass one page of rows. */
+const presentAt = (ctx: Ctx, sessionId: string) => fetchAll<{ member_id: string }>(() => ctx.db.from('company_session_attendance').select('member_id').eq('session_id', sessionId).order('member_id'));
 
 export const routes: Route[] = [
   {
@@ -104,7 +112,7 @@ export const routes: Route[] = [
         .filter((row) => (when === 'upcoming' ? endsAt(row) > now.getTime() : endsAt(row) <= now.getTime()))
         .filter((row) => invited(row, viewer, ctx.member, departmentPeople));
       const ids = sessions.map((row) => row.id);
-      const attendance = ids.length ? await fetchAll<{ session_id: string; member_id: string }>(() => ctx.db.from('company_session_attendance').select('session_id,member_id').eq('org_id', org.id).in('session_id', ids).order('session_id').order('member_id'), 20_000) : [];
+      const attendance = await inChunks(ids, (chunk) => fetchAll<{ session_id: string; member_id: string }>(() => ctx.db.from('company_session_attendance').select('session_id,member_id').eq('org_id', org.id).in('session_id', chunk).order('session_id').order('member_id'), 20_000));
       const departments = check<{ id: string; name: string }[]>(await ctx.db.from('company_departments').select('id,name').eq('org_id', org.id).order('name'));
       return {
         when,
@@ -193,7 +201,7 @@ export const routes: Route[] = [
       const { viewer, members, departments } = await loadScope(ctx);
       const people = members.filter((member) => member.status === 'active');
       if (!invited(session, viewer, ctx.member, new Set(people.map((member) => member.id)))) throw new CompanyError('session_not_found', 'Session not found.', 404);
-      const present = new Set(check<{ member_id: string }[]>(await ctx.db.from('company_session_attendance').select('member_id').eq('session_id', session.id)).map((row) => row.member_id));
+      const present = new Set((await presentAt(ctx, session.id)).map((row) => row.member_id));
       const names = new Map(departments.map((entry) => [entry.id, entry.name]));
       const rows = people.filter((member) => isInvitee(session, member) || present.has(member.id))
         .map((member) => ({ member_id: member.id, name: displayName(member), department: member.department_id ? names.get(member.department_id) ?? null : null, invited: isInvitee(session, member), present: present.has(member.id) }))
@@ -217,25 +225,33 @@ export const routes: Route[] = [
       if (session.status === 'cancelled') throw new CompanyError('session_cancelled', 'This session was cancelled.', 409);
       if (Date.parse(session.starts_at) > ctx.now().getTime()) throw new CompanyError('session_not_started', 'Attendance can be marked once the session has started.', 409);
       const wanted = idList(input.present, 'present', 2000);
-      const people = wanted.length ? await fetchAll<MemberRow>(() => ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('status', 'active').in('id', wanted).order('id'), 5000) : [];
+      // Up to 2,000 people, so a piece at a time: the filter goes in the URL.
+      const people = await inChunks(wanted, (chunk) => fetchAll<MemberRow>(() => ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('status', 'active').in('id', chunk).order('id')));
       if (people.length !== wanted.length) throw new CompanyError('invalid_field', 'Choose active people of this workspace.', 400, { field: 'present' });
-      const existing = new Set(check<{ member_id: string }[]>(await ctx.db.from('company_session_attendance').select('member_id').eq('session_id', session.id)).map((row) => row.member_id));
+      const existing = new Set((await presentAt(ctx, session.id)).map((row) => row.member_id));
       const wantedSet = new Set(wanted);
-      const added = people.filter((member) => !existing.has(member.id));
+      const missing = people.filter((member) => !existing.has(member.id));
       const removed = [...existing].filter((id) => !wantedSet.has(id));
       const markedAt = ctx.now().toISOString();
-      if (added.length) {
-        check(await ctx.db.from('company_session_attendance').upsert(added.map((member) => ({
+      let added: MemberRow[] = [];
+      if (missing.length) {
+        // Only rows this request really added come back, so marking from two tabs logs each person once.
+        const inserted = check<{ member_id: string }[]>(await ctx.db.from('company_session_attendance').upsert(missing.map((member) => ({
           session_id: session.id, org_id: org.id, member_id: member.id, user_id: member.user_id, marked_by: ctx.user, marked_at: markedAt,
-        })), { onConflict: 'session_id,member_id', ignoreDuplicates: true }));
+        })), { onConflict: 'session_id,member_id', ignoreDuplicates: true }).select('member_id'));
+        const fresh = new Set(inserted.map((row) => row.member_id));
+        added = missing.filter((member) => fresh.has(member.id));
         for (const member of added) {
           await logActivity(ctx.db, { org_id: org.id, member_id: member.id, user_id: member.user_id, kind: 'session', minutes: session.duration_minutes, points: Math.min(SESSION_POINTS_MAX, session.duration_minutes), ref: activityRef(session.id) });
         }
       }
       if (removed.length) {
-        check(await ctx.db.from('company_session_attendance').delete().eq('session_id', session.id).in('member_id', removed));
-        // Take back the activity the attendance gave, so challenges stay fair.
-        check(await ctx.db.from('company_activity').delete().eq('org_id', org.id).eq('kind', 'session').eq('ref', activityRef(session.id)).in('member_id', removed));
+        await inChunks(removed, async (chunk) => {
+          check(await ctx.db.from('company_session_attendance').delete().eq('session_id', session.id).in('member_id', chunk));
+          // Take back the activity the attendance gave, so challenges stay fair.
+          check(await ctx.db.from('company_activity').delete().eq('org_id', org.id).eq('kind', 'session').eq('ref', activityRef(session.id)).in('member_id', chunk));
+          return [];
+        });
       }
       if (added.length || removed.length) await ctx.audit('session.attendance', session.id, { added: added.length, removed: removed.length });
       return { present: wanted.length, added: added.length, removed: removed.length };

@@ -6,12 +6,13 @@ import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { LevelBadge, Loading, Progress, SeatLocked, useDate, useLoad, useLocalized, useWeekday, type Localized } from './lib.tsx';
+import { LevelBadge, Loading, Progress, SeatLocked, useDate, useLoad, useLocalized, useWeekday, type Localized, type SeatReason } from './lib.tsx';
 
 interface LessonRef { code: string; track_code: string; track_title: Localized; title: Localized; stage: string; level: string; step: string | null }
 interface Home {
   member: { full_name: string | null; job_role: string; seat: boolean; level: string | null; level_source: string | null; level_at: string | null; target_level: string | null; target_date: string | null; gap: number | null };
   can_learn: boolean;
+  seat_reason?: SeatReason | null;
   english_url: string | null;
   assignments: { id: string; track_code: string | null; track_title: Localized | null; target_level: string | null; due_date: string | null; note: string | null; lessons_done: number; lessons_total: number; meets_target: boolean | null; overdue: boolean; next: LessonRef | null }[];
   continue: LessonRef | null;
@@ -31,7 +32,8 @@ function TestsToTake({ org }: { org: string }) {
   const [tests, setTests] = useState<MyTest[]>([]);
   useEffect(() => {
     let live = true;
-    api<{ tests: MyTest[] }>(`orgs/${org}/my/tests`).then((result) => { if (live) setTests(Array.isArray(result?.tests) ? result.tests : []); }).catch(() => { if (live) setTests([]); });
+    // Listing can close an overdue test and grade it with AI, so it gets the long timeout.
+    api<{ tests: MyTest[] }>(`orgs/${org}/my/tests`, { timeoutMs: 90_000 }).then((result) => { if (live) setTests(Array.isArray(result?.tests) ? result.tests : []); }).catch(() => { if (live) setTests([]); });
     return () => { live = false; };
   }, [org]);
   const open = tests.filter((test) => test.status !== 'done');
@@ -104,7 +106,7 @@ export function MyEnglish() {
 
     <TestsToTake org={org.id}/>
 
-    {!data.can_learn && <SeatLocked browse/>}
+    {!data.can_learn && <SeatLocked browse reason={data.seat_reason}/>}
 
     {data.continue && <section className="training-card training-continue" aria-labelledby="training-continue">
       <p className="eyebrow">{data.resuming ? t('training.me.continue') : t('training.me.next')}</p>

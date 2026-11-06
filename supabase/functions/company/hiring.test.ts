@@ -792,9 +792,10 @@ Deno.test('routes: the normal time-up submit is not flagged late', async () => {
   const { token, id } = await hiringTest(call, { skills: ['grammar'], time_limit_minutes: 10 });
   const onTime = await startAs(call, token, 'ontime@mail.uz');
   const late = await startAs(call, token, 'late@mail.uz');
-  clock.now = new Date(clock.now.getTime() + 10 * MINUTE + 5_000);
+  // The page retries its time-up submit every 15 s: a third retry is still that submit.
+  clock.now = new Date(clock.now.getTime() + 10 * MINUTE + 45_000);
   await call('POST', 'public/attempts/submit', { body: { key: onTime.body.key, answers: {} } });
-  clock.now = new Date(clock.now.getTime() + 55_000);
+  clock.now = new Date(clock.now.getTime() + 30_000);
   await call('POST', 'public/attempts/submit', { body: { key: late.body.key, answers: {} } });
   assertEquals(attemptRows(db).map((row) => (row.integrity as { late?: boolean }).late), [undefined, true]);
   const rows = (await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN })).body.attempts as { email: string; flags: { code: string }[] }[];
@@ -860,4 +861,52 @@ Deno.test('page: starting Next or Submit drops the waiting autosave and blocks a
   gate.schedule(() => saves++, 1);
   await new Promise((resolve) => setTimeout(resolve, 25));
   assertEquals(saves, 1, 'a newer save replaces the waiting one');
+});
+
+Deno.test('routes: two starts at once make one attempt and use one test', async () => {
+  const { db, call } = world();
+  db.uniques.company_attempts = [
+    { columns: ['assessment_id', 'candidate_email'], where: (row) => row.status === 'started' },
+    { columns: ['assessment_id', 'member_id'], where: (row) => row.status === 'started' },
+  ];
+  const { token } = await hiringTest(call, { skills: ['grammar'] });
+  const used = () => db.rows('company_orgs')[0].tests_used;
+  const before = used();
+  const [one, two] = await Promise.all([startAs(call, token, 'same@mail.uz'), startAs(call, token, 'same@mail.uz')]);
+  assertEquals([one.status, two.status].sort(), [200, 409]);
+  assertEquals((one.status === 409 ? one : two).body.code, 'cannot_start');
+  assertEquals(attemptRows(db).length, 1);
+  assertEquals(used(), before as number + 1);
+});
+
+Deno.test('routes: long audience lists stay out of the URL', async () => {
+  const { db, call } = world();
+  const ids = Array.from({ length: 300 }, () => crypto.randomUUID());
+  for (const id of ids) db.rows('company_members').push({ id, org_id: ORG, user_id: null, email: null, full_name: 'P', role: 'employee', department_id: null, job_role: 'general', status: 'active', seat: false, level: null, consent_at: null });
+  const made = await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { title: 'Everyone chosen', kind: 'placement', skills: ['grammar'], audience: { type: 'members', ids } } });
+  assertEquals(made.status, 200);
+  assertEquals(db.longestIn <= 100, true);
+  const wrong = await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { title: 'One stranger', kind: 'placement', skills: ['grammar'], audience: { type: 'members', ids: [...ids, crypto.randomUUID()] } } });
+  assertEquals([wrong.status, wrong.body.field], [400, 'audience']);
+});
+
+Deno.test('routes: answers Postgres cannot store are cleaned, a member with a long email can start, and odd dates are refused', async () => {
+  const { db, call } = world();
+  const { token } = await hiringTest(call, { skills: ['writing'] });
+  const started = await startAs(call, token, 'nul@mail.uz');
+  const task = started.body.attempt.section.tasks[0].id;
+  const saved = await call('POST', 'public/attempts/save', { body: { key: started.body.key, answers: { [task]: 'Dear\u0000 team \ud83d' } } });
+  assertEquals(saved.status, 200);
+  assertEquals(attemptRows(db)[0].answers, { [task]: 'Dear team ' });
+  for (const closes_at of ['0000-01-01T00:00:00Z', '+275760-01-01T00:00:00Z', 'soon']) {
+    const refused = await call('POST', `orgs/${ORG}/assessments`, { user: HR_ADMIN, body: { title: 'Odd date', skills: ['grammar'], closes_at } });
+    assertEquals([refused.status, refused.body.field], [400, 'closes_at'], closes_at);
+  }
+  const list = await call('POST', `orgs/${ORG}/assessments`, { user: HR_ADMIN, body: { title: 'A list as a role', skills: ['grammar'], job_role: ['general'] } });
+  assertEquals([list.status, list.body.field], [400, 'job_role']);
+});
+
+Deno.test('AI feedback that Postgres could not store is cleaned', () => {
+  const parsed = parseGrade('writing', { criteria: { task: 50, organisation: 50, grammar: 50, vocabulary: 50 }, strengths: ['Clear\u0000 opening', '\u0000'], improvements: [], summary: 'Fine\ud83d' }, 'en', false)!;
+  assertEquals([parsed.feedback.strengths, parsed.feedback.summary], [['Clear opening'], 'Fine']);
 });

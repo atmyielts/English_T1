@@ -7,6 +7,7 @@ import {
   BANK_LEVELS, CHOICES, GRAMMAR, LISTENING, PASSAGES, QUESTIONS, READING, SPEAKING, VOCABULARY, WRITING,
   type BankLevel, type ChoiceItem, type Passage, type ProductionTask,
 } from './bank/index.ts';
+import { storable } from '../util.ts';
 
 export const STAGE_SIZE = 5;
 export const ADAPTIVE_STAGES = 3;
@@ -207,10 +208,10 @@ export function cleanAnswers(section: Section | undefined, input: unknown): Answ
     const value = raw[id];
     if (value === undefined || value === null) continue;
     if (section.skill === 'writing') {
-      if (typeof value === 'string') out[id] = value.slice(0, MAX_TEXT);
+      if (typeof value === 'string') out[id] = storable(value.slice(0, MAX_TEXT));
     } else if (section.skill === 'speaking') {
       const spoken = value as Partial<SpokenAnswer>;
-      if (value && typeof value === 'object' && typeof spoken.transcript === 'string') out[id] = { transcript: spoken.transcript.slice(0, MAX_TEXT), mode: spoken.mode === 'speech' ? 'speech' : 'typed' };
+      if (value && typeof value === 'object' && typeof spoken.transcript === 'string') out[id] = { transcript: storable(spoken.transcript.slice(0, MAX_TEXT)), mode: spoken.mode === 'speech' ? 'speech' : 'typed' };
     } else if (Number.isInteger(value) && (value as number) >= 0 && (value as number) < optionCount(section, id)) {
       out[id] = value as number;
     }

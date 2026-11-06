@@ -59,7 +59,7 @@ function StaffOrgs() {
         </tr></thead>
         <tbody>{data.orgs.map((org) => <tr key={org.id}>
           <td><Link to={`/staff/orgs/${org.id}`}><strong>{org.name}</strong></Link><span className="people-email">{t(`industry.${org.industry}` as AppKey)}{org.city ? ` · ${org.city}` : ''}</span></td>
-          <td><span className={`company-badge ${org.status === 'active' ? 'good' : org.status === 'pilot' ? '' : 'bad'}`}>{t(`status.${org.status}` as AppKey)}</span>{org.ownerless && <> <span className="company-badge warn">{t('staff.orgs.noOwner')}</span></>}</td>
+          <td><span className={`company-badge ${org.status === 'active' ? 'good' : org.status === 'pilot' ? '' : 'bad'}`}>{t(`status.${org.status}` as AppKey)}</span>{org.ownerless && <> <span className="company-badge warn">{t('staff.orgs.noOwner')}</span></>}{org.owner_invited && <> <span className="company-badge">{t('staff.orgs.ownerInvited')}</span></>}</td>
           <td>{org.people}{org.invited ? <span className="people-muted"> +{org.invited}</span> : ''}</td>
           <td>{org.seats_used} / {org.seats_limit}</td>
           <td>{org.tests_used ?? 0} / {org.tests_limit ?? '∞'}</td>

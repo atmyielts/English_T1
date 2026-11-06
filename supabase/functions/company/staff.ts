@@ -4,9 +4,9 @@
 import { INDUSTRIES, ORG_STATUSES, SIZE_BANDS, type Industry, type OrgStatus, type SizeBand } from '../../../packages/company-core/src/mod.ts';
 import { usage } from './core.ts';
 import { MEMBER_COLUMNS, ORG_COLUMNS } from './handler.ts';
-import { check, CompanyError, UUID, type Ctx, type MemberRow, type OrgRow, type Route } from './types.ts';
-import { email as readEmail, int, obj, oneOf, text } from './util.ts';
-import { dateOrNull, DAY, fetchAll, issueInvite, OWNER_DAYS, revokeMemberInvites, seatCount } from './people/shared.ts';
+import { check, checkUnique, CompanyError, UUID, type Ctx, type MemberRow, type OrgRow, type Route } from './types.ts';
+import { email as readEmail, inChunks, int, obj, oneOf, text } from './util.ts';
+import { dateOrNull, DAY, fetchAll, issueInvite, memberExists, OWNER_DAYS, revokeMemberInvites, seatCount } from './people/shared.ts';
 import { PHONE } from './site.ts';
 
 export const LEAD_STATUSES = ['new', 'contacted', 'pilot', 'won', 'lost'] as const;
@@ -52,9 +52,16 @@ async function syncOrg(ctx: Ctx, orgId: string): Promise<number | null> {
 /** Who did what: audit actors resolved to the names workspaces know them by. */
 async function withActors<T extends { actor: string | null }>(ctx: Ctx, rows: T[]): Promise<(T & { actor_name: string | null })[]> {
   const ids = [...new Set(rows.map((row) => row.actor).filter((id): id is string => Boolean(id)))];
-  const people = ids.length ? check<{ user_id: string; full_name: string | null; email: string | null }[]>(await ctx.db.from('company_members').select('user_id,full_name,email').in('user_id', ids)) : [];
+  const people = await inChunks(ids, (chunk) => fetchAll<{ user_id: string; full_name: string | null; email: string | null }>(() => ctx.db.from('company_members').select('user_id,full_name,email').in('user_id', chunk).order('id')));
   const names = new Map(people.map((row) => [row.user_id, row.full_name || row.email]));
   return rows.map((row) => ({ ...row, actor_name: row.actor ? names.get(row.actor) ?? null : null }));
+}
+
+/** Invited owners who still hold an open link: they can join without anything from staff. */
+async function withOpenLink(ctx: Ctx, memberIds: string[]): Promise<Set<string>> {
+  const at = ctx.now().toISOString();
+  const rows = await inChunks(memberIds, (chunk) => fetchAll<{ member_id: string }>(() => ctx.db.from('company_invites').select('member_id').eq('kind', 'personal').in('member_id', chunk).is('revoked_at', null).gt('expires_at', at).order('id')));
+  return new Set(rows.map((row) => row.member_id));
 }
 
 /** Creates the owner's invited member row and a personal link (30 days). */
@@ -66,9 +73,9 @@ async function ownerInvite(ctx: Ctx, org: OrgRow, email: string | null, full_nam
     if (member.role !== 'owner') member = check<MemberRow>(await ctx.db.from('company_members').update({ role: 'owner' }).eq('id', member.id).select(MEMBER_COLUMNS).single());
     await revokeMemberInvites(ctx, member.id);
   } else {
-    member = check<MemberRow>(await ctx.db.from('company_members').insert({
+    member = checkUnique<MemberRow>(await ctx.db.from('company_members').insert({
       org_id: org.id, email, full_name, role: 'owner', status: 'invited', seat: false, invited_by: ctx.user, invited_at: ctx.now().toISOString(),
-    }).select(MEMBER_COLUMNS).single());
+    }).select(MEMBER_COLUMNS).single(), memberExists);
   }
   const { invite, link } = await issueInvite(ctx, {
     org_id: org.id, member_id: member.id, kind: 'personal', role: 'admin', department_id: null, job_role: 'management', max_uses: 1,
@@ -83,15 +90,21 @@ export const routes: Route[] = [
     async handle(ctx, _params, _body, query) {
       const status = query.get('status'), q = (query.get('q') ?? '').trim().toLowerCase();
       let orgs = check<OrgRow[]>(await ctx.db.from('company_orgs').select(ORG_COLUMNS).order('created_at', { ascending: false }).limit(1000));
-      // A live workspace with no active owner: nobody there can manage owners, so staff have to step in.
-      const owners = await fetchAll<{ org_id: string }>(() => ctx.db.from('company_members').select('org_id').eq('role', 'owner').eq('status', 'active').order('id'));
-      const owned = new Set(owners.map((row) => row.org_id));
-      const lacksOwner = (org: { id: string; status: string }) => org.status !== 'closed' && !owned.has(org.id);
+      // A live workspace with no active owner, and no owner invitation still open: nobody there can
+      // manage owners and nobody is on the way, so staff have to step in. An owner who has an open
+      // link and has not joined yet is a different state and needs nothing from staff.
+      const owners = await fetchAll<{ id: string; org_id: string; status: string }>(() => ctx.db.from('company_members').select('id,org_id,status').eq('role', 'owner').in('status', ['active', 'invited']).order('id'));
+      const owned = new Set(owners.filter((row) => row.status === 'active').map((row) => row.org_id));
+      const waiting = owners.filter((row) => row.status === 'invited');
+      const linked = await withOpenLink(ctx, waiting.map((row) => row.id));
+      const invitedOwner = new Set(waiting.filter((row) => linked.has(row.id)).map((row) => row.org_id));
+      const ownerInvited = (org: { id: string; status: string }) => org.status !== 'closed' && !owned.has(org.id) && invitedOwner.has(org.id);
+      const lacksOwner = (org: { id: string; status: string }) => org.status !== 'closed' && !owned.has(org.id) && !invitedOwner.has(org.id);
       if (query.get('ownerless') === '1') orgs = orgs.filter(lacksOwner);
       if (status && (ORG_STATUSES as readonly string[]).includes(status)) orgs = orgs.filter((org) => org.status === status);
       if (q) orgs = orgs.filter((org) => [org.name, org.city, org.billing_email, org.contact_phone, org.tax_id].some((value) => String(value ?? '').toLowerCase().includes(q)));
       const ids = orgs.map((org) => org.id);
-      const members = ids.length ? await fetchAll<{ org_id: string; status: string; seat: boolean }>(() => ctx.db.from('company_members').select('org_id,status,seat').in('org_id', ids).neq('status', 'removed').order('id')) : [];
+      const members = await inChunks(ids, (chunk) => fetchAll<{ org_id: string; status: string; seat: boolean }>(() => ctx.db.from('company_members').select('org_id,status,seat').in('org_id', chunk).neq('status', 'removed').order('id')));
       const tally = new Map<string, { people: number; invited: number; seats_used: number }>();
       for (const row of members) {
         const entry = tally.get(row.org_id) ?? { people: 0, invited: 0, seats_used: 0 };
@@ -99,9 +112,9 @@ export const routes: Route[] = [
         if (row.seat) entry.seats_used++;
         tally.set(row.org_id, entry);
       }
-      const all = check<{ id: string; status: string }[]>(await ctx.db.from('company_orgs').select('id,status').limit(5000));
+      const all = await fetchAll<{ id: string; status: string }>(() => ctx.db.from('company_orgs').select('id,status').order('id'));
       const counts = Object.fromEntries(ORG_STATUSES.map((value) => [value, all.filter((row) => row.status === value).length]));
-      return { orgs: orgs.map((org) => ({ ...org, ...(tally.get(org.id) ?? { people: 0, invited: 0, seats_used: 0 }), ownerless: lacksOwner(org) })), counts, ownerless: all.filter(lacksOwner).length };
+      return { orgs: orgs.map((org) => ({ ...org, ...(tally.get(org.id) ?? { people: 0, invited: 0, seats_used: 0 }), ownerless: lacksOwner(org), owner_invited: ownerInvited(org) })), counts, ownerless: all.filter(lacksOwner).length };
     },
   },
   {
@@ -153,8 +166,10 @@ export const routes: Route[] = [
       ));
       const leads = check<LeadRow[]>(await ctx.db.from('company_leads').select(LEAD_COLUMNS).eq('org_id', org.id));
       const departments = check<{ id: string }[]>(await ctx.db.from('company_departments').select('id').eq('org_id', org.id));
+      const linked = await withOpenLink(ctx, people.filter((row) => row.role === 'owner' && row.status === 'invited').map((row) => row.id));
       return {
         org,
+        owner_state: people.some((row) => row.role === 'owner' && row.status === 'active') ? 'active' : linked.size ? 'invited' : 'none',
         usage: await usage(ctx.db, org),
         counts: { people: people.filter((row) => row.status === 'active').length, invited: people.filter((row) => row.status === 'invited').length, departments: departments.length },
         admins: people.filter((row) => row.role === 'owner' || row.role === 'admin'),
@@ -226,7 +241,7 @@ export const routes: Route[] = [
   {
     method: 'GET', path: 'staff/audit', access: 'staff',
     async handle(ctx, _params, _body, query) {
-      const limit = Math.min(500, Math.max(1, Number(query.get('limit')) || 200));
+      const limit = Math.min(500, Math.max(1, Math.floor(Number(query.get('limit'))) || 200));
       let q = ctx.db.from('company_audit').select('id,org_id,actor,action,target,details,created_at');
       const orgId = query.get('org');
       if (orgId && UUID.test(orgId)) q = q.eq('org_id', orgId);
@@ -234,7 +249,7 @@ export const routes: Route[] = [
       if (action && /^[a-z_.]{2,60}$/.test(action)) q = q.ilike('action', `${action}%`);
       const rows = check<{ id: string; org_id: string | null; actor: string | null; action: string; target: string | null; details: Record<string, unknown>; created_at: string }[]>(await q.order('created_at', { ascending: false }).limit(limit));
       const orgIds = [...new Set(rows.map((row) => row.org_id).filter((id): id is string => Boolean(id)))];
-      const orgs = orgIds.length ? check<{ id: string; name: string }[]>(await ctx.db.from('company_orgs').select('id,name').in('id', orgIds)) : [];
+      const orgs = await inChunks(orgIds, async (chunk) => check<{ id: string; name: string }[]>(await ctx.db.from('company_orgs').select('id,name').in('id', chunk)));
       const names = new Map(orgs.map((org) => [org.id, org.name]));
       return { audit: (await withActors(ctx, rows)).map((row) => ({ ...row, org_name: row.org_id ? names.get(row.org_id) ?? null : null })) };
     },
@@ -244,7 +259,7 @@ export const routes: Route[] = [
     async handle(ctx) {
       const leads = check<LeadRow[]>(await ctx.db.from('company_leads').select(LEAD_COLUMNS).order('created_at', { ascending: false }).limit(1000));
       const orgIds = [...new Set(leads.map((lead) => lead.org_id).filter((id): id is string => Boolean(id)))];
-      const orgs = orgIds.length ? check<{ id: string; name: string; status: string }[]>(await ctx.db.from('company_orgs').select('id,name,status').in('id', orgIds)) : [];
+      const orgs = await inChunks(orgIds, async (chunk) => check<{ id: string; name: string; status: string }[]>(await ctx.db.from('company_orgs').select('id,name,status').in('id', chunk)));
       const byId = new Map(orgs.map((org) => [org.id, org]));
       const counts = Object.fromEntries(LEAD_STATUSES.map((status) => [status, leads.filter((lead) => lead.status === status).length]));
       return { leads: leads.map((lead) => ({ ...lead, org: lead.org_id ? byId.get(lead.org_id) ?? null : null })), counts };

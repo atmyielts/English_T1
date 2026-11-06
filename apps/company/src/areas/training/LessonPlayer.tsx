@@ -6,7 +6,7 @@ import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { LevelBadge, ListenButton, Loading, needsSeat, RateToggle, readLocal, SeatLocked, useLoad, useLocalized, useMinutes, useRate, writeLocal, type Localized } from './lib.tsx';
+import { LevelBadge, ListenButton, Loading, needsSeat, RateToggle, readLocal, SeatLocked, seatReasonOf, useLoad, useLocalized, useMinutes, useRate, writeLocal, type Localized } from './lib.tsx';
 import { canSpeak, speak, stopSpeaking } from './speech.ts';
 
 interface Phrase { en: string; ru: string; uz: string; note?: string }
@@ -49,7 +49,7 @@ export function LessonPlayer({ track, lesson }: { track: string; lesson: string 
   const { data, error, cause, reload } = useLoad<LessonView>(`orgs/${org.id}/learn/${lesson}`);
   if (needsSeat(cause)) return <div className="training-page">
     <p className="training-crumbs"><Link to={`/w/${org.id}/learn?track=${track}`}>{t('training.lesson.backToTrack')}</Link></p>
-    <SeatLocked/>
+    <SeatLocked reason={seatReasonOf(cause)}/>
   </div>;
   if (!data) return <Loading error={error}/>;
   if (data.track.code !== track) return <p className="error" role="alert">{t('training.lesson.notFound')}</p>;

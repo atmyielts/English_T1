@@ -11,6 +11,15 @@ const migrations = areas.map(([area, time]) => `supabase/migrations/20261031${ti
 // Each test prints "company <area>: ok" when every assertion held.
 const tests = areas.map(([area]) => [`supabase/tests/company-${area}.integration.sql`, `company ${area}: ok`]).filter(([file]) => existsSync(file));
 
+// The activity kinds: the core table, the training migration's replacement and the shared catalogue name the same list.
+const kindsIn = (file, pattern) => [...pattern.exec(readFileSync(file, 'utf8'))[1].matchAll(/'([a-z_]+)'/g)].map((match) => match[1]).sort().join();
+const kinds = [
+  kindsIn('supabase/migrations/20261031100000_company_core.sql', /public\.company_activity \([\s\S]*?kind text not null check \(kind in \(([^)]*)\)\)/),
+  kindsIn('supabase/migrations/20261031120000_company_training.sql', /company_activity_kind_check\s+check \(kind in \(([^)]*)\)\)/),
+  kindsIn('packages/company-core/src/mod.ts', /ACTIVITY_KINDS = \[([^\]]*)\]/),
+];
+if (new Set(kinds).size !== 1) throw new Error(`Activity kinds disagree:\n${kinds.join('\n')}`);
+
 const container = `schood-company-test-${randomUUID().slice(0, 8)}`;
 function docker(args, input) {
   const result = spawnSync('docker', args, { input, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, timeout: 120000 });

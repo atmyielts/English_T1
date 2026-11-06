@@ -1,6 +1,7 @@
 // Helpers the training routes share: who is learning, which language feedback
 // uses, Tashkent week boundaries and safe reading of AI JSON.
-import { CompanyError, type Ctx, type MemberRow } from '../types.ts';
+import { check, CompanyError, type Ctx, type MemberRow } from '../types.ts';
+import { storable, tashkentDay } from '../util.ts';
 
 export type Locale = 'en' | 'ru' | 'uz';
 export const LOCALES: readonly Locale[] = ['en', 'ru', 'uz'];
@@ -12,18 +13,50 @@ export function learner(ctx: Ctx): MemberRow {
   return ctx.member;
 }
 
-/** The seat works: it is on, the agreement is active and it has not ended. A pilot has no seats. */
-export function seatOpen(ctx: Ctx, member: MemberRow): boolean {
+/** Why lessons and AI practice are closed. Only `no_seat` is something the company's HR can change. */
+export type SeatReason = 'no_seat' | 'pilot' | 'paused' | 'contract_ended';
+
+const SEAT_MESSAGE: Record<SeatReason, string> = {
+  no_seat: 'This needs a learning seat. Your HR team arranges seats.',
+  pilot: 'A pilot includes tests only. Lessons and AI practice come with an agreement with Schood.',
+  paused: 'This workspace is paused, so lessons and AI practice are off. Contact Schood.',
+  contract_ended: 'Your agreement with Schood has ended, so lessons and AI practice are off. Contact Schood to continue.',
+};
+
+/** What stops this member learning here, or null when the seat works. The workspace comes first: HR cannot fix those by seating someone. */
+export function seatBlock(ctx: Ctx, member: Pick<MemberRow, 'seat'>): SeatReason | null {
   const org = ctx.org!;
-  return member.seat && org.status === 'active' && (!org.contract_ends_at || new Date(org.contract_ends_at).getTime() > ctx.now().getTime());
+  if (org.status === 'suspended' || org.status === 'closed') return 'paused';
+  if (org.contract_ends_at && new Date(org.contract_ends_at).getTime() <= ctx.now().getTime()) return 'contract_ended';
+  if (org.status !== 'active') return 'pilot';
+  return member.seat ? null : 'no_seat';
 }
+
+/** The seat works: it is on, the agreement is active and it has not ended. A pilot has no seats. */
+export const seatOpen = (ctx: Ctx, member: MemberRow): boolean => seatBlock(ctx, member) === null;
 
 /** Whether the caller can use lessons and AI practice (Schood staff always can). */
 export const canLearn = (ctx: Ctx) => ctx.staff || Boolean(ctx.member && seatOpen(ctx, ctx.member));
 
+/** Why the caller cannot learn, for pages that show the locked state; null when they can. */
+export const seatReason = (ctx: Ctx): SeatReason | null => ctx.staff ? null : seatBlock(ctx, ctx.member ?? { seat: false });
+
 /** Lessons and AI practice need a learning seat. The catalogue, My English and HR's own tools do not. */
 export function requireSeat(ctx: Ctx): void {
-  if (!canLearn(ctx)) throw new CompanyError('seat_required', 'This needs a learning seat. Your HR team arranges seats.', 402);
+  const reason = seatReason(ctx);
+  if (reason) throw new CompanyError('seat_required', SEAT_MESSAGE[reason], 402, { reason });
+}
+
+/** Minutes a member can claim in a Tashkent day on rows they report themselves. More clicks must not top a minutes challenge. */
+export const DAILY_SELF_REPORTED_MINUTES = 180;
+const SELF_REPORTED_KINDS = ['lesson_retry', 'glossary'];
+
+/** How many of the minutes asked for still count today (0 once the day's allowance is used). Rows with minutes number at most the cap, so one read is enough. */
+export async function selfReportedMinutes(ctx: Ctx, memberId: string, asked: number): Promise<number> {
+  const since = new Date(`${tashkentDay(ctx.now())}T00:00:00+05:00`).toISOString();
+  const rows = check<{ minutes: number }[]>(await ctx.db.from('company_activity').select('minutes').eq('member_id', memberId).in('kind', SELF_REPORTED_KINDS).gt('minutes', 0).gte('created_at', since));
+  const used = rows.reduce((sum, row) => sum + row.minutes, 0);
+  return Math.max(0, Math.min(asked, DAILY_SELF_REPORTED_MINUTES - used));
 }
 
 export const isHr = (ctx: Ctx) => ctx.staff || ctx.member?.role === 'owner' || ctx.member?.role === 'admin';
@@ -48,7 +81,7 @@ export const daysAgo = (date: Date, days: number) => new Date(date.getTime() - d
 
 /** A string from AI output, trimmed and cut to `max` (empty when absent). */
 export function aiText(value: unknown, max: number): string {
-  return typeof value === 'string' ? value.replace(/\s+\n/g, '\n').trim().slice(0, max) : '';
+  return typeof value === 'string' ? storable(value.replace(/\s+\n/g, '\n').trim().slice(0, max)) : '';
 }
 /** A list of strings from AI output. */
 export function aiList(value: unknown, max: number, each: number): string[] {

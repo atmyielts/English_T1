@@ -68,8 +68,11 @@ const fallbackLevel = (assessment: AssessmentRow, member: Pick<MemberRow, 'level
 
 /** Whether the attempt is past its deadline plus the grace period. */
 export const overdue = (attempt: Pick<AttemptRow, 'deadline_at'>, now: Date) => now.getTime() > new Date(attempt.deadline_at).getTime() + GRACE_MS;
-/** A submit this soon after the deadline is the page's own time-up submit on its way, not a late one. */
-const LATE_TOLERANCE_MS = 15_000;
+/**
+ * A submit this soon after the deadline is the page's own time-up submit on its way, not a
+ * late one. The page retries that submit every 15 s, so this has to outlast several retries.
+ */
+export const LATE_TOLERANCE_MS = 60_000;
 export const lateSubmit = (attempt: Pick<AttemptRow, 'deadline_at'>, now: Date) => now.getTime() > new Date(attempt.deadline_at).getTime() + LATE_TOLERANCE_MS;
 /** Whether a closing date has passed. */
 export const closed = (assessment: Pick<AssessmentRow, 'status' | 'closes_at'>, now: Date) =>
@@ -113,7 +116,8 @@ export async function startAttempt(ctx: Ctx, input: {
   // conflict before it can use up a second test.
   const inserted = await ctx.db.from('company_attempts').insert({
     org_id: org.id, assessment_id: assessment.id, member_id: member?.id ?? null, user_id: member?.user_id ?? null,
-    candidate_name: input.candidate?.name ?? member?.full_name ?? member?.email ?? null,
+    // The name goes on a public certificate, so a member with no name stays nameless rather than showing their email.
+    candidate_name: (input.candidate?.name ?? member?.full_name)?.slice(0, 120) ?? null,
     candidate_email: input.candidate?.email ?? null, candidate_phone: input.candidate?.phone ?? null,
     access_token_hash: input.accessHash ?? null, status: 'started', started_at: now.toISOString(),
     deadline_at: new Date(now.getTime() + assessment.time_limit_minutes * 60_000).toISOString(),

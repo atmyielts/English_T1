@@ -6,12 +6,22 @@ export function obj(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
+/** NUL and lone surrogates: Postgres text and jsonb refuse them. */
+const UNSTORABLE = /\u0000|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+
+/** Drops what Postgres cannot store, for text kept as written (test answers, AI output) and for cuts that split a surrogate pair. */
+export function storable(value: string): string {
+  return value.replace(new RegExp(UNSTORABLE.source, 'g'), '');
+}
+
 export function text(value: unknown, field: string, { min = 0, max = 200, optional = false } = {}): string | null {
   if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '' && optional)) {
     if (optional) return null;
     throw new CompanyError('invalid_field', `${field} is required.`, 400, { field });
   }
   if (typeof value !== 'string') throw new CompanyError('invalid_field', `${field} must be text.`, 400, { field });
+  // Postgres cannot store these, so they would come back as a 500.
+  if (UNSTORABLE.test(value)) throw new CompanyError('invalid_field', `${field} has characters that cannot be saved.`, 400, { field });
   const trimmed = value.trim();
   if (trimmed.length < min || trimmed.length > max) throw new CompanyError('invalid_field', `${field} must be ${min}–${max} characters.`, 400, { field, min, max });
   return trimmed;
@@ -19,7 +29,8 @@ export function text(value: unknown, field: string, { min = 0, max = 200, option
 
 export function oneOf<T extends string>(value: unknown, allowed: readonly T[], field: string, fallback?: T): T {
   if ((value === undefined || value === null) && fallback !== undefined) return fallback;
-  if (!(allowed as readonly string[]).includes(String(value))) throw new CompanyError('invalid_field', `${field} is not one of the allowed values.`, 400, { field, allowed });
+  // Strictly a string: String(['open']) is 'open', and the list itself would reach the database.
+  if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) throw new CompanyError('invalid_field', `${field} is not one of the allowed values.`, 400, { field, allowed });
   return value as T;
 }
 
@@ -42,6 +53,21 @@ export function email(value: unknown, field = 'email', optional = false): string
   const lower = raw.toLowerCase();
   if (!EMAIL.test(lower)) throw new CompanyError('invalid_field', `${field} is not an email address.`, 400, { field });
   return lower;
+}
+
+/** A real calendar day (YYYY-MM-DD, so 2030-02-31 is not one) in a range the database and the app can use. */
+export function isCalendarDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value < '2000-01-01' || value > '2100-12-31') return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+/** Filters go in the URL: long id lists are read a piece at a time, so no request outgrows what gateways accept. */
+export const IDS_PER_REQUEST = 100;
+export async function inChunks<T>(ids: readonly string[], read: (chunk: string[]) => PromiseLike<T[]>, size = IDS_PER_REQUEST): Promise<T[]> {
+  const out: T[] = [];
+  for (let from = 0; from < ids.length; from += size) out.push(...await read(ids.slice(from, from + size)));
+  return out;
 }
 
 /** A random URL-safe token (default 24 bytes → 32 characters). */

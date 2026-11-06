@@ -7,7 +7,7 @@ import { consumeAi, logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
 import { obj, text, uuid } from '../util.ts';
 import type { WritingTemplate } from './content.ts';
-import { aiList, aiScore, aiText, canLearn, daysAgo, feedbackLocale, LOCALE_NAME, learner, requireSeat, type Locale } from './shared.ts';
+import { aiList, aiScore, aiText, canLearn, daysAgo, feedbackLocale, LOCALE_NAME, learner, requireSeat, seatReason, type Locale } from './shared.ts';
 import { findTemplate, TRACKS } from './tracks/index.ts';
 
 export const RETENTION_DAYS = 90;
@@ -88,6 +88,7 @@ export const routes: Route[] = [
       return {
         recommended: ctx.member?.job_role ?? 'general',
         can_learn: canLearn(ctx),
+        seat_reason: seatReason(ctx),
         retention_days: RETENTION_DAYS, max_length: MAX_DRAFT,
         tracks: TRACKS.map((track) => ({
           code: track.code, title: track.title,

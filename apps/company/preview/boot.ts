@@ -64,7 +64,7 @@ function seedCore(db: FakeDb): World {
   db.rows('company_members').push(member({ user_id: null, full_name: 'Invited Person', email: 'invited@silkroad.example', status: 'invited', joined_at: null, department_id: departments.sales }));
   // Six weeks of learning activity for dashboards and challenges.
   const active = db.rows('company_members').filter((row) => row.user_id && row.role !== 'owner' && row.role !== 'admin');
-  const kinds = ['lesson', 'lesson', 'roleplay', 'writing', 'glossary', 'english'];
+  const kinds = ['lesson', 'lesson', 'lesson_retry', 'roleplay', 'writing', 'glossary', 'english'];
   for (let back = 42; back >= 0; back--) {
     active.forEach((row, index) => {
       if ((back + index) % 3 === 0 || (index % 5 === 4 && back % 2 === 0)) return;
@@ -98,6 +98,13 @@ save();
 // RPCs the core migration defines, simplified.
 db.rpcs.company_sync_english_access = () => 'granted';
 db.rpcs.company_sync_org_access = () => 0;
+// The unique indexes the routes rely on, so a double click behaves as it does on Postgres.
+db.uniques.company_members = [{ columns: ['org_id', 'user_id'] }];
+db.uniques.company_lesson_progress = [{ columns: ['member_id', 'lesson_code'] }];
+db.uniques.company_attempts = [
+  { columns: ['assessment_id', 'member_id'], where: (row) => row.status === 'started' },
+  { columns: ['assessment_id', 'candidate_email'], where: (row) => row.status === 'started' },
+];
 db.rpcs.company_consume_ai = () => true;
 db.rpcs.company_reserve_test = ({ p_org }) => {
   const org = db.rows('company_orgs').find((row) => row.id === p_org);

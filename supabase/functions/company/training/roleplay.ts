@@ -8,7 +8,7 @@ import { consumeAi, logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
 import { obj, oneOf, text, uuid } from '../util.ts';
 import type { Scenario } from './content.ts';
-import { aiList, aiScore, aiText, canLearn, feedbackLocale, LOCALE_NAME, learner, requireSeat, type Locale } from './shared.ts';
+import { aiList, aiScore, aiText, canLearn, feedbackLocale, LOCALE_NAME, learner, requireSeat, seatReason, type Locale } from './shared.ts';
 import { findScenario, TRACKS } from './tracks/index.ts';
 
 export const MAX_TURNS = 12;
@@ -120,6 +120,7 @@ export const routes: Route[] = [
       return {
         recommended: ctx.member?.job_role ?? 'general',
         can_learn: canLearn(ctx),
+        seat_reason: seatReason(ctx),
         max_turns: MAX_TURNS,
         tracks: TRACKS.map((track) => ({ code: track.code, title: track.title, scenarios: track.scenarios.map(scenarioView) })),
         sessions: sessions.map((row) => ({ id: row.id, scenario_code: row.scenario_code, title: findScenario(row.scenario_code)?.scenario.title ?? null, status: row.status, score: row.score, learner_turns: row.learner_turns, created_at: row.created_at })),
@@ -146,7 +147,7 @@ export const routes: Route[] = [
   {
     method: 'GET', path: 'orgs/:org/roleplay/:session', access: 'org', allowSuspended: true,
     async handle(ctx, params) {
-      return { session: sessionView(await own(ctx, params.session)), can_learn: canLearn(ctx) };
+      return { session: sessionView(await own(ctx, params.session)), can_learn: canLearn(ctx), seat_reason: seatReason(ctx) };
     },
   },
   {

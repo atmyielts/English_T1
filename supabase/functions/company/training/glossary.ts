@@ -3,10 +3,10 @@
 // Reading the terms and managing them need no seat; practice does.
 import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { logActivity } from '../core.ts';
-import { check, CompanyError, type Ctx, type Route } from '../types.ts';
+import { check, checkUnique, CompanyError, type Ctx, type Route } from '../types.ts';
 import { fetchAll } from '../people/shared.ts';
 import { obj, oneOf, tashkentDay, text, uuid } from '../util.ts';
-import { canLearn, isHr, learner, minutesSpent, requireSeat } from './shared.ts';
+import { canLearn, isHr, learner, minutesSpent, requireSeat, seatReason, selfReportedMinutes } from './shared.ts';
 
 export const MAX_TERMS = 2000;
 export const MAX_IMPORT_ROWS = 500;
@@ -41,6 +41,7 @@ async function allTerms(ctx: Ctx): Promise<TermRow[]> {
 }
 
 const key = (term: string) => term.trim().toLowerCase();
+const duplicate = () => new CompanyError('glossary_duplicate', 'This term is already in the glossary.', 409, { field: 'term' });
 
 /** Splits CSV text (comma, semicolon or tab separated; quotes allowed) into rows of cells. */
 export function parseCsv(source: string): string[][] {
@@ -100,7 +101,7 @@ export const routes: Route[] = [
       const manage = isHr(ctx);
       // Employees see the company-wide terms and their own department's.
       const visible = manage ? terms : terms.filter((row) => row.department_id === null || row.department_id === ctx.member?.department_id);
-      return { terms: visible, can_manage: manage, can_learn: canLearn(ctx), max_terms: MAX_TERMS };
+      return { terms: visible, can_manage: manage, can_learn: canLearn(ctx), seat_reason: seatReason(ctx), max_terms: MAX_TERMS };
     },
   },
   {
@@ -109,9 +110,9 @@ export const routes: Route[] = [
       const departments = await departmentIds(ctx);
       const input = readTerm(obj(body), new Set(departments.keys()));
       const terms = await allTerms(ctx);
-      if (terms.some((row) => key(row.term) === key(input.term))) throw new CompanyError('glossary_duplicate', 'This term is already in the glossary.', 409, { field: 'term' });
+      if (terms.some((row) => key(row.term) === key(input.term))) throw duplicate();
       if (terms.length >= MAX_TERMS) throw new CompanyError('glossary_full', `The glossary holds up to ${MAX_TERMS} terms.`, 409);
-      const row = check<TermRow>(await ctx.db.from('company_glossary_terms').insert({ ...input, org_id: ctx.org!.id, created_by: ctx.user }).select(COLUMNS).single());
+      const row = checkUnique<TermRow>(await ctx.db.from('company_glossary_terms').insert({ ...input, org_id: ctx.org!.id, created_by: ctx.user }).select(COLUMNS).single(), duplicate);
       await ctx.audit('glossary.added', row.id, { term: row.term });
       return { term: row };
     },
@@ -125,8 +126,8 @@ export const routes: Route[] = [
       if (!existing) throw new CompanyError('glossary_not_found', 'Term not found.', 404);
       const departments = await departmentIds(ctx);
       const input = readTerm({ ...existing, ...obj(body) }, new Set(departments.keys()));
-      if (terms.some((row) => row.id !== id && key(row.term) === key(input.term))) throw new CompanyError('glossary_duplicate', 'This term is already in the glossary.', 409, { field: 'term' });
-      check(await ctx.db.from('company_glossary_terms').update(input).eq('id', id).eq('org_id', ctx.org!.id));
+      if (terms.some((row) => row.id !== id && key(row.term) === key(input.term))) throw duplicate();
+      checkUnique(await ctx.db.from('company_glossary_terms').update(input).eq('id', id).eq('org_id', ctx.org!.id), duplicate);
       await ctx.audit('glossary.updated', id, { term: input.term });
       return { term: { ...existing, ...input } };
     },
@@ -176,12 +177,17 @@ export const routes: Route[] = [
         }
         const found = existing.get(key(term.term));
         if (found) {
-          check(await ctx.db.from('company_glossary_terms').update(term).eq('id', found.id));
+          const saved = await ctx.db.from('company_glossary_terms').update(term).eq('id', found.id);
+          if (saved.error?.code === '23505') { skipped.push({ line, reason: 'duplicate' }); continue; }
+          check(saved);
           existing.set(key(term.term), { ...found, ...term });
           updated++;
         } else {
           if (existing.size >= MAX_TERMS) { skipped.push({ line, reason: 'full' }); continue; }
-          const row = check<TermRow>(await ctx.db.from('company_glossary_terms').insert({ ...term, org_id: ctx.org!.id, created_by: ctx.user }).select(COLUMNS).single());
+          // The database folds case a little differently from here, and another import may be running.
+          const inserted = await ctx.db.from('company_glossary_terms').insert({ ...term, org_id: ctx.org!.id, created_by: ctx.user }).select(COLUMNS).single();
+          if (inserted.error?.code === '23505') { skipped.push({ line, reason: 'duplicate' }); continue; }
+          const row = check<TermRow>(inserted);
           existing.set(key(term.term), row);
           added++;
         }
@@ -198,7 +204,7 @@ export const routes: Route[] = [
       requireSeat(ctx);
       const input = obj(body);
       const mode = oneOf(input.mode, ['cards', 'quiz'] as const, 'mode');
-      const minutes = minutesSpent(input.minutes, 30);
+      const asked = minutesSpent(input.minutes, 30);
       let correct = 0, total = 0;
       if (mode === 'quiz') {
         const answers = Array.isArray(input.answers) ? input.answers.slice(0, 50) : [];
@@ -216,6 +222,7 @@ export const routes: Route[] = [
       }
       const today = check<{ points: number }[]>(await ctx.db.from('company_activity').select('points').eq('member_id', member.id).eq('kind', 'glossary').gt('points', 0).gte('created_at', new Date(`${tashkentDay(ctx.now())}T00:00:00+05:00`).toISOString()));
       const left = Math.max(0, DAILY_POINTS - today.reduce((sum, row) => sum + row.points, 0));
+      const minutes = await selfReportedMinutes(ctx, member.id, asked);
       await logActivity(ctx.db, { org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, kind: 'glossary', minutes, points: Math.min(left, mode === 'quiz' ? correct * 2 : total), ref: mode });
       return { mode, correct, total };
     },

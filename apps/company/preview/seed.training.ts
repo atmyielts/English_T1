@@ -30,7 +30,8 @@ export function seed(db: FakeDb, world: World) {
   progress(employee, hospitality[3].code, 'hospitality', 'started', null, 0, 'dialogue');
   hospitality.slice(0, 6).forEach((lesson, index) => progress(manager, lesson.code, 'hospitality', 'completed', 85 + index, 20 - index * 3));
   // Some colleagues with learning seats have progress too, so completion numbers look real.
-  // The seed relies on an active agreement; owner and HR have no seat, which shows the locked pages.
+  // The seed relies on an active agreement: a seat works only there. Owner and HR have no seat, which shows
+  // the locked pages (reason no_seat). The pilot, paused and ended copy shows when staff change the workspace.
   members.filter((row) => row.role === 'employee' && row.user_id && row.seat && row !== employee).forEach((member, index) => {
     const track = findTrack(String(member.job_role)) ?? findTrack('general')!;
     track.lessons.slice(0, index % 5).forEach((lesson, step) => progress(member, lesson.code, track.code, 'completed', 65 + ((index + step) * 7) % 30, 30 - index - step * 2));

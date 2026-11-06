@@ -5,7 +5,7 @@ import { MEMBER_COLUMNS } from '../handler.ts';
 import { usage } from '../core.ts';
 import { fetchAll } from '../insights/common.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
-import { int, obj, oneOf, sha256, text, token, uuid } from '../util.ts';
+import { inChunks, int, obj, oneOf, sha256, text, token, uuid } from '../util.ts';
 import {
   ASSESSMENT_COLUMNS, ATTEMPT_COLUMNS, expireIfOverdue, gradeAttempt, loadAssessment, loadAttempt, manualScore, overdue,
   type AssessmentRow, type AttemptRow,
@@ -72,8 +72,10 @@ async function validateAudience(ctx: Ctx, settings: Record<string, unknown>) {
   const audience = settings.audience as { type: string; ids: string[] } | undefined;
   if (!audience || audience.type === 'all') return;
   const table = audience.type === 'departments' ? 'company_departments' : 'company_members';
-  const rows = await fetchAll<{ id: string }>(() => ctx.db.from(table).select('id').eq('org_id', ctx.org!.id).in('id', audience.ids).order('id'));
-  if (rows.length !== audience.ids.length) throw new CompanyError('invalid_field', 'Some of the chosen people or departments are not in this workspace.', 400, { field: 'audience' });
+  // Compared here: a list of up to 2,000 ids does not fit in a GET filter.
+  const rows = await fetchAll<{ id: string }>(() => ctx.db.from(table).select('id').eq('org_id', ctx.org!.id).order('id'));
+  const known = new Set(rows.map((row) => row.id));
+  if (audience.ids.some((id) => !known.has(id))) throw new CompanyError('invalid_field', 'Some of the chosen people or departments are not in this workspace.', 400, { field: 'audience' });
 }
 
 type Graded = { id: string; member_id: string | null; overall_level: string | null; submitted_at: string | null };
@@ -111,7 +113,7 @@ export const routes: Route[] = [
     async handle(ctx, _params, _body, query) {
       const kind = oneOf(query.get('kind') ?? 'hiring', ['hiring', 'placement', 'progress'] as const, 'kind');
       const rows = check<AssessmentRow[]>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('org_id', ctx.org!.id).eq('kind', kind).order('created_at', { ascending: false }).limit(500));
-      const attempts = rows.length ? await fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select('assessment_id,status,overall_level,overall_score,decision').eq('org_id', ctx.org!.id).in('assessment_id', rows.map((row) => row.id)).order('id')) : [];
+      const attempts = await inChunks(rows.map((row) => row.id), (chunk) => fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select('assessment_id,status,overall_level,overall_score,decision').eq('org_id', ctx.org!.id).in('assessment_id', chunk).order('id')));
       return {
         assessments: rows.map((row) => ({ ...assessmentView(row), stats: stats(attempts.filter((attempt) => attempt.assessment_id === row.id), row) })),
         usage: await usage(ctx.db, ctx.org!),
@@ -292,7 +294,7 @@ export const routes: Route[] = [
     async handle(ctx) {
       const rows = check<AssessmentRow[]>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('org_id', ctx.org!.id).in('kind', ['placement', 'progress']).order('created_at', { ascending: false }).limit(200));
       const members = await visibleMembers(ctx);
-      const attempts = rows.length ? await fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select('id,assessment_id,member_id,status,overall_level,overall_score,started_at,submitted_at').eq('org_id', ctx.org!.id).in('assessment_id', rows.map((row) => row.id)).order('started_at', { ascending: false }).order('id')) : [];
+      const attempts = await inChunks(rows.map((row) => row.id), (chunk) => fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select('id,assessment_id,member_id,status,overall_level,overall_score,started_at,submitted_at').eq('org_id', ctx.org!.id).in('assessment_id', chunk).order('started_at', { ascending: false }).order('id')));
       const campaigns = [];
       for (const row of rows) {
         const people = campaignRows(row, members, attempts.filter((attempt) => attempt.assessment_id === row.id) as AttemptRow[], []);

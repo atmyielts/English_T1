@@ -61,7 +61,7 @@ export function ReportPage({ assessmentId, attemptId, back }: { assessmentId: st
       <div className="page-heading">
         <div>
           <p className="eyebrow">{hiring ? t('hiring.report.title') : t('hiring.report.staffTitle')} · {assessment.title}</p>
-          <h1 id="report-title">{attempt.name ?? '—'}</h1>
+          <h1 id="report-title">{attempt.name ?? member?.email ?? '—'}</h1>
           <p className="hiring-card-meta">
             <StatusBadge status={attempt.status}/>
             {hiring && <DecisionBadge decision={attempt.decision}/>}

@@ -6,7 +6,7 @@ import { api } from '../../api.ts';
 import { useAppT, useErrorText } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { ListenButton, Loading, needsSeat, SeatLocked, useLoad, useMinutes } from './lib.tsx';
+import { ListenButton, Loading, needsSeat, SeatLocked, seatReasonOf, useLoad, useMinutes, type SeatReason } from './lib.tsx';
 
 export interface Term { id: string; term: string; meaning: string; ru: string | null; uz: string | null; example: string | null; department_id: string | null }
 
@@ -28,7 +28,7 @@ function useTranslationOf() {
 export function Glossary() {
   const t = useAppT();
   const { org, departments } = useWorkspace();
-  const { data, error } = useLoad<{ terms: Term[]; can_manage: boolean; can_learn: boolean }>(`orgs/${org.id}/glossary`);
+  const { data, error } = useLoad<{ terms: Term[]; can_manage: boolean; can_learn: boolean; seat_reason?: SeatReason | null }>(`orgs/${org.id}/glossary`);
   const [tab, setTab] = useState<'cards' | 'quiz' | 'list'>('cards');
   if (!data) return <Loading error={error}/>;
   const tabs = [['cards', t('training.glossary.cards')], ['quiz', t('training.glossary.quiz')], ['list', t('training.glossary.list')]] as const;
@@ -39,7 +39,7 @@ export function Glossary() {
       <h1>{t('training.glossary.title')}</h1>
       <p>{t('training.glossary.lead', { company: org.name })}</p>
     </header>
-    {!data.can_learn && <SeatLocked/>}
+    {!data.can_learn && <SeatLocked reason={data.seat_reason}/>}
     {data.terms.length === 0 ? <section className="training-card">
       <p>{t('training.glossary.empty')}</p>
       {data.can_manage && <Link className="button-link" to={`/w/${org.id}/glossary-admin`}>{t('training.nav.glossaryAdmin')}</Link>}
@@ -64,7 +64,7 @@ function Flashcards({ org, terms }: { org: string; terms: Term[] }) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
-  const [saved, setSaved] = useState(''), [error, setError] = useState(''), [locked, setLocked] = useState(false);
+  const [saved, setSaved] = useState(''), [error, setError] = useState(''), [locked, setLocked] = useState<SeatReason | null>(null);
   const minutes = useMinutes();
   const done = index >= deck.length;
 
@@ -78,14 +78,14 @@ function Flashcards({ org, terms }: { org: string; terms: Term[] }) {
         await api(`orgs/${org}/glossary/practice`, { method: 'POST', body: { mode: 'cards', seen: deck.length, known: knownNow, minutes: minutes.take() } });
         setSaved(t('training.glossary.saved'));
       } catch (cause) {
-        if (needsSeat(cause)) setLocked(true);
+        if (needsSeat(cause)) setLocked(seatReasonOf(cause));
         else setError(problem(cause));
       }
     }
   }
   function restart() { setDeck(shuffle(terms).slice(0, ROUND)); setIndex(0); setKnown(0); setFlipped(false); setSaved(''); setError(''); }
 
-  if (locked) return <SeatLocked/>;
+  if (locked) return <SeatLocked reason={locked}/>;
   if (done) return <div className="training-round-end" role="status">
     <h2>{t('training.glossary.roundDone')}</h2>
     <p>{t('training.glossary.cardsResult', { known, total: deck.length })}</p>
@@ -124,9 +124,9 @@ function Quiz({ org, terms }: { org: string; terms: Term[] }) {
   const [questions, setQuestions] = useState(build);
   const [chosen, setChosen] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ correct: number; total: number } | null>(null);
-  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [locked, setLocked] = useState(false);
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [locked, setLocked] = useState<SeatReason | null>(null);
   const minutes = useMinutes();
-  if (locked) return <SeatLocked/>;
+  if (locked) return <SeatLocked reason={locked}/>;
   if (terms.length < 2) return <p>{t('training.glossary.quizTooFew')}</p>;
 
   async function submit(event: React.FormEvent) {
@@ -137,7 +137,7 @@ function Quiz({ org, terms }: { org: string; terms: Term[] }) {
     try {
       setResult(await api<{ correct: number; total: number }>(`orgs/${org}/glossary/practice`, { method: 'POST', body: { mode: 'quiz', minutes: minutes.take(), answers: questions.map((question) => ({ term: question.term.id, choice: chosen[question.term.id] ?? null })) } }));
     } catch (cause) {
-      if (needsSeat(cause)) { setLocked(true); return; }
+      if (needsSeat(cause)) { setLocked(seatReasonOf(cause)); return; }
       setError(problem(cause));
       setResult(local);
     } finally {

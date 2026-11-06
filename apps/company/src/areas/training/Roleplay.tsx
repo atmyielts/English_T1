@@ -6,7 +6,7 @@ import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate, useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { aiMessage, DIFFICULTY_CLASS, ListenButton, Loading, needsSeat, readLocal, SeatLocked, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized } from './lib.tsx';
+import { aiMessage, DIFFICULTY_CLASS, ListenButton, Loading, needsSeat, readLocal, SeatLocked, seatReasonOf, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized, type SeatReason } from './lib.tsx';
 import { canRecognize, canSpeak, listen, speak, stopSpeaking, type Listener } from './speech.ts';
 
 interface ScenarioView { code: string; title: Localized; goal: Localized; difficulty: 'easy' | 'medium' | 'hard'; learner_role: string; setting: string; checklist: string[] }
@@ -20,7 +20,7 @@ interface Session {
   feedback: Feedback | null; score: number | null; minutes: number; created_at: string; ended_at: string | null; scenario: ScenarioView | null;
 }
 interface Overview {
-  recommended: string; can_learn: boolean; max_turns: number;
+  recommended: string; can_learn: boolean; seat_reason?: SeatReason | null; max_turns: number;
   tracks: { code: string; title: Localized; scenarios: ScenarioView[] }[];
   sessions: { id: string; scenario_code: string; title: Localized | null; status: string; score: number | null; learner_turns: number; created_at: string }[];
 }
@@ -68,7 +68,7 @@ export function RoleplayHome() {
       <h1>{t('training.roleplay.title')}</h1>
       <p>{t('training.roleplay.lead', { turns: data.max_turns })}</p>
     </header>
-    {!data.can_learn && <SeatLocked/>}
+    {!data.can_learn && <SeatLocked reason={data.seat_reason}/>}
     {startError && <p className="error" role="alert">{startError}</p>}
     {featured && <section className="training-card training-featured" aria-labelledby="training-featured">
       <p className="eyebrow">{t('training.roleplay.fromLesson')}</p>
@@ -111,7 +111,7 @@ export function RoleplaySession({ id }: { id: string }) {
   const t = useAppT(), pick = useLocalized(), problem = useErrorText();
   const { locale } = useI18n();
   const { org } = useWorkspace();
-  const { data, error, set } = useLoad<{ session: Session; can_learn?: boolean }>(`orgs/${org.id}/roleplay/${id}`);
+  const { data, error, set } = useLoad<{ session: Session; can_learn?: boolean; seat_reason?: SeatReason | null }>(`orgs/${org.id}/roleplay/${id}`);
   const draftKey = `training.roleplay.${id}`;
   const [draft, setDraft] = useState(() => readLocal(draftKey, ''));
   const [mode, setMode] = useState<'typed' | 'voice'>('typed');
@@ -123,8 +123,8 @@ export function RoleplaySession({ id }: { id: string }) {
   const log = useRef<HTMLOListElement>(null);
   const feedbackRef = useRef<HTMLElement>(null);
   const session = data?.session ?? null;
-  const [seatGone, setSeatGone] = useState(false);
-  const locked = seatGone || data?.can_learn === false;
+  const [seatGone, setSeatGone] = useState<SeatReason | null>(null);
+  const locked = seatGone !== null || data?.can_learn === false;
 
   useEffect(() => { log.current?.lastElementChild?.scrollIntoView({ block: 'nearest' }); }, [session?.turns.length]);
   useEffect(() => () => { listener.current?.stop(); stopSpeaking(); }, []);
@@ -171,7 +171,7 @@ export function RoleplaySession({ id }: { id: string }) {
       const reply = result.session.turns[result.session.turns.length - 1];
       if (autoSpeak && reply?.role === 'ai') void speak(reply.text);
     } catch (cause) {
-      if (needsSeat(cause)) setSeatGone(true);
+      if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
       else setFailure(problem(cause));
     } finally {
       setBusy(false);
@@ -190,7 +190,7 @@ export function RoleplaySession({ id }: { id: string }) {
       else if (result.status === 'no_turns') setNotice(t('training.roleplay.noTurns'));
       else queueMicrotask(() => feedbackRef.current?.focus());
     } catch (cause) {
-      if (needsSeat(cause)) setSeatGone(true);
+      if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
       else setFailure(problem(cause));
     } finally {
       setBusy(false);
@@ -204,7 +204,7 @@ export function RoleplaySession({ id }: { id: string }) {
       const { session: next } = await api<{ session: Session }>(`orgs/${org.id}/roleplay`, { method: 'POST', body: { scenario: scenario.code, locale } });
       navigate(`/w/${org.id}/roleplay/${next.id}`);
     } catch (cause) {
-      if (needsSeat(cause)) setSeatGone(true);
+      if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
       else setFailure(problem(cause));
       setBusy(false);
     }
@@ -266,7 +266,7 @@ export function RoleplaySession({ id }: { id: string }) {
       </div>}
     </section>
 
-    {locked && <SeatLocked/>}
+    {locked && <SeatLocked reason={seatGone ?? data?.seat_reason}/>}
 
     {session.feedback && <section className="training-card training-feedback" aria-labelledby="training-feedback" ref={feedbackRef} tabIndex={-1}>
       <h2 id="training-feedback">{t('training.roleplay.feedback')}</h2>

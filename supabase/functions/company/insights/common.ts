@@ -4,6 +4,7 @@
 import { isLevel, LEVELS, levelIndex, scoreToLevel, type Level } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type Db, type MemberRow } from '../types.ts';
+import { isCalendarDate } from '../util.ts';
 
 export const DAY = 86_400_000;
 const TASHKENT = 5 * 3_600_000;
@@ -30,7 +31,7 @@ export const monthOf = (date: string, offset = 0): string => {
   return value.toISOString().slice(0, 10);
 };
 export const DATE = /^\d{4}-\d{2}-\d{2}$/;
-export const isDate = (value: unknown): value is string => typeof value === 'string' && DATE.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
+export const isDate = isCalendarDate;
 
 export interface Range { from: string; to: string; start: Date; end: Date; days: number }
 

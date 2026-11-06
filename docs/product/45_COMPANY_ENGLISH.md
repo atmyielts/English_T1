@@ -25,6 +25,13 @@
 **Commercial model:**
 - **Pilot:** free and self-serve. It includes `COMPANY_PILOT_TESTS` tests (default 10) and no learning seats.
 - **Contract:** set up by Schood staff in the staff console. Staff set the status to `active` and set `seats_limit`, `tests_limit` and `contract_ends_at`, with invoice and bank transfer handled outside the app.
+
+**Decided rules:**
+- **Lessons and AI practice need a learning seat.** Lessons, AI role-play, the writing checker and glossary practice work only with a seat in an `active` workspace whose contract has not ended. Without one the server answers `seat_required` with a `reason` (`no_seat`, `pilot`, `paused`, `contract_ended`) and the page says which. Browsing tracks, reading the glossary, My English and tests need no seat. Only `no_seat` points to People; the other three point to Schood, because a company's HR cannot change them. A workspace that is paused or ended gives no seat, so opening a lesson there is refused with the reason as well.
+- **A pilot includes tests only.** It has no seats, so it has no lessons, AI practice or Schood English access.
+- **An ended contract makes a workspace read-only.** Once `contract_ends_at` has passed, writes are refused with `contract_ended` (403) like a pause, whatever the status says. Nobody new can join and no test can start, seats stop working and Schood English access ends with the contract. Attempts already started may still finish. People can still read their results and export reports. Only staff can extend the contract.
+- **A seat is a separate, hidden product.** It grants its own entitlement row on the hidden company-seat product (`c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07`, source `company`). It never reads or changes a learner's own purchase: a seat and a purchase are different rows, on different products, and neither touches the other.
+- **Minutes people report themselves are capped.** Lesson retries and glossary practice count at most 180 minutes per person per Tashkent day, so more clicks cannot top a minutes challenge.
 - **Prices:** not published, quote based. **No invented prices, testimonials or outcome claims anywhere.**
 - **Levels:** reported as "Schood estimate" on the CEFR scale, never as an official certificate.
 
@@ -42,6 +49,7 @@
 | Route test harness | `supabase/functions/company/testing.ts` (`FakeDb`, `testHandler`) |
 | Database | `supabase/migrations/20261031100000_company_core.sql` |
 | DB tests | `scripts/test-company-db.mjs` (throwaway Docker Postgres) with `supabase/tests/company*.sql` |
+| Real-API test | `scripts/test-company-postgrest.ts`: every route through the real handler, supabase-js and PostgREST on Postgres, in throwaway Docker containers |
 | App | `apps/company` (React 19, platform look via `packages/service-design`, i18n en/ru/uz via `packages/service-i18n`) |
 | CI / deploy | `.github/workflows/company-ci.yml`, `deploy-pages.yml` (Pages project `schood-company`), `configure-company-domain.yml` |
 | Secrets | `COMPANY_ALLOWED_ORIGINS`, optional `COMPANY_PILOT_TESTS`, `COMPANY_SELF_SERVE`, `COMPANY_AI_DAILY_LIMIT`, `COMPANY_APP_URL` |
@@ -52,12 +60,12 @@
   - `user`: any signed-in user.
   - `staff`: `users.role` starts with `admin`.
   - `org`: the path starts with `orgs/:org`. The caller must be an active member with one of `roles`. Staff may act in any workspace.
-- A suspended workspace refuses writes unless the route sets `allowSuspended`. A closed workspace refuses everything for non-staff.
+- A suspended workspace, and one whose contract has ended, refuses writes unless the route sets `allowSuspended`. A closed workspace refuses everything for non-staff.
 - Errors are `throw new CompanyError(code, message, status, details)`. The app shows `error.<code>` from i18n when that key exists.
 - Use `ctx.audit(action, target, details)` after every HR change.
 
 **Shared helpers in `core.ts`:**
-- `syncAccess(db, userId)`: run after any seat, status or membership change. It calls `company_sync_english_access`, which grants or revokes the All Skills entitlement with source `company`.
+- `syncAccess(db, userId)`: run after any seat, status or membership change. It calls `company_sync_english_access`, which grants or revokes the seat's own entitlement row on the hidden company-seat product (source `company`), and never touches a purchase.
 - `reserveTest(db, orgId)`: run once per attempt start; throws `tests_exhausted`.
 - `consumeAi(ctx)`: run before every AI call; when it returns false, answer with a friendly "AI limit reached today" and no AI.
 - `logActivity(db, row)`: every lesson, role-play, writing check, test and session writes one row to `company_activity`. Insights and challenges read only this table, so **always log**.
@@ -138,7 +146,7 @@ A migration is needed only if the workstream adds tables or functions. Each inte
 - **hiring:**
   - `/w/:org/hiring`, `/w/:org/hiring/:assessment`, `/w/:org/hiring/:assessment/:attempt`
   - `/w/:org/placement`, `/w/:org/test/:assessment`
-  - `/t/:token` (public, bare), `/v/:code` (public)
+  - `/t/:token` and `/r/:key` (public, bare), `/v/:code` (public)
 - **training:** `/w/:org/me` (replace the placeholder), `/w/:org/learn`, `/w/:org/learn/:track/:lesson`, `/w/:org/roleplay`, `/w/:org/writing`, `/w/:org/glossary`, `/w/:org/training`
 - **insights:** `/w/:org` (replace the placeholder overview), `/w/:org/people/:member`, `/w/:org/reports`, `/w/:org/challenges`, `/w/:org/sessions`
 - **gtm:** `/` (replace the placeholder landing), `/join/:token`, `/start` (may improve), `/w/:org/people`, `/w/:org/departments`, `/w/:org/settings`, `/staff`, `/staff/orgs/:org`, `/staff/leads`
@@ -176,6 +184,7 @@ A migration is needed only if the workstream adds tables or functions. Each inte
   - shortlist/hold/reject with notes;
   - printable candidate report;
   - CSV export.
+- **Candidate recovery (`/r/:key`):** a candidate who lost their private key (another device, a start response that never arrived) asks the company. HR makes a new private link from the report (`POST orgs/:org/attempts/:attempt/access`), which opens the running attempt and stops the old key working. It works only while the attempt is running, and only for candidates of a hiring link.
 - **Candidate flow (`/t/:token`):**
   - intro (company, sections, time), consent checkbox, name/email/phone, microphone check if speaking is included;
   - sections, then submit, then a thank-you page with the level if allowed;

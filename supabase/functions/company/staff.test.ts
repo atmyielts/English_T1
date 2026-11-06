@@ -149,3 +149,28 @@ Deno.test('staff see and can filter live workspaces with no active owner', async
   const closed = await call('GET', 'staff/orgs', { user: STAFF });
   assertEquals([closed.body.orgs[1].ownerless, closed.body.ownerless], [false, 1]);
 });
+
+Deno.test('an owner invited with an open link is not an orphan; an expired link is', async () => {
+  const { db, call } = setup();
+  const now = Date.now();
+  const orgs = db.rows('company_orgs');
+  const pending = crypto.randomUUID();
+  db.rows('company_members').push({ id: pending, org_id: orgs[1].id, user_id: null, email: 'next@example.com', role: 'owner', status: 'invited', seat: false, job_role: 'general' });
+  const invite = { id: crypto.randomUUID(), org_id: orgs[1].id, member_id: pending, kind: 'personal', uses: 0, revoked_at: null, expires_at: new Date(now + 86_400_000).toISOString() };
+  db.rows('company_invites').push(invite);
+  const read = async () => {
+    const list = await call('GET', 'staff/orgs', { user: STAFF });
+    const row = list.body.orgs.find((org: { id: string }) => org.id === orgs[1].id);
+    const only = await call('GET', 'staff/orgs?ownerless=1', { user: STAFF });
+    const detail = await call('GET', `staff/orgs/${orgs[1].id}`, { user: STAFF });
+    return [row.ownerless, row.owner_invited, list.body.ownerless, only.body.orgs.length, detail.body.owner_state];
+  };
+  assertEquals(await read(), [false, true, 0, 0, 'invited']);
+  db.rows('company_invites').find((row) => row.id === invite.id)!.expires_at = new Date(now - 1000).toISOString();
+  assertEquals(await read(), [true, false, 1, 1, 'none']);
+});
+
+Deno.test('a fractional audit limit does not reach the database', async () => {
+  const { call } = setup();
+  assertEquals((await call('GET', 'staff/audit?limit=1.5', { user: STAFF })).status, 200);
+});

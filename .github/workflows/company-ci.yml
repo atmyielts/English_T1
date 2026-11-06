@@ -9,6 +9,7 @@ on:
       - 'supabase/migrations/*company*'
       - 'supabase/tests/company*'
       - 'scripts/test-company-db.mjs'
+      - 'scripts/test-company-postgrest.ts'
       - '.github/workflows/company-ci.yml'
   workflow_dispatch:
 permissions:
@@ -39,6 +40,16 @@ jobs:
           node-version: 22
       - name: Company migrations on an isolated database (English access, quotas, lockdown)
         run: node scripts/test-company-db.mjs
+  real-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Every route through the real handler, supabase-js and PostgREST on Postgres (throwaway containers)
+        run: deno run --no-lock -A scripts/test-company-postgrest.ts
   app:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate, useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { LevelBadge, Loading, Progress, SeatLocked, useLoad, useLocalized, type Localized } from './lib.tsx';
+import { LevelBadge, Loading, Progress, SeatLocked, useLoad, useLocalized, type Localized, type SeatReason } from './lib.tsx';
 
 interface TrackSummary { code: string; title: Localized; summary: Localized; lessons: number; foundation: number; professional: number; scenarios: number; templates: number; completed: number; started: number }
 interface TrackDetail {
@@ -15,7 +15,7 @@ export function Lessons() {
   const t = useAppT(), pick = useLocalized();
   const { org } = useWorkspace();
   const { query } = useLocation();
-  const list = useLoad<{ recommended: string; can_learn: boolean; tracks: TrackSummary[] }>(`orgs/${org.id}/tracks`);
+  const list = useLoad<{ recommended: string; can_learn: boolean; seat_reason?: SeatReason | null; tracks: TrackSummary[] }>(`orgs/${org.id}/tracks`);
   const chosen = query.get('track') ?? list.data?.recommended ?? null;
   const detail = useLoad<TrackDetail>(chosen ? `orgs/${org.id}/tracks/${chosen}` : null);
   if (!list.data) return <Loading error={list.error}/>;
@@ -27,7 +27,7 @@ export function Lessons() {
       <h1>{t('training.learn.title')}</h1>
       <p>{t('training.learn.lead')}</p>
     </header>
-    {!list.data.can_learn && <SeatLocked/>}
+    {!list.data.can_learn && <SeatLocked reason={list.data.seat_reason}/>}
     <div className="company-toolbar">
       <label>{t('training.learn.track')}
         <select value={chosen ?? ''} onChange={(event) => navigate(`/w/${org.id}/learn?track=${event.target.value}`, { replace: true })}>

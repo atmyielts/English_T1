@@ -11,6 +11,10 @@ export interface Relation { table: string; local: string; foreign: string; many?
 
 export class FakeDb {
   tables: Record<string, Row[]> = {};
+  /** Unique indexes a test asks for: table → indexes. A write that breaks one answers 23505, as Postgres does. */
+  uniques: Record<string, { columns: string[]; where?: (row: Row) => boolean }[]> = {};
+  /** The longest id list any `.in()` filter carried: real filters go in the URL, so long lists break at the gateway. */
+  longestIn = 0;
   rpcs: Record<string, (args: Record<string, unknown>) => unknown> = {};
   /** `${table}.${embed}` → how to join, e.g. 'company_members.company_orgs'. */
   relations: Record<string, Relation> = {
@@ -75,7 +79,7 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: { code?: string; 
 
   eq(column: string, value: unknown) { this.filters.push((row) => row[column] === value); return this; }
   neq(column: string, value: unknown) { this.filters.push((row) => row[column] !== value); return this; }
-  in(column: string, values: unknown[]) { this.filters.push((row) => values.includes(row[column])); return this; }
+  in(column: string, values: unknown[]) { this.db.longestIn = Math.max(this.db.longestIn, values.length); this.filters.push((row) => values.includes(row[column])); return this; }
   gt(column: string, value: unknown) { this.filters.push((row) => row[column] !== null && row[column] !== undefined && compare(row[column], value) > 0); return this; }
   gte(column: string, value: unknown) { this.filters.push((row) => row[column] !== null && row[column] !== undefined && compare(row[column], value) >= 0); return this; }
   lt(column: string, value: unknown) { this.filters.push((row) => row[column] !== null && row[column] !== undefined && compare(row[column], value) < 0); return this; }
@@ -115,6 +119,15 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: { code?: string; 
     return out;
   }
 
+  /** Whether this row, as it would be stored, breaks a unique index of the table. */
+  private conflicts(candidate: Row, self: Row | null, rows: Row[]): boolean {
+    return (this.db.uniques[this.table] ?? []).some((index) => {
+      if (index.where && !index.where(candidate)) return false;
+      if (index.columns.some((column) => candidate[column] === null || candidate[column] === undefined)) return false;
+      return rows.some((row) => row !== self && (!index.where || index.where(row)) && index.columns.every((column) => row[column] === candidate[column]));
+    });
+  }
+
   private run(): { data: unknown; error: { code?: string; message: string } | null; count?: number | null } {
     const rows = this.db.rows(this.table);
     const now = new Date().toISOString();
@@ -124,10 +137,13 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: { code?: string; 
       for (const input of this.payload) {
         const existing = this.mode === 'upsert' ? rows.find((row) => this.conflict.every((column) => row[column] === input[column])) : undefined;
         if (existing) {
-          if (!this.ignoreDuplicates) Object.assign(existing, input, { updated_at: now });
+          // As in PostgREST, a row left alone by ignoreDuplicates does not come back.
+          if (this.ignoreDuplicates) continue;
+          Object.assign(existing, input, { updated_at: now });
           affected.push(existing);
         } else {
           const row = { id: crypto.randomUUID(), created_at: now, updated_at: now, ...input };
+          if (this.conflicts(row, null, rows)) return { data: null, error: { code: '23505', message: 'duplicate key value violates unique constraint' } };
           rows.push(row);
           affected.push(row);
         }
@@ -136,6 +152,7 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: { code?: string; 
     } else {
       affected = rows.filter((row) => this.filters.every((filter) => filter(row)));
       if (this.mode === 'update') {
+        if (affected.some((row) => this.conflicts({ ...row, ...this.patch }, row, rows))) return { data: null, error: { code: '23505', message: 'duplicate key value violates unique constraint' } };
         for (const row of affected) Object.assign(row, this.patch, { updated_at: now });
         if (!this.returning) return { data: null, error: null };
       } else if (this.mode === 'delete') {

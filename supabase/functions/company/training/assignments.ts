@@ -5,7 +5,7 @@ import { HR_ROLES, LEAD_ROLES, LEVELS, levelIndex, isLevel, type Level } from '.
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { fetchAll } from '../people/shared.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
-import { obj, oneOf, tashkentDay, text, uuid } from '../util.ts';
+import { isCalendarDate, obj, oneOf, tashkentDay, text, uuid } from '../util.ts';
 import { isHr } from './shared.ts';
 import { findTrack, TRACKS } from './tracks/index.ts';
 
@@ -15,7 +15,6 @@ export interface AssignmentRow {
   created_by: string | null; created_at: string; updated_at?: string;
 }
 export const ASSIGNMENT_COLUMNS = 'id,org_id,track_code,target_level,due_date,department_id,member_id,note,status,created_by,created_at,updated_at';
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_PEOPLE = 500;
 /** One row per person per lesson, so this outgrows fetchAll's default. */
 const MAX_PROGRESS_ROWS = 200_000;
@@ -133,7 +132,7 @@ export const routes: Route[] = [
       const target = input.target_level === undefined || input.target_level === null || input.target_level === '' ? null : oneOf<Level>(input.target_level, LEVELS, 'target_level');
       if (!trackCode && !target) throw new CompanyError('assignment_empty', 'Choose a track, a target level or both.', 400, { field: 'track_code' });
       const due = input.due_date === undefined || input.due_date === null || input.due_date === '' ? null : String(input.due_date);
-      if (due && (!DATE.test(due) || Number.isNaN(Date.parse(due)))) throw new CompanyError('invalid_field', 'due_date must be a date.', 400, { field: 'due_date' });
+      if (due && !isCalendarDate(due)) throw new CompanyError('invalid_field', 'due_date must be a date.', 400, { field: 'due_date' });
       if (due && due < tashkentDay(ctx.now())) throw new CompanyError('invalid_field', 'due_date is in the past.', 400, { field: 'due_date' });
       const note = text(input.note, 'note', { max: 1000, optional: true });
       const scope = oneOf(input.scope, ['all', 'departments', 'people'] as const, 'scope');
@@ -168,7 +167,7 @@ export const routes: Route[] = [
       if (input.status !== undefined) patch.status = oneOf(input.status, ['active', 'done', 'cancelled'] as const, 'status');
       if (input.due_date !== undefined) {
         const due = input.due_date === null || input.due_date === '' ? null : String(input.due_date);
-        if (due && (!DATE.test(due) || Number.isNaN(Date.parse(due)))) throw new CompanyError('invalid_field', 'due_date must be a date.', 400, { field: 'due_date' });
+        if (due && !isCalendarDate(due)) throw new CompanyError('invalid_field', 'due_date must be a date.', 400, { field: 'due_date' });
         patch.due_date = due;
       }
       if (input.note !== undefined) patch.note = text(input.note, 'note', { max: 1000, optional: true });

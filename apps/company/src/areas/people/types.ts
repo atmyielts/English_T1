@@ -33,7 +33,7 @@ export interface ImportResult {
 }
 export interface DepartmentStats extends Department { created_at: string | null; people: number; invited: number; seats: number }
 export interface JoinPreview {
-  state: InviteState | 'joined' | 'closed' | 'paused';
+  state: InviteState | 'joined' | 'closed' | 'paused' | 'ended';
   kind: 'personal' | 'link';
   org: { id: string; name: string; industry: string; city: string | null };
   role: string; department: string | null; job_role: string; full_name: string | null; email_hint: string | null;

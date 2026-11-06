@@ -3,7 +3,7 @@
 // section, submit, and their own results and certificates.
 import { contractEnded } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
-import { obj, uuid } from '../util.ts';
+import { inChunks, obj, uuid } from '../util.ts';
 import {
   ASSESSMENT_COLUMNS, ATTEMPT_COLUMNS, attemptView, closed, expireIfOverdue, loadAssessment, loadAttempt, nextStep, saveAttempt, settingsOf, startAttempt, submitAttempt,
   type AssessmentRow, type AttemptRow,
@@ -128,7 +128,7 @@ export const routes: Route[] = [
       if (!ctx.member) return { attempts: [] };
       const attempts = (await myAttempts(ctx, ctx.member)).filter((attempt) => attempt.status === 'graded');
       const ids = [...new Set(attempts.map((attempt) => attempt.assessment_id))];
-      const titles = ids.length ? check<{ id: string; title: string; kind: string }[]>(await ctx.db.from('company_assessments').select('id,title,kind').in('id', ids)) : [];
+      const titles = await inChunks(ids, async (chunk) => check<{ id: string; title: string; kind: string }[]>(await ctx.db.from('company_assessments').select('id,title,kind').in('id', chunk)));
       return {
         attempts: attempts.map((attempt) => {
           const assessment = titles.find((row) => row.id === attempt.assessment_id);

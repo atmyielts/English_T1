@@ -3,10 +3,10 @@
 // only the token's sha256 is stored, so a lost link is renewed, not re-shown.
 import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
-import { check, CompanyError, UUID, type MemberRow, type Route } from '../types.ts';
+import { check, checkUnique, CompanyError, UUID, type MemberRow, type Route } from '../types.ts';
 import { email as readEmail, int, obj, oneOf, text } from '../util.ts';
 import {
-  actsAsOwner, DAY, departmentIn, INVITE_COLUMNS, inviteRoleFor, inviteState, issueInvite, jobRole, levelOrNull, dateOrNull, orgRole, PERSONAL_DAYS,
+  actsAsOwner, DAY, departmentIn, INVITE_COLUMNS, inviteRoleFor, inviteState, issueInvite, jobRole, levelOrNull, dateOrNull, memberExists, orgRole, PERSONAL_DAYS,
   revokeMemberInvites, type InviteRow,
 } from './shared.ts';
 import { sha256, token } from '../util.ts';
@@ -57,11 +57,11 @@ export const inviteRoutes: Route[] = [
         const taken = check<{ id: string; status: string }[]>(await ctx.db.from('company_members').select('id,status').eq('org_id', org.id).eq('email', email).neq('status', 'removed'));
         if (taken.length) throw new CompanyError('member_exists', 'Someone with this email is already in the workspace.', 409, { field: 'email', member_id: taken[0].id, status: taken[0].status });
       }
-      const member = check<MemberRow>(await ctx.db.from('company_members').insert({
+      const member = checkUnique<MemberRow>(await ctx.db.from('company_members').insert({
         org_id: org.id, full_name, email, role, department_id, job_role, status: 'invited', seat: false,
         target_level: levelOrNull(input.target_level, 'target_level'), target_date: dateOrNull(input.target_date, 'target_date'),
         invited_by: ctx.user, invited_at: ctx.now().toISOString(),
-      }).select(MEMBER_COLUMNS).single());
+      }).select(MEMBER_COLUMNS).single(), memberExists);
       const { invite, link } = await issueInvite(ctx, {
         org_id: org.id, member_id: member.id, kind: 'personal', role: inviteRoleFor(role), department_id, job_role, max_uses: 1,
         expires_at: new Date(ctx.now().getTime() + PERSONAL_DAYS * DAY).toISOString(),

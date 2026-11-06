@@ -5,7 +5,7 @@ import { useAppT } from '../../i18n/index.ts';
 import { Link, useLocation } from '../../router.tsx';
 import { useDates } from '../people/ui.tsx';
 
-export interface StaffOrg extends Org { people: number; invited: number; seats_used: number; ownerless: boolean }
+export interface StaffOrg extends Org { people: number; invited: number; seats_used: number; ownerless: boolean; owner_invited?: boolean }
 export interface AuditRow { id: string | number; org_id?: string | null; org_name?: string | null; actor: string | null; actor_name: string | null; action: string; target?: string | null; details: Record<string, unknown>; created_at: string }
 export interface Lead {
   id: string; name: string; company: string; job_title: string | null; phone: string | null; email: string | null; size_band: string | null; industry: string | null;
@@ -15,7 +15,7 @@ export interface Lead {
 export const LEAD_STATUSES = ['new', 'contacted', 'pilot', 'won', 'lost'] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
 export interface StaffOrgDetail {
-  org: Org; usage: Usage; counts: { people: number; invited: number; departments: number }; admins: Member[]; audit: AuditRow[]; leads: Lead[]; ai_default: number;
+  org: Org; usage: Usage; counts: { people: number; invited: number; departments: number }; admins: Member[]; owner_state: 'active' | 'invited' | 'none'; audit: AuditRow[]; leads: Lead[]; ai_default: number;
 }
 
 export function StaffFrame({ title, lead, actions, children }: { title: string; lead?: string; actions?: ReactNode; children: ReactNode }) {

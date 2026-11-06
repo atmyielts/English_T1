@@ -106,6 +106,12 @@ export class CompanyError extends Error {
 
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Like `check`, but a unique-index conflict becomes this friendly error instead of a 500. */
+export function checkUnique<T>(result: { data: T | null; error: { code?: string; message: string } | null }, conflict: () => CompanyError): T {
+  if (result.error?.code === '23505') throw conflict();
+  return check(result);
+}
+
 /** Throws on a Supabase error and returns the data. */
 export function check<T>(result: { data: T | null; error: { code?: string; message: string } | null }): T {
   if (result.error) throw new Error(`${result.error.code ?? 'db'}: ${result.error.message}`);

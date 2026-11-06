@@ -12,11 +12,11 @@ import { invited, type SessionRow } from './sessions.ts';
 
 export interface AssignmentRow { id: string; track_code: string | null; target_level: string | null; due_date: string | null; department_id: string | null; member_id: string | null; status: string; note: string | null; created_at: string }
 
-/** Assignments that concern the viewer's people: a manager sees their department's and their people's. */
+/** Assignments that concern the viewer's people: a manager sees the company-wide ones, their department's and their people's. */
 export function assignmentsInScope(rows: AssignmentRow[], viewer: Viewer, members: MemberRow[]): AssignmentRow[] {
   if (viewer.hr) return rows;
   const ids = new Set(members.map((member) => member.id));
-  return rows.filter((row) => (row.department_id && row.department_id === viewer.departmentId) || (row.member_id && ids.has(row.member_id)));
+  return rows.filter((row) => (!row.department_id && !row.member_id) || (row.department_id && row.department_id === viewer.departmentId) || (row.member_id && ids.has(row.member_id)));
 }
 
 /** Contact details Schood staff put on the workspace (settings.schood_contact_email / _phone). */

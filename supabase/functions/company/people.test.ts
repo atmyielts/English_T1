@@ -553,3 +553,77 @@ Deno.test('staff can demote an invited owner in a workspace with no active owner
   assertEquals([demoted.status, demoted.body.member?.role], [200, 'admin']);
   assertEquals(db.rows('company_members').find((row) => row.id === pending.id)!.role, 'admin');
 });
+
+Deno.test('two accepts of a team link at once make one member and use one use', async () => {
+  const { db, call } = setup();
+  db.uniques.company_members = [{ columns: ['org_id', 'user_id'] }];
+  const link = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { kind: 'link', max_uses: 5 } });
+  const token = tokenOf(link.body.link);
+  const [one, two] = await Promise.all([
+    call('POST', `join/${token}`, { user: NEWCOMER, body: { consent: true } }),
+    call('POST', `join/${token}`, { user: NEWCOMER, body: { consent: true } }),
+  ]);
+  assertEquals([one.status, two.status, one.body.state, two.body.state], [200, 200, 'joined', 'joined']);
+  assertEquals(db.rows('company_members').filter((row) => row.user_id === NEWCOMER).length, 1);
+  assertEquals(inviteRow(db, link.body.invite.id).uses, 1);
+});
+
+Deno.test('two accepts of the last use both end joined; a stranger then finds it used up', async () => {
+  const { db, call } = setup();
+  db.uniques.company_members = [{ columns: ['org_id', 'user_id'] }];
+  const link = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { kind: 'link', max_uses: 1 } });
+  const token = tokenOf(link.body.link);
+  const [one, two] = await Promise.all([
+    call('POST', `join/${token}`, { user: NEWCOMER, body: { consent: true } }),
+    call('POST', `join/${token}`, { user: NEWCOMER, body: { consent: true } }),
+  ]);
+  assertEquals([one.status, two.status], [200, 200]);
+  assertEquals(inviteRow(db, link.body.invite.id).uses, 1);
+  const stranger = await call('POST', `join/${token}`, { user: OTHER, body: { consent: true } });
+  assertEquals([stranger.status, stranger.body.code], [410, 'invite_used_up']);
+});
+
+Deno.test('after the contract ends nobody joins; the preview says so and members still see they joined', async () => {
+  const now = new Date('2026-10-30T09:00:00Z');
+  const { db, call } = setup('active', { now: () => now });
+  const link = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { kind: 'link' } });
+  const token = tokenOf(link.body.link);
+  db.rows('company_orgs')[0].contract_ends_at = '2026-10-29T00:00:00Z';
+  assertEquals((await call('GET', `join/${token}`)).body.state, 'ended');
+  const refused = await call('POST', `join/${token}`, { user: NEWCOMER, body: { consent: true } });
+  assertEquals([refused.status, refused.body.code], [403, 'contract_ended']);
+  assertEquals(inviteRow(db, link.body.invite.id).uses, 0);
+  assertEquals((await call('GET', `join/${token}`, { user: EMPLOYEE })).body.state, 'joined');
+});
+
+Deno.test('department names collapse inner spaces and races answer 409, not 500', async () => {
+  const { db, call } = setup();
+  db.uniques.company_departments = [{ columns: ['org_id', 'name'] }];
+  db.uniques.company_members = [{ columns: ['org_id', 'email'], where: (row) => row.status !== 'removed' }];
+  const created = await call('POST', `orgs/${ORG}/departments`, { user: OWNER, body: { names: ['Night  Shift', 'night shift'] } });
+  assertEquals([created.status, created.body.skipped, created.body.departments[0].name], [200, 1, 'Night Shift']);
+  const dup = await call('POST', `orgs/${ORG}/departments`, { user: OWNER, body: { name: 'NIGHT   shift' } });
+  assertEquals([dup.status, dup.body.code], [409, 'department_exists']);
+  const race = await Promise.all([1, 2].map(() => call('POST', `orgs/${ORG}/departments`, { user: OWNER, body: { name: 'Racing' } })));
+  assertEquals(race.map((row) => row.status).sort(), [200, 409]);
+  assertEquals(race.find((row) => row.status === 409)!.body.code, 'department_exists');
+  const invites = await Promise.all([1, 2].map(() => call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Same Person', email: 'same@example.com' } })));
+  assertEquals(invites.map((row) => row.status).sort(), [200, 409]);
+  assertEquals(invites.find((row) => row.status === 409)!.body.code, 'member_exists');
+});
+
+Deno.test('dates, text and lists that Postgres would refuse are a 400', async () => {
+  const { db, call } = setup();
+  const member = memberOf(db, EMPLOYEE).id;
+  for (const target_date of ['2030-02-31', '2030-13-01', '0000-01-01', '9999-12-31', 20300101]) {
+    const refused = await call('PATCH', `orgs/${ORG}/people/${member}`, { user: OWNER, body: { target_date } });
+    assertEquals([refused.status, refused.body.field], [400, 'target_date'], String(target_date));
+  }
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${member}`, { user: OWNER, body: { target_date: '2030-02-28' } })).status, 200);
+  for (const name of ['A\u0000B', 'Lone \ud83d surrogate']) {
+    const refused = await call('POST', `orgs/${ORG}/departments`, { user: OWNER, body: { name } });
+    assertEquals([refused.status, refused.body.field], [400, 'name'], name);
+  }
+  const role = await call('PATCH', `orgs/${ORG}/settings`, { user: OWNER, body: { locale: ['en'] } });
+  assertEquals([role.status, role.body.field], [400, 'locale']);
+});

@@ -5,7 +5,7 @@ import { logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
 import { obj } from '../util.ts';
 import { normalizeAnswer, type Exercise, type Lesson, type Track } from './content.ts';
-import { canLearn, learner, minutesSpent, requireSeat } from './shared.ts';
+import { canLearn, learner, minutesSpent, requireSeat, seatReason, selfReportedMinutes } from './shared.ts';
 import { findLesson, findScenario, findTemplate, findTrack, TRACKS } from './tracks/index.ts';
 
 /** Score a lesson must reach to count as completed. */
@@ -123,6 +123,7 @@ export const routes: Route[] = [
       return {
         recommended: ctx.member?.job_role ?? 'general',
         can_learn: canLearn(ctx),
+        seat_reason: seatReason(ctx),
         tracks: TRACKS.map((track) => {
           const mine = progress.filter((row) => row.track_code === track.code);
           return { ...trackSummary(track), completed: mine.filter((row) => row.status === 'completed').length, started: mine.length };
@@ -138,6 +139,7 @@ export const routes: Route[] = [
       const progress = ctx.member ? await memberProgress(ctx, ctx.member.id) : [];
       return {
         can_learn: canLearn(ctx),
+        seat_reason: seatReason(ctx),
         track: trackSummary(track),
         lessons: track.lessons.map((lesson) => {
           const row = progress.find((entry) => entry.lesson_code === lesson.code);
@@ -149,7 +151,8 @@ export const routes: Route[] = [
     },
   },
   {
-    method: 'GET', path: 'orgs/:org/learn/:lesson', access: 'org', allowSuspended: true,
+    // Needs a working seat, and a paused or ended workspace has none: the page says why (seat_required carries a reason).
+    method: 'GET', path: 'orgs/:org/learn/:lesson', access: 'org',
     async handle(ctx, params) {
       requireSeat(ctx);
       const { track, lesson, index } = lessonOr404(params.lesson);
@@ -186,10 +189,12 @@ export const routes: Route[] = [
         check(await ctx.db.from('company_lesson_progress').update({ data: { ...existing.data, step } }).eq('id', existing.id));
         return { status: existing.status, step };
       }
-      check(await ctx.db.from('company_lesson_progress').insert({
+      const created = await ctx.db.from('company_lesson_progress').insert({
         org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, track_code: track.code, lesson_code: lesson.code,
         status: 'started', minutes: 0, attempts: 0, data: { step },
-      }));
+      });
+      // Opened twice at once: the other request made the row, and that is all this one wanted.
+      if (created.error?.code !== '23505') check(created);
       return { status: 'started', step };
     },
   },
@@ -201,29 +206,41 @@ export const routes: Route[] = [
       const { track, lesson, index } = lessonOr404(params.lesson);
       const input = obj(body);
       const answers = input.answers && typeof input.answers === 'object' && !Array.isArray(input.answers) ? input.answers as Record<string, unknown> : {};
-      const minutes = minutesSpent(input.minutes);
+      const asked = minutesSpent(input.minutes);
       const result = checkLesson(lesson, answers);
       const passed = result.score >= PASS_SCORE;
       const now = ctx.now().toISOString();
-      const existing = check<ProgressRow | null>(await ctx.db.from('company_lesson_progress').select(PROGRESS_COLUMNS).eq('member_id', member.id).eq('lesson_code', lesson.code).maybeSingle());
-      const firstCompletion = passed && existing?.status !== 'completed';
-      const row = {
-        status: existing?.status === 'completed' || passed ? 'completed' : 'started',
-        score: Math.max(existing?.score ?? 0, result.score),
-        minutes: Math.min(100_000, (existing?.minutes ?? 0) + minutes),
-        attempts: (existing?.attempts ?? 0) + 1,
-        data: { ...(existing?.data ?? {}), step: 'results', results: result.results.map(({ id, correct, total }) => ({ id, correct, total })), last_score: result.score },
-        completed_at: existing?.completed_at ?? (passed ? now : null),
-      };
-      if (existing) check(await ctx.db.from('company_lesson_progress').update(row).eq('id', existing.id));
-      else check(await ctx.db.from('company_lesson_progress').insert({ org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, track_code: track.code, lesson_code: lesson.code, ...row }));
-      // One 'lesson' per lesson completed, so KPIs and challenges count lessons, not
-      // clicks on Check. Other attempts keep their minutes and earn no points.
+      const read = () => ctx.db.from('company_lesson_progress').select(PROGRESS_COLUMNS).eq('member_id', member.id).eq('lesson_code', lesson.code).maybeSingle();
+      let existing = check<ProgressRow | null>(await read());
+      if (!existing) {
+        // Two first checks at once: the unique index lets one create the row, the other uses it.
+        const created = await ctx.db.from('company_lesson_progress').insert({
+          org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, track_code: track.code, lesson_code: lesson.code, status: 'started', minutes: 0, attempts: 0, data: {},
+        }).select(PROGRESS_COLUMNS).single();
+        existing = created.error?.code === '23505' ? check<ProgressRow>(await read()) : check<ProgressRow>(created);
+      }
+      // One 'lesson' per lesson completed, so KPIs and challenges count lessons, not clicks on
+      // Check. The database picks the one request that completes it; a passing check that loses
+      // that race is a retry like any other.
+      let firstCompletion = false;
+      if (passed && existing!.status !== 'completed') {
+        const claimed = check<{ id: string }[]>(await ctx.db.from('company_lesson_progress').update({ status: 'completed', completed_at: now }).eq('id', existing!.id).neq('status', 'completed').select('id'));
+        firstCompletion = claimed.length === 1;
+      }
+      // Other attempts keep their minutes, up to a daily allowance, and earn no points.
+      const minutes = firstCompletion ? asked : await selfReportedMinutes(ctx, member.id, asked);
+      const best = Math.max(existing!.score ?? 0, result.score);
+      check(await ctx.db.from('company_lesson_progress').update({
+        score: best,
+        minutes: Math.min(100_000, existing!.minutes + minutes),
+        attempts: existing!.attempts + 1,
+        data: { ...existing!.data, step: 'results', results: result.results.map(({ id, correct, total }) => ({ id, correct, total })), last_score: result.score },
+      }).eq('id', existing!.id));
       await logActivity(ctx.db, {
         org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, kind: firstCompletion ? 'lesson' : 'lesson_retry', minutes,
         points: firstCompletion ? Math.round(result.score / 10) + 10 : 0, ref: lesson.code,
       });
-      return { ...result, passed, first_completion: firstCompletion, best: row.score, status: row.status, next: track.lessons[index + 1]?.code ?? null, pass_score: PASS_SCORE };
+      return { ...result, passed, first_completion: firstCompletion, best, status: passed || existing!.status === 'completed' ? 'completed' : 'started', next: track.lessons[index + 1]?.code ?? null, pass_score: PASS_SCORE };
     },
   },
 ];

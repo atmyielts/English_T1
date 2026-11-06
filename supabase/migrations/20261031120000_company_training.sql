@@ -64,6 +64,7 @@ create unique index if not exists company_glossary_terms_term_key on public.comp
 
 -- A lesson check that is not a first completion: its minutes count, but it is
 -- not a lesson and earns no points, so KPIs and challenges count finished lessons.
+-- The same list as the core table's CHECK; kept here so a table made earlier gets it too.
 alter table public.company_activity drop constraint if exists company_activity_kind_check;
 alter table public.company_activity add constraint company_activity_kind_check
   check (kind in ('lesson','lesson_retry','roleplay','writing','test','glossary','session','english'));

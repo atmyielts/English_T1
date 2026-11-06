@@ -1,11 +1,16 @@
 import { assert, assertEquals } from 'jsr:@std/assert@1';
-import { JOB_ROLES } from '../../../packages/company-core/src/mod.ts';
+import { ACTIVITY_KINDS, JOB_ROLES } from '../../../packages/company-core/src/mod.ts';
+import { insightsEn } from '../../../apps/company/src/i18n/insights.en.ts';
+import { insightsRu } from '../../../apps/company/src/i18n/insights.ru.ts';
+import { insightsUz } from '../../../apps/company/src/i18n/insights.uz.ts';
+import { peopleEn } from '../../../apps/company/src/i18n/people.en.ts';
 import { routes as core } from './core.ts';
 import { routes as training } from './training.ts';
 import { validateTrack, normalizeAnswer, type Exercise } from './training/content.ts';
 import { checkExercise, publicExercise, seededShuffle } from './training/lessons.ts';
 import { parseCsv } from './training/glossary.ts';
-import { weekStart } from './training/shared.ts';
+import { DAILY_SELF_REPORTED_MINUTES, weekStart } from './training/shared.ts';
+import { tashkentDate } from '../../../apps/company/src/areas/training/dates.ts';
 import { findLesson, TRACKS } from './training/tracks/index.ts';
 import { FakeDb, testHandler } from './testing.ts';
 import type { AiCall } from './types.ts';
@@ -363,7 +368,7 @@ Deno.test('lessons and AI practice need a learning seat; browsing and HR tools d
   addSession(db, M.other);
   for (const [method, path, options] of practiceCalls(OTHER)) {
     const refused = await call(method, path, options);
-    assertEquals([refused.status, refused.body.code], [402, 'seat_required'], path);
+    assertEquals([refused.status, refused.body.code, refused.body.reason], [402, 'seat_required', 'no_seat'], path);
   }
   assertEquals(aiCalls(), 0);
   assertEquals(db.rows('company_activity').length, 0);
@@ -401,18 +406,27 @@ Deno.test('a pilot or an ended agreement closes seats and the Schood English lin
   const { db, call } = setup({ ai: roleplayAi(), now: () => now });
   addSession(db, M.employee);
   const org = db.rows('company_orgs')[0];
-  const locked = async (writes: string) => {
+  const locked = async (writes: string, reason: string) => {
     for (const [method, path, options] of practiceCalls(EMPLOYEE)) assertEquals((await call(method, path, options)).body.code, method === 'GET' ? 'seat_required' : writes, path);
     const home = await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE });
-    assertEquals([home.body.can_learn, home.body.english_url, home.body.member.seat], [false, null, true]);
+    assertEquals([home.body.can_learn, home.body.english_url, home.body.member.seat, home.body.seat_reason], [false, null, true, reason]);
+    const refused = await call('GET', `orgs/${ORG}/learn/hospitality-f1`, { user: EMPLOYEE });
+    assertEquals([refused.status, refused.body.code, refused.body.reason], [402, 'seat_required', reason]);
+    for (const page of ['tracks', 'roleplay', 'writing', 'glossary']) assertEquals((await call('GET', `orgs/${ORG}/${page}`, { user: EMPLOYEE })).body.seat_reason, reason, page);
   };
 
   org.status = 'pilot';
-  await locked('seat_required');
+  await locked('seat_required', 'pilot');
   // After an agreement ends the handler already refuses every write.
   org.status = 'active';
   org.contract_ends_at = '2026-10-29T00:00:00Z';
-  await locked('contract_ended');
+  await locked('contract_ended', 'contract_ended');
+
+  // Paused: the same closed door, and the reason says who can open it.
+  org.contract_ends_at = null;
+  org.status = 'suspended';
+  await locked('org_suspended', 'paused');
+  org.status = 'active';
 
   org.contract_ends_at = '2026-11-30T00:00:00Z';
   const open = await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE });
@@ -560,4 +574,74 @@ Deno.test('assignment dates follow Tashkent, like My English and the overview', 
   assertEquals((await call('GET', `orgs/${ORG}/assignments`, { user: HR })).body.assignments[0].stats.overdue, true);
   assertEquals((await call('GET', `orgs/${ORG}/assignments/${row.id}`, { user: HR })).body.stats.overdue, true);
   assertEquals((await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE })).body.assignments[0].overdue, true);
+});
+
+Deno.test('every activity kind has a label in every language; a person not found says only that', () => {
+  assert(ACTIVITY_KINDS.includes('lesson_retry'));
+  for (const [locale, catalogue] of Object.entries({ en: insightsEn, ru: insightsRu, uz: insightsUz }) as [string, Record<string, string>][]) {
+    for (const kind of ACTIVITY_KINDS) assert(catalogue[`insights.kind.${kind}`], `${locale}: ${kind}`);
+    assert(!('insights.error.member_not_found' in catalogue), locale);
+  }
+  assertEquals(peopleEn['people.error.member_not_found'], 'Person not found.');
+});
+
+Deno.test('the due-date minimum is the Tashkent day, as on the server', () => {
+  assertEquals(tashkentDate(new Date('2026-11-05T18:59:00Z')), '2026-11-05');
+  assertEquals(tashkentDate(new Date('2026-11-05T19:00:00Z')), '2026-11-06');
+});
+
+Deno.test('passing checks at once log one lesson, whether or not the row exists yet', async () => {
+  const { db, call } = setup();
+  db.uniques.company_lesson_progress = [{ columns: ['member_id', 'lesson_code'] }];
+  const activity = (code: string) => db.rows('company_activity').filter((row) => row.ref === code);
+  const check = (code: string) => call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: correctAnswers(code), minutes: 5 } });
+  for (const [code, started] of [['hospitality-f1', false], ['hospitality-f2', true]] as const) {
+    if (started) assertEquals((await call('POST', `orgs/${ORG}/learn/${code}/start`, { user: EMPLOYEE, body: {} })).status, 200);
+    const replies = await Promise.all([check(code), check(code), check(code)]);
+    assertEquals(replies.map((reply) => reply.status), [200, 200, 200], code);
+    assertEquals(replies.filter((reply) => reply.body.first_completion).length, 1, code);
+    assertEquals(activity(code).filter((row) => row.kind === 'lesson').length, 1, code);
+    assertEquals(activity(code).filter((row) => row.kind === 'lesson_retry').length, 2, code);
+    assertEquals(db.rows('company_lesson_progress').filter((row) => row.lesson_code === code).map((row) => row.status), ['completed'], code);
+  }
+});
+
+Deno.test('a failing check after a pass leaves the lesson completed', async () => {
+  const { db, call } = setup();
+  const code = 'hospitality-f1';
+  await call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: correctAnswers(code), minutes: 5 } });
+  const failed = await call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: {}, minutes: 5 } });
+  assertEquals([failed.body.passed, failed.body.status, failed.body.best], [false, 'completed', 100]);
+  const row = db.rows('company_lesson_progress').find((entry) => entry.lesson_code === code)!;
+  assertEquals([row.status, row.score, row.attempts], ['completed', 100, 2]);
+  assert(row.completed_at);
+});
+
+Deno.test('clicking cannot top a minutes challenge: self-reported minutes stop at the daily cap', async () => {
+  const { db, call } = setup();
+  const code = 'hospitality-f1';
+  const logged = () => db.rows('company_activity').filter((row) => row.kind === 'lesson_retry' || row.kind === 'glossary').reduce((sum, row) => sum + (row.minutes as number), 0);
+  await call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: correctAnswers(code), minutes: 60 } });
+  assertEquals(logged(), 0);
+  for (let round = 0; round < 3; round++) await call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: {}, minutes: 50 } });
+  assertEquals(logged(), 150);
+  const glossary = await call('POST', `orgs/${ORG}/glossary/practice`, { user: EMPLOYEE, body: { mode: 'cards', seen: 5, known: 3, minutes: 30 } });
+  assertEquals([glossary.status, logged()], [200, DAILY_SELF_REPORTED_MINUTES]);
+  await call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: {}, minutes: 60 } });
+  await call('POST', `orgs/${ORG}/glossary/practice`, { user: EMPLOYEE, body: { mode: 'cards', seen: 5, known: 3, minutes: 30 } });
+  assertEquals(logged(), DAILY_SELF_REPORTED_MINUTES);
+  // Yesterday's minutes leave today's allowance alone.
+  for (const row of db.rows('company_activity')) row.created_at = new Date(Date.now() - 2 * 86_400_000).toISOString();
+  await call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers: {}, minutes: 10 } });
+  assertEquals(logged(), DAILY_SELF_REPORTED_MINUTES + 10);
+});
+
+Deno.test('assigning to people reads every member past the 1,000-row limit', async () => {
+  const { db, call } = setup();
+  capAt1000(db);
+  const ids = Array.from({ length: 1200 }, (_, index) => filler(index));
+  for (const id of ids) db.rows('company_members').push({ id, org_id: ORG, user_id: null, full_name: 'P', email: null, role: 'employee', status: 'active', department_id: null, job_role: 'general', seat: false, level: null, consent_at: null });
+  const last = [...ids].sort().at(-1)!;
+  const made = await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'people', track_code: 'general', member_ids: [last] } });
+  assertEquals([made.status, made.body.created], [200, 1]);
 });

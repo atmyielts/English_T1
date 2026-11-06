@@ -49,23 +49,40 @@ export function Loading({ error }: { error: string }) {
 /** The server refused because the caller has no working learning seat. */
 export const needsSeat = (cause: unknown) => (cause as { code?: string } | null)?.code === 'seat_required';
 
-/** Shown instead of lessons and AI practice without a seat: what it opens and who arranges it. */
-export function SeatLocked({ browse = false }: { browse?: boolean }) {
+/** Why lessons and AI practice are closed. Only `no_seat` is something the company's HR can change. */
+export type SeatReason = 'no_seat' | 'pilot' | 'paused' | 'contract_ended';
+const SEAT_REASONS: readonly string[] = ['no_seat', 'pilot', 'paused', 'contract_ended'];
+/** The reason a `seat_required` refusal carries. */
+export const seatReasonOf = (cause: unknown): SeatReason => {
+  const reason = (cause as { details?: { reason?: unknown } } | null)?.details?.reason;
+  return typeof reason === 'string' && SEAT_REASONS.includes(reason) ? reason as SeatReason : 'no_seat';
+};
+
+/**
+ * Shown instead of lessons and AI practice: why they are closed and who can open them. A seat HR
+ * can give points to People; a pilot, a pause or an ended agreement is settled with Schood.
+ */
+export function SeatLocked({ browse = false, reason }: { browse?: boolean; reason?: SeatReason | null }) {
   const t = useAppT();
   const { org, hr } = useWorkspace();
+  const why = reason ?? 'no_seat';
+  // What a seat opens is worth listing only while one could be on the way.
+  const lists = why === 'no_seat' || why === 'pilot';
   return <section className="training-card training-locked" aria-labelledby="training-locked">
-    <h2 id="training-locked">{t('training.locked.title')}</h2>
-    <p>{t('training.locked.lead')}</p>
-    <ul>
+    <h2 id="training-locked">{t(`training.locked.${why}.title` as AppKey)}</h2>
+    <p>{t(`training.locked.${why}.lead` as AppKey)}</p>
+    {lists && <ul>
       <li>{t('training.locked.lessons')}</li>
       <li>{t('training.locked.roleplay')}</li>
       <li>{t('training.locked.writing')}</li>
       <li>{t('training.locked.glossary')}</li>
       <li>{t('training.locked.english')}</li>
-    </ul>
-    <p>{t(hr ? 'training.locked.hr' : 'training.locked.ask')}</p>
+    </ul>}
+    <p>{t(`training.locked.${why}.${hr ? 'hr' : 'ask'}` as AppKey)}</p>
     {(hr || browse) && <p className="company-actions">
-      {hr && <Link className="button-link" to={`/w/${org.id}/people`}>{t('training.locked.people')}</Link>}
+      {hr && (why === 'no_seat'
+        ? <Link className="button-link" to={`/w/${org.id}/people`}>{t('training.locked.people')}</Link>
+        : <Link className="button-link" to={`/w/${org.id}/settings`}>{t('training.locked.contact')}</Link>)}
       {browse && <Link className="button-link quiet" to={`/w/${org.id}/learn`}>{t('training.locked.browse')}</Link>}
     </p>}
   </section>;

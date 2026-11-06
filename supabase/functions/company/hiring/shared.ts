@@ -22,7 +22,7 @@ function skillsOf(value: unknown): Skill[] {
 function dateOf(value: unknown, field: string): string | null {
   if (value === null || value === undefined || value === '') return null;
   const parsed = typeof value === 'string' ? new Date(value) : null;
-  if (!parsed || Number.isNaN(parsed.getTime())) throw new CompanyError('invalid_field', `${field} is not a date.`, 400, { field });
+  if (!parsed || Number.isNaN(parsed.getTime()) || parsed.getUTCFullYear() < 2000 || parsed.getUTCFullYear() > 2100) throw new CompanyError('invalid_field', `${field} is not a date.`, 400, { field });
   return parsed.toISOString();
 }
 

@@ -3,14 +3,16 @@
 // person, records their consent and syncs their Schood English access.
 // Accepting twice, or as someone already in the workspace, changes nothing.
 import { syncAccess } from '../core.ts';
-import { MEMBER_COLUMNS, ORG_COLUMNS } from '../handler.ts';
+import { contractEnded, MEMBER_COLUMNS, ORG_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type OrgRow, type Route } from '../types.ts';
 import { obj, sha256, text } from '../util.ts';
 import { INVITE_COLUMNS, inviteState, revokeMemberInvites, type InviteRow, type InviteState } from './shared.ts';
 
 const TOKEN = /^[A-Za-z0-9_-]{16,128}$/;
 const CLAIM_TRIES = 5;
-type JoinState = InviteState | 'joined' | 'closed' | 'paused';
+/** How long a refused accept waits before asking whether the same person's other request has joined. */
+const SAME_PERSON_WAIT_MS = 200;
+type JoinState = InviteState | 'joined' | 'closed' | 'paused' | 'ended';
 
 const home = (orgId: string, role: string) => role === 'employee' ? `/w/${orgId}/me` : `/w/${orgId}`;
 
@@ -49,6 +51,7 @@ function stateOf(ctx: Ctx, invite: InviteRow, { org, target, own }: Awaited<Retu
   }
   const state = inviteState(invite, ctx.now());
   if (state === 'open' && org.status === 'suspended') return 'paused';
+  if (state === 'open' && contractEnded(org, ctx.now())) return 'ended';
   return state;
 }
 
@@ -70,6 +73,26 @@ async function claim(ctx: Ctx, invite: InviteRow): Promise<InviteState | null> {
   return null;
 }
 
+/** Hands a use back when the person it was taken for did not need it. */
+async function giveBack(ctx: Ctx, inviteId: string): Promise<void> {
+  for (let attempt = 0; attempt < CLAIM_TRIES; attempt++) {
+    const { uses } = check<{ uses: number }>(await ctx.db.from('company_invites').select('uses').eq('id', inviteId).single());
+    if (uses <= 0) return;
+    const back = check<{ id: string }[]>(await ctx.db.from('company_invites').update({ uses: uses - 1 }).eq('id', inviteId).eq('uses', uses).select('id'));
+    if (back.length === 1) return;
+  }
+  console.error(JSON.stringify({ company_join: 'use_not_returned', invite: inviteId }));
+}
+
+/** The caller's own row if they are in the workspace now: another request of theirs got there first. */
+async function joinedMeanwhile(ctx: Ctx, orgId: string): Promise<MemberRow | null> {
+  const own = check<MemberRow | null>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', orgId).eq('user_id', ctx.user).maybeSingle());
+  return own?.status === 'active' ? own : null;
+}
+
+/** Raised when a row this request meant to change was taken by a request of the same person. */
+class LostRace extends Error {}
+
 async function emailFree(ctx: Ctx, orgId: string, email: string | null, except: string): Promise<boolean> {
   if (!email) return false;
   const rows = check<{ id: string }[]>(await ctx.db.from('company_members').select('id').eq('org_id', orgId).eq('email', email).neq('status', 'removed'));
@@ -88,6 +111,7 @@ const CLOSED: Record<Exclude<JoinState, 'open' | 'joined'>, [string, string, num
   used_up: ['invite_used_up', 'This link has already been used. Ask HR for a new one.', 410],
   closed: ['org_closed', 'This workspace is closed.', 403],
   paused: ['org_suspended', 'This workspace is paused. Contact your HR team.', 403],
+  ended: ['contract_ended', 'This company\'s agreement with Schood has ended. Contact your HR team.', 403],
 };
 
 /**
@@ -97,13 +121,57 @@ const CLOSED: Record<Exclude<JoinState, 'open' | 'joined'>, [string, string, num
  * index allows only once the prepared row is out of the way.
  */
 async function bringBack(ctx: Ctx, own: MemberRow, prepared: MemberRow, accountEmail: string | null, typedName: string | null, at: string): Promise<MemberRow> {
-  check(await ctx.db.from('company_members').update({ status: 'removed', seat: false, removed_at: at }).eq('id', prepared.id));
+  check(await ctx.db.from('company_members').update({ status: 'removed', seat: false, removed_at: at }).eq('id', prepared.id).eq('status', 'invited'));
   await revokeMemberInvites(ctx, prepared.id);
-  return check<MemberRow>(await ctx.db.from('company_members').update({
+  return await changed(ctx.db.from('company_members').update({
     status: 'active', role: prepared.role, department_id: prepared.department_id, job_role: prepared.job_role, seat: prepared.seat,
     target_level: prepared.target_level, target_date: prepared.target_date, full_name: prepared.full_name ?? own.full_name ?? typedName,
     email: await firstFreeEmail(ctx, own.org_id, own.id, accountEmail, prepared.email, own.email), consent_at: at, joined_at: at, removed_at: null,
-  }).eq('id', own.id).select(MEMBER_COLUMNS).single());
+  }).eq('id', own.id).neq('status', 'active'));
+}
+
+/** Runs a guarded update of one member row; no row means another request of this person changed it first. */
+async function changed(update: { select: (columns: string) => PromiseLike<{ data: MemberRow[] | null; error: { code?: string; message: string } | null }> }): Promise<MemberRow> {
+  const rows = check<MemberRow[]>(await update.select(MEMBER_COLUMNS));
+  if (!rows.length) throw new LostRace();
+  return rows[0];
+}
+
+/** Writes the caller's membership for a claimed use of the invitation. */
+async function admit(ctx: Ctx, org: OrgRow, invite: InviteRow, target: MemberRow | null, own: MemberRow | null, typedName: string | null): Promise<MemberRow> {
+  const at = ctx.now().toISOString();
+  // The person joining is whoever holds this account, so their row shows its address.
+  const accountEmail = ctx.email?.trim().toLowerCase() || null;
+  if (invite.kind === 'personal' && target) {
+    if (own) return await bringBack(ctx, own, target, accountEmail, typedName, at);
+    return await changed(ctx.db.from('company_members').update({
+      user_id: ctx.user, status: 'active', joined_at: at, consent_at: target.consent_at ?? at,
+      full_name: target.full_name ?? typedName,
+      email: await firstFreeEmail(ctx, org.id, target.id, accountEmail, target.email),
+    }).eq('id', target.id).eq('status', 'invited'));
+  }
+  const invited = accountEmail ? check<MemberRow[]>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('email', accountEmail).eq('status', 'invited')) : [];
+  // HR already invited this email again: join as that person, keep HR's settings.
+  if (own && invited[0]) return await bringBack(ctx, own, { ...invited[0], department_id: invited[0].department_id ?? invite.department_id }, accountEmail, typedName, at);
+  if (own) {
+    return await changed(ctx.db.from('company_members').update({
+      status: 'active', role: invite.role, department_id: invite.department_id, job_role: invite.job_role, seat: false,
+      full_name: own.full_name ?? typedName, email: await firstFreeEmail(ctx, org.id, own.id, accountEmail, own.email), consent_at: at, joined_at: at, removed_at: null,
+    }).eq('id', own.id).neq('status', 'active'));
+  }
+  if (invited[0]) {
+    // HR already invited this email personally: join as that person, keep HR's settings.
+    const member = await changed(ctx.db.from('company_members').update({
+      user_id: ctx.user, status: 'active', joined_at: at, consent_at: at, full_name: invited[0].full_name ?? typedName,
+      department_id: invited[0].department_id ?? invite.department_id,
+    }).eq('id', invited[0].id).eq('status', 'invited'));
+    await revokeMemberInvites(ctx, invited[0].id);
+    return member;
+  }
+  return check<MemberRow>(await ctx.db.from('company_members').insert({
+    org_id: org.id, user_id: ctx.user, email: await firstFreeEmail(ctx, org.id, '', accountEmail), full_name: typedName, role: invite.role, department_id: invite.department_id,
+    job_role: invite.job_role, status: 'active', seat: false, consent_at: at, joined_at: at, invited_by: invite.created_by, invited_at: at,
+  }).select(MEMBER_COLUMNS).single());
 }
 
 export const joinRoutes: Route[] = [
@@ -148,46 +216,26 @@ export const joinRoutes: Route[] = [
         throw new CompanyError(code, message, status);
       }
       const claimed = await claim(ctx, invite);
-      if (claimed === null) throw new CompanyError('invite_busy', 'Many people are joining right now. Try again in a moment.', 409);
-      if (claimed !== 'open') throw new CompanyError(...CLOSED[claimed]);
-      const at = ctx.now().toISOString();
-      // The person joining is whoever holds this account, so their row shows its address.
-      const accountEmail = ctx.email?.trim().toLowerCase() || null;
+      if (claimed !== 'open') {
+        // The same person pressing twice: the last use went to their other request, which may still be writing.
+        await new Promise((resolve) => setTimeout(resolve, SAME_PERSON_WAIT_MS));
+        const mine = await joinedMeanwhile(ctx, org.id);
+        if (mine) return { state: 'joined', already: true, org_id: org.id, home: home(org.id, mine.role) };
+        if (claimed === null) throw new CompanyError('invite_busy', 'Many people are joining right now. Try again in a moment.', 409);
+        throw new CompanyError(...CLOSED[claimed]);
+      }
       let member: MemberRow;
-
-      if (invite.kind === 'personal' && target) {
-        if (own) {
-          member = await bringBack(ctx, own, target, accountEmail, typedName, at);
-        } else {
-          member = check<MemberRow>(await ctx.db.from('company_members').update({
-            user_id: ctx.user, status: 'active', joined_at: at, consent_at: target.consent_at ?? at,
-            full_name: target.full_name ?? typedName,
-            email: await firstFreeEmail(ctx, org.id, target.id, accountEmail, target.email),
-          }).eq('id', target.id).select(MEMBER_COLUMNS).single());
-        }
-      } else {
-        const invited = accountEmail ? check<MemberRow[]>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('email', accountEmail).eq('status', 'invited')) : [];
-        if (own && invited[0]) {
-          // HR already invited this email again: join as that person, keep HR's settings.
-          member = await bringBack(ctx, own, { ...invited[0], department_id: invited[0].department_id ?? invite.department_id }, accountEmail, typedName, at);
-        } else if (own) {
-          member = check<MemberRow>(await ctx.db.from('company_members').update({
-            status: 'active', role: invite.role, department_id: invite.department_id, job_role: invite.job_role, seat: false,
-            full_name: own.full_name ?? typedName, email: await firstFreeEmail(ctx, org.id, own.id, accountEmail, own.email), consent_at: at, joined_at: at, removed_at: null,
-          }).eq('id', own.id).select(MEMBER_COLUMNS).single());
-        } else if (invited[0]) {
-          // HR already invited this email personally: join as that person, keep HR's settings.
-          member = check<MemberRow>(await ctx.db.from('company_members').update({
-            user_id: ctx.user, status: 'active', joined_at: at, consent_at: at, full_name: invited[0].full_name ?? typedName,
-            department_id: invited[0].department_id ?? invite.department_id,
-          }).eq('id', invited[0].id).select(MEMBER_COLUMNS).single());
-          await revokeMemberInvites(ctx, invited[0].id);
-        } else {
-          member = check<MemberRow>(await ctx.db.from('company_members').insert({
-            org_id: org.id, user_id: ctx.user, email: await firstFreeEmail(ctx, org.id, '', accountEmail), full_name: typedName, role: invite.role, department_id: invite.department_id,
-            job_role: invite.job_role, status: 'active', seat: false, consent_at: at, joined_at: at, invited_by: invite.created_by, invited_at: at,
-          }).select(MEMBER_COLUMNS).single());
-        }
+      try {
+        member = await admit(ctx, org, invite, target, own, typedName);
+      } catch (cause) {
+        // Nobody joined on this use. A unique index (company_members_user_key) or a guarded update
+        // says the same person's other request got there first, and that is a join, not an error.
+        await giveBack(ctx, invite.id);
+        const conflict = cause instanceof LostRace || (cause instanceof Error && cause.message.startsWith('23505'));
+        if (!conflict) throw cause;
+        const mine = await joinedMeanwhile(ctx, org.id);
+        if (mine) return { state: 'joined', already: true, org_id: org.id, home: home(org.id, mine.role) };
+        throw new CompanyError('invite_busy', 'Many people are joining right now. Try again in a moment.', 409);
       }
 
       const access = await syncAccess(ctx.db, ctx.user);

@@ -1,9 +1,10 @@
 import { assert, assertEquals, assertExists, assertStringIncludes } from 'jsr:@std/assert@1';
 import { routes as insights } from './insights.ts';
 import { csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
+import { assignmentsInScope } from './insights/overview.ts';
 import { FakeDb, testHandler } from './testing.ts';
 import { findLesson } from './training/tracks/index.ts';
-import type { AiCall } from './types.ts';
+import type { AiCall, MemberRow } from './types.ts';
 
 const ORG = '7a0f5c1e-0000-4000-8000-0000000000c1';
 const OTHER_ORG = '7a0f5c1e-0000-4000-8000-0000000000c2';
@@ -493,4 +494,12 @@ Deno.test('a candidate counts as graded in the month of grading, whenever they s
   assertEquals(september.body.hiring.started, 1);
   // Managers do not see hiring, so their count is staff tests only.
   assertEquals((await call('GET', `orgs/${ORG}/reports/monthly?from=2026-10-01&to=2026-10-20`, { user: MANAGER })).body.summary.tests_graded, 1);
+});
+
+Deno.test('a manager counts company-wide assignments among their overdue ones', () => {
+  const row = (id: string, department_id: string | null, member_id: string | null) => ({ id, track_code: 'general', target_level: null, due_date: '2020-01-01', department_id, member_id, status: 'active', note: null, created_at: '2020-01-01T00:00:00Z' });
+  const rows = [row('all', null, null), row('mine', 'd1', null), row('theirs', 'd2', null), row('person', null, 'm1'), row('stranger', null, 'm2')];
+  const viewer = { hr: false, lead: true, manager: true, memberId: 'm0', departmentId: 'd1' };
+  const members = [{ id: 'm1' }] as MemberRow[];
+  assertEquals(assignmentsInScope(rows, viewer, members).map((entry) => entry.id), ['all', 'mine', 'person']);
 });

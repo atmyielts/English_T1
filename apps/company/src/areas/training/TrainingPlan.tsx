@@ -6,6 +6,7 @@ import { LEVEL_LABEL, LEVELS, isLevel } from '../../../../../packages/company-co
 import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 import { useWorkspace } from '../../session.tsx';
+import { tashkentDate } from './dates.ts';
 import { LevelBadge, Loading, Progress, useDate, useLoad, useLocalized, type Localized } from './lib.tsx';
 
 interface Stats { people: number; shared: number; hidden: number; done: number; completion: number | null; lessons_percent: number | null; at_target: number | null; overdue: boolean }
@@ -66,7 +67,8 @@ function AssignForm({ overview, onDone }: { overview: Overview; onDone: () => Pr
   }, [overview.people, search]);
   const departmentName = (id: string | null) => departments.find((entry) => entry.id === id)?.name ?? t('training.plan.noDepartment');
   const toggle = (list: string[], id: string) => list.includes(id) ? list.filter((value) => value !== id) : [...list, id];
-  const today = new Date().toISOString().slice(0, 10);
+  // The server refuses a due date before today in Tashkent, whatever this browser's clock zone is.
+  const today = tashkentDate(new Date());
 
   async function submit(event: FormEvent) {
     event.preventDefault();

@@ -1,7 +1,7 @@
 // Departments: create (one or several at once), rename, delete. Deleting moves its
 // people to "no department" (the foreign key sets it to null).
 import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
-import { check, CompanyError, UUID, type Ctx, type Route } from '../types.ts';
+import { check, checkUnique, CompanyError, UUID, type Ctx, type Route } from '../types.ts';
 import { obj, text } from '../util.ts';
 import { fetchAll } from './shared.ts';
 
@@ -15,7 +15,10 @@ async function loadDepartment(ctx: Ctx, id: string): Promise<DepartmentRow> {
   return row;
 }
 
-const key = (name: string) => name.trim().toLowerCase();
+/** What the workspace sees as one name: spaces collapse exactly as they do in the stored name. */
+const clean = (name: string) => name.trim().replace(/\s+/g, ' ');
+const key = (name: string) => clean(name).toLowerCase();
+const exists = () => new CompanyError('department_exists', 'A department with this name already exists.', 409, { field: 'name' });
 
 export const departmentRoutes: Route[] = [
   {
@@ -52,11 +55,11 @@ export const departmentRoutes: Route[] = [
       for (const name of names) {
         if (taken.has(key(name))) continue;
         taken.add(key(name));
-        fresh.push(name.replace(/\s+/g, ' '));
+        fresh.push(clean(name));
       }
-      if (!Array.isArray(input.names) && !fresh.length) throw new CompanyError('department_exists', 'A department with this name already exists.', 409, { field: 'name' });
+      if (!Array.isArray(input.names) && !fresh.length) throw exists();
       if (existing.length + fresh.length > MAX_DEPARTMENTS) throw new CompanyError('too_many_departments', 'A workspace can have up to 200 departments.', 409);
-      const created = fresh.length ? check<DepartmentRow[]>(await ctx.db.from('company_departments').insert(fresh.map((name) => ({ org_id: org.id, name }))).select('id,name')) : [];
+      const created = fresh.length ? checkUnique<DepartmentRow[]>(await ctx.db.from('company_departments').insert(fresh.map((name) => ({ org_id: org.id, name }))).select('id,name'), exists) : [];
       for (const row of created) await ctx.audit('department.created', row.id, { name: row.name });
       return { departments: created, department: created[0] ?? null, skipped: names.length - created.length };
     },
@@ -65,11 +68,11 @@ export const departmentRoutes: Route[] = [
     method: 'PATCH', path: 'orgs/:org/departments/:department', access: 'org', roles: HR_ROLES,
     async handle(ctx, params, body) {
       const row = await loadDepartment(ctx, params.department);
-      const name = text(obj(body).name, 'name', { min: 1, max: 80 })!.replace(/\s+/g, ' ');
+      const name = clean(text(obj(body).name, 'name', { min: 1, max: 80 })!);
       if (name === row.name) return { department: row };
       const others = check<DepartmentRow[]>(await ctx.db.from('company_departments').select('id,name').eq('org_id', ctx.org!.id));
-      if (others.some((other) => other.id !== row.id && key(other.name) === key(name))) throw new CompanyError('department_exists', 'A department with this name already exists.', 409, { field: 'name' });
-      const updated = check<DepartmentRow>(await ctx.db.from('company_departments').update({ name }).eq('id', row.id).select('id,name').single());
+      if (others.some((other) => other.id !== row.id && key(other.name) === key(name))) throw exists();
+      const updated = checkUnique<DepartmentRow>(await ctx.db.from('company_departments').update({ name }).eq('id', row.id).select('id,name').single(), exists);
       await ctx.audit('department.renamed', row.id, { from: row.name, to: name });
       return { department: updated };
     },

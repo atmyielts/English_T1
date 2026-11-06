@@ -3,12 +3,12 @@
 import { HR_ROLES, LEAD_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { syncAccess, usage } from '../core.ts';
 import { contractEnded, MEMBER_COLUMNS } from '../handler.ts';
-import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
+import { check, checkUnique, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, text, email as readEmail } from '../util.ts';
 import { readImport, MAX_IMPORT_ROWS } from './csv.ts';
 import {
   actsAsOwner, assertOwnerRemains, dateOrNull, DAY, departmentIn, fetchAll, guardError, INVITE_COLUMNS, inviteRoleFor, inviteState, issueInvite, isHr,
-  jobRole, levelOrNull, loadMember, orgRole, PERSONAL_DAYS, revokeMemberInvites, seatCount, type InviteRow,
+  jobRole, levelOrNull, loadMember, memberExists, orgRole, PERSONAL_DAYS, revokeMemberInvites, seatCount, type InviteRow,
 } from './shared.ts';
 
 /** Columns HR edits; `email` and `full_name` only matter before the person joins. */
@@ -35,7 +35,7 @@ async function applyEdit(ctx: Ctx, member: MemberRow, input: Record<string, unkn
     if (next !== (member.email ?? null) && member.role === 'owner' && !actsAsOwner(ctx)) throw new CompanyError('owner_protected', 'Only an owner can change owners.', 403);
     if (next && next !== member.email) {
       const taken = check<{ id: string }[]>(await ctx.db.from('company_members').select('id').eq('org_id', orgId).eq('email', next).neq('status', 'removed'));
-      if (taken.some((row) => row.id !== member.id)) throw new CompanyError('member_exists', 'Someone with this email is already in the workspace.', 409, { field: 'email' });
+      if (taken.some((row) => row.id !== member.id)) throw memberExists();
     }
     patch.email = next;
   }
@@ -60,7 +60,7 @@ export const memberRoutes: Route[] = [
       }
       const departments = check<{ id: string; name: string }[]>(await ctx.db.from('company_departments').select('id,name').eq('org_id', org.id).order('name'));
       let invites: InviteRow[] = [];
-      if (hr) invites = check<InviteRow[]>(await ctx.db.from('company_invites').select(INVITE_COLUMNS).eq('org_id', org.id).is('revoked_at', null).order('created_at', { ascending: false }).limit(2000));
+      if (hr) invites = await fetchAll<InviteRow>(() => ctx.db.from('company_invites').select(INVITE_COLUMNS).eq('org_id', org.id).is('revoked_at', null).order('created_at', { ascending: false }).order('id'));
       const now = ctx.now();
       const personal = new Map(invites.filter((invite) => invite.kind === 'personal' && invite.member_id).map((invite) => [invite.member_id!, invite]));
       return {
@@ -88,28 +88,31 @@ export const memberRoutes: Route[] = [
       const { rows, header, tooMany } = readImport(csv, emails);
       if (tooMany) throw new CompanyError('import_too_large', `Import at most ${MAX_IMPORT_ROWS} people at a time.`, 400, { max: MAX_IMPORT_ROWS });
       const departments = check<{ id: string; name: string }[]>(await ctx.db.from('company_departments').select('id,name').eq('org_id', org.id));
-      const byName = new Map(departments.map((row) => [row.name.trim().toLowerCase(), row.id]));
-      const fresh = [...new Set(rows.filter((row) => !row.error && row.department && !byName.has(row.department.toLowerCase())).map((row) => row.department!))];
+      // A department is one name however its spaces are typed, as in the departments route.
+      const cleanName = (name: string) => name.trim().replace(/\s+/g, ' ');
+      const nameKey = (name: string) => cleanName(name).toLowerCase();
+      const byName = new Map(departments.map((row) => [nameKey(row.name), row.id]));
+      const fresh = [...new Set(rows.filter((row) => !row.error && row.department && !byName.has(nameKey(row.department))).map((row) => cleanName(row.department!)))];
       const valid = rows.filter((row) => !row.error);
       const summary = { header, total: rows.length, valid: valid.length, invalid: rows.length - valid.length, new_departments: fresh };
-      if (input.dry_run !== false) return { ...summary, rows: rows.map((row) => ({ ...row, department_new: Boolean(row.department && !byName.has(row.department.toLowerCase())) })) };
+      if (input.dry_run !== false) return { ...summary, rows: rows.map((row) => ({ ...row, department_new: Boolean(row.department && !byName.has(nameKey(row.department))) })) };
       if (!valid.length) throw new CompanyError('import_empty', 'There are no valid rows to import.', 400);
 
       // Create the departments the file names, keeping the first spelling of each.
       const unique = new Map<string, string>();
-      for (const name of fresh) if (!unique.has(name.toLowerCase())) unique.set(name.toLowerCase(), name);
+      for (const name of fresh) if (!unique.has(nameKey(name))) unique.set(nameKey(name), name);
       if (unique.size) {
         if (departments.length + unique.size > 200) throw new CompanyError('too_many_departments', 'A workspace can have up to 200 departments.', 409);
-        const created = check<{ id: string; name: string }[]>(await ctx.db.from('company_departments').insert([...unique.values()].map((name) => ({ org_id: org.id, name }))).select('id,name'));
-        for (const row of created) byName.set(row.name.trim().toLowerCase(), row.id);
+        const created = checkUnique<{ id: string; name: string }[]>(await ctx.db.from('company_departments').insert([...unique.values()].map((name) => ({ org_id: org.id, name }))).select('id,name'), () => new CompanyError('department_exists', 'A department with this name already exists.', 409, { field: 'department' }));
+        for (const row of created) byName.set(nameKey(row.name), row.id);
       }
       const now = ctx.now(), expires = new Date(now.getTime() + PERSONAL_DAYS * DAY).toISOString();
       const people = valid.map((row) => ({
         id: crypto.randomUUID(), org_id: org.id, email: row.email, full_name: row.name, role: row.role!, job_role: row.job_role!,
-        department_id: row.department ? byName.get(row.department.toLowerCase()) ?? null : null,
+        department_id: row.department ? byName.get(nameKey(row.department)) ?? null : null,
         status: 'invited', seat: false, invited_by: ctx.user, invited_at: now.toISOString(),
       }));
-      check(await ctx.db.from('company_members').insert(people));
+      checkUnique(await ctx.db.from('company_members').insert(people), memberExists);
       const results = [];
       for (const [index, person] of people.entries()) {
         const { link } = await issueInvite(ctx, {
@@ -132,7 +135,7 @@ export const memberRoutes: Route[] = [
       if (!Object.keys(patch).length) return { member };
       let updated: MemberRow;
       try {
-        updated = check<MemberRow>(await ctx.db.from('company_members').update(patch).eq('id', member.id).select(MEMBER_COLUMNS).single());
+        updated = checkUnique<MemberRow>(await ctx.db.from('company_members').update(patch).eq('id', member.id).select(MEMBER_COLUMNS).single(), memberExists);
       } catch (cause) {
         guardError(cause);
       }

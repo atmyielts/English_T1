@@ -4,6 +4,7 @@
 // so the level always agrees with the Schood scale. When AI is unavailable the
 // skill stays pending and HR can grade again or enter a score.
 import { scoreToLevel, type JobRole } from '../../../../packages/company-core/src/mod.ts';
+import { storable } from '../util.ts';
 import { consumeAi } from '../core.ts';
 import type { Ctx } from '../types.ts';
 import { answerText, wordCount, type Answers, type ServedTask, type SkillResult } from './engine.ts';
@@ -62,7 +63,7 @@ const clamp = (value: unknown) => {
   const number = Number(value);
   return Number.isFinite(number) ? Math.min(100, Math.max(0, Math.round(number))) : null;
 };
-const lines = (value: unknown, max = 3) => (Array.isArray(value) ? value : []).filter((entry): entry is string => typeof entry === 'string' && entry.trim() !== '').slice(0, max).map((entry) => entry.trim().slice(0, 300));
+const lines = (value: unknown, max = 3) => (Array.isArray(value) ? value : []).filter((entry): entry is string => typeof entry === 'string' && storable(entry).trim() !== '').map(storable).slice(0, max).map((entry) => entry.trim().slice(0, 300));
 
 /** Validates the model's reply; null when it is not usable. */
 export function parseGrade(skill: ProductionSkill, data: unknown, locale: Locale, typedOnly: boolean): { score: number; feedback: Feedback } | null {
@@ -82,7 +83,7 @@ export function parseGrade(skill: ProductionSkill, data: unknown, locale: Locale
     score,
     feedback: {
       criteria, strengths: lines(raw.strengths), improvements: lines(raw.improvements),
-      summary: typeof raw.summary === 'string' ? raw.summary.trim().slice(0, 500) : '', locale,
+      summary: typeof raw.summary === 'string' ? storable(raw.summary.trim().slice(0, 500)) : '', locale,
       ...(skill === 'speaking' ? { typed_only: typedOnly } : {}),
     },
   };

@@ -5,10 +5,10 @@
 import { levelGap, isLevel } from '../../../../packages/company-core/src/mod.ts';
 import { fetchAll } from '../people/shared.ts';
 import { check, type Ctx, type MemberRow, type Route } from '../types.ts';
-import { tashkentDay } from '../util.ts';
+import { inChunks, tashkentDay } from '../util.ts';
 import { ASSIGNMENT_COLUMNS, appliesTo, type AssignmentRow } from './assignments.ts';
 import { memberProgress, type ProgressRow } from './lessons.ts';
-import { canLearn, daysAgo, learner, seatOpen, weekStart } from './shared.ts';
+import { canLearn, daysAgo, learner, seatOpen, seatReason, weekStart } from './shared.ts';
 import { findLesson, findTrack } from './tracks/index.ts';
 
 export const ENGLISH_URL = 'https://english.schood.online';
@@ -81,7 +81,7 @@ export const routes: Route[] = [
         await ctx.db.from('company_attempts').select('id,assessment_id,overall_level,graded_at,certificate_code,status').eq('member_id', member.id).eq('status', 'graded'),
       ).filter((row) => row.certificate_code);
       const titles = attempts.length
-        ? new Map(check<{ id: string; title: string; kind: string }[]>(await ctx.db.from('company_assessments').select('id,title,kind').in('id', attempts.map((row) => row.assessment_id))).map((row) => [row.id, row]))
+        ? new Map((await inChunks([...new Set(attempts.map((row) => row.assessment_id))], async (chunk) => check<{ id: string; title: string; kind: string }[]>(await ctx.db.from('company_assessments').select('id,title,kind').in('id', chunk)))).map((row) => [row.id, row]))
         : new Map();
 
       return {
@@ -91,6 +91,7 @@ export const routes: Route[] = [
           gap: member.target_level && isLevel(member.target_level) ? levelGap(isLevel(member.level) ? member.level : null, member.target_level) : null,
         },
         can_learn: open,
+        seat_reason: seatReason(ctx),
         english_url: seatOpen(ctx, member) ? ENGLISH_URL : null,
         assignments,
         continue: suggested,

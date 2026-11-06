@@ -6,7 +6,7 @@ import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 import { useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { aiMessage, Loading, needsSeat, readLocal, SeatLocked, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized } from './lib.tsx';
+import { aiMessage, Loading, needsSeat, readLocal, SeatLocked, seatReasonOf, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized, type SeatReason } from './lib.tsx';
 
 interface Template { code: string; title: Localized; kind: string; situation: Localized; starter: string; checklist: string[] }
 interface Result {
@@ -15,7 +15,7 @@ interface Result {
 }
 interface Check { id: string; template_code: string | null; title: Localized | null; draft: string; result: Result; score: number | null; created_at: string }
 interface Overview {
-  recommended: string; can_learn: boolean; retention_days: number; max_length: number;
+  recommended: string; can_learn: boolean; seat_reason?: SeatReason | null; retention_days: number; max_length: number;
   tracks: { code: string; title: Localized; templates: Template[] }[];
   checks: { id: string; template_code: string | null; title: Localized | null; score: number | null; created_at: string; excerpt: string }[];
 }
@@ -33,7 +33,7 @@ export function Writing() {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false), [failure, setFailure] = useState(''), [copied, setCopied] = useState(false);
   const [shown, setShown] = useState<Check | null>(null);
-  const [seatGone, setSeatGone] = useState(false);
+  const [seatGone, setSeatGone] = useState<SeatReason | null>(null);
 
   const draftKey = `training.writing.${templateCode || 'free'}`;
   useEffect(() => { setDraft(readLocal(draftKey, '')); }, [draftKey]);
@@ -59,7 +59,7 @@ export function Writing() {
       void reload();
       queueMicrotask(() => document.getElementById('training-result')?.focus());
     } catch (cause) {
-      if (needsSeat(cause)) setSeatGone(true);
+      if (needsSeat(cause)) setSeatGone(seatReasonOf(cause));
       else setFailure(problem(cause));
     } finally {
       setBusy(false);
@@ -94,7 +94,7 @@ export function Writing() {
     </header>
     <p className="notice" role="note">{t('training.writing.retention', { days: data.retention_days })}</p>
 
-    {!data.can_learn || seatGone ? <SeatLocked/> : <section className="training-card" aria-labelledby="training-task">
+    {!data.can_learn || seatGone ? <SeatLocked reason={seatGone ?? data.seat_reason}/> : <section className="training-card" aria-labelledby="training-task">
       <h2 id="training-task">{t('training.writing.task')}</h2>
       <div className="company-toolbar">
         <label>{t('training.learn.track')}
