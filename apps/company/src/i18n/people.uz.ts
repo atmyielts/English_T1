@@ -1,6 +1,9 @@
 import type { PeopleKey } from './people.en.ts';
 
+import { peopleOpsUz } from './people.ops.uz.ts';
+
 export const peopleUz: Record<PeopleKey, string> = {
+  ...peopleOpsUz,
   'people.nav.people': 'Xodimlar',
   'people.nav.departments': 'Bo‘limlar',
   'people.nav.settings': 'Sozlamalar',

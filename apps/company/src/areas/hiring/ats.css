@@ -1,0 +1,106 @@
+/* Applicant tracking: pipeline board, candidate page, role gallery, share pages. Classes
+   start with "hiring-". Nothing here may widen the page at 360 px: the board scrolls inside
+   its own box and long words wrap. */
+.hiring-center{justify-content:center}
+/* A grid column sizes to its content unless told not to, and a wide board would then widen the page. */
+.hiring-stack,.hiring-pipeline,.hiring-subpanel,.hiring-message{grid-template-columns:minmax(0,1fr)}
+/* Visually hidden labels are absolutely placed: a scroll box must be their containing block, or they widen the page. */
+.hiring-board,.hiring-stack .company-table-wrap{position:relative}
+.hiring-tabs{display:flex;flex-wrap:wrap;gap:.4rem;border-bottom:1px solid var(--control);padding-bottom:.6rem}
+.hiring-tabs button{font-size:.85rem;padding:.5rem .9rem;min-height:40px}
+.hiring-segment{display:flex;flex-wrap:wrap;gap:.3rem}
+.hiring-segment button{font-size:.8rem;padding:.4rem .8rem;min-height:36px}
+.hiring-pipeline{display:grid;gap:.75rem;min-width:0}
+.hiring-subpanel{display:grid;gap:.75rem;min-width:0}
+.hiring-subpanel h2,.hiring-subpanel h3{margin:0}
+.hiring-wide{grid-column:1/-1}
+
+/* Kanban. */
+.hiring-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:.75rem;overflow-x:auto;padding-bottom:.5rem;scroll-snap-type:x proximity;max-width:100%}
+.hiring-board:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.hiring-column{background:rgb(239 230 216/.45);border:1px solid var(--control);border-radius:16px;padding:.6rem;display:grid;grid-template-rows:auto 1fr;gap:.5rem;scroll-snap-align:start;min-width:0;min-height:160px}
+.hiring-column.over{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.hiring-column h3{margin:0;font-size:.8rem;display:flex;justify-content:space-between;align-items:center;gap:.4rem}
+.hiring-column-count{background:#fff;border-radius:999px;padding:.05rem .5rem;font-size:.75rem;font-weight:600;color:var(--muted)}
+.hiring-column ul{list-style:none;margin:0;padding:0;display:grid;gap:.5rem;align-content:start}
+.hiring-kard{background:#fff;border:1px solid var(--control);border-radius:12px;padding:.6rem;display:grid;gap:.4rem;min-width:0;cursor:grab}
+.hiring-kard:active{cursor:grabbing}
+.hiring-kard-top{display:flex;gap:.45rem;align-items:flex-start;min-width:0}
+.hiring-kard-top input{width:auto;flex-shrink:0;margin-top:.2rem}
+.hiring-kard-top a{color:inherit;overflow-wrap:anywhere;font-size:.85rem}
+.hiring-kard-meta{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}
+.hiring-stage-picker select{font-size:.78rem;padding:.3rem .4rem;min-height:32px;width:100%}
+.hiring-bulk{display:flex;flex-wrap:wrap;gap:.6rem;align-items:end;background:#eef2ff;border:1px solid #c7d2fe;border-radius:14px;padding:.7rem .9rem}
+.hiring-bulk strong{align-self:center}
+.hiring-bulk label{font-size:.8rem;min-width:140px}
+.hiring-requirement{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:0;font-size:.85rem}
+.hiring-chip.ok{background:#dcfce7;color:#166534}
+.hiring-chip.low{background:#fee2e2;color:#991b1b}
+.hiring-benchmark-overall th,.hiring-benchmark-overall td{background:rgb(239 230 216/.3)}
+.hiring-benchmark th[scope=row]{font-size:.85rem;text-transform:none;letter-spacing:0;color:#111827;background:transparent}
+
+/* Messages. */
+.hiring-message{display:grid;gap:.6rem;margin-top:.5rem;min-width:0}
+.hiring-message-list{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.hiring-message-list>li{border:1px solid var(--control);border-radius:14px;padding:.7rem .9rem;background:#fff;display:grid;gap:.4rem;min-width:0;overflow-wrap:anywhere}
+.hiring-problems{margin:0;padding-left:1.1rem;font-size:.85rem;display:grid;gap:.25rem;overflow-wrap:anywhere}
+
+/* Candidate page. */
+.hiring-steps{list-style:none;margin:.75rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.35rem}
+.hiring-steps button{font-size:.8rem;padding:.4rem .75rem;min-height:36px}
+.hiring-tracking{list-style:none;margin:.75rem 0;padding:0;display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;font-size:.8rem}
+.hiring-timeline{list-style:none;margin:.75rem 0 0;padding:0 0 0 .9rem;border-left:2px solid var(--control);display:grid;gap:.75rem}
+.hiring-timeline li{min-width:0;overflow-wrap:anywhere}
+.hiring-timeline p{margin:0}
+.hiring-timeline-meta{display:flex;flex-wrap:wrap;gap:.2rem .6rem;align-items:center;font-size:.8rem}
+.hiring-timeline-body{white-space:pre-wrap;font-size:.9rem}
+.hiring-timeline li.event .hiring-timeline-body{color:var(--muted);font-size:.8rem}
+.hiring-timeline .hiring-small{padding:.1rem .5rem;min-height:0}
+.hiring-kit-list{margin:.5rem 0 0;padding-left:1.2rem;display:grid;gap:.9rem}
+.hiring-kit-list li{min-width:0;overflow-wrap:anywhere}
+.hiring-kit-list p{margin:.25rem 0 0}
+.hiring-kit-q{font-weight:600}
+
+/* Role gallery. */
+.hiring-gallery{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:.75rem}
+.hiring-gallery-card{background:rgb(255 255 255/.85);border:1px solid var(--control);border-radius:16px;padding:.85rem 1rem;display:grid;gap:.45rem;align-content:start;min-width:0}
+.hiring-gallery-card h3{margin:0;font-size:.95rem}
+.hiring-gallery-card .eyebrow{margin:0;font-size:.68rem}
+.hiring-gallery-card .hiring-chips{margin:0;flex-wrap:wrap}
+.hiring-gallery-card button{justify-self:start}
+
+/* Funnel. */
+.hiring-funnel{list-style:none;margin:0 0 1rem;padding:0;display:grid;gap:.45rem}
+.hiring-funnel li{display:grid;grid-template-columns:minmax(0,9rem) minmax(0,1fr) 5.5rem;gap:.6rem;align-items:center;font-size:.85rem}
+.hiring-funnel-label{overflow-wrap:anywhere}
+.hiring-funnel-track{height:14px;border-radius:999px;background:#eef0f3;overflow:hidden}
+.hiring-funnel-track b{display:block;height:100%;background:var(--navy);border-radius:999px}
+.hiring-funnel-value{text-align:right;font-variant-numeric:tabular-nums}
+
+/* Share pages. */
+.hiring-stage-picks{display:flex;flex-wrap:wrap;gap:.3rem 1rem}
+.hiring-share-list{list-style:none;margin:0;padding:0;display:grid;gap:1rem}
+.hiring-share-card{display:grid;gap:.6rem}
+.hiring-share-card h2{margin:0 0 .25rem;font-size:1.05rem;overflow-wrap:anywhere}
+.hiring-share-head{display:flex;gap:.75rem;align-items:flex-start;min-width:0}
+.hiring-share-head>div{min-width:0;flex:1}
+.hiring-share-rank{flex-shrink:0;width:2rem;height:2rem;border-radius:999px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.9rem}
+
+@media (max-width:520px){
+  .hiring-board{grid-auto-columns:minmax(78vw,1fr)}
+  .hiring-funnel li{grid-template-columns:minmax(0,1fr) 4.5rem;grid-template-areas:"label value" "track track"}
+  .hiring-funnel-label{grid-area:label}
+  .hiring-funnel-value{grid-area:value}
+  .hiring-funnel-track{grid-area:track}
+}
+@media print{
+  .hiring-kit,.hiring-share-card{break-inside:avoid}
+}
+
+/* Interview scorecard and the all-candidates page. */
+.hiring-score{border:0;padding:0;margin:.35rem 0 0;display:flex;flex-wrap:wrap;gap:.2rem .8rem;align-items:center}
+.hiring-score legend{font-size:.78rem;font-weight:600;padding:0;margin-bottom:.15rem}
+.hiring-score label{font-size:.85rem;gap:.25rem;min-height:32px}
+.hiring-stage-tiles{display:flex;flex-wrap:wrap;gap:.4rem}
+.hiring-stage-tiles button{font-size:.8rem;padding:.4rem .8rem;min-height:36px}
+.hiring-stage-tiles strong{margin-left:.25rem}

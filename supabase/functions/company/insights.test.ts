@@ -1,6 +1,12 @@
 import { assert, assertEquals, assertExists, assertStringIncludes } from 'jsr:@std/assert@1';
 import { routes as insights } from './insights.ts';
-import { csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
+import { averageScore, csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
+
+Deno.test('score averages exclude untested members and retain a real zero score', () => {
+  assertEquals(averageScore([null, undefined]), { score: null, level: null });
+  assertEquals(averageScore([null, 80, undefined]).score, 80);
+  assertEquals(averageScore([0, null, 80]).score, 40);
+});
 import { assignmentsInScope } from './insights/overview.ts';
 import { englishSummary, englishVisibleFrom } from './insights/english.ts';
 import { localDate, shortName } from './insights/common.ts';

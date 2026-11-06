@@ -1,15 +1,13 @@
 // Applies the Company English migrations to an isolated, throwaway Postgres (no
 // host port, no production credentials) and runs their integration tests.
-// Each area owns one migration and one integration test with fixed names, picked
-// up here when they exist: hiring 110000, training 120000, insights 130000, people 140000.
-import { existsSync, readFileSync } from 'node:fs';
+// Picks up every company migration in order, and every company integration test.
+import { readdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 
-const areas = [['core', '100000'], ['hiring', '110000'], ['training', '120000'], ['insights', '130000'], ['people', '140000']];
-const migrations = areas.map(([area, time]) => `supabase/migrations/20261031${time}_company_${area}.sql`).filter((file) => existsSync(file));
-// Each test prints "company <area>: ok" when every assertion held.
-const tests = areas.map(([area]) => [`supabase/tests/company-${area}.integration.sql`, `company ${area}: ok`]).filter(([file]) => existsSync(file));
+const migrations = readdirSync('supabase/migrations').filter((file) => /_company_.*\.sql$/.test(file)).sort().map((file) => `supabase/migrations/${file}`);
+// Each test prints "company <name>: ok" when every assertion held.
+const tests = readdirSync('supabase/tests').map((file) => file.match(/^company-(.+)\.integration\.sql$/)).filter(Boolean).sort().map((match) => [`supabase/tests/${match[0]}`, `company ${match[1]}: ok`]);
 
 // The activity kinds: the core table, the training migration's replacement and the shared catalogue name the same list.
 const kindsIn = (file, pattern) => [...pattern.exec(readFileSync(file, 'utf8'))[1].matchAll(/'([a-z_]+)'/g)].map((match) => match[1]).sort().join();

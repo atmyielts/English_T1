@@ -8,10 +8,11 @@ import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
 import { FeedbackBlock } from './MemberPages.tsx';
-import type { Assessment, Decision, Report } from './types.ts';
+import { StageBadge } from './AtsUi.tsx';
+import type { Assessment, Decision, Report, Stage } from './types.ts';
 import { CopyButton, DecisionBadge, FlagList, LevelBadge, MeetsBadge, SkillBars, StatusBadge, clock, shortLevel, skillText, useFormat, useHiringError, useLoad } from './ui.tsx';
 
-interface ReportResponse { attempt: Report; assessment: Assessment; member: { id: string; full_name: string | null; email: string | null; department_id: string | null; job_role: string } | null; can_edit: boolean }
+interface ReportResponse { attempt: Report; assessment: Assessment; member: { id: string; full_name: string | null; email: string | null; department_id: string | null; job_role: string } | null; can_edit: boolean; candidate?: { id: string; stage: Stage } | null }
 
 export function ReportPage({ assessmentId, attemptId, back }: { assessmentId: string; attemptId: string; back: 'hiring' | 'placement' }) {
   const t = useAppT(), problem = useHiringError(), format = useFormat();
@@ -65,13 +66,17 @@ export function ReportPage({ assessmentId, attemptId, back }: { assessmentId: st
           <p className="hiring-card-meta">
             <StatusBadge status={attempt.status}/>
             {hiring && <DecisionBadge decision={attempt.decision}/>}
+            {hiring && data.candidate && <StageBadge stage={data.candidate.stage}/>}
             {hiring && attempt.email && <span>{attempt.email}</span>}
             {hiring && attempt.phone && <span>{attempt.phone}</span>}
             {member && <span>{department ?? t('hiring.placement.noDepartment')} · {t(`job.${member.job_role}` as AppKey)}</span>}
           </p>
           <p className="hiring-muted">{t('hiring.report.taken', { started: format.dateTime(attempt.started_at), submitted: format.dateTime(attempt.submitted_at) })}</p>
         </div>
-        <button type="button" className="quiet no-print" onClick={() => print()}>{t('common.print')}</button>
+        <div className="company-actions no-print">
+          {hiring && data.candidate && canEdit && <Link className="button-link quiet" to={`/w/${org.id}/candidates/${data.candidate.id}`}>{t('hiring.ats.openCandidate')}</Link>}
+          <button type="button" className="quiet" onClick={() => print()}>{t('common.print')}</button>
+        </div>
       </div>
       <div className="hiring-report-summary">
         <div className="hiring-overall">

@@ -45,6 +45,11 @@ export function Profile({ memberId }: { memberId: string }) {
       <Kpi label={t('insights.profile.target')} value={member.target_level ? <LevelBadge level={member.target_level}/> : '—'}
         note={member.target_level ? (gap === 0 ? t('insights.profile.targetMet') : gap !== null ? t('insights.profile.gap', { count: gap }) : t('insights.profile.targetNoLevel')) + (member.target_date ? ` · ${t('insights.profile.by', { date: f.date(member.target_date) })}` : '') : t('insights.profile.noTarget')}
         tone={gap === 0 ? 'good' : undefined}/>
+      {data.requirement && <Kpi label={t('insights.profile.required')} value={<LevelBadge level={data.requirement.level}/>} tone={data.requirement.meets ? 'good' : undefined}
+        note={data.requirement.meets ? t('insights.gap.meets') : [
+          ...data.requirement.gaps.filter((row) => row.skill !== 'overall').map((row) => `${t(`skill.${row.skill}` as AppKey)}: ${row.have ? LEVEL_SHORT[row.have] : '—'} → ${LEVEL_SHORT[row.want]}`),
+          data.requirement.due_date ? t('insights.profile.requiredBy', { date: f.date(data.requirement.due_date) }) : '',
+        ].filter(Boolean).join(' · ') || t('insights.profile.requiredNotYet')}/>}
       {data.learning && <>
         <Kpi label={t('insights.profile.minutes', { weeks: data.learning.weeks_count })} value={f.minutes(data.learning.minutes)} note={t('insights.profile.activeDays', { count: data.learning.active_days })}/>
         <Kpi label={t('insights.profile.lessons')} value={f.num(data.learning.lessons_completed)} note={data.learning.avg_lesson_score !== null ? t('insights.profile.avgScore', { score: data.learning.avg_lesson_score }) : t('insights.profile.inProgress', { count: data.learning.lessons_started })}/>

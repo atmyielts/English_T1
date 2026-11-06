@@ -9,18 +9,69 @@ import { useWorkspace } from '../../session.tsx';
 import { aiMessage, Loading, needsSeat, readLocal, SeatLocked, seatReasonOf, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized, type SeatReason } from './lib.tsx';
 
 interface Template { code: string; title: Localized; kind: string; situation: Localized; starter: string; checklist: string[] }
+type Mode = 'check' | 'customer' | 'shorten' | 'reply';
+type Tone = 'formal' | 'friendly' | 'firm';
 interface Result {
   corrected: string; score: number; summary: string; tone: string; tone_notes: string[];
   changes: { original: string; corrected: string; why: string }[]; checklist: { item: string; done: boolean }[];
+  reply_to?: string | null;
 }
-interface Check { id: string; template_code: string | null; title: Localized | null; draft: string; result: Result; score: number | null; created_at: string }
+interface Check { id: string; template_code: string | null; title: Localized | null; draft: string; result: Result; score: number | null; created_at: string; mode?: Mode; tone?: Tone | null }
+interface Saved { id: string; title: string; body: string; tone: Tone | null; updated_at: string }
 interface Overview {
   recommended: string; can_learn: boolean; seat_reason?: SeatReason | null; retention_days: number; max_length: number;
   tracks: { code: string; title: Localized; templates: Template[] }[];
-  checks: { id: string; template_code: string | null; title: Localized | null; score: number | null; created_at: string; excerpt: string }[];
+  checks: { id: string; template_code: string | null; title: Localized | null; score: number | null; created_at: string; excerpt: string; mode?: Mode }[];
 }
 
 const FREE = '';
+const MODES: readonly Mode[] = ['check', 'customer', 'shorten', 'reply'];
+const TONES: readonly Tone[] = ['formal', 'friendly', 'firm'];
+
+/** The learner's own saved emails and messages: use one, save one, delete one. Nobody else sees them. */
+function SavedTemplates({ org, current, canSave, onUse }: { org: string; current: string; canSave: boolean; onUse: (body: string) => void }) {
+  const t = useAppT(), problem = useErrorText();
+  const { data, error, reload } = useLoad<{ templates: Saved[]; max: number }>(`orgs/${org}/writing/saved`);
+  const [title, setTitle] = useState('');
+  const [busy, setBusy] = useState(false), [failure, setFailure] = useState(''), [notice, setNotice] = useState('');
+  async function run(action: () => Promise<unknown>, done: string) {
+    setBusy(true); setFailure(''); setNotice('');
+    try {
+      await action();
+      setNotice(done);
+      await reload();
+    } catch (cause) {
+      setFailure(problem(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <section className="training-card" aria-labelledby="training-saved">
+    <h2 id="training-saved">{t('training.writing.saved')}</h2>
+    <p className="hint">{t('training.writing.savedLead')}</p>
+    {failure && <p className="error" role="alert">{failure}</p>}
+    {notice && <p className="notice" role="status">{notice}</p>}
+    {canSave && <form className="training-b-add" onSubmit={(event) => {
+      event.preventDefault();
+      void run(() => api(`orgs/${org}/writing/saved`, { method: 'POST', body: { title, body: current } }), t('training.writing.savedDone')).then(() => setTitle(''));
+    }}>
+      <label>{t('training.writing.saveName')}<input maxLength={120} value={title} onChange={(event) => setTitle(event.target.value)}/></label>
+      <button className="quiet" disabled={busy || !title.trim() || !current.trim()}>{t('training.writing.saveCurrent')}</button>
+    </form>}
+    {!data ? <Loading error={error}/> : data.templates.length === 0 ? <p>{t('training.writing.savedNone')}</p> : <ul className="training-list">
+      {data.templates.map((item) => <li key={item.id}>
+        <div>
+          <strong>{item.title}</strong>
+          <span className="training-excerpt" lang="en">{item.body.slice(0, 140)}</span>
+        </div>
+        <span className="company-actions">
+          {canSave && <button type="button" className="quiet" onClick={() => onUse(item.body)}>{t('training.writing.savedUse')}<span className="visually-hidden"> {item.title}</span></button>}
+          <button type="button" className="quiet" disabled={busy} onClick={() => { if (confirm(t('training.writing.deleteConfirm'))) void run(() => api(`orgs/${org}/writing/saved/${item.id}`, { method: 'DELETE' }), t('training.writing.savedRemoved')); }}>{t('common.delete')}<span className="visually-hidden"> {item.title}</span></button>
+        </span>
+      </li>)}
+    </ul>}
+  </section>;
+}
 
 export function Writing() {
   const t = useAppT(), pick = useLocalized(), problem = useErrorText(), when = useDate();
@@ -34,6 +85,10 @@ export function Writing() {
   const [busy, setBusy] = useState(false), [failure, setFailure] = useState(''), [copied, setCopied] = useState(false);
   const [shown, setShown] = useState<Check | null>(null);
   const [seatGone, setSeatGone] = useState<SeatReason | null>(null);
+  const [mode, setMode] = useState<Mode>('check');
+  const [tone, setTone] = useState<'' | Tone>('');
+  const [replyTo, setReplyTo] = useState(() => readLocal('training.writing.replyTo', ''));
+  const saveReplyTo = (value: string) => { setReplyTo(value); writeLocal('training.writing.replyTo', value || null); };
 
   const draftKey = `training.writing.${templateCode || 'free'}`;
   useEffect(() => { setDraft(readLocal(draftKey, '')); }, [draftKey]);
@@ -49,10 +104,10 @@ export function Writing() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!member) { setFailure(t('training.notMember')); return; }
-    if (draft.trim().length < 20) { setFailure(t('training.writing.tooShort')); return; }
+    if (mode === 'reply' ? replyTo.trim().length < 20 : draft.trim().length < 20) { setFailure(t(mode === 'reply' ? 'training.writing.replyTooShort' : 'training.writing.tooShort')); return; }
     setBusy(true); setFailure(''); setCopied(false);
     try {
-      const result = await api<{ status: AiStatus; check?: Check }>(`orgs/${org.id}/writing/check`, { method: 'POST', body: { text: draft, template: templateCode || null, locale }, timeoutMs: 60000 });
+      const result = await api<{ status: AiStatus; check?: Check }>(`orgs/${org.id}/writing/check`, { method: 'POST', body: { text: draft, template: mode === 'check' ? templateCode || null : null, locale, mode, tone: tone || null, reply_to: mode === 'reply' ? replyTo : undefined }, timeoutMs: 60000 });
       const message = aiMessage(result.status);
       if (message || !result.check) { setFailure(t(message ?? 'training.ai.unavailable')); return; }
       setShown(result.check);
@@ -96,7 +151,18 @@ export function Writing() {
 
     {!data.can_learn || seatGone ? <SeatLocked reason={seatGone ?? data.seat_reason}/> : <section className="training-card" aria-labelledby="training-task">
       <h2 id="training-task">{t('training.writing.task')}</h2>
-      <div className="company-toolbar">
+      <fieldset className="training-b-inline">
+        <legend>{t('training.writing.modeTitle')}</legend>
+        {MODES.map((value) => <label key={value} className="check"><input type="radio" name="training-writing-mode" checked={mode === value} onChange={() => { setMode(value); setShown(null); setFailure(''); }}/>{t(`training.writing.mode.${value}` as AppKey)}</label>)}
+      </fieldset>
+      <p className="hint">{t(`training.writing.modeHint.${mode}` as AppKey)}</p>
+      <label>{t('training.writing.toneTitle')}
+        <select value={tone} onChange={(event) => setTone(event.target.value as '' | Tone)}>
+          <option value="">{t('training.writing.toneAny')}</option>
+          {TONES.map((value) => <option key={value} value={value}>{t(`training.writing.toneOption.${value}` as AppKey)}</option>)}
+        </select>
+      </label>
+      {mode === 'check' && <><div className="company-toolbar">
         <label>{t('training.learn.track')}
           <select value={chosenTrack} onChange={(event) => setTrack(event.target.value)}>
             {data.tracks.map((entry) => <option key={entry.code} value={entry.code}>{pick(entry.title)}{entry.code === data.recommended ? ` — ${t('training.learn.yourRole')}` : ''}</option>)}
@@ -117,15 +183,19 @@ export function Writing() {
         <ul lang="en">{selected.checklist.map((item) => <li key={item}>{item}</li>)}</ul>
         <button type="button" className="quiet" onClick={() => { if (!draft.trim() || confirm(t('training.writing.replaceConfirm'))) save(selected.starter); }}>{t('training.writing.useStarter')}</button>
       </div> : <p className="hint">{t('training.writing.freeHint')}</p>}
+      </>}
 
       <form onSubmit={submit}>
-        <label>{t('training.writing.text')}
+        {mode === 'reply' && <label>{t('training.writing.replyTo')}
+          <textarea rows={7} value={replyTo} maxLength={data.max_length} lang="en" spellCheck={false} onChange={(event) => saveReplyTo(event.target.value)}/>
+        </label>}
+        <label>{mode === 'reply' ? t('training.writing.replyNotes') : t('training.writing.text')}
           <textarea rows={10} value={draft} maxLength={data.max_length} lang="en" spellCheck={false} onChange={(event) => save(event.target.value)}/>
         </label>
         <p className="hint" aria-live="polite">{t('training.writing.count', { words, chars: draft.length, max: data.max_length })}</p>
         {failure && <p className="error" role="alert">{failure}</p>}
         <div className="company-actions">
-          <button disabled={busy || !draft.trim()}>{busy ? t('training.writing.checking') : t('training.writing.check')}</button>
+          <button disabled={busy || !draft.trim()}>{busy ? t('training.writing.checking') : t(`training.writing.submit.${mode}` as AppKey)}</button>
           {draft && <button type="button" className="quiet" disabled={busy} onClick={() => { if (confirm(t('training.writing.clearConfirm'))) save(''); }}>{t('training.writing.clear')}</button>}
         </div>
       </form>
@@ -135,9 +205,10 @@ export function Writing() {
       <h2 id="training-result-title">{t('training.writing.result')}{shown.title ? ` · ${pick(shown.title)}` : ''}</h2>
       <div className="training-feedback-score"><strong>{shown.result.score}</strong><span>/100</span><span className="hint">{t('training.writing.scoreHint')}</span></div>
       {shown.result.summary && <p>{shown.result.summary}</p>}
-      <h3>{t('training.writing.corrected')}</h3>
+      <h3>{t(`training.writing.resultTitle.${shown.mode ?? 'check'}` as AppKey)}{shown.tone ? ` · ${t(`training.writing.toneOption.${shown.tone}` as AppKey)}` : ''}</h3>
       <pre className="training-corrected" lang="en">{shown.result.corrected}</pre>
       <div className="company-actions">
+        <button type="button" className="quiet" onClick={() => { if (!draft.trim() || confirm(t('training.writing.replaceConfirm'))) { setMode('check'); save(shown.result.corrected); } }}>{t('training.writing.useAsDraft')}</button>
         <button type="button" className="quiet" onClick={() => void navigator.clipboard?.writeText(shown.result.corrected).then(() => setCopied(true)).catch(() => undefined)}>{t('common.copy')}</button>
         {copied && <span role="status">{t('common.copied')}</span>}
       </div>
@@ -160,6 +231,10 @@ export function Writing() {
         <h3>{t('training.writing.checklist')}</h3>
         <ul className="training-checklist">{shown.result.checklist.map((item) => <li key={item.item} className={item.done ? 'is-done' : ''}><span aria-hidden="true">{item.done ? '✓' : '○'}</span> <span lang="en">{item.item}</span><span className="visually-hidden"> — {item.done ? t('training.done') : t('training.notYet')}</span></li>)}</ul>
       </>}
+      {shown.result.reply_to && <details>
+        <summary>{t('training.writing.replyTo')}</summary>
+        <pre className="training-corrected" lang="en">{shown.result.reply_to}</pre>
+      </details>}
       <details>
         <summary>{t('training.writing.original')}</summary>
         <pre className="training-corrected" lang="en">{shown.draft}</pre>
@@ -167,12 +242,14 @@ export function Writing() {
       <p className="hint">{t('training.ai.label')}</p>
     </section>}
 
+    {member && <SavedTemplates org={org.id} current={shown?.result.corrected ?? draft} canSave={data.can_learn && !seatGone} onUse={(body) => { if (!draft.trim() || confirm(t('training.writing.replaceConfirm'))) { setMode('check'); save(body); document.getElementById('training-task')?.scrollIntoView({ block: 'start' }); } }}/>}
+
     <section className="training-card" aria-labelledby="training-history">
       <h2 id="training-history">{t('training.writing.history')}</h2>
       {data.checks.length === 0 ? <p>{t('training.writing.noHistory')}</p> : <ul className="training-list">
         {data.checks.map((item) => <li key={item.id}>
           <div>
-            <strong>{item.title ? pick(item.title) : t('training.writing.free')}{item.score !== null && ` · ${item.score}/100`}</strong>
+            <strong>{item.title ? pick(item.title) : t(`training.writing.mode.${item.mode ?? 'check'}` as AppKey)}{item.score !== null && ` · ${item.score}/100`}</strong>
             <span>{when(item.created_at)}</span>
             <span className="training-excerpt" lang="en">{item.excerpt}</span>
           </div>

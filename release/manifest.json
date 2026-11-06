@@ -1,84 +1,87 @@
 {
   "schemaVersion": 1,
-  "releaseId": "company-english",
+  "releaseId": "company-english-v2",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "company",
-    "english-hub",
-    "platform"
+    "company"
   ],
   "migrations": [
-    "20261031100000_company_core.sql",
-    "20261031120000_company_training.sql",
-    "20261031130000_company_insights.sql",
-    "20261031140000_company_people.sql"
+    "20261106110000_company_hiring2.sql",
+    "20261106120000_company_training2.sql",
+    "20261106130000_company_insights2.sql",
+    "20261106140000_company_ops.sql",
+    "20261106150000_company_coach.sql",
+    "20261106160000_company_connect.sql",
+    "20261106170000_company_site.sql",
+    "20261107090000_company_billing_atomic.sql",
+    "20261107090100_company_connect_delivery_limits.sql"
   ],
   "edgeFunctions": [
-    "company",
-    "hub",
-    "trial-claim"
+    "company"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "admin-english-ops",
-    "grammar-remediation",
-    "immersion-missions",
-    "listening-content",
-    "reading-articles",
-    "speaking-studio",
-    "vocabulary-notebook",
-    "writing-workbench"
-  ],
   "requiredSecrets": [
     "COMPANY_ALLOWED_ORIGINS",
     "COMPANY_APP_URL",
+    "COMPANY_EMAIL_ENABLED",
     "COMPANY_SELF_SERVE",
-    "ENGLISH_APP_URL"
+    "COMPANY_TELEGRAM_ENABLED",
+    "COMPANY_WEBHOOKS_ENABLED",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "TELEGRAM_BOT_NAME"
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261031100000_company_core.sql",
-    "migration:20261031120000_company_training.sql",
-    "migration:20261031130000_company_insights.sql",
-    "migration:20261031140000_company_people.sql",
-    "function:trial-claim",
-    "function:hub",
-    "function:admin-english-ops",
-    "function:grammar-remediation",
-    "function:immersion-missions",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:speaking-studio",
-    "function:vocabulary-notebook",
-    "function:writing-workbench",
+    "migration:20261106110000_company_hiring2.sql",
+    "migration:20261106120000_company_training2.sql",
+    "migration:20261106130000_company_insights2.sql",
+    "migration:20261106140000_company_ops.sql",
+    "migration:20261106150000_company_coach.sql",
+    "migration:20261106160000_company_connect.sql",
+    "migration:20261106170000_company_site.sql",
+    "migration:20261107090000_company_billing_atomic.sql",
+    "migration:20261107090100_company_connect_delivery_limits.sql",
     "secret:COMPANY_ALLOWED_ORIGINS",
     "secret:COMPANY_APP_URL",
+    "secret:COMPANY_EMAIL_ENABLED",
     "secret:COMPANY_SELF_SERVE",
-    "secret:ENGLISH_APP_URL",
+    "secret:COMPANY_TELEGRAM_ENABLED",
+    "secret:COMPANY_WEBHOOKS_ENABLED",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:TELEGRAM_BOT_NAME",
     "function:company"
   ],
   "manualFollowUps": [
-    "Pages: the empty project schood-company already exists, so the merge deploy ships apps/company, apps/english-hub (recognises the company-seat product) and apps/platform (Account page shows a company seat). After merging, run the 'Configure Schood Company English Domain' workflow to bind company.schood.online. Until the function is deployed, signed-in pages show a connection error; the landing page renders without it.",
-    "Trials: straight after the migrations, supabase functions deploy trial-claim --project-ref bbjawctnqrufvnesdsel so it refuses hidden products. Trials are off by default, so the seconds in between expose nothing unless platform trials are switched on.",
-    "Database: supabase db push --linked --include-all from an isolated copy of the installed migrations plus only the four company migrations (20261031100000, 20261031120000, 20261031130000, 20261031140000), keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. Additive: new company_* tables (RLS on, service role only), a hidden product 'English All Skills (company seat)' with no plans, company_* functions, the erasure registry and hook gain the company tables, and two nightly pg_cron jobs if pg_cron is installed (training draft purge, English access reconcile).",
-    "English functions, before any seat exists (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy hub; supabase functions deploy admin-english-ops; supabase functions deploy grammar-remediation; supabase functions deploy immersion-missions; supabase functions deploy listening-content; supabase functions deploy reading-articles; supabase functions deploy speaking-studio; supabase functions deploy vocabulary-notebook; supabase functions deploy writing-workbench. They now treat the company-seat product as all skills. They also pick up one additive duel change from Schood AI (english-duel-service.ts), which is unchanged unless a duel brings its own questions.",
-    "Secrets (--project-ref bbjawctnqrufvnesdsel): supabase secrets set COMPANY_ALLOWED_ORIGINS=https://company.schood.online; supabase secrets set COMPANY_SELF_SERVE=true; supabase secrets set COMPANY_APP_URL=https://company.schood.online. Optional, with defaults: COMPANY_PILOT_TESTS (10), COMPANY_AI_DAILY_LIMIT (300 AI calls per workspace per day). ENGLISH_APP_URL is an existing optional hub setting with a default and needs no change; to override it: supabase secrets set ENGLISH_APP_URL=https://english.schood.online.",
-    "Edge: supabase functions deploy company --project-ref bbjawctnqrufvnesdsel (verify_jwt=false in config.toml; the function checks sessions itself). AI goes through the existing English gateway, so calls are logged in english_ai_calls and each company-* feature can be switched off in the English control centre.",
-    "Commercial: pilots are self-serve (10 tests, no seats, no lessons or AI practice). Seats, test limits and contract dates are set by Schood staff at /staff. A seat is a separate hidden entitlement row with source 'company' and never touches a learner's purchase."
+    "Pages ships apps/company through the protected PR workflow. The v2 rollout is incomplete until the additive migrations and company function below are deployed.",
+    "Database: dry-run supabase db push --linked --include-all from an isolated release directory containing the installed migrations plus only the nine v2 company migrations. Confirm the production project and expected migration list. Keep all nine pending #220 payment migrations excluded. Then apply and verify with supabase migration list --linked.",
+    "Edge: supabase functions deploy company --project-ref <confirmed-production-ref> from the merged main revision after the additive schema is installed.",
+    "Outbound messages remain off. Do not configure COMPANY_TELEGRAM_ENABLED, COMPANY_EMAIL_ENABLED or COMPANY_WEBHOOKS_ENABLED to true without the owner explicitly choosing to enable the channel. Workspace/person opt-ins, quiet hours and caps also apply.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_ALLOWED_ORIGINS=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_APP_URL=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_EMAIL_ENABLED=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_SELF_SERVE=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_TELEGRAM_ENABLED=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_WEBHOOKS_ENABLED=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set GMAIL_SMTP_APP_PASSWORD=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set GMAIL_SMTP_EMAIL=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "Review the optional existing configuration, without printing its value: supabase secrets set TELEGRAM_BOT_NAME=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
+    "The connect cron worker requires company_connect_secret in internal_runtime_secrets and the existing scheduler/pg_net path. Verify the job installation and limits in the linked project; do not send a real message for a smoke test.",
+    "Privacy and terms text requires owner legal review. Invoices require staff-entered legal and bank details; no prices or legal identities are supplied by code."
   ],
   "verification": [
-    "supabase migration list --linked shows the four 20261031 company migrations applied and the 9 #220 payment migrations still pending.",
-    "Anon REST select on company_orgs and company_members is refused (no anon or authenticated grants); public plans list has no plan for product c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07.",
-    "POST /functions/v1/trial-claim?product_id=c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07 with a session never creates an entitlement.",
-    "GET /functions/v1/company/me without a session returns 401; GET /functions/v1/company/public/v/UNKNOWN returns 404; POST /functions/v1/company/public/leads with an empty body returns 400; a browser preflight from https://company.schood.online is allowed and one from another origin is not.",
-    "GET /functions/v1/hub/today without a session still returns 401, and english.schood.online loads.",
-    "https://company.schood.online renders the landing page in en, ru and uz; /t/unknowntoken shows the link-not-active message; a deep link reloads without a 404.",
-    "Owner, signed in with a real account: create a pilot at /start, make a hiring test, take it from a private window, see the graded result; /staff lists the workspace for a Schood admin; give a seat to a test employee and confirm Schood English unlocks, then remove it and confirm it locks."
+    "Local: npm run verify:company. The API test uses throwaway Postgres/PostgREST and synthetic delivery/AI adapters, never production credentials or real recipients.",
+    "Local browser: start npm --workspace apps/company run preview:local -- --host 127.0.0.1, then use the Playwright CLI with scripts/company-browser-smoke.js. Preview data is synthetic.",
+    "After release: confirm company.schood.online public pages, deep links, sitemap.xml and manifest.webmanifest load in EN/RU/UZ. Confirm unsigned me is401 and unknown candidate/report links are404.",
+    "Confirm all nine v2 migrations are applied, all nine #220 payment migrations remain excluded, and the function revision matches merged main.",
+    "Owner signed-in acceptance remains required: tenant/manager scope, pilot testing-only behavior, learning seats, consent, candidate reports, lesson authoring/version reload, invoice payment/activation and private data erasure.",
+    "Confirm every outbound switch remains false/unset, no send occurred during rollout, and legal/company-detail decisions remain visible to the owner."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-company, schood-english and schood-platform to the previous deployment, or remove the company.schood.online custom domain.",
-    "migration": "Leave the additive tables in place. To stop access: set every company_orgs.status to 'suspended' and run select public.company_sync_org_access(id) from public.company_orgs, which switches off every seat row and touches no purchase.",
-    "edge": "supabase functions delete company, or redeploy the previous main commit of the English functions and trial-claim (a696a9fb); no other function depends on company."
+    "pages": "Roll schood-company back to its previous Cloudflare Pages deployment if production health regresses.",
+    "edge": "Redeploy company from the previously deployed main revision (baseline 2db02221) using the confirmed production project ref.",
+    "migration": "Leave additive schema in place. If needed, suspend only the affected workspace and reconcile its company seat access; never alter personal purchases."
   }
 }

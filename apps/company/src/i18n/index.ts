@@ -25,13 +25,19 @@ import { insightsUz } from './insights.uz.ts';
 import { staffEn } from './staff.en.ts';
 import { staffRu } from './staff.ru.ts';
 import { staffUz } from './staff.uz.ts';
+import { coachEn } from './coach.en.ts';
+import { coachRu } from './coach.ru.ts';
+import { coachUz } from './coach.uz.ts';
+import { connectEn } from './connect.en.ts';
+import { connectRu } from './connect.ru.ts';
+import { connectUz } from './connect.uz.ts';
 
-export const en = { ...coreEn, ...siteEn, ...peopleEn, ...hiringEn, ...trainingEn, ...insightsEn, ...staffEn };
+export const en = { ...coreEn, ...siteEn, ...peopleEn, ...hiringEn, ...trainingEn, ...insightsEn, ...staffEn, ...coachEn, ...connectEn };
 export type AppKey = keyof typeof en;
 export const catalogs: Catalogs<AppKey> = {
   en,
-  ru: { ...coreRu, ...siteRu, ...peopleRu, ...hiringRu, ...trainingRu, ...insightsRu, ...staffRu },
-  uz: { ...coreUz, ...siteUz, ...peopleUz, ...hiringUz, ...trainingUz, ...insightsUz, ...staffUz },
+  ru: { ...coreRu, ...siteRu, ...peopleRu, ...hiringRu, ...trainingRu, ...insightsRu, ...staffRu, ...coachRu, ...connectRu },
+  uz: { ...coreUz, ...siteUz, ...peopleUz, ...hiringUz, ...trainingUz, ...insightsUz, ...staffUz, ...coachUz, ...connectUz },
 };
 export type AppTranslate = (key: AppKey, params?: Params) => string;
 
@@ -40,7 +46,7 @@ export function useAppT(): AppTranslate {
   return useCallback<AppTranslate>((key, params) => format(catalogs as Catalogs<string>, locale, key, params), [locale]);
 }
 
-const ERROR_PREFIXES = ['error.', 'people.error.', 'staff.error.', 'site.error.', 'hiring.error.', 'training.error.', 'insights.error.'];
+const ERROR_PREFIXES = ['error.', 'people.error.', 'staff.error.', 'site.error.', 'hiring.error.', 'training.error.', 'insights.error.', 'coach.error.', 'connect.error.'];
 
 /** Turns an API error into a sentence: `error.<code>` or `<area>.error.<code>` when known, otherwise the server text. */
 export function useErrorText() {

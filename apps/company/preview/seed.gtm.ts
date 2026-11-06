@@ -101,4 +101,42 @@ export function seed(db: FakeDb, world: World) {
     ['member.seat_on', null, { access: 'granted' }, -9, hr],
   ];
   for (const [action, target, details, days, actor] of history) audit({ action, target, details, org_id: orgId, actor, created_at: at(days) });
+
+  // Revenue console: Schood's details (placeholder text, clearly fake), contracts in every state, invoices, payments.
+  const seller = { legal_name: 'PREVIEW Schood LLC', tax_id: '000000000', vat_code: null, bank_name: 'Preview Bank', mfo: '00000', account: '00000000000000000000', address: 'Preview address, Tashkent', phone: null, email: 'billing@preview.local', director: 'Preview Director' };
+  db.rows('company_billing_settings').push({ id: true, ...seller, updated_at: at(-30) });
+  db.rows('company_org_billing').push({ org_id: orgId, legal_name: 'Silk Road Hotels LLC', vat_code: null, bank_name: 'Preview Bank', mfo: '00001', account: '00000000000000000001', address: 'Tashkent, preview street 1', director: 'Dilnoza Karimova', updated_at: at(-30) });
+  const buyer = { legal_name: 'Silk Road Hotels LLC', tax_id: '305000000', vat_code: null, bank_name: 'Preview Bank', mfo: '00001', account: '00000000000000000001', address: 'Tashkent, preview street 1', director: 'Dilnoza Karimova', email: 'hr@silkroad.example', phone: '+998 71 000 00 00' };
+  const contract = (row: Record<string, unknown>) => {
+    const id = crypto.randomUUID();
+    db.rows('company_contracts').push({ id, currency: 'UZS', tests: null, tests_fee: 0, start_date: null, end_date: null, renewal_date: null, signed_at: null, notes: null, renewed_from: null, created_by: personas.staff.id, created_at: at(-60), updated_at: at(-60), ...row });
+    return id;
+  };
+  const silk = contract({ org_id: orgId, title: 'Silk Road Hotels, first year', status: 'signed', seats: 25, tests: 200, price_per_seat: 900000, tests_fee: 2000000, term_months: 12, start_date: day(-60), end_date: day(305), renewal_date: day(10), signed_at: at(-60), notes: 'Preview note for staff only.' });
+  contract({ org_id: NAVOI, title: 'Navoi Logistics, drivers and dispatchers', status: 'negotiating', seats: 40, tests: 100, price_per_seat: 700000, tests_fee: 1000000, term_months: 6, created_at: at(-3) });
+  contract({ org_id: NAVOI, title: 'Navoi Logistics, management only', status: 'quote', seats: 8, tests: 20, price_per_seat: 800000, term_months: 6, created_at: at(-1) });
+  const invoice = (row: Record<string, unknown>) => {
+    const id = crypto.randomUUID();
+    db.rows('company_invoices').push({ id, org_id: orgId, contract_id: silk, act_number: null, act_date: null, currency: 'UZS', vat_percent: 0, vat_amount: 0, paid_amount: 0, paid_on: null, seller, buyer, notes: null, activated_at: null, created_by: personas.staff.id, created_at: row.issue_date, updated_at: row.issue_date, ...row });
+    return id;
+  };
+  const line = (description: string, quantity: number, unit_price: number) => ({ description, quantity, unit_price });
+  const paid = invoice({ number: 'S-2026-00001', issue_date: day(-60), due_date: day(-45), status: 'paid', lines: [line('English training seats, first year', 25, 900000)], subtotal: 22500000, total: 22500000, paid_amount: 22500000, paid_on: day(-50), act_number: 'A-2026-00001', act_date: day(-50), activated_at: at(-50) });
+  db.rows('company_invoice_payments').push({ id: crypto.randomUUID(), invoice_id: paid, org_id: orgId, amount: 22500000, paid_on: day(-50), reference: 'Preview payment 1', client_key: 'preview-1', created_by: personas.staff.id, created_at: at(-50) });
+  invoice({ number: 'S-2026-00002', issue_date: day(-20), due_date: day(-5), status: 'partial', lines: [line('English tests', 1, 2000000)], subtotal: 2000000, total: 2000000, paid_amount: 500000 });
+  invoice({ number: 'S-2026-00003', issue_date: day(-1), due_date: day(14), status: 'issued', lines: [line('Extra learning seats', 5, 900000)], subtotal: 4500000, total: 4500000 });
+  db.rows('company_doc_counters').push({ kind: 'invoice', year: Number(day(0).slice(0, 4)), last: 3 }, { kind: 'act', year: Number(day(0).slice(0, 4)), last: 1 });
+
+  // Requests waiting for HR, and an HR admin who was here recently.
+  const person = (name: string) => db.rows('company_members').find((row) => row.full_name === name);
+  const alisher = person('Alisher Qodirov'), gulnora = person('Gulnora Saidova');
+  if (alisher) db.rows('company_member_requests').push({ id: crypto.randomUUID(), org_id: orgId, member_id: alisher.id, user_id: alisher.user_id, kind: 'seat', job_role: null, note: 'Foreign guests at the restaurant every evening.', status: 'pending', decided_at: null, created_at: at(-2) });
+  if (gulnora) db.rows('company_member_requests').push({ id: crypto.randomUUID(), org_id: orgId, member_id: gulnora.id, user_id: gulnora.user_id, kind: 'job_role', job_role: 'management', note: null, status: 'pending', decided_at: null, created_at: at(-1) });
+  const hrRow = db.rows('company_members').find((row) => row.user_id === hr);
+  if (hrRow) hrRow.last_seen_at = at(-1);
+  db.rows('company_saved_filters').push({ id: crypto.randomUUID(), org_id: orgId, user_id: owner, name: 'No seat yet', filters: { seat: 'no', status: 'active' }, created_at: at(-3) });
+  db.rows('company_saved_filters').push({ id: crypto.randomUUID(), org_id: orgId, user_id: hr, name: 'No seat yet', filters: { seat: 'no', status: 'active' }, created_at: at(-3) });
+  // A second department for the preview manager.
+  const managerRow = db.rows('company_members').find((row) => row.user_id === personas.manager.id);
+  if (managerRow) db.rows('company_manager_departments').push({ org_id: orgId, member_id: managerRow.id, department_id: departments.sales, created_at: at(-3) });
 }

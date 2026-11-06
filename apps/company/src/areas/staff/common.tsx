@@ -7,7 +7,8 @@ import { useDates } from '../people/ui.tsx';
 
 export interface StaffOrg extends Org { people: number; invited: number; seats_used: number; ownerless: boolean; owner_invited?: boolean }
 export interface AuditRow { id: string | number; org_id?: string | null; org_name?: string | null; actor: string | null; actor_name: string | null; action: string; target?: string | null; details: Record<string, unknown>; created_at: string }
-export interface Lead {
+export interface LeadScore { score: number; reasons: string[] }
+export interface Lead extends Partial<LeadScore> {
   id: string; name: string; company: string; job_title: string | null; phone: string | null; email: string | null; size_band: string | null; industry: string | null;
   interests: string[] | null; need: string | null; locale: string | null; status: LeadStatus; notes: string | null; follow_up_at: string | null;
   org_id: string | null; source: string | null; created_at: string; updated_at: string; org?: { id: string; name: string; status: string } | null;
@@ -21,12 +22,15 @@ export interface StaffOrgDetail {
 export function StaffFrame({ title, lead, actions, children }: { title: string; lead?: string; actions?: ReactNode; children: ReactNode }) {
   const t = useAppT();
   const { path, query } = useLocation();
-  const tab = path.startsWith('/staff/leads') ? 'leads' : query.get('tab') === 'audit' ? 'audit' : 'orgs';
+  const tab = path.startsWith('/staff/leads') ? 'leads' : path.startsWith('/staff/revenue') || path.startsWith('/staff/invoices') ? 'revenue' : path.startsWith('/staff/health') ? 'health' : path.startsWith('/staff/billing') ? 'billing' : query.get('tab') === 'audit' ? 'audit' : 'orgs';
   return <div className="staff">
     <nav className="staff-tabs" aria-label={t('staff.nav.label')}>
       <Link to="/staff" aria-current={tab === 'orgs' ? 'page' : undefined}>{t('staff.nav.orgs')}</Link>
+      <Link to="/staff/revenue" aria-current={tab === 'revenue' ? 'page' : undefined}>{t('staff.nav.revenue')}</Link>
+      <Link to="/staff/health" aria-current={tab === 'health' ? 'page' : undefined}>{t('staff.nav.health')}</Link>
       <Link to="/staff/leads" aria-current={tab === 'leads' ? 'page' : undefined}>{t('staff.nav.leads')}</Link>
       <Link to="/staff?tab=audit" aria-current={tab === 'audit' ? 'page' : undefined}>{t('staff.nav.audit')}</Link>
+      <Link to="/staff/billing" aria-current={tab === 'billing' ? 'page' : undefined}>{t('staff.nav.billing')}</Link>
     </nav>
     <header className="page-heading staff-heading">
       <div>

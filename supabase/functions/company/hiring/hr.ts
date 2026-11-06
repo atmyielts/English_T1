@@ -10,18 +10,19 @@ import {
   ASSESSMENT_COLUMNS, ATTEMPT_COLUMNS, expireIfOverdue, gradeAttempt, loadAssessment, loadAttempt, manualScore, overdue,
   type AssessmentRow, type AttemptRow,
 } from './attempts.ts';
+import { syncStageFromDecision } from './ats.ts';
 import { orderSkills } from './engine.ts';
 import { bankCounts } from './bank/index.ts';
 import {
   HR, LEADS, assessmentView, attemptReport, attemptRow, attemptsCsv, inAudience, linkId, networkMatches, readAssessment, stats, suggestedMinutes,
 } from './shared.ts';
 
-async function newLink(ctx: Ctx): Promise<{ raw: string; hash: string; url: string }> {
+export async function newLink(ctx: Ctx): Promise<{ raw: string; hash: string; url: string }> {
   const raw = token(24);
   return { raw, hash: await sha256(raw), url: `${ctx.env.appUrl}/t/${raw}` };
 }
 
-async function attemptsOf(ctx: Ctx, assessmentId: string): Promise<AttemptRow[]> {
+export async function attemptsOf(ctx: Ctx, assessmentId: string): Promise<AttemptRow[]> {
   return await fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select(ATTEMPT_COLUMNS).eq('org_id', ctx.org!.id).eq('assessment_id', assessmentId).order('started_at', { ascending: false }).order('id'));
 }
 
@@ -35,7 +36,7 @@ async function memberOf(ctx: Ctx, id: string | null): Promise<MemberRow | null> 
  * progress". Without AI: many AI calls would not fit in one page load. Those attempts show
  * as waiting for a grade until HR grades them from the report (the regrade route).
  */
-async function sweep(ctx: Ctx, assessment: AssessmentRow, attempts: AttemptRow[]): Promise<AttemptRow[]> {
+export async function sweep(ctx: Ctx, assessment: AssessmentRow, attempts: AttemptRow[]): Promise<AttemptRow[]> {
   const out: AttemptRow[] = [];
   for (const attempt of attempts) {
     if (attempt.status === 'started' && ctx.now().getTime() > new Date(attempt.deadline_at).getTime() + 120_000) {
@@ -113,7 +114,7 @@ export const routes: Route[] = [
     async handle(ctx, _params, _body, query) {
       const kind = oneOf(query.get('kind') ?? 'hiring', ['hiring', 'placement', 'progress'] as const, 'kind');
       const rows = check<AssessmentRow[]>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('org_id', ctx.org!.id).eq('kind', kind).order('created_at', { ascending: false }).limit(500));
-      const attempts = await inChunks(rows.map((row) => row.id), (chunk) => fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select('assessment_id,status,overall_level,overall_score,decision').eq('org_id', ctx.org!.id).in('assessment_id', chunk).order('id')));
+      const attempts = await inChunks(rows.map((row) => row.id), (chunk) => fetchAll<AttemptRow>(() => ctx.db.from('company_attempts').select('assessment_id,status,overall_level,overall_score,skill_results,decision').eq('org_id', ctx.org!.id).in('assessment_id', chunk).order('id')));
       return {
         assessments: rows.map((row) => ({ ...assessmentView(row), stats: stats(attempts.filter((attempt) => attempt.assessment_id === row.id), row) })),
         usage: await usage(ctx.db, ctx.org!),
@@ -209,7 +210,10 @@ export const routes: Route[] = [
         const others = await fetchAll<{ id: string; integrity: { ip_hash?: string } }>(() => ctx.db.from('company_attempts').select('id,integrity').eq('assessment_id', attempt.assessment_id).neq('id', attempt.id).order('id'));
         sameNetwork = others.filter((other) => other.integrity?.ip_hash === attempt.integrity.ip_hash).length;
       }
+      // Read softly: the report must still open if this lookup fails.
+      const pipeline = found.assessment.kind === 'hiring' && isHr(ctx) ? await ctx.db.from('company_candidates').select('id,stage').eq('attempt_id', attempt.id).eq('org_id', ctx.org!.id).maybeSingle() : null;
       return {
+        candidate: pipeline?.error ? null : pipeline?.data ?? null,
         attempt: attemptReport(attempt, found.assessment, sameNetwork),
         assessment: assessmentView(found.assessment),
         member: found.member ? { id: found.member.id, full_name: found.member.full_name, email: found.member.email, department_id: found.member.department_id, job_role: found.member.job_role } : null,
@@ -230,6 +234,7 @@ export const routes: Route[] = [
       if (input.notes !== undefined) patch.notes = text(input.notes, 'notes', { max: 4000, optional: true });
       if (!Object.keys(patch).length) throw new CompanyError('invalid_body', 'Nothing to change.', 400);
       check(await ctx.db.from('company_attempts').update(patch).eq('id', attempt.id).eq('org_id', ctx.org!.id));
+      if (input.decision !== undefined) await syncStageFromDecision(ctx, attempt, patch.decision as 'shortlist' | 'hold' | 'reject' | null);
       await ctx.audit('hiring.decision', attempt.id, { decision: patch.decision, notes: input.notes !== undefined });
       return { decision: patch.decision ?? attempt.decision, notes: patch.notes !== undefined ? patch.notes : attempt.notes };
     },
@@ -243,6 +248,8 @@ export const routes: Route[] = [
       const assessment = await loadAssessment(ctx, ctx.org!.id, attempt.assessment_id);
       const member = await memberOf(ctx, attempt.member_id);
       if (attempt.status !== 'submitted' && attempt.status !== 'graded') throw new CompanyError('attempt_not_submitted', 'The test has not been submitted yet.', 409);
+      // The answers of an anonymised attempt are gone: grading again would score nothing.
+      if ((attempt.integrity as { anonymised?: boolean })?.anonymised) throw new CompanyError('candidate_erased', 'This candidate\'s personal data has been deleted.', 409);
       const force = input.skill === undefined ? [] : [oneOf(input.skill, ['writing', 'speaking'] as const, 'skill')];
       const { attempt: updated, failed } = await gradeAttempt(ctx, attempt, assessment, ctx.org!, member, { useAi: true, force });
       await ctx.audit('hiring.regraded', attempt.id, { skill: input.skill ?? null, status: updated.status, failed });
@@ -282,6 +289,9 @@ export const routes: Route[] = [
     method: 'DELETE', path: 'orgs/:org/attempts/:attempt', access: 'org', roles: HR,
     async handle(ctx, params) {
       const attempt = await loadAttempt(ctx, ctx.org!.id, uuid(params.attempt, 'attempt'));
+      // The candidate row goes with it, or the name and contact details would outlive the delete.
+      const { error: gone } = await ctx.db.from('company_candidates').delete().eq('attempt_id', attempt.id).eq('org_id', ctx.org!.id);
+      if (gone) console.error(JSON.stringify({ company_hiring: 'candidate_delete_failed', error: gone.message }));
       check(await ctx.db.from('company_attempts').delete().eq('id', attempt.id).eq('org_id', ctx.org!.id));
       await ctx.audit('hiring.attempt_deleted', attempt.id, { assessment: attempt.assessment_id });
       return { ok: true };

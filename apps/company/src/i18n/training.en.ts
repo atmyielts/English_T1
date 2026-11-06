@@ -1,5 +1,7 @@
 // Training area text. Keys start with "training.".
-export const trainingEn = {
+import { trainingV2En } from './training.v2.en.ts';
+
+const trainingBaseEn = {
   'training.nav.me': 'My English',
   'training.nav.lessons': 'Lessons',
   'training.nav.roleplay': 'Role-play',
@@ -355,4 +357,5 @@ export const trainingEn = {
   'training.error.assignment_empty': 'Choose a track, a target level or both.',
   'training.error.assignment_not_found': 'This assignment was not found.',
 } as const;
+export const trainingEn = { ...trainingBaseEn, ...trainingV2En };
 export type TrainingKey = keyof typeof trainingEn;

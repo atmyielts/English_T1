@@ -20,6 +20,8 @@ interface Home {
   week: { minutes: number; lessons: number; activities: number; days: { day: string; minutes: number }[] };
   totals: { lessons: number; roleplays: number; writing: number };
   certificates: { attempt_id: string; code: string; level: string | null; graded_at: string | null; title: string | null; kind: string | null }[];
+  path?: { source: 'member' | 'department' | 'suggested'; target_level: string | null; steps: number; lessons: number; done: number; weeks: number };
+  training_certificates?: { code: string; kind: string; title: Localized; issued_at: string }[];
 }
 /** The hiring area's contract (docs/product/45_COMPANY_ENGLISH.md). */
 interface MyTest { assessment_id: string; title: string; kind: string; status: 'todo' | 'in_progress' | 'done'; level: string | null; attempt_id: string | null; deadline_at: string | null }
@@ -115,6 +117,14 @@ export function MyEnglish() {
       <Link className="button-link" to={lessonPath(org.id, data.continue)}>{data.resuming ? t('training.me.continueButton') : t('training.me.startButton')}</Link>
     </section>}
 
+    {data.path && data.path.steps > 0 && <section className="training-card" aria-labelledby="training-my-path">
+      <h2 id="training-my-path">{t('training.path.title')}</h2>
+      <p>{t(`training.path.source.${data.path.source}` as AppKey)}</p>
+      <Progress value={data.path.done} total={data.path.lessons} label={t('training.path.progress', { done: data.path.done, total: data.path.lessons })}/>
+      <p className="hint">{t('training.path.progress', { done: data.path.done, total: data.path.lessons })}{data.path.weeks > 0 ? ` · ${t('training.path.about', { weeks: t('training.path.weeks', { count: data.path.weeks }) })}` : ''}</p>
+      <p><Link className="button-link quiet" to={`/w/${org.id}/my-path`}>{t('training.path.open')}</Link></p>
+    </section>}
+
     <section className="training-card" aria-labelledby="training-assignments">
       <h2 id="training-assignments">{t('training.me.assignments')}</h2>
       {data.assignments.length === 0 ? <p>{t(data.can_learn ? 'training.me.noAssignments' : 'training.me.noAssignmentsLocked')}</p> : <ul className="training-list">
@@ -165,6 +175,17 @@ export function MyEnglish() {
       <h2 id="training-english">{t('training.me.english')}</h2>
       <p>{t('training.me.englishLead')}</p>
       <a className="button-link" href={data.english_url} target="_blank" rel="noopener">{t('training.me.englishOpen')}<span className="visually-hidden"> {t('training.newTab')}</span></a>
+    </section>}
+
+    {(data.training_certificates?.length ?? 0) > 0 && <section className="training-card" aria-labelledby="training-completions">
+      <h2 id="training-completions">{t('training.cert.title')}</h2>
+      <ul className="training-list">
+        {data.training_certificates!.slice(0, 5).map((item) => <li key={item.code}>
+          <div><strong>{pick(item.title)}</strong><span>{when(item.issued_at)} · {t('training.me.certificateCode', { code: item.code })}</span></div>
+          <Link className="button-link quiet" to={`/c/${item.code}`}>{t('training.me.certificateOpen')}<span className="visually-hidden"> {pick(item.title)}</span></Link>
+        </li>)}
+      </ul>
+      <p><Link to={`/w/${org.id}/my-certificates`}>{t('training.nav.myCertificates')}</Link></p>
     </section>}
 
     {data.certificates.length > 0 && <section className="training-card" aria-labelledby="training-certificates">

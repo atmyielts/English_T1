@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.89.0';
 import { callEnglishAIWithStatus } from '../_shared/english-ai.ts';
 import { createCompanyHandler } from './handler.ts';
 import { allRoutes } from './routes.ts';
+import { connectFromEnv } from './connect/wire.deno.ts';
 import type { AiCall } from './types.ts';
 
 const required = (name: string) => {
@@ -28,6 +29,7 @@ Deno.serve(createCompanyHandler({
     selfServe: (Deno.env.get('COMPANY_SELF_SERVE') ?? 'true') !== 'false',
     aiDailyLimit: whole('COMPANY_AI_DAILY_LIMIT', 300),
     appUrl: (Deno.env.get('COMPANY_APP_URL') ?? 'https://company.schood.online').replace(/\/+$/, ''),
+    connect: connectFromEnv(),
   },
   // Every AI call goes through the English gateway, so it is logged in english_ai_calls
   // and can be switched off per feature from the English control centre.

@@ -6,6 +6,7 @@ import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, useLocation } from '../../router.tsx';
 import { LinkResult, useDates, useProblem } from '../people/ui.tsx';
 import { AuditTable, StaffFrame, type AuditRow, type Lead, type StaffOrg } from './common.tsx';
+import { StaffToday } from './StaffToday.tsx';
 
 export function StaffHome() {
   const { query } = useLocation();
@@ -37,6 +38,7 @@ function StaffOrgs() {
   }, [load]);
   return <StaffFrame title={t('staff.orgs.title')} lead={t('staff.orgs.lead')}
     actions={<button type="button" aria-expanded={creating} onClick={() => setCreating(!creating)}>{t('staff.orgs.new')}</button>}>
+    <StaffToday/>
     {creating && <NewWorkspace onClose={() => setCreating(false)} onCreated={() => void load()}/>}
     <div className="company-toolbar" role="search">
       <label>{t('common.search')}<input type="search" value={q} onChange={(event) => setQ(event.target.value)} placeholder={t('staff.orgs.searchHint')}/></label>

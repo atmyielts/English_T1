@@ -137,7 +137,7 @@ export const meetsTarget = (level: string | null, target: string | null): boolea
 
 /** Mean of 0–100 scores, rounded to one decimal, with the level it maps to. */
 export function averageScore(scores: (number | null | undefined)[]): { score: number | null; level: Level | null } {
-  const values = scores.map(Number).filter((value) => Number.isFinite(value) && value >= 0) as number[];
+  const values = scores.filter((value): value is number => value !== null && value !== undefined && Number.isFinite(value) && value >= 0);
   if (!values.length) return { score: null, level: null };
   const score = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length * 10) / 10;
   return { score, level: scoreToLevel(score) };

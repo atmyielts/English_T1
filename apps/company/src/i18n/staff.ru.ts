@@ -1,6 +1,9 @@
 import type { StaffKey } from './staff.en.ts';
 
+import { staffOpsRu } from './staff.ops.ru.ts';
+
 export const staffRu: Record<StaffKey, string> = {
+  ...staffOpsRu,
   'staff.nav.label': 'Разделы консоли',
   'staff.nav.orgs': 'Кабинеты',
   'staff.nav.leads': 'Заявки на демо',

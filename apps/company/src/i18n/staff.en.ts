@@ -1,5 +1,8 @@
 // Staff area text (Schood staff console). Keys start with "staff.".
+import { staffOpsEn } from './staff.ops.en.ts';
+
 export const staffEn = {
+  ...staffOpsEn,
   'staff.nav.label': 'Staff console sections',
   'staff.nav.orgs': 'Workspaces',
   'staff.nav.leads': 'Demo requests',
