@@ -181,6 +181,13 @@ export async function insightsOpsV2(h: V2Harness) {
     eq('one renewal is opened', renewals.filter((reply) => reply.body.duplicate === false).length, 1);
     eq('every click sees the same renewal', new Set(renewals.map((reply) => reply.body.contract?.id)).size, 1);
     eq('one renewal row', (await db.from('company_contracts').select('id').eq('renewed_from', contract)).data.length, 1);
+    // Losing that renewal and opening another, then reopening the lost one: told why, not a 500.
+    const lost = renewals[0].body.contract.id;
+    await call('PATCH', `staff/contracts/${lost}`, { ...staff, body: { status: 'lost' } });
+    const again = await call('POST', `staff/contracts/${contract}/renew`, staff);
+    eq('a new renewal after the lost one', again.body.duplicate, false);
+    const reopened = await call('PATCH', `staff/contracts/${lost}`, { ...staff, body: { status: 'quote' }, expect: 409, allowDb: /23505|duplicate key/ });
+    eq('reopening a lost renewal while another is open', reopened.body.code, 'renewal_exists');
 
     for (const id of [plain, first, second]) {
       const rows = await db.from('company_invoice_payments').select('id').eq('invoice_id', id);

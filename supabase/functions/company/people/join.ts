@@ -9,8 +9,13 @@ import { obj, sha256, text } from '../util.ts';
 import { withinLimit } from '../hiring/ats.ts';
 import { INVITE_COLUMNS, inviteState, revokeMemberInvites, ROLE_RANK, type InviteRow, type InviteState } from './shared.ts';
 
-/** Invitation link views from one network an hour; a team link shared in a group chat stays well under it. */
-export const JOIN_VIEWS_PER_HOUR = 300;
+/**
+ * Invitation link views from one network an hour. A team link posted in a company chat is opened by
+ * everyone on the office network, twice each (before and after sign-in), so this is generous.
+ */
+export const JOIN_VIEWS_PER_HOUR = 6000;
+/** Lookups of links that do not exist, from one network an hour; only link scanning gets near it. */
+export const JOIN_MISSES_PER_HOUR = 300;
 
 const TOKEN = /^[A-Za-z0-9_-]{16,128}$/;
 const CLAIM_TRIES = 5;
@@ -187,7 +192,15 @@ export const joinRoutes: Route[] = [
     method: 'GET', path: 'join/:token', access: 'public',
     async handle(ctx, params) {
       if (!(await withinLimit(ctx, 'join', JOIN_VIEWS_PER_HOUR))) throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
-      const invite = await findInvite(ctx, params.token);
+      let invite: InviteRow;
+      try {
+        invite = await findInvite(ctx, params.token);
+      } catch (cause) {
+        if (cause instanceof CompanyError && cause.code === 'invite_not_found' && !(await withinLimit(ctx, 'join_miss', JOIN_MISSES_PER_HOUR))) {
+          throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
+        }
+        throw cause;
+      }
       const found = await context(ctx, invite);
       const { org, target, own } = found;
       const state = stateOf(ctx, invite, found);

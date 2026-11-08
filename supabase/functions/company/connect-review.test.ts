@@ -59,6 +59,30 @@ Deno.test('own privacy export pages beyond one thousand private cards and HR nev
   assert(!('coach_cards' in hr.body.learning));
 });
 
+Deno.test('withoutMember adjusts the department the person was in at freeze, and leaves groups alone for older results', async () => {
+  const { withoutMember } = await import('./insights/challenges.ts');
+  const group = (id: string, total: number, participants: number, active: number, rank: number) => ({ id, name: id, total, participants, active, average: Math.round(total / participants * 10) / 10, rank });
+  const final = {
+    finished_at: '2026-11-02T00:00:00Z', participants: 3, active: 3, total: 70,
+    people: [{ member_id: 'm1', value: 60, rank: 1, department_id: 'A' }, { member_id: 'm2', value: 6, rank: 2, department_id: 'B' }, { member_id: 'm3', value: 4, rank: 3, department_id: 'B' }],
+    departments: [group('A', 60, 1, 1, 1), group('B', 10, 2, 2, 2)],
+    teams: [group('team-1', 60, 1, 1, 1), group('team-2', 10, 2, 2, 2)],
+  };
+  const teams = [{ id: 'team-1', name: 'One', department_ids: ['A'] }, { id: 'team-2', name: 'Two', department_ids: ['B'] }];
+  // m1 has since moved to B; their 60 still comes off A, and B is untouched.
+  const next = withoutMember(final, { id: 'm1' }, teams)!;
+  const byId = (rows: { id: string; total: number; active: number }[]) => Object.fromEntries(rows.map((row) => [row.id, [row.total, row.active]]));
+  assertEquals(byId(next.departments), { A: [0, 0], B: [10, 2] });
+  assertEquals(byId(next.teams), { 'team-1': [0, 0], 'team-2': [10, 2] });
+  assertEquals(next.people.map((row) => [row.member_id, row.rank, row.department_id]), [['m2', 1, 'B'], ['m3', 2, 'B']]);
+  // A result frozen before departments were recorded: the person leaves the ranking and the total, groups stay.
+  const old = { ...final, people: final.people.map(({ department_id: _d, ...row }) => row) };
+  const legacy = withoutMember(old, { id: 'm1' }, teams)!;
+  assertEquals([legacy.total, legacy.people.length], [10, 2]);
+  assertEquals(byId(legacy.departments), { A: [60, 1], B: [10, 2] });
+  assertEquals(byId(legacy.teams), { 'team-1': [60, 1], 'team-2': [10, 2] });
+});
+
 Deno.test('erasing learning takes the person out of finished challenges: winners, standings and totals', async () => {
   const { db } = setup();
   const DEPT = '50000000-0000-4000-8000-000000000001', CHALLENGE = '60000000-0000-4000-8000-000000000001';
@@ -93,6 +117,8 @@ Deno.test('erasing learning takes the person out of finished challenges: winners
   assertEquals(standings.status, 200);
   assertEquals(standings.body.people.map((row: { name: string; value: number }) => [row.name, row.value]), [['Boris Popov', 10]]);
   assertEquals([standings.body.total, standings.body.departments[0].total, standings.body.departments[0].active], [10, 10, 1]);
+  // Departments are adjusted by where the person was at freeze time, not where they are now.
+  assertEquals((db.rows('company_challenges')[0].final_results as { people: { department_id?: string }[] }).people.every((row) => row.department_id === DEPT), true);
   // Erasing again finds nothing more to change.
   assertEquals((await call('POST', `orgs/${ORG}/connect/privacy/people/${M_EMP}/erase-learning`, { user: OWNER, body: { confirm: 'ERASE' } })).body.erased.company_challenges, 0);
 });

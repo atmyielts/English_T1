@@ -23,7 +23,8 @@ export interface Team { id: string; name: string; department_ids: string[] }
 interface GroupStanding { id: string; name: string; participants: number; active: number; total: number; average: number; rank: number }
 export interface FinalResults {
   finished_at: string; participants: number; active: number; total: number;
-  people: { member_id: string; value: number; rank: number }[];
+  /** department_id is the person's department at freeze time; results frozen before it was kept lack it. */
+  people: { member_id: string; value: number; rank: number; department_id?: string | null }[];
   departments: GroupStanding[]; teams: GroupStanding[];
 }
 
@@ -277,7 +278,7 @@ async function finish(ctx: Ctx, challenge: ChallengeRow): Promise<FinalResults> 
   const { participants, departmentRows, teamRows, ranked } = await measure(ctx, challenge);
   const final: FinalResults = {
     finished_at: ctx.now().toISOString(), participants: participants.length, active: ranked.length, total: ranked.reduce((sum, row) => sum + row.value, 0),
-    people: ranked.slice(0, 500).map((row) => ({ member_id: row.member.id, value: row.value, rank: row.rank })),
+    people: ranked.slice(0, 500).map((row) => ({ member_id: row.member.id, value: row.value, rank: row.rank, department_id: row.member.department_id })),
     departments: departmentRows, teams: teamRows,
   };
   const { error } = await ctx.db.from('company_challenges').update({ final_results: final, finished_at: final.finished_at }).eq('id', challenge.id).eq('org_id', ctx.org!.id).is('final_results', null);
@@ -288,23 +289,26 @@ async function finish(ctx: Ctx, challenge: ChallengeRow): Promise<FinalResults> 
 /**
  * A frozen result without one person's numbers, for when their learning is erased: they leave
  * the ranking, and their value comes off the totals of the challenge and of the department and
- * team they are in now. Null when they were not in it.
+ * team they were in when it froze. A result frozen before that department was recorded keeps its
+ * group totals, rather than taking from a group the person may never have been in. Null when they
+ * were not in it.
  */
-export function withoutMember(final: FinalResults, member: { id: string; department_id: string | null }, teams: Team[]): FinalResults | null {
+export function withoutMember(final: FinalResults, member: { id: string }, teams: Team[]): FinalResults | null {
   const row = final.people.find((person) => person.member_id === member.id);
   if (!row) return null;
   const value = row.value;
-  const people = rank(final.people.filter((person) => person.member_id !== member.id).map(({ member_id, value }) => ({ member_id, value })), (person) => person.value);
+  const people = rank(final.people.filter((person) => person.member_id !== member.id).map(({ rank: _rank, ...person }) => person), (person) => person.value);
   const regroup = (groups: GroupStanding[], has: (group: Omit<GroupStanding, 'rank'>) => boolean) => rank(groups.map(({ rank: _rank, ...group }): Omit<GroupStanding, 'rank'> => {
     if (!has(group)) return group;
     const total = Math.max(0, group.total - value);
     return { ...group, total, active: Math.max(0, group.active - (value > 0 ? 1 : 0)), average: group.participants ? Math.round(total / group.participants * 10) / 10 : 0 };
   }), (group) => group.average * 1e6 + group.total);
-  const department = member.department_id;
-  const teamIds = new Set(teams.filter((team) => department !== null && team.department_ids.includes(department)).map((team) => team.id));
+  // undefined: frozen before departments were recorded, so no group is adjusted.
+  const department = row.department_id;
+  const teamIds = new Set(teams.filter((team) => typeof department === 'string' && team.department_ids.includes(department)).map((team) => team.id));
   return {
     ...final, people, total: Math.max(0, final.total - value), active: Math.max(0, final.active - (value > 0 ? 1 : 0)),
-    departments: regroup(final.departments ?? [], (group) => group.id === department),
+    departments: regroup(final.departments ?? [], (group) => typeof department === 'string' && group.id === department),
     teams: regroup(final.teams ?? [], (group) => teamIds.has(group.id)),
   };
 }
