@@ -255,8 +255,20 @@ const dbFailures: string[] = [];
 const coverage = new Map<string, { statuses: Set<number>; ok: boolean }>();
 let currentArea = 'setup', requests = 0, assertions = 0, dbRequests = 0, transportRetries = 0, longestUrl = 0;
 let firstTransportError = '';
-/** At most this many PostgREST requests in flight: enough for every race test, not a flood. */
-const DB_IN_FLIGHT = 24;
+/**
+ * At most this many PostgREST requests in flight: enough for every race test to be a real race,
+ * few enough that a GitHub runner does not drop new connections in a burst (it did at 24).
+ */
+const DB_IN_FLIGHT = 8;
+/** The whole cause chain: Deno 2.9 reports only "fetch failed" and keeps the reason in cause. */
+const describeError = (error: unknown): string => {
+  const parts: string[] = [];
+  for (let at: unknown = error, depth = 0; at && depth < 5; depth++) {
+    parts.push(String(at));
+    at = (at as { cause?: unknown }).cause;
+  }
+  return parts.join(" <- ");
+};
 const dbSlot = (() => {
   let free = DB_IN_FLIGHT;
   const waiting: (() => void)[] = [];
@@ -1962,13 +1974,16 @@ async function main(): Promise<number> {
         try {
           response = await fetch(url, init);
         } catch (cause) {
-          const message = String(cause);
+          const message = describeError(cause);
           const method = (init?.method ?? 'GET').toUpperCase();
           // A write that may have committed before the connection dropped is not repeated, or a
           // race assertion could count it twice. These errors happen before the request is sent.
-          const unsent = /connection closed before message completed|Connection refused|tcp connect error|ECONNREFUSED/i.test(message);
+          const unsent = /connection closed before message completed|Connection refused|tcp connect error|ECONNREFUSED|client error \(Connect\)/i.test(message);
           const transport = cause instanceof TypeError && (unsent || method === 'GET' || method === 'HEAD');
-          if (attempt >= 4 || !transport) throw cause;
+          if (attempt >= 4 || !transport) {
+            if (!firstTransportError) firstTransportError = `not retried: ${method} ${message}`.slice(0, 400);
+            throw cause;
+          }
           if (!firstTransportError) firstTransportError = message.slice(0, 300);
           transportRetries++;
           await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
