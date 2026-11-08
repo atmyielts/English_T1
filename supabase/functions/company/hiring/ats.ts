@@ -104,7 +104,8 @@ const candidateFromAttempt = (attempt: AttemptRow, now: string) => ({
 
 /**
  * Connects a started attempt to its candidate, or creates one (someone who came through the
- * open link). An invited person using the open link with the same email joins their own row.
+ * open link). The start route has already refused an open-link email that has a pending
+ * personal invitation, so only a row without one (an earlier walk-in) is joined here.
  */
 export async function attachCandidate(ctx: Ctx, attempt: AttemptRow): Promise<void> {
   try {

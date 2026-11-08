@@ -621,6 +621,8 @@ export const hiringUz: Record<HiringKey, string> = {
   'hiring.error.share_expired': 'Bu havolaning muddati tugagan. Kompaniyadan yangisini so‘rang.',
   'hiring.error.too_many_requests': 'Bu tarmoqdan juda ko‘p so‘rov. Bir soatdan keyin qayta urinib ko‘ring.',
   'hiring.error.test_taken': 'Siz bu testni allaqachon topshirgansiz.',
+  'hiring.error.use_personal_link': 'Bu email uchun shaxsiy taklif bor. Taklifdagi havolani oching.',
+  'hiring.error.email_in_use': 'Bu email ushbu testning boshqa nomzodida ko‘rsatilgan. O‘zingiznikini kiriting.',
   'hiring.role.front_desk': 'Qabulxona administratori',
   'hiring.role.concierge': 'Mehmonxona konsyerji',
   'hiring.role.reservations_agent': 'Bron qilish mutaxassisi',

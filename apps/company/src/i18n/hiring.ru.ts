@@ -621,6 +621,8 @@ export const hiringRu: Record<HiringKey, string> = {
   'hiring.error.share_expired': 'Срок действия ссылки истёк. Попросите у компании новую.',
   'hiring.error.too_many_requests': 'Слишком много запросов из этой сети. Повторите через час.',
   'hiring.error.test_taken': 'Вы уже прошли этот тест.',
+  'hiring.error.use_personal_link': 'Для этого email есть личное приглашение. Откройте ссылку из приглашения.',
+  'hiring.error.email_in_use': 'Этот email уже указан у другого кандидата этого теста. Введите свой.',
   'hiring.role.front_desk': 'Администратор ресепшн',
   'hiring.role.concierge': 'Консьерж отеля',
   'hiring.role.reservations_agent': 'Специалист по бронированию',

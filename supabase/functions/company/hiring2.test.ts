@@ -422,7 +422,7 @@ Deno.test('routes: invited by phone only, the address comes from the start form;
   assertEquals((await w.call('POST', `public/t/${token(created[1].link)}/start`, { body: { email: 'other@mail.uz', consent: true } })).body.attempt.status, 'started', 'resumes');
 });
 
-Deno.test('routes: an open-link start creates a candidate; an invited person using it joins their own row; older attempts are picked up', async () => {
+Deno.test('routes: an open-link start creates a candidate; an invited email must use its personal link; older attempts are picked up', async () => {
   const w = world();
   const { id, link } = await makeTest(w);
   const { created } = await invite(w, id, [{ name: 'Invited Person', email: 'invited@mail.uz' }]);
@@ -430,10 +430,23 @@ Deno.test('routes: an open-link start creates a candidate; an invited person usi
   const walkIn = candidateByEmail(w, 'walkin@mail.uz');
   assertEquals([walkIn.source, walkIn.stage, walkIn.name, walkIn.invite_token_hash ?? null], ['link', 'new', 'Walk In', null]);
   assert(walkIn.attempt_id);
-  await takeByOpenLink(w, link, { name: 'Invited P.', email: 'invited@mail.uz' });
+  // Anyone holding the open link who knows an invited address cannot take over that invitation.
+  const attempts = w.db.rows('company_attempts').length;
+  const hijack = await w.call('POST', `public/t/${token(link)}/start`, { body: { name: 'Mallory', email: 'invited@mail.uz', phone: '+998 99 999 99 99', consent: true } });
+  assertEquals([hijack.status, hijack.body.code], [409, 'use_personal_link']);
+  assertEquals(w.db.rows('company_attempts').length, attempts, 'no attempt was started');
   assertEquals(w.db.rows('company_candidates').length, 2);
-  assert(candidateByEmail(w, 'invited@mail.uz').attempt_id, 'joined');
-  assertEquals(candidateByEmail(w, 'invited@mail.uz').id, created[0].id);
+  const invited = candidateByEmail(w, 'invited@mail.uz');
+  assertEquals([invited.id, invited.name, invited.phone ?? null, invited.attempt_id ?? null], [created[0].id, 'Invited Person', null, null]);
+  // The personal link still belongs to the invited person.
+  const own = await w.call('POST', `public/t/${token(created[0].link)}/start`, { body: { consent: true } });
+  assertEquals([own.status, own.body.attempt.status], [200, 'started']);
+  assertEquals(candidateByEmail(w, 'invited@mail.uz').attempt_id, w.db.rows('company_attempts').at(-1)!.id);
+  // Invited by phone only: the address typed in cannot be one another candidate of this test already has.
+  const { created: [byPhone] } = await invite(w, id, [{ name: 'Phone Person', phone: '+998 90 555 55 55' }]);
+  const taken = await w.call('POST', `public/t/${token(byPhone.link)}/start`, { body: { email: 'walkin@mail.uz', consent: true } });
+  assertEquals([taken.status, taken.body.code], [409, 'email_in_use']);
+  assertEquals(w.db.rows('company_candidates').find((row) => row.id === byPhone.id)!.attempt_id ?? null, null);
 
   // An attempt from before this layer, with no candidate row.
   const older = { ...w.db.rows('company_attempts')[0], id: crypto.randomUUID(), candidate_name: 'From Before', candidate_email: 'before@mail.uz', decision: 'reject', access_token_hash: null };

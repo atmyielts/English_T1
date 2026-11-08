@@ -142,6 +142,20 @@ export const routes: Route[] = [
       // A personal link was made for one address, so it cannot be used to test under another.
       const address = candidate?.email ?? email(input.email, 'email')!;
       const phone = text(input.phone ?? candidate?.phone, 'phone', { max: 40, optional: true });
+      // A personal invitation belongs to whoever holds its link: the open link cannot take it over,
+      // and a phone-only invitation cannot claim an address another candidate already has.
+      // Like the candidate write below, a failed read does not stop the test; with that table
+      // unreadable, attachCandidate cannot change the invited row either.
+      let owner: Pick<CandidateRow, 'id' | 'invite_token_hash'> | null = null;
+      try {
+        owner = check<Pick<CandidateRow, 'id' | 'invite_token_hash'> | null>(await ctx.db.from('company_candidates').select('id,invite_token_hash').eq('assessment_id', assessment.id).eq('email', address).maybeSingle());
+      } catch (cause) {
+        console.error(JSON.stringify({ company_hiring: 'candidate_lookup_failed', error: String(cause) }));
+      }
+      if (owner && owner.id !== candidate?.id) {
+        if (candidate) throw new CompanyError('email_in_use', 'Another candidate of this test uses this email. Enter your own.', 409, { field: 'email' });
+        if (owner.invite_token_hash) throw new CompanyError('use_personal_link', 'This email has a personal invitation. Open the link from your invitation.', 409, { field: 'email' });
+      }
       // Everyone at a recruiting event may share one network: a personal link is its own limit.
       if (!candidate && await startsThisHour(ctx, assessment, org) >= STARTS_PER_HOUR) {
         throw new CompanyError('too_many_starts', 'Too many tests were started from this network. Try again in an hour.', 429);

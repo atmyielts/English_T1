@@ -621,6 +621,8 @@ export const hiringEn = {
   'hiring.error.share_expired': 'This link has expired. Ask the company for a new one.',
   'hiring.error.too_many_requests': 'Too many requests from this network. Try again in an hour.',
   'hiring.error.test_taken': 'You have already completed this test.',
+  'hiring.error.use_personal_link': 'This email has a personal invitation. Open the link from your invitation.',
+  'hiring.error.email_in_use': 'Another candidate of this test uses this email. Enter your own.',
   'hiring.role.front_desk': 'Front desk receptionist',
   'hiring.role.concierge': 'Hotel concierge',
   'hiring.role.reservations_agent': 'Reservations agent',
