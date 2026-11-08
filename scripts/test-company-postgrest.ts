@@ -1963,7 +1963,11 @@ async function main(): Promise<number> {
           response = await fetch(url, init);
         } catch (cause) {
           const message = String(cause);
-          const transport = cause instanceof TypeError || message.includes('connection closed before message completed');
+          const method = (init?.method ?? 'GET').toUpperCase();
+          // A write that may have committed before the connection dropped is not repeated, or a
+          // race assertion could count it twice. These errors happen before the request is sent.
+          const unsent = /connection closed before message completed|Connection refused|tcp connect error|ECONNREFUSED/i.test(message);
+          const transport = cause instanceof TypeError && (unsent || method === 'GET' || method === 'HEAD');
           if (attempt >= 4 || !transport) throw cause;
           if (!firstTransportError) firstTransportError = message.slice(0, 300);
           transportRetries++;

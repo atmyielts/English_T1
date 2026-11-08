@@ -289,11 +289,10 @@ async function finish(ctx: Ctx, challenge: ChallengeRow): Promise<FinalResults> 
 /**
  * A frozen result without one person's numbers, for when their learning is erased: they leave
  * the ranking, and their value comes off the totals of the challenge and of the department and
- * team they were in when it froze. A result frozen before that department was recorded keeps its
- * group totals, rather than taking from a group the person may never have been in. Null when they
- * were not in it.
+ * team they were in when it froze. A result frozen before that was recorded uses their current
+ * department, which is right unless they have moved since. Null when they were not in it.
  */
-export function withoutMember(final: FinalResults, member: { id: string }, teams: Team[]): FinalResults | null {
+export function withoutMember(final: FinalResults, member: { id: string; department_id?: string | null }, teams: Team[]): FinalResults | null {
   const row = final.people.find((person) => person.member_id === member.id);
   if (!row) return null;
   const value = row.value;
@@ -303,8 +302,7 @@ export function withoutMember(final: FinalResults, member: { id: string }, teams
     const total = Math.max(0, group.total - value);
     return { ...group, total, active: Math.max(0, group.active - (value > 0 ? 1 : 0)), average: group.participants ? Math.round(total / group.participants * 10) / 10 : 0 };
   }), (group) => group.average * 1e6 + group.total);
-  // undefined: frozen before departments were recorded, so no group is adjusted.
-  const department = row.department_id;
+  const department = row.department_id !== undefined ? row.department_id : member.department_id ?? null;
   const teamIds = new Set(teams.filter((team) => typeof department === 'string' && team.department_ids.includes(department)).map((team) => team.id));
   return {
     ...final, people, total: Math.max(0, final.total - value), active: Math.max(0, final.active - (value > 0 ? 1 : 0)),

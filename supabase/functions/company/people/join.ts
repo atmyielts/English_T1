@@ -14,7 +14,10 @@ import { INVITE_COLUMNS, inviteState, revokeMemberInvites, ROLE_RANK, type Invit
  * everyone on the office network, twice each (before and after sign-in), so this is generous.
  */
 export const JOIN_VIEWS_PER_HOUR = 6000;
-/** Lookups of links that do not exist, from one network an hour; only link scanning gets near it. */
+/**
+ * Lookups of links that do not exist, from one network an hour. Tokens are 24 random bytes, so
+ * guessing is not a real threat; this only slows a scanner and keeps the misses out of the logs.
+ */
 export const JOIN_MISSES_PER_HOUR = 300;
 
 const TOKEN = /^[A-Za-z0-9_-]{16,128}$/;
@@ -197,7 +200,9 @@ export const joinRoutes: Route[] = [
         invite = await findInvite(ctx, params.token);
       } catch (cause) {
         if (cause instanceof CompanyError && cause.code === 'invite_not_found' && !(await withinLimit(ctx, 'join_miss', JOIN_MISSES_PER_HOUR))) {
-          throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
+          // Most often a whole office opening a link HR has since renewed: say so, not just "wait".
+          // Keeps the not-found code, so the page shows its own 'link not valid' text in every language.
+          throw new CompanyError('invite_not_found', 'This invitation link is not valid or is out of date. Ask your HR team for the current link.', 429);
         }
         throw cause;
       }

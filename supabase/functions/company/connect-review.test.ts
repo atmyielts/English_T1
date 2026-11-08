@@ -75,12 +75,14 @@ Deno.test('withoutMember adjusts the department the person was in at freeze, and
   assertEquals(byId(next.departments), { A: [0, 0], B: [10, 2] });
   assertEquals(byId(next.teams), { 'team-1': [0, 0], 'team-2': [10, 2] });
   assertEquals(next.people.map((row) => [row.member_id, row.rank, row.department_id]), [['m2', 1, 'B'], ['m3', 2, 'B']]);
-  // A result frozen before departments were recorded: the person leaves the ranking and the total, groups stay.
+  // A result frozen before departments were recorded falls back to the person's current department.
   const old = { ...final, people: final.people.map(({ department_id: _d, ...row }) => row) };
-  const legacy = withoutMember(old, { id: 'm1' }, teams)!;
+  const legacy = withoutMember(old, { id: 'm1', department_id: 'A' }, teams)!;
   assertEquals([legacy.total, legacy.people.length], [10, 2]);
-  assertEquals(byId(legacy.departments), { A: [60, 1], B: [10, 2] });
-  assertEquals(byId(legacy.teams), { 'team-1': [60, 1], 'team-2': [10, 2] });
+  assertEquals(byId(legacy.departments), { A: [0, 0], B: [10, 2] });
+  assertEquals(byId(legacy.teams), { 'team-1': [0, 0], 'team-2': [10, 2] });
+  // With no department known at all, groups are left as they are.
+  assertEquals(byId(withoutMember(old, { id: 'm1' }, teams)!.departments), { A: [60, 1], B: [10, 2] });
 });
 
 Deno.test('erasing learning takes the person out of finished challenges: winners, standings and totals', async () => {

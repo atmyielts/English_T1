@@ -332,7 +332,7 @@ export const billingRoutes: Route[] = [
       }
       const saved = await ctx.db.from('company_contracts').update(patch).eq('id', current.id).select(CONTRACT_COLUMNS).single();
       // company_contracts_renewed_from_uq: one open renewal per contract.
-      if (saved.error?.code === '23505') throw new CompanyError('renewal_exists', 'This contract already has an open renewal. Mark that one lost first.', 409);
+      if (saved.error?.code === '23505') throw new CompanyError('renewal_exists', 'The contract this one renews already has another open renewal. Mark that renewal lost first.', 409);
       const updated = check<ContractRow>(saved);
       const changes = Object.fromEntries(Object.keys(patch).filter((key) => key !== 'notes').map((key) => [key, { from: (current as unknown as Record<string, unknown>)[key] ?? null, to: patch[key] }]));
       await ctx.audit('contract.updated', current.id, changes);

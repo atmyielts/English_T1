@@ -900,7 +900,7 @@ Deno.test('a team link opened by a whole office from one network keeps working; 
   }
   for (let miss = 0; miss < JOIN_MISSES_PER_HOUR; miss++) assertEquals((await call('GET', `join/not-a-real-token-${String(miss).padStart(6, '0')}`)).status, 404);
   const scanned = await call('GET', 'join/not-a-real-token-999999');
-  assertEquals([scanned.status, scanned.body.code], [429, 'too_many_requests']);
+  assertEquals([scanned.status, scanned.body.code], [429, 'invite_not_found']);
   // Misses do not lock out a real link.
   assertEquals((await call('GET', `join/${token}`)).status, 200);
 });
