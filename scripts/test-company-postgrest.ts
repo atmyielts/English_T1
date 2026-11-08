@@ -254,6 +254,17 @@ const logs: string[] = [];
 const dbFailures: string[] = [];
 const coverage = new Map<string, { statuses: Set<number>; ok: boolean }>();
 let currentArea = 'setup', requests = 0, assertions = 0, dbRequests = 0, transportRetries = 0, longestUrl = 0;
+let firstTransportError = '';
+/** At most this many PostgREST requests in flight: enough for every race test, not a flood. */
+const DB_IN_FLIGHT = 24;
+const dbSlot = (() => {
+  let free = DB_IN_FLIGHT;
+  const waiting: (() => void)[] = [];
+  return {
+    take: () => free > 0 ? (free--, Promise.resolve()) : new Promise<void>((resolve) => waiting.push(resolve)),
+    give: () => { const next = waiting.shift(); if (next) next(); else free++; },
+  };
+})();
 const key = (route: Pick<Route, 'method' | 'path'>) => `${route.method} ${route.path}`;
 for (const route of allRoutes) coverage.set(key(route), { statuses: new Set(), ok: false });
 
@@ -1942,16 +1953,25 @@ async function main(): Promise<number> {
     dbRequests++;
     longestUrl = Math.max(longestUrl, url.pathname.length + url.search.length);
     // Docker Desktop's port proxy now and then drops a kept-alive connection before PostgREST
-    // sees the request. That is the test rig, not the product, so try again; the count is reported.
+    // sees the request, and a small CI runner refuses connections in a burst. That is the test rig,
+    // not the product, so cap the requests in flight and try again; the count is reported.
     let response: Response | null = null;
-    for (let attempt = 0; !response; attempt++) {
-      try {
-        response = await fetch(url, init);
-      } catch (cause) {
-        if (attempt >= 4 || !String(cause).includes('connection closed before message completed')) throw cause;
-        transportRetries++;
-        await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    await dbSlot.take();
+    try {
+      for (let attempt = 0; !response; attempt++) {
+        try {
+          response = await fetch(url, init);
+        } catch (cause) {
+          const message = String(cause);
+          const transport = cause instanceof TypeError || message.includes('connection closed before message completed');
+          if (attempt >= 4 || !transport) throw cause;
+          if (!firstTransportError) firstTransportError = message.slice(0, 300);
+          transportRetries++;
+          await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+        }
       }
+    } finally {
+      dbSlot.give();
     }
     if (response.status >= 400) {
       let body = await response.clone().text();
@@ -1982,6 +2002,7 @@ async function main(): Promise<number> {
   const refusedOnly = all.filter(([, entry]) => !entry.ok && entry.statuses.size);
   const never = all.filter(([, entry]) => !entry.statuses.size);
   console.log(`\n================ Coverage: ${reached.length}/${all.length} routes reached a 2xx (${requests} requests, ${dbRequests} PostgREST calls, ${transportRetries} transport retries, ${assertions} assertions, longest URL ${longestUrl} characters)`);
+  if (firstTransportError) console.log(`First transport error (retried): ${firstTransportError}`);
   for (const [name, entry] of refusedOnly) console.log(`  refused only  ${name}  [${[...entry.statuses].join(',')}]`);
   for (const [name] of never) console.log(`  NEVER CALLED  ${name}`);
   console.log(`AI calls: ${JSON.stringify(aiCalls)}`);
