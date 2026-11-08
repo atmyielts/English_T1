@@ -31,6 +31,10 @@ export const BACKOFF_SECONDS = [60, 300, 1800, 7200, 21600, 86400];
 const DISABLE_AFTER = 30;
 const STUCK = 15 * 60_000;
 const OVERLAP = 2 * 3_600_000;
+/** At most this many deliveries per workspace in one run, so one workspace's backlog cannot hold up the others. */
+const PER_ORG = 20;
+/** Stop starting new deliveries after this; what is left goes on the next run. Keeps the run inside the function's limit. */
+const QUEUE_BUDGET_MS = 60_000;
 
 /** The signature header: t=<unix seconds>,v1=<hex HMAC-SHA256 of "<t>.<body>">. */
 export async function signPayload(secret: string, body: string, at: Date): Promise<string> {
@@ -131,13 +135,13 @@ async function afterFailure(db: Db, hook: WebhookRow, orgId: string, now: Date):
 }
 
 /** Sends one claimed delivery and records what happened. */
-async function deliverOne(db: Db, env: CompanyEnv, delivery: DeliveryRow, hook: WebhookRow, now: Date): Promise<boolean> {
+async function deliverOne(db: Db, env: CompanyEnv, delivery: DeliveryRow, hook: WebhookRow, now: Date, clock: () => Date = () => now): Promise<boolean> {
   const body = eventBody(delivery);
   const attempt = delivery.attempts;
   // Checked again at send time: the rules may be stricter than when the URL was saved.
   const outcome = urlProblem(hook.url) ? { ok: false, error: 'blocked_address' as string, status: undefined as number | undefined } : await connectConfig({ env }).webhook!({
     url: hook.url, body,
-    headers: { 'X-Schood-Event': delivery.event, 'X-Schood-Delivery': delivery.id, 'X-Schood-Signature': await signPayload(hook.secret, body, now) },
+    headers: { 'X-Schood-Event': delivery.event, 'X-Schood-Delivery': delivery.id, 'X-Schood-Signature': await signPayload(hook.secret, body, clock()) },
   }).catch(() => ({ ok: false, error: 'network' as string, status: undefined as number | undefined }));
   if (outcome.ok) {
     check(await db.from('company_webhook_deliveries').update({ status: 'sent', response_status: outcome.status ?? null, error: null, delivered_at: now.toISOString() }).eq('id', delivery.id));
@@ -163,19 +167,61 @@ async function claim(db: Db, delivery: DeliveryRow): Promise<boolean> {
 
 export interface QueueResult { sent: number; failed: number; dropped: number }
 
-/** Delivers what is due. Nothing leaves while the switch is off. */
-export async function processQueue(db: Db, env: CompanyEnv, now: Date, limit = 100): Promise<QueueResult> {
+/**
+ * What is due, oldest first but at most PER_ORG per workspace, taken in turns across
+ * workspaces: a workspace with a big backlog gets its share and the others still go out.
+ */
+async function dueFairly(db: Db, now: Date, limit: number, perOrg: number): Promise<DeliveryRow[]> {
+  const byOrg = new Map<string, DeliveryRow[]>(), full = new Set<string>();
+  let total = 0;
+  for (let round = 0; round < 10 && total < limit; round++) {
+    let query = db.from('company_webhook_deliveries').select(DELIVERY_COLUMNS).eq('status', 'queued').lte('next_attempt_at', now.toISOString());
+    if (full.size) query = query.not('org_id', 'in', `(${[...full].join(',')})`);
+    const seen = new Set([...byOrg.values()].flat().map((row) => row.id));
+    const fetched = check<DeliveryRow[]>(await query.order('next_attempt_at', { ascending: true }).order('id').limit(limit));
+    const rows = fetched.filter((row) => !seen.has(row.id));
+    if (!rows.length) break;
+    let saturated = false;
+    for (const row of rows) {
+      if (full.has(row.org_id) || total >= limit) continue;
+      const list = byOrg.get(row.org_id) ?? [];
+      list.push(row);
+      byOrg.set(row.org_id, list);
+      total++;
+      if (list.length >= perOrg) { full.add(row.org_id); saturated = true; }
+    }
+    // Nothing was held back, so there is nothing more to find.
+    if (!saturated || fetched.length < limit) break;
+  }
+  // In turns: the first of every workspace, then the second, and so on.
+  const lists = [...byOrg.values()], out: DeliveryRow[] = [];
+  for (let index = 0; out.length < total; index++) for (const list of lists) if (list[index]) out.push(list[index]);
+  // Room left over goes to the workspaces that had more, after everyone's share.
+  if (out.length < limit && full.size) {
+    const seen = new Set(out.map((row) => row.id));
+    const more = check<DeliveryRow[]>(await db.from('company_webhook_deliveries').select(DELIVERY_COLUMNS).eq('status', 'queued').lte('next_attempt_at', now.toISOString())
+      .in('org_id', [...full]).order('next_attempt_at', { ascending: true }).order('id').limit(limit));
+    for (const row of more) if (out.length < limit && !seen.has(row.id)) out.push(row);
+  }
+  return out;
+}
+
+/** Delivers what is due. Nothing leaves while the switch is off. With `clock` (the job passes the real one) each send is signed when it leaves. */
+export async function processQueue(db: Db, env: CompanyEnv, now: Date, limit = 100, options: { clock?: () => Date; budgetMs?: number; perOrg?: number } = {}): Promise<QueueResult> {
   const result: QueueResult = { sent: 0, failed: 0, dropped: 0 };
   if (!switches(env).webhooks) return result;
+  const started = Date.now(), clock = options.clock ?? (() => now), budget = options.budgetMs ?? QUEUE_BUDGET_MS;
   // A run that died mid-send leaves rows behind; they may go again.
   check(await db.from('company_webhook_deliveries').update({ status: 'queued' }).eq('status', 'delivering').lt('updated_at', new Date(now.getTime() - STUCK).toISOString()).select('id'));
-  const due = check<DeliveryRow[]>(await db.from('company_webhook_deliveries').select(DELIVERY_COLUMNS).eq('status', 'queued').lte('next_attempt_at', now.toISOString()).order('next_attempt_at', { ascending: true }).limit(limit));
+  const due = await dueFairly(db, now, limit, options.perOrg ?? PER_ORG);
   if (!due.length) return result;
   const hooks = await inChunks([...new Set(due.map((row) => row.webhook_id))], async (chunk) => check<WebhookRow[]>(await db.from('company_webhooks').select(WEBHOOK_COLUMNS).in('id', chunk)));
   const byId = new Map(hooks.map((hook) => [hook.id, hook]));
   const orgs = await inChunks([...new Set(due.map((row) => row.org_id))], async (chunk) => check<Pick<OrgRow, 'id' | 'status' | 'contract_ends_at'>[]>(await db.from('company_orgs').select('id,status,contract_ends_at').in('id', chunk)));
   const orgById = new Map(orgs.map((org) => [org.id, org]));
   for (const delivery of due) {
+    // Out of time: the rest stay queued, untouched, for the next run.
+    if (Date.now() - started > budget) break;
     const hook = byId.get(delivery.webhook_id), org = orgById.get(delivery.org_id);
     const open = org && (org.status === 'pilot' || org.status === 'active') && !contractEnded(org, now);
     if (!hook || !hook.active || !open) {
@@ -184,7 +230,7 @@ export async function processQueue(db: Db, env: CompanyEnv, now: Date, limit = 1
       continue;
     }
     if (!await claim(db, delivery)) continue;
-    if (await deliverOne(db, env, delivery, hook, now)) result.sent++;
+    if (await deliverOne(db, env, delivery, hook, now, clock)) result.sent++;
     else result.failed++;
   }
   return result;
@@ -269,7 +315,7 @@ export const webhookRoutes: Route[] = [
         org_id: ctx.org!.id, webhook_id: hook.id, event: 'webhook.test', event_id: id, payload: sample, status: 'queued', attempts: 0, is_test: true, next_attempt_at: now.toISOString(), created_at: now.toISOString(),
       }).select(DELIVERY_COLUMNS).single(), () => new CompanyError('webhook_test_busy', 'Try again in a moment.', 409));
       if (!await claim(ctx.db, delivery)) return { sent: false, reason: 'busy' };
-      const sent = await deliverOne(ctx.db, ctx.env, delivery, hook, now);
+      const sent = await deliverOne(ctx.db, ctx.env, delivery, hook, now, ctx.now);
       const after = check<DeliveryRow | null>(await ctx.db.from('company_webhook_deliveries').select(DELIVERY_COLUMNS).eq('id', delivery.id).maybeSingle());
       // A test is one try; it does not sit in the queue.
       if (!sent) check(await ctx.db.from('company_webhook_deliveries').update({ status: 'dead' }).eq('id', delivery.id));

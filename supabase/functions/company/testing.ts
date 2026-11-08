@@ -90,7 +90,11 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: { code?: string; 
   not(column: string, operator: string, value: unknown) {
     if (operator === 'is') this.filters.push((row) => (row[column] ?? null) !== value);
     else if (operator === 'eq') this.filters.push((row) => row[column] !== value);
-    else throw new Error(`FakeDb: not.${operator} unsupported`);
+    else if (operator === 'in') {
+      // PostgREST's list form: "(a,b,c)".
+      const values = String(value).replace(/^\(|\)$/g, '').split(',').filter(Boolean);
+      this.filters.push((row) => !values.includes(String(row[column])));
+    } else throw new Error(`FakeDb: not.${operator} unsupported`);
     return this;
   }
   ilike(column: string, pattern: string) {

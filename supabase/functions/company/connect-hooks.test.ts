@@ -373,6 +373,51 @@ Deno.test('queue: a row left mid-send goes again; two runs cannot both take one'
   assertEquals(count, 1);
 });
 
+Deno.test('queue: one workspace’s backlog does not hold up another’s delivery', async () => {
+  const db = world();
+  hook(db);
+  const THEIR_HOOK = '70000000-0000-4000-8000-000000000002';
+  db.rows('company_webhooks').push({ ...db.rows('company_webhooks')[0], id: THEIR_HOOK, org_id: OTHER });
+  // 500 rows for Acme, all older than the other workspace's single event.
+  for (let index = 0; index < 500; index++) queued(db, { id: crypto.randomUUID(), event_id: `bulk:${index}`, next_attempt_at: iso(-600_000 + index), created_at: iso(-600_000) });
+  queued(db, { id: crypto.randomUUID(), org_id: OTHER, webhook_id: THEIR_HOOK, event_id: 'theirs', next_attempt_at: iso(-1000 + 1) });
+  const order: string[] = [];
+  const env = envWith({ webhooksEnabled: true, webhook: (request) => { order.push(JSON.parse(request.body).workspace_id); return Promise.resolve({ ok: true, status: 200 }); } });
+  const first = await processQueue(db, env, NOW);
+  // The other workspace goes out in the first run, near the front, and the run still uses its whole capacity.
+  assertEquals(first.sent, 100);
+  assertEquals(order.filter((id) => id === OTHER).length, 1);
+  assert(order.indexOf(OTHER) < 2, `position ${order.indexOf(OTHER)}`);
+  assertEquals(db.rows('company_webhook_deliveries').find((row) => row.event_id === 'theirs')!.status, 'sent');
+  // The backlog drains oldest first, run by run.
+  assertEquals((await processQueue(db, env, NOW)).sent, 100);
+  assertEquals(db.rows('company_webhook_deliveries').filter((row) => row.status === 'sent').length, 200);
+  assertEquals(db.rows('company_webhook_deliveries').filter((row) => row.status === 'queued' && String(row.event_id) < 'bulk:1').length, 0);
+});
+
+Deno.test('queue: each send is signed when it leaves, and a run stops starting sends when out of time', async () => {
+  const db = world();
+  hook(db);
+  for (const id of ['e1', 'e2', 'e3']) queued(db, { id: crypto.randomUUID(), event_id: id });
+  const sent: { body: string; headers: Record<string, string> }[] = [];
+  const env = envWith({ webhooksEnabled: true, webhook: (request) => { sent.push(request); return Promise.resolve({ ok: true, status: 200 }); } });
+  // A slow run: every send happens 400 s after the one before.
+  let tick = 0;
+  const clock = () => new Date(NOW.getTime() + (++tick) * 400_000);
+  assertEquals((await processQueue(db, env, NOW, 100, { clock })).sent, 3);
+  for (const [index, request] of sent.entries()) {
+    const stamp = Number(request.headers['X-Schood-Signature'].match(/^t=(\d+),/)![1]);
+    assertEquals(stamp, NOW.getTime() / 1000 + (index + 1) * 400);
+    assertEquals(request.headers['X-Schood-Signature'], await signPayload('whsec_' + 's'.repeat(40), request.body, new Date(stamp * 1000)));
+  }
+  // Out of budget before the first send: nothing is claimed, so nothing is lost or counted as a try.
+  const late = world();
+  hook(late);
+  queued(late);
+  assertEquals(await processQueue(late, env, NOW, 100, { budgetMs: -1 }), { sent: 0, failed: 0, dropped: 0 });
+  assertEquals([late.rows('company_webhook_deliveries')[0].status, late.rows('company_webhook_deliveries')[0].attempts], ['queued', 0]);
+});
+
 Deno.test('test button delivers once when on, one try only', async () => {
   const db = world();
   hook(db);

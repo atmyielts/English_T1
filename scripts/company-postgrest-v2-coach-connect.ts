@@ -180,6 +180,16 @@ export async function coachConnectV2(h: V2Harness) {
       await call('POST', `${p}/deliveries/${deliveryId}/retry`, { as: U.admin });
       await call('POST', 'internal/connect/run', { headers: { 'x-worker-secret': 't'.repeat(40) } });
       ok('synthetic webhook requests are signed', sent.webhook.some((request) => Boolean(request.headers['X-Schood-Signature'])));
+      // A backlog in one workspace does not hold up another's event (real PostgREST filters).
+      const otherHook = need((await call('POST', `orgs/${S.otherOrg}/connect/webhooks`, { as: U.otherOwner, body: { url: 'https://hooks.example.uz/other', events: ['test.graded'] } })).body.webhook?.id, 'other webhook');
+      await sql(`insert into company_webhook_deliveries(org_id,webhook_id,event,event_id,payload,status,next_attempt_at)
+        select '${S.org}','${hook.webhook.id}','test.graded','backlog:'||n,'{}','queued', now() - interval '1 hour' + n * interval '1 second' from generate_series(1,130) n`);
+      const theirs = await sql(`insert into company_webhook_deliveries(org_id,webhook_id,event,event_id,payload,status,next_attempt_at) values ('${S.otherOrg}','${otherHook}','test.graded','fair-other','{}','queued', now() - interval '1 minute') returning id`);
+      await call('POST', 'internal/connect/run', { headers: { 'x-worker-secret': 't'.repeat(40) } });
+      eq('another workspace is picked in the same run as a backlog', await sql(`select status <> 'queued' from company_webhook_deliveries where id='${theirs}'`), 't');
+      ok('the run still uses its capacity on the backlog', Number(await sql(`select count(*) from company_webhook_deliveries where event_id like 'backlog:%' and status <> 'queued'`)) >= 90);
+      await sql(`delete from company_webhook_deliveries where event_id like 'backlog:%' or id='${theirs}'`);
+      await call('DELETE', `orgs/${S.otherOrg}/connect/webhooks/${otherHook}`, { as: U.otherOwner });
     } finally { h.configureConnect({}); }
     await call('DELETE', `orgs/${S.otherOrg}/connect/webhooks/${hook.webhook.id}`, { as: U.otherOwner, expect: 404 });
     await call('DELETE', p, { as: U.admin });

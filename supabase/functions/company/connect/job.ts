@@ -50,7 +50,8 @@ export async function runConnectJob(ctx: Pick<Ctx, 'db' | 'env' | 'now'>): Promi
       console.error(JSON.stringify({ company_connect_job: 'org_failed', org: org.id, error: String(cause) }));
     }
   }
-  if (on.webhooks) result.webhooks = await processQueue(ctx.db, ctx.env, ctx.now());
+  // Each send is signed at the moment it leaves, not when the run started.
+  if (on.webhooks) result.webhooks = await processQueue(ctx.db, ctx.env, ctx.now(), 100, { clock: ctx.now });
   return result;
 }
 
