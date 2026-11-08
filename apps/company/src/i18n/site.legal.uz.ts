@@ -2,7 +2,7 @@ import type { legalEn } from './site.legal.en.ts';
 
 export const legalUz: typeof legalEn = {
   draftBanner: 'Faqat Schood jamoasiga ko‘rinadi. QORALAMA: foydalanishdan oldin bu sahifalarni yuristlar tekshirishi kerak. Tasdiqlash lozim: yuridik shaxs va ro‘yxatdan o‘tish ma’lumotlari, qo‘llaniladigan huquq, har bir ma’lumot turi uchun saqlash muddati, O‘zbekistonning shaxsiy ma’lumotlar qonuni talablari.',
-  version: '2026-yil 6-noyabrdagi tahrir',
+  version: '2026-yil 8-noyabrdagi tahrir',
   privacy: {
     metaTitle: 'Maxfiylik | Schood kompaniyalar uchun',
     metaDescription: 'Schood kompaniyalar uchun xizmati nomzodlar, xodimlar va HR haqida qanday ma’lumot yig‘adi, ularni kim ko‘radi, AI provayderlariga nima uzatiladi va ma’lumotlar qanday o‘chiriladi.',
@@ -22,12 +22,13 @@ export const legalUz: typeof legalEn = {
           'javoblaringizni, jumladan nutq matni va yozilgan matnni',
           'ball, daraja va AI izohlarini',
           'test signallarini: oyna almashtirish, matn qo‘yish va nusxalash, to‘liq ekrandan chiqish va bo‘limga ketgan soniyalar',
+          'tarmoq manzilingizning har kuni yangi tuz bilan olingan xeshi va brauzeringizning user-agent qatori: bitta tarmoqdan boshlanadigan testlar sonini cheklash va bir tarmoqdan topshirilgan testlarni belgilash uchun',
           'kompaniya qarori va siz haqingizdagi izohlari',
         ],
       },
       {
         title: 'Kompaniya nomzod haqida nimani ko‘radi',
-        paragraphs: ['Natijalar faqat shu kompaniya HR’iga ko‘rinadi. Test signallari odam baholaydigan belgi sifatida ko‘rsatiladi va hech narsa nomzodni avtomatik rad etmaydi. Kompaniya ruxsat bersa, oxirida darajangizni ko‘rasiz. Sertifikatni tekshirish sahifasida ism, kompaniya, ko‘nikmalar bo‘yicha daraja va sana ko‘rinadi, aloqa ma’lumotlari yo‘q.'],
+        paragraphs: ['Natijalar shu kompaniya HR’iga ko‘rinadi. HR, shuningdek, 90 kungacha amal qiladigan havola yaratishi mumkin: unda natijalar reytingi, AI xulosalari va test signallarini akkaunti yo‘q odamlar, masalan, ishga oluvchi rahbar ko‘radi. Email va telefoningiz u yerda faqat HR shuni tanlasa ko‘rinadi va HR havolani istalgan vaqtda bekor qila oladi. Kompaniya natijalarni ismingiz va aloqa ma’lumotlaringiz bilan Schood API orqali o‘z tizimlariga olishi hamda vebhuk orqali xabarnomalar olishi mumkin: ularda identifikatorlar va darajalar bor, ism va aloqa ma’lumotlari yo‘q. Test signallari odam baholaydigan belgi sifatida ko‘rsatiladi va hech narsa nomzodni avtomatik rad etmaydi. Kompaniya ruxsat bersa, oxirida darajangizni ko‘rasiz. Sertifikatni tekshirish sahifasida ism, kompaniya, ko‘nikmalar bo‘yicha daraja va sana ko‘rinadi, aloqa ma’lumotlari yo‘q.'],
         items: [],
       },
       {

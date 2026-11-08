@@ -19,6 +19,8 @@ import { suggestedMinutes } from './shared.ts';
 export const STARTS_PER_HOUR = 5;
 /** Generous, since a recruiting event may share one address; it only stops someone scanning for links. */
 export const LINK_VIEWS_PER_HOUR = 600;
+/** Certificate checks from one network an hour: plenty for an employer checking several, too few to guess codes. */
+export const CERTIFICATE_CHECKS_PER_HOUR = 120;
 const REFUSED = 'hiring.start_refused';
 const LINK = /^[A-Za-z0-9_-]{20,64}$/;
 const KEY = /^[A-Za-z0-9_-]{20,64}$/;
@@ -231,6 +233,7 @@ export const routes: Route[] = [
     // Certificate check: name, company, levels and date — no contact details.
     method: 'GET', path: 'public/v/:code', access: 'public',
     async handle(ctx, params) {
+      if (!(await withinLimit(ctx, 'certificate', CERTIFICATE_CHECKS_PER_HOUR))) throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
       const code = String(params.code ?? '').trim().toUpperCase();
       if (!CODE.test(code)) throw new CompanyError('certificate_not_found', 'No certificate has this code.', 404);
       const attempt = check<AttemptRow | null>(await ctx.db.from('company_attempts').select(ATTEMPT_COLUMNS).eq('certificate_code', code).eq('status', 'graded').maybeSingle());

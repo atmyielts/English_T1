@@ -479,6 +479,9 @@ Deno.test('lead score reads only stored fields and explains itself', () => {
   const weak = scoreLead({ size_band: null, interests: null, phone: null, email: 'a@b.c', job_title: null, need: null, source: 'landing', created_at: '2026-01-01T00:00:00Z', industry: null }, NOW);
   assertEquals(weak.score, 5);
   assertEquals(scoreLead({ ...lead, source: 'company_seats' }, NOW).reasons.includes('customer'), true);
+  // A stored row that names company_seats but has no workspace is not a customer (a spoofed public lead).
+  assertEquals(scoreLead({ ...lead, source: 'company_seats', org_id: null }, NOW).reasons.includes('customer'), false);
+  assertEquals(scoreLead({ ...lead, source: 'company_seats', org_id: ORG }, NOW).reasons.includes('customer'), true);
 });
 
 function leadRow(row: Record<string, unknown>) {

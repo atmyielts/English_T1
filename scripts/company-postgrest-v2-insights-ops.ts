@@ -191,6 +191,43 @@ export async function insightsOpsV2(h: V2Harness) {
     await sql(`update public.company_orgs set status = '${original.status}', seats_limit = ${original.seats_limit}, tests_limit = ${original.tests_limit ?? 'null'}, tests_used = ${original.tests_used}, contract_ends_at = ${original.contract_ends_at ? `'${original.contract_ends_at}'::timestamptz` : 'null'} where id = '${S.org}';`);
   });
 
+  await area('v2 races: public limits, other origins, seat approvals and seat requests', async () => {
+    const site = { name: 'Race Person', company: 'Race Co', phone: '+998901234567', elapsed_ms: 9000 };
+    // Twelve demo requests at once from one address: the daily allowance of five holds.
+    const leads = await Promise.all(Array.from({ length: 12 }, (_, index) => call('POST', 'public/leads', { body: { ...site, company: `Race Co ${index}` }, ip: '203.0.113.77', expect: [200, 429] })));
+    eq('parallel demo requests keep the daily allowance', leads.filter((reply) => reply.status === 200).length, 5);
+    eq('five parallel demo requests stored', await sql(`select count(*) from company_leads where company like 'Race Co %'`), '5');
+    const scores = await Promise.all(Array.from({ length: 40 }, () => call('POST', 'public/check/score', { body: { answers: { g1: 1 } }, ip: '203.0.113.78', expect: [200, 429] })));
+    eq('parallel free-check scores keep the daily allowance', scores.filter((reply) => reply.status === 200).length, 30);
+    // Another site cannot make its visitors send a lead, even as a "simple" text/plain request.
+    const cross = await call('POST', 'public/leads', { body: { ...site, company: 'Cross Site Co' }, ip: '203.0.113.79', headers: { Origin: 'https://evil.example', 'Content-Type': 'text/plain' }, expect: 403 });
+    eq('cross-site request is refused', cross.body.code, 'origin_not_allowed');
+    await call('POST', 'public/leads', { body: { ...site, company: 'Own Site Co', source: 'company_seats' }, ip: '203.0.113.79', headers: { Origin: 'https://company.schood.online' } });
+    await call('POST', 'public/leads', { body: { name: 'No Timer', company: 'No Timer Co', phone: '+998901234567' }, ip: '203.0.113.79' });
+    eq('cross-site lead not stored', await sql(`select count(*) from company_leads where company = 'Cross Site Co'`), '0');
+    eq('a lead without a fill time is not stored', await sql(`select count(*) from company_leads where company = 'No Timer Co'`), '0');
+    eq('a public lead cannot claim to be a seat request', await sql(`select source from company_leads where company = 'Own Site Co'`), 'landing');
+
+    // Four HR approvals at once for the one free seat: exactly one gets it.
+    const before = (await db.from('company_orgs').select('status,seats_limit,contract_ends_at').eq('id', S.org).single()).data;
+    const used = Number(await sql(`select count(*) from company_members where org_id='${S.org}' and seat and status <> 'removed'`));
+    await sql(`update company_orgs set status = 'active', contract_ends_at = now() + interval '90 days', seats_limit = ${used + 1} where id = '${S.org}'`);
+    const people = (await sql(`insert into company_members(org_id,full_name,role,status) select '${S.org}','Seat race '||n,'employee','active' from generate_series(1,4) n returning id`)).split('\n');
+    const asks = (await sql(`insert into company_member_requests(org_id,member_id,kind) select '${S.org}', id, 'seat' from company_members where id in (${people.map((id) => `'${id}'`).join(',')}) returning id`)).split('\n');
+    const approvals = await Promise.all(asks.map((id, index) => call('POST', `${o}/people/requests/${id}`, { as: index % 2 ? U.owner : U.admin, body: { decision: 'approve' }, expect: [200, 409] })));
+    eq('one of the racing approvals wins the last seat', approvals.filter((reply) => reply.status === 200).length, 1);
+    ok('the others are told the seats are full', approvals.filter((reply) => reply.status === 409).every((reply) => reply.body.code === 'seats_full'));
+    eq('the seat limit holds', await sql(`select count(*) from company_members where org_id='${S.org}' and seat and status <> 'removed'`), String(used + 1));
+    eq('refused requests stay pending', await sql(`select count(*) from company_member_requests where id in (${asks.map((id) => `'${id}'`).join(',')}) and status = 'pending'`), '3');
+    await sql(`delete from company_members where id in (${people.map((id) => `'${id}'`).join(',')}); update company_orgs set status = '${before.status}', seats_limit = ${before.seats_limit}, contract_ends_at = ${before.contract_ends_at ? `'${before.contract_ends_at}'::timestamptz` : 'null'} where id = '${S.org}'`);
+
+    // Three "talk to Schood about seats" clicks at once make one lead.
+    await sql(`delete from company_leads where org_id = '${S.org}' and source = 'company_seats'`);
+    const seatAsks = await Promise.all([U.admin, U.owner, U.admin].map((as) => call('POST', `${o}/insights/seats-request`, { as, body: { seats: 10 } })));
+    eq('one seat request is new', seatAsks.filter((reply) => reply.body.duplicate === false).length, 1);
+    eq('one seat lead stored', await sql(`select count(*) from company_leads where org_id = '${S.org}' and source = 'company_seats'`), '1');
+  });
+
   await area('v2 operations: founder reports, pipeline and audited workspace view', async () => {
     for (const path of ['staff/today', 'staff/revenue', 'staff/health', 'staff/leads/today', 'staff/leads/report', `staff/orgs/${S.org}/usage`, `staff/orgs/${S.org}/view`]) {
       await call('GET', path, staff);

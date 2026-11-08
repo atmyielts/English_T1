@@ -2,7 +2,9 @@ import { assert, assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
 import { routes as core } from './core.ts';
 import { routes as people } from './people.ts';
 import { parseCsv, readImport } from './people/csv.ts';
-import { maskEmail } from './people/join.ts';
+import { routes as hiring } from './hiring.ts';
+import { CERTIFICATE_CHECKS_PER_HOUR } from './hiring/public.ts';
+import { JOIN_VIEWS_PER_HOUR, maskEmail } from './people/join.ts';
 import { FakeDb, testHandler } from './testing.ts';
 import { sha256 } from './util.ts';
 
@@ -878,4 +880,20 @@ Deno.test('leaving and joining report a failed access sync, and the person can r
   synced.length = 0;
   const repaired = await call('POST', `join/${tokenOf(invited.body.link)}`, { user: NEWCOMER, body: { consent: true } });
   assertEquals([repaired.body.already, repaired.body.access_sync_failed, synced], [true, undefined, [NEWCOMER]]);
+});
+
+Deno.test('invitation and certificate links are rate limited per network, like the other public links', async () => {
+  const { db } = setup();
+  const call = testHandler(db, [...core, ...people, ...hiring]);
+  const asked: { bucket: string; limit: number }[] = [];
+  let allow = true;
+  db.rpcs.company_hiring_hit = ({ p_bucket, p_limit }) => { asked.push({ bucket: String(p_bucket).split(':')[0], limit: Number(p_limit) }); return allow; };
+  assertEquals((await call('GET', 'join/not-a-real-token-at-all')).body.code, 'invite_not_found');
+  assertEquals((await call('GET', 'public/v/AAAAAAAAAA')).status, 404);
+  assertEquals(asked, [{ bucket: 'join', limit: JOIN_VIEWS_PER_HOUR }, { bucket: 'certificate', limit: CERTIFICATE_CHECKS_PER_HOUR }]);
+  allow = false;
+  for (const path of ['join/not-a-real-token-at-all', 'public/v/AAAAAAAAAA']) {
+    const refused = await call('GET', path);
+    assertEquals([refused.status, refused.body.code], [429, 'too_many_requests'], path);
+  }
 });

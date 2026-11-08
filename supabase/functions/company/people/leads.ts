@@ -12,7 +12,7 @@ import { LEAD_COLUMNS, loadLead, ownerInvite, type LeadRow } from './staffshared
 export type LeadReason = 'size_1000' | 'size_201' | 'size_51' | 'interests' | 'phone' | 'email' | 'job_title' | 'need' | 'customer' | 'fresh' | 'industry';
 
 /** Points per stored field. Reasons say why, so staff can disagree with it. */
-export function scoreLead(lead: Pick<LeadRow, 'size_band' | 'interests' | 'phone' | 'email' | 'job_title' | 'need' | 'source' | 'created_at' | 'industry'>, now: Date): { score: number; reasons: LeadReason[] } {
+export function scoreLead(lead: Pick<LeadRow, 'size_band' | 'interests' | 'phone' | 'email' | 'job_title' | 'need' | 'source' | 'created_at' | 'industry'> & { org_id?: string | null }, now: Date): { score: number; reasons: LeadReason[] } {
   let score = 0;
   const reasons: LeadReason[] = [];
   const add = (points: number, reason: LeadReason) => { score += points; reasons.push(reason); };
@@ -27,8 +27,9 @@ export function scoreLead(lead: Pick<LeadRow, 'size_band' | 'interests' | 'phone
   if (lead.job_title) add(5, 'job_title');
   if ((lead.need ?? '').trim().length >= 20) add(10, 'need');
   if (lead.industry && lead.industry !== 'other') add(5, 'industry');
-  // Someone already in a workspace asking for more seats.
-  if (lead.source === 'company_seats') add(20, 'customer');
+  // Someone already in a workspace asking for more seats. A stored row with no workspace is not one,
+  // whatever its source says.
+  if (lead.source === 'company_seats' && lead.org_id !== null) add(20, 'customer');
   if (now.getTime() - Date.parse(lead.created_at) <= 3 * DAY) add(5, 'fresh');
   return { score: Math.min(100, score), reasons };
 }

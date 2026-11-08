@@ -6,7 +6,11 @@ import { accessSyncFlag, syncAccess } from '../core.ts';
 import { contractEnded, MEMBER_COLUMNS, ORG_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type OrgRow, type Route } from '../types.ts';
 import { obj, sha256, text } from '../util.ts';
+import { withinLimit } from '../hiring/ats.ts';
 import { INVITE_COLUMNS, inviteState, revokeMemberInvites, ROLE_RANK, type InviteRow, type InviteState } from './shared.ts';
+
+/** Invitation link views from one network an hour; a team link shared in a group chat stays well under it. */
+export const JOIN_VIEWS_PER_HOUR = 300;
 
 const TOKEN = /^[A-Za-z0-9_-]{16,128}$/;
 const CLAIM_TRIES = 5;
@@ -182,6 +186,7 @@ export const joinRoutes: Route[] = [
   {
     method: 'GET', path: 'join/:token', access: 'public',
     async handle(ctx, params) {
+      if (!(await withinLimit(ctx, 'join', JOIN_VIEWS_PER_HOUR))) throw new CompanyError('too_many_requests', 'Too many requests from this network. Try again in an hour.', 429);
       const invite = await findInvite(ctx, params.token);
       const found = await context(ctx, invite);
       const { org, target, own } = found;

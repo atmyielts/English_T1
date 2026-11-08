@@ -66,13 +66,30 @@ function leadCheckResult(result: CheckResult) {
   };
 }
 
+/**
+ * One more of `kind` from this address today, counted in one atomic step, so requests sent at
+ * the same moment cannot all pass a count they each read before the others wrote. If the counter
+ * is unavailable, the row counts below still apply.
+ */
+async function dayAllowance(ctx: Ctx, kind: string, limit: number): Promise<boolean> {
+  const { data, error } = await ctx.db.rpc('company_connect_day_hit', { p_bucket: `site-${kind}:${ctx.ipHash}`, p_limit: limit, p_at: ctx.now().toISOString() });
+  if (error || typeof data !== 'boolean') {
+    console.error(JSON.stringify({ company_site_limit: 'unavailable', error: error?.message ?? 'invalid response' }));
+    return true;
+  }
+  return data;
+}
+
 /** Counts this address's check runs today; refuses past the limit, and records the new run. */
 async function countCheckRun(ctx: Ctx, kind: 'open' | 'score', limit: number, level: string | null = null) {
   const { count, error } = await ctx.db.from('company_check_runs').select('id', { count: 'exact', head: true }).eq('ip_hash', ctx.ipHash).eq('kind', kind);
   if (error) throw new Error(error.message);
-  if ((count ?? 0) >= limit) throw new CompanyError('check_too_many', 'That is enough checks from this address for today. Try again tomorrow.', 429);
+  if ((count ?? 0) >= limit || !await dayAllowance(ctx, `check-${kind}`, limit)) throw new CompanyError('check_too_many', 'That is enough checks from this address for today. Try again tomorrow.', 429);
   check(await ctx.db.from('company_check_runs').insert({ kind, ip_hash: ctx.ipHash, level }).select('id').single());
 }
+
+/** Where on the site a request was sent from. Anything else (company_seats is the workspace's own) is stored as the landing page. */
+const SITE_SOURCE = /^(?:landing|check|compare|guide|industries|solutions|(?:guide|industry|solution):[a-z0-9_-]{1,60})$/;
 
 export const routes: Route[] = [
   {
@@ -89,9 +106,10 @@ export const routes: Route[] = [
     async handle(ctx, _params, body) {
       const input = obj(body);
       // Honeypot and speed checks: answer like a success so bots learn nothing, store nothing.
+      // The site's form always says how long it was open; a request that does not say is not from it.
       const trap = typeof input.website === 'string' && input.website.trim() !== '';
       const elapsed = Number(input.elapsed_ms);
-      if (trap || (Number.isFinite(elapsed) && elapsed >= 0 && elapsed < MIN_FILL_MS)) return { ok: true };
+      if (trap || !Number.isFinite(elapsed) || elapsed < MIN_FILL_MS) return { ok: true };
 
       const name = text(input.name, 'name', { min: 2, max: 120 })!;
       const company = text(input.company, 'company', { min: 2, max: 160 })!;
@@ -106,14 +124,15 @@ export const routes: Route[] = [
       const interests = [...new Set(((input.interests as unknown[] | undefined) ?? []).map((value) => oneOf(value, INTERESTS, 'interests')))];
       const need = text(input.need, 'need', { max: 2000, optional: true });
       const locale = oneOf(input.locale, ['en', 'ru', 'uz'] as const, 'locale', 'ru');
-      const source = text(input.source, 'source', { max: 80, optional: true });
+      const typed = text(input.source, 'source', { max: 80, optional: true });
+      const source = typed && SITE_SOURCE.test(typed) ? typed : null;
       const preferred = readPreferred(input, ctx.now());
       // The estimate is worked out again from the answers, so a lead cannot claim a level it did not get.
       const check_result = input.check_answers === undefined || input.check_answers === null ? null : leadCheckResult(scoreCheck(readAnswers(input.check_answers)));
 
       const { count, error } = await ctx.db.from('company_leads').select('id', { count: 'exact', head: true }).eq('ip_hash', ctx.ipHash);
       if (error) throw new Error(error.message);
-      if ((count ?? 0) >= LEADS_PER_DAY) throw new CompanyError('too_many_requests', 'We already have your requests for today. We will be in touch.', 429);
+      if ((count ?? 0) >= LEADS_PER_DAY || !await dayAllowance(ctx, 'lead', LEADS_PER_DAY)) throw new CompanyError('too_many_requests', 'We already have your requests for today. We will be in touch.', 429);
 
       const lead = check<{ id: string }>(await ctx.db.from('company_leads').insert({
         name, company, job_title, phone, email, industry, size_band, interests, need, locale, source: source ?? 'landing', status: 'new', ip_hash: ctx.ipHash,

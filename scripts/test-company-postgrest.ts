@@ -471,7 +471,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', 'public/leads', { label: 'honeypot stores nothing', body: { ...lead, company: 'Bot Inc', website: 'http://x' }, ip: '203.0.113.5' });
     await call('POST', 'public/leads', { label: 'too fast stores nothing', body: { ...lead, company: 'Fast Inc', elapsed_ms: 100 }, ip: '203.0.113.5' });
     await eqSql('bots stored nothing', `select count(*) from company_leads where company in ('Bot Inc','Fast Inc')`, '0');
-    await call('POST', 'public/leads', { label: 'no contact', body: { name: 'No Contact', company: 'Nobody' }, expect: 400, ip: '203.0.113.6' });
+    await call('POST', 'public/leads', { label: 'no contact', body: { name: 'No Contact', company: 'Nobody', elapsed_ms: 9000 }, expect: 400, ip: '203.0.113.6' });
     await call('POST', 'public/leads', { label: 'bad interest', body: { ...lead, interests: ['nonsense'] }, expect: 400, ip: '203.0.113.6' });
     for (let i = 0; i < 4; i++) await call('POST', 'public/leads', { label: 'daily allowance', body: { ...lead, company: `Rate ${i}` }, ip: '203.0.113.7' });
     await call('POST', 'public/leads', { body: { ...lead, company: 'Rate 4' }, ip: '203.0.113.7' });
@@ -1499,7 +1499,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', `${o()}/assessments`, { label: 'closes_at far in the future', as: ADMIN, body: { title: 'Far future', closes_at: '+100000-01-01T00:00:00Z' }, expect: refused });
     // NUL characters: valid JSON, refused by every Postgres text and jsonb column.
     const nul = 'A\u0000B name';
-    await call('POST', 'public/leads', { label: 'NUL in a public form', body: { name: nul, company: 'Nul Co', phone: '+998901234567' }, ip: '203.0.113.90', expect: 400 });
+    await call('POST', 'public/leads', { label: 'NUL in a public form', body: { name: nul, company: 'Nul Co', phone: '+998901234567', elapsed_ms: 9000 }, ip: '203.0.113.90', expect: 400 });
     await call('POST', `${o()}/departments`, { label: 'NUL in a name', as: ADMIN, body: { name: nul }, expect: 400 });
     await call('POST', `${o()}/departments`, { label: 'a lone surrogate in a name', as: ADMIN, body: { name: 'Bad \ud83d name' }, expect: 400 });
     await call('POST', `${o()}/writing/check`, { label: 'NUL in a draft', as: EMP1, body: { text: `${WRITING} ${nul}` }, expect: 400 });
@@ -1791,7 +1791,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', 'public/attempts/submit', { body: { key: candidate.body?.key, answers: answersFor(candidate.body?.attempt?.section) } });
     // Elsewhere: an invitation not yet accepted, a demo request, and audit text naming them.
     const elsewhere = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Closing Person', email: closing } });
-    await call('POST', 'public/leads', { body: { name: 'Closing Person', company: 'Closing Lead', email: closing, phone: '+998901112233', need: 'Tell me more.' }, ip: '203.0.113.200' });
+    await call('POST', 'public/leads', { body: { name: 'Closing Person', company: 'Closing Lead', email: closing, phone: '+998901112233', need: 'Tell me more.', elapsed_ms: 9000 }, ip: '203.0.113.200' });
 
     // What account closure does: the registered tables by user_id, then the hook.
     for (const table of ['company_roleplay_sessions', 'company_writing_checks', 'company_activity', 'company_lesson_progress', 'company_attempts', 'company_members']) {

@@ -2,7 +2,7 @@
 // No company registration details, certifications or legal claims are invented here.
 export const legalEn = {
   draftBanner: 'Visible to Schood staff only. DRAFT: these pages need legal review before anyone relies on them. To confirm: legal entity and registration details, governing law, retention periods for each kind of data, and any requirements of Uzbek personal data law.',
-  version: 'Version of 6 November 2026',
+  version: 'Version of 8 November 2026',
   privacy: {
     metaTitle: 'Privacy | Schood Company English',
     metaDescription: 'What Schood Company English collects about candidates, employees and HR users, who sees it, what goes to AI providers and how it is removed.',
@@ -22,12 +22,13 @@ export const legalEn = {
           'your answers, including speech transcripts and typed text',
           'your scores, levels and AI feedback',
           'test signals: tab switches, pasting, copying, leaving fullscreen and seconds per section',
+          'a daily-salted hash of your network address and your browser’s user-agent string, used to limit how many tests start from one network and to flag tests taken from the same network',
           'the company’s decision and notes about you',
         ],
       },
       {
         title: 'What the company sees about a candidate',
-        paragraphs: ['Results are shown only to that company’s HR team. Test signals appear as flags for a person to look at, and nothing rejects a candidate automatically. If a company allows it, you see your level at the end. A certificate check page shows the name, company, level per skill and date, without contact details.'],
+        paragraphs: ['Results are shown to that company’s HR team. HR can also create a link, valid for up to 90 days, that shows the ranked results, AI summaries and test signals to people without an account, such as a hiring manager. Your email and phone appear there only if HR chooses, and HR can withdraw the link at any time. A company can also fetch results, with your name and contact details, into its own systems through the Schood API, and receive notices by webhook, which carry ids and levels but no names or contact details. Test signals appear as flags for a person to look at, and nothing rejects a candidate automatically. If a company allows it, you see your level at the end. A certificate check page shows the name, company, level per skill and date, without contact details.'],
         items: [],
       },
       {
