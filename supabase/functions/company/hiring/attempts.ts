@@ -24,6 +24,10 @@ export interface AssessmentSettings {
   retest_days?: number | null;
   /** Placement/progress: tailor vocabulary, writing and speaking to each member's job role. */
   member_role?: boolean;
+  /** Hiring: the level each skill must reach, on top of the overall minimum. */
+  skill_minimums?: Partial<Record<Skill, Level>>;
+  /** Hiring: the role template this test started from. */
+  template?: string;
 }
 
 export interface AssessmentRow {

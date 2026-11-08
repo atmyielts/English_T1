@@ -5,6 +5,7 @@ import { accessSyncFlag, syncAccess, usage } from '../core.ts';
 import { contractEnded, MEMBER_COLUMNS } from '../handler.ts';
 import { check, checkUnique, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, text, email as readEmail } from '../util.ts';
+import { managedDepartments } from './bulk.ts';
 import { readImport, MAX_IMPORT_ROWS } from './csv.ts';
 import {
   actsAsOwner, assertOwnerRemains, dateOrNull, DAY, departmentIn, fetchAll, guardError, INVITE_COLUMNS, inviteRoleFor, inviteState, issueInvite, isHr,
@@ -78,8 +79,8 @@ export const memberRoutes: Route[] = [
         return q.order('full_name', { ascending: true }).order('id', { ascending: true });
       });
       if (!hr) {
-        const own = ctx.member!;
-        members = members.filter((row) => row.id === own.id || (own.department_id !== null && row.department_id === own.department_id));
+        const own = ctx.member!, managed = await managedDepartments(ctx);
+        members = members.filter((row) => row.id === own.id || (row.department_id !== null && managed.has(row.department_id)));
       }
       const departments = check<{ id: string; name: string }[]>(await ctx.db.from('company_departments').select('id,name').eq('org_id', org.id).order('name'));
       let invites: InviteRow[] = [];
@@ -92,7 +93,15 @@ export const memberRoutes: Route[] = [
         const held = personal.get(invite.member_id);
         if (!held || (held.revoked_at && !invite.revoked_at)) personal.set(invite.member_id, invite);
       }
+      // Extra departments of managers. Only for the edit form: without it the list still works.
+      const managers: Record<string, string[]> = {};
+      if (hr) {
+        const { data, error } = await ctx.db.from('company_manager_departments').select('member_id,department_id').eq('org_id', org.id).limit(1000);
+        if (error) console.error(JSON.stringify({ company_manager_departments: 'unavailable', error: error.message }));
+        for (const row of (data ?? []) as { member_id: string; department_id: string }[]) (managers[row.member_id] ??= []).push(row.department_id);
+      }
       return {
+        manager_departments: managers,
         members: members.map((row) => {
           const invite = row.status === 'invited' ? personal.get(row.id) : undefined;
           return { ...row, invite: invite ? { id: invite.id, expires_at: invite.expires_at, state: inviteState(invite, now) } : null };

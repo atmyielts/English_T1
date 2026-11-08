@@ -1,11 +1,14 @@
-// Training plan: HR assigns a track, a target level and a due date to everyone,
-// departments or people (company_assignments) and sees completion. Progress of
-// people who have not agreed to share it is left out of the numbers.
+// Training plan: HR assigns a track or a company course, a target level and a due date
+// to everyone, departments or people (company_assignments) and sees completion. Progress
+// of people who have not agreed to share it is left out of the numbers. A company course
+// is stored in track_code as its `c-<id>` code, so it is assigned exactly like a track.
 import { HR_ROLES, LEAD_ROLES, LEVELS, levelIndex, isLevel, type Level } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { fetchAll } from '../people/shared.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { isCalendarDate, obj, oneOf, tashkentDay, text, uuid } from '../util.ts';
+import type { Localized } from './content.ts';
+import { courseIdOf, liveCourses, type LiveCourse } from './custom.ts';
 import { isHr } from './shared.ts';
 import { findTrack, TRACKS } from './tracks/index.ts';
 
@@ -25,17 +28,36 @@ export const appliesTo = (assignment: AssignmentRow, member: Pick<MemberRow, 'id
     : assignment.department_id ? assignment.department_id === member.department_id
     : member.role === 'employee' || member.role === 'manager';
 
+/** What an assignment's track_code stands for: a built-in track or a published company course. */
+export function assignedContent(code: string | null, courses: LiveCourse[]): { title: Localized; codes: string[] } | null {
+  if (!code) return null;
+  const track = findTrack(code);
+  if (track) return { title: track.title, codes: track.lessons.map((lesson) => lesson.code) };
+  const course = courses.find((entry) => entry.code === code);
+  return course ? { title: course.title, codes: course.lessons.map((lesson) => lesson.code) } : null;
+}
+
+/** Assignments for this member: their own rows, then whatever is set for a department or everyone. */
+export async function activeAssignments(ctx: Ctx, member: MemberRow): Promise<AssignmentRow[]> {
+  const active = () => ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', ctx.org!.id).eq('status', 'active');
+  const [own, groups] = await Promise.all([
+    fetchAll<AssignmentRow>(() => active().eq('member_id', member.id).order('id')),
+    fetchAll<AssignmentRow>(() => active().is('member_id', null).order('id')),
+  ]);
+  return [...own, ...groups];
+}
+
 export interface PersonProgress {
   member_id: string; full_name: string | null; email: string | null; department_id: string | null; level: string | null;
   shared: boolean; lessons_done: number | null; lessons_total: number; meets_target: boolean | null; done: boolean | null; last_active: string | null;
 }
 
 /** One person's standing against an assignment (null fields when they have not agreed to share). */
-export function personProgress(assignment: AssignmentRow, member: MemberRow, completed: Set<string>, lastActive: string | null): PersonProgress {
-  const track = assignment.track_code ? findTrack(assignment.track_code) : undefined;
-  const total = track?.lessons.length ?? 0;
+export function personProgress(assignment: AssignmentRow, member: MemberRow, completed: Set<string>, lastActive: string | null, courses: LiveCourse[] = []): PersonProgress {
+  const content = assignedContent(assignment.track_code, courses);
+  const total = content?.codes.length ?? 0;
   const shared = Boolean(member.consent_at);
-  const done = track ? track.lessons.filter((lesson) => completed.has(`${member.id}:${lesson.code}`)).length : 0;
+  const done = content ? content.codes.filter((code) => completed.has(`${member.id}:${code}`)).length : 0;
   // The level comes from company tests, which HR may always see.
   const meets = assignment.target_level ? Boolean(member.level && isLevel(member.level) && levelIndex(member.level) >= levelIndex(assignment.target_level)) : true;
   return {
@@ -55,6 +77,7 @@ export function summarise(people: PersonProgress[], today: string, assignment: A
     : null;
   return {
     people: people.length, shared: shared.length, hidden: people.length - shared.length, done,
+    unfinished: shared.length - done,
     completion: shared.length ? Math.round(done / shared.length * 100) : null,
     lessons_percent: lessonShare,
     at_target: assignment.target_level ? people.filter((person) => person.meets_target).length : null,
@@ -62,7 +85,7 @@ export function summarise(people: PersonProgress[], today: string, assignment: A
   };
 }
 
-async function context(ctx: Ctx) {
+export async function context(ctx: Ctx) {
   const members = await fetchAll<MemberRow>(() => ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', ctx.org!.id).eq('status', 'active').order('id'));
   const progress = await fetchAll<{ member_id: string; lesson_code: string; status: string; updated_at: string | null }>(
     () => ctx.db.from('company_lesson_progress').select('member_id,lesson_code,status,updated_at').eq('org_id', ctx.org!.id).order('id'),
@@ -71,7 +94,7 @@ async function context(ctx: Ctx) {
   const completed = new Set(progress.filter((row) => row.status === 'completed').map((row) => `${row.member_id}:${row.lesson_code}`));
   const last = new Map<string, string>();
   for (const row of progress) if (row.updated_at && (last.get(row.member_id) ?? '') < row.updated_at) last.set(row.member_id, row.updated_at);
-  return { members, completed, last };
+  return { members, completed, last, courses: await liveCourses(ctx) };
 }
 
 /** Managers see assignments for their department, their people or everyone. */
@@ -83,11 +106,11 @@ function visibleTo(ctx: Ctx, members: MemberRow[]) {
 }
 
 /** `departmentOf`: undefined shows everyone (HR); a manager gets their department, and a manager with none gets nobody. */
-function assignmentView(row: AssignmentRow, members: MemberRow[], completed: Set<string>, last: Map<string, string>, today: string, departmentOf?: string | null) {
+function assignmentView(row: AssignmentRow, members: MemberRow[], completed: Set<string>, last: Map<string, string>, courses: LiveCourse[], today: string, departmentOf?: string | null) {
   const people = members.filter((member) => appliesTo(row, member) && (departmentOf === undefined || (departmentOf !== null && member.department_id === departmentOf)))
-    .map((member) => personProgress(row, member, completed, last.get(member.id) ?? null));
-  const track = row.track_code ? findTrack(row.track_code) : undefined;
-  return { assignment: { ...row, track_title: track?.title ?? null, track_lessons: track?.lessons.length ?? 0 }, people, stats: summarise(people, today, row) };
+    .map((member) => personProgress(row, member, completed, last.get(member.id) ?? null, courses));
+  const content = assignedContent(row.track_code, courses);
+  return { assignment: { ...row, track_title: content?.title ?? null, track_lessons: content?.codes.length ?? 0, is_course: Boolean(row.track_code && courseIdOf(row.track_code)) }, people, stats: summarise(people, today, row) };
 }
 
 export const routes: Route[] = [
@@ -95,7 +118,7 @@ export const routes: Route[] = [
     method: 'GET', path: 'orgs/:org/assignments', access: 'org', roles: LEAD_ROLES, allowSuspended: true,
     async handle(ctx) {
       const rows = await fetchAll<AssignmentRow>(() => ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', ctx.org!.id).order('created_at', { ascending: false }).order('id'));
-      const { members, completed, last } = await context(ctx);
+      const { members, completed, last, courses } = await context(ctx);
       const today = tashkentDay(ctx.now());
       // Managers count only their own department's people.
       const scope = isHr(ctx) ? undefined : ctx.member?.department_id ?? null;
@@ -103,9 +126,10 @@ export const routes: Route[] = [
       return {
         can_manage: isHr(ctx),
         tracks: TRACKS.map((track) => ({ code: track.code, title: track.title, lessons: track.lessons.length })),
+        courses: courses.map((course) => ({ code: course.code, title: course.title, lessons: course.lessons.length })),
         people: isHr(ctx) ? members.filter((member) => member.role === 'employee' || member.role === 'manager').map((member) => ({ id: member.id, full_name: member.full_name, email: member.email, department_id: member.department_id, job_role: member.job_role, level: member.level })) : [],
         assignments: rows.filter(visible).map((row) => {
-          const { assignment, stats } = assignmentView(row, members, completed, last, today, scope);
+          const { assignment, stats } = assignmentView(row, members, completed, last, courses, today, scope);
           const person = row.member_id ? members.find((member) => member.id === row.member_id) : null;
           return { ...assignment, person_name: person ? person.full_name ?? person.email : null, stats };
         }),
@@ -116,10 +140,10 @@ export const routes: Route[] = [
     method: 'GET', path: 'orgs/:org/assignments/:assignment', access: 'org', roles: LEAD_ROLES, allowSuspended: true,
     async handle(ctx, params) {
       const row = check<AssignmentRow | null>(await ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('id', uuid(params.assignment, 'assignment')).eq('org_id', ctx.org!.id).maybeSingle());
-      const { members, completed, last } = await context(ctx);
+      const { members, completed, last, courses } = await context(ctx);
       if (!row || !visibleTo(ctx, members)(row)) throw new CompanyError('assignment_not_found', 'Assignment not found.', 404);
       const scope = isHr(ctx) ? undefined : ctx.member?.department_id ?? null;
-      return assignmentView(row, members, completed, last, tashkentDay(ctx.now()), scope);
+      return assignmentView(row, members, completed, last, courses, tashkentDay(ctx.now()), scope);
     },
   },
   {
@@ -128,7 +152,7 @@ export const routes: Route[] = [
     async handle(ctx, _params, body) {
       const input = obj(body);
       const trackCode = input.track_code === undefined || input.track_code === null || input.track_code === '' ? null : String(input.track_code);
-      if (trackCode && !findTrack(trackCode)) throw new CompanyError('invalid_field', 'track_code is not a track.', 400, { field: 'track_code' });
+      if (trackCode && !findTrack(trackCode) && !(courseIdOf(trackCode) && (await liveCourses(ctx)).some((course) => course.code === trackCode))) throw new CompanyError('invalid_field', 'track_code is not a track.', 400, { field: 'track_code' });
       const target = input.target_level === undefined || input.target_level === null || input.target_level === '' ? null : oneOf<Level>(input.target_level, LEVELS, 'target_level');
       if (!trackCode && !target) throw new CompanyError('assignment_empty', 'Choose a track, a target level or both.', 400, { field: 'track_code' });
       const due = input.due_date === undefined || input.due_date === null || input.due_date === '' ? null : String(input.due_date);

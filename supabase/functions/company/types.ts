@@ -1,6 +1,7 @@
 // Shared types for the `company` function. Each area module (core, people, hiring,
 // training, insights, staff) exports a `routes` list; handler.ts dispatches to them.
 import type { OrgRole } from '../../../packages/company-core/src/mod.ts';
+import type { ConnectConfig } from './connect/shared.ts';
 
 // The subset of supabase-js the function uses (service-role client).
 // deno-lint-ignore no-explicit-any
@@ -54,6 +55,8 @@ export interface CompanyEnv {
   aiDailyLimit: number;
   /** Public origin of the app, for links in responses. */
   appUrl: string;
+  /** Outbound integrations; absent means every channel stays off. */
+  connect?: ConnectConfig;
 }
 
 /** AI gateway call, injected so tests can stub it (normally callEnglishAIWithStatus). */

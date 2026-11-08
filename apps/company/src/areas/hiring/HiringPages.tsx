@@ -8,6 +8,9 @@ import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
 import { decodeLink, encodeLink } from './flow.ts';
+import { TemplateGallery } from './HiringSetupPages.tsx';
+import { FunnelPanel, InvitePanel, PipelinePanel } from './PipelinePanel.tsx';
+import { SharePanel } from './SharePages.tsx';
 import type { Assessment, AttemptRow, Stats } from './types.ts';
 import {
   CopyButton, DecisionBadge, FlagList, LevelBadge, MeetsBadge, StatusBadge, downloadText, shortLevel, skillText, useFormat, useHiringError, useLoad,
@@ -34,14 +37,19 @@ export function HiringListPage() {
   const { org } = useWorkspace();
   const { data, error, reload } = useLoad(() => api<{ assessments: Assessment[]; usage: Usage; bank: Record<Skill, number> }>(`orgs/${org.id}/assessments?kind=hiring`), [org.id]);
   const [creating, setCreating] = useState(false);
+  const [browsing, setBrowsing] = useState(false);
   return <div className="hiring-stack">
     <div className="page-heading">
       <div>
         <h1>{t('hiring.list.title')}</h1>
         <p>{t('hiring.list.lead')}</p>
       </div>
-      {!creating && <button type="button" onClick={() => setCreating(true)}>{t('hiring.list.new')}</button>}
+      {!creating && <div className="company-actions">
+        <button type="button" onClick={() => setBrowsing((value) => !value)}>{t('hiring.gallery.open')}</button>
+        <button type="button" className="quiet" onClick={() => setCreating(true)}>{t('hiring.list.new')}</button>
+      </div>}
     </div>
+    {browsing && <TemplateGallery onCancel={() => setBrowsing(false)}/>}
     {data && <UsageLine usage={data.usage}/>}
     {creating && <section aria-labelledby="hiring-form-title">
       <h2 id="hiring-form-title">{t('hiring.form.createTitle')}</h2>
@@ -56,7 +64,10 @@ export function HiringListPage() {
     {data && (data.assessments.length === 0 && !creating ? <section className="hiring-empty">
       <h2>{t('hiring.list.emptyTitle')}</h2>
       <p>{t('hiring.list.empty')}</p>
-      <button type="button" onClick={() => setCreating(true)}>{t('hiring.list.new')}</button>
+      <div className="company-actions hiring-center">
+        <button type="button" onClick={() => setBrowsing(true)}>{t('hiring.gallery.open')}</button>
+        <button type="button" className="quiet" onClick={() => setCreating(true)}>{t('hiring.list.new')}</button>
+      </div>
     </section> : <ul className="hiring-cards">
       {data.assessments.map((assessment) => <li key={assessment.id} className="hiring-card">
         <div>
@@ -96,6 +107,7 @@ export function TestForm({ initial, onSaved, onCancel }: { initial?: Assessment;
     title: initial?.title ?? '', job_role: initial?.job_role ?? 'general', skills: initial?.skills ?? (['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'] as Skill[]),
     min_level: initial?.min_level ?? '', time_limit_minutes: String(initial?.time_limit_minutes ?? suggested([...SKILLS])), max_attempts: initial?.max_attempts ? String(initial.max_attempts) : '',
     closes_at: toDateInput(initial?.closes_at ?? null), show_level: initial?.settings.show_level ?? false,
+    skill_minimums: (initial?.settings.skill_minimums ?? {}) as Partial<Record<Skill, Level>>,
   });
   const [timeTouched, setTimeTouched] = useState(Boolean(initial));
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -109,6 +121,7 @@ export function TestForm({ initial, onSaved, onCancel }: { initial?: Assessment;
     const body = {
       title: form.title, job_role: form.job_role, skills: form.skills, min_level: form.min_level || null, time_limit_minutes: Number(form.time_limit_minutes),
       max_attempts: form.max_attempts ? Number(form.max_attempts) : null, closes_at: fromDateInput(form.closes_at), show_level: form.show_level,
+      skill_minimums: Object.fromEntries(Object.entries(form.skill_minimums).filter(([skill]) => form.skills.includes(skill as Skill))),
     };
     try {
       if (initial) {
@@ -153,6 +166,18 @@ export function TestForm({ initial, onSaved, onCancel }: { initial?: Assessment;
         <span className="hint">{t('hiring.form.maxAttemptsHint')}</span></label>
       <label>{t('hiring.form.closesAt')} <span className="hint">{t('common.optional')}</span><input type="date" value={form.closes_at} onChange={(event) => setForm({ ...form, closes_at: event.target.value })}/></label>
     </div>
+    {form.skills.length > 0 && <fieldset>
+      <legend>{t('hiring.form.skillMinimums')} <span className="hint">{t('common.optional')}</span></legend>
+      <div className="hiring-form-row">{form.skills.map((skill) => <label key={skill}>{skillText(t, skill)}<select value={form.skill_minimums[skill] ?? ''} onChange={(event) => {
+        const next = { ...form.skill_minimums };
+        if (event.target.value) next[skill] = event.target.value as Level; else delete next[skill];
+        setForm({ ...form, skill_minimums: next });
+      }}>
+        <option value="">{t('hiring.form.minLevelNone')}</option>
+        {LEVELS.filter((level) => level !== 'pre_a1').map((level) => <option key={level} value={level}>{shortLevel(level)}</option>)}
+      </select></label>)}</div>
+      <p className="hint">{t('hiring.form.skillMinimumsHint')}</p>
+    </fieldset>}
     <label className="check"><input type="checkbox" checked={form.show_level} onChange={(event) => setForm({ ...form, show_level: event.target.checked })}/> {t('hiring.form.showLevel')}</label>
     <div className="company-actions">
       <button disabled={busy || form.skills.length === 0}>{busy ? t('hiring.run.working') : initial ? t('hiring.form.save') : t('hiring.form.create')}</button>
@@ -204,6 +229,9 @@ function LinkPanel({ assessment }: { assessment: Assessment }) {
   </section>;
 }
 
+type DetailTab = 'pipeline' | 'invite' | 'results' | 'funnel' | 'share';
+const DETAIL_TABS: DetailTab[] = ['pipeline', 'invite', 'results', 'funnel', 'share'];
+
 type Sort = 'newest' | 'score' | 'name';
 interface Filters { search: string; meets: '' | 'yes' | 'no'; status: string; decision: string; sort: Sort }
 
@@ -215,6 +243,7 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
   const [filters, setFilters] = useState<Filters>({ search: '', meets: '', status: '', decision: '', sort: 'newest' });
   const [picked, setPicked] = useState<string[]>([]);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState(''), [actionError, setActionError] = useState('');
+  const [tab, setTab] = useState<DetailTab>('pipeline');
   useEffect(() => { setPicked([]); }, [assessmentId]);
 
   const rows = useMemo(() => {
@@ -269,7 +298,7 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
           <span className={`company-badge ${assessment.status === 'open' ? 'good' : ''}`}>{t(`hiring.testStatus.${assessment.status}` as AppKey)}</span>
           {assessment.min_level && <span>{t('hiring.list.min', { level: shortLevel(assessment.min_level) })}</span>}
           <span>{t('common.minutes', { count: assessment.time_limit_minutes })}</span>
-          <span>{assessment.skills.map((skill) => skillText(t, skill)).join(' · ')}</span>
+          <span>{assessment.skills.map((skill) => `${skillText(t, skill)}${assessment.settings.skill_minimums?.[skill] ? ` ${shortLevel(assessment.settings.skill_minimums[skill])}` : ''}`).join(' · ')}</span>
           {assessment.closes_at && <span>{t('hiring.list.closesOn', { date: format.date(assessment.closes_at) })}</span>}
           {assessment.max_attempts && <span>{t('hiring.detail.maxCandidates', { count: assessment.max_attempts })}</span>}
         </p>
@@ -282,6 +311,7 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
         : <button type="button" className="quiet" disabled={busy} onClick={() => void act('reopen')}>{t('hiring.detail.reopen')}</button>}
       <button type="button" className="quiet" disabled={busy} onClick={() => void act('duplicate')}>{t('hiring.detail.duplicate')}</button>
       <button type="button" className="quiet" disabled={busy || !data.attempts.length} onClick={() => void act('export')}>{t('hiring.detail.export')}</button>
+      <Link className="button-link quiet" to={`/w/${org.id}/hiring-preview/${assessment.id}`}>{t('hiring.preview.open')}</Link>
     </div>
     {notice && <p className="notice" role="status">{notice}</p>}
     {actionError && <p className="error" role="alert">{actionError}</p>}
@@ -295,17 +325,25 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
     <div className="company-grid hiring-stats">
       <div className="company-stat"><strong>{stats.total}</strong><span>{t('hiring.stats.total')}</span></div>
       <div className="company-stat"><strong>{stats.graded}</strong><span>{t('hiring.stats.graded')}</span></div>
-      {assessment.min_level && <div className="company-stat"><strong>{stats.meets}</strong><span>{t('hiring.stats.meets', { level: shortLevel(assessment.min_level) })}</span></div>}
+      {assessment.min_level && !Object.keys(assessment.settings.skill_minimums ?? {}).length ? <div className="company-stat"><strong>{stats.meets}</strong><span>{t('hiring.stats.meets', { level: shortLevel(assessment.min_level) })}</span></div>
+        : assessment.min_level || Object.keys(assessment.settings.skill_minimums ?? {}).length > 0 ? <div className="company-stat"><strong>{stats.meets}</strong><span>{t('hiring.stats.meetsAll')}</span></div> : null}
       <div className="company-stat"><strong>{format.score(stats.average)}</strong><span>{t('hiring.stats.average')}</span></div>
       {(stats.in_progress > 0 || stats.pending > 0) && <div className="company-stat"><strong>{stats.in_progress} / {stats.pending}</strong><span>{t('hiring.stats.progressPending')}</span></div>}
     </div>
     {stats.graded > 0 && <LevelSpread levels={stats.levels} total={stats.graded} min={assessment.min_level}/>}
 
-    <section aria-labelledby="hiring-candidates">
+    <div className="hiring-tabs no-print" role="tablist" aria-label={t('hiring.detail.candidates')}>
+      {DETAIL_TABS.map((entry) => <button key={entry} type="button" role="tab" aria-selected={tab === entry} className={tab === entry ? '' : 'quiet'} onClick={() => setTab(entry)}>{t(`hiring.tab.${entry}` as AppKey)}</button>)}
+    </div>
+    {tab === 'pipeline' && <PipelinePanel assessment={assessment}/>}
+    {tab === 'invite' && <InvitePanel assessment={assessment}/>}
+    {tab === 'funnel' && <FunnelPanel assessment={assessment}/>}
+    {tab === 'share' && <SharePanel assessment={assessment}/>}
+    {tab === 'results' && <section aria-labelledby="hiring-candidates">
       <h2 id="hiring-candidates">{t('hiring.detail.candidates')}</h2>
       <div className="company-toolbar no-print">
         <label>{t('hiring.filter.search')}<input type="search" value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })}/></label>
-        {assessment.min_level && <label>{t('hiring.filter.meets')}<select value={filters.meets} onChange={(event) => setFilters({ ...filters, meets: event.target.value as Filters['meets'] })}>
+        {(assessment.min_level || Object.keys(assessment.settings.skill_minimums ?? {}).length > 0) && <label>{t('hiring.filter.meets')}<select value={filters.meets} onChange={(event) => setFilters({ ...filters, meets: event.target.value as Filters['meets'] })}>
           <option value="">{t('hiring.filter.any')}</option><option value="yes">{t('hiring.meets.yes')}</option><option value="no">{t('hiring.meets.no')}</option>
         </select></label>}
         <label>{t('hiring.filter.status')}<select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}>
@@ -344,7 +382,7 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
           </tbody>
         </table>
       </div>}
-    </section>
+    </section>}
   </div>;
 }
 

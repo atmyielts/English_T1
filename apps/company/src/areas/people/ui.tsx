@@ -35,6 +35,12 @@ export function useDates() {
   };
 }
 
+/** An amount in sums, as staff entered it. */
+export function useMoney() {
+  const t = useAppT(), { number } = useI18n();
+  return (value: number | null | undefined) => value === null || value === undefined ? '—' : t('people.doc.money', { amount: number(value, { maximumFractionDigits: 0 }) });
+}
+
 async function writeClipboard(value: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(value);

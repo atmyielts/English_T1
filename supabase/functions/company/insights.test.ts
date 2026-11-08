@@ -1,6 +1,12 @@
 import { assert, assertEquals, assertExists, assertStringIncludes } from 'jsr:@std/assert@1';
 import { routes as insights } from './insights.ts';
-import { csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
+import { averageScore, csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
+
+Deno.test('score averages exclude untested members and retain a real zero score', () => {
+  assertEquals(averageScore([null, undefined]), { score: null, level: null });
+  assertEquals(averageScore([null, 80, undefined]).score, 80);
+  assertEquals(averageScore([0, null, 80]).score, 40);
+});
 import { assignmentsInScope } from './insights/overview.ts';
 import { englishSummary, englishVisibleFrom } from './insights/english.ts';
 import { localDate, shortName } from './insights/common.ts';
@@ -379,6 +385,15 @@ Deno.test('a seats request reaches the Schood pipeline once a day', async () => 
   assertEquals(db.rows('company_leads').length, 1);
   const overview = await call('GET', `orgs/${ORG}/insights/overview`, { user: ADMIN });
   assertEquals(overview.body.seats_requested_at, lead.created_at);
+});
+
+Deno.test('seats requests sent at the same moment make one lead', async () => {
+  const { db, call } = setup();
+  const replies = await Promise.all([1, 2, 3].map(() => call('POST', `orgs/${ORG}/insights/seats-request`, { user: ADMIN, body: { seats: 5 } })));
+  assertEquals(replies.map((reply) => reply.status), [200, 200, 200]);
+  assertEquals(replies.filter((reply) => reply.body.duplicate === false).length, 1);
+  assertEquals(db.rows('company_leads').filter((row) => row.source === 'company_seats').length, 1);
+  assertEquals(db.rows('company_audit').filter((row) => row.action === 'insights.seats_requested').length, 1);
 });
 
 Deno.test('someone first tested inside the period still counts as moving up on a retest', async () => {

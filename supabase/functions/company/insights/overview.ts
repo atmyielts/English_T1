@@ -71,14 +71,18 @@ export const routes: Route[] = [
       const message = text(input.message, 'message', { max: 1000, optional: true });
       const phone = text(input.phone, 'phone', { max: 40, optional: true });
       const since = new Date(ctx.now().getTime() - 86_400_000).toISOString();
-      const recent = check<{ id: string; created_at: string }[]>(await ctx.db.from('company_leads').select('id,created_at').eq('org_id', org.id).eq('source', SEATS_SOURCE).gte('created_at', since).limit(1));
-      if (recent.length) return { requested_at: recent[0].created_at, duplicate: true };
       const name = (ctx.member?.full_name || ctx.email || 'HR').slice(0, 120);
       const need = [`Learning seats for workspace "${org.name}" (${org.status}).`, seats ? `Seats wanted: ${seats}.` : null, message].filter(Boolean).join('\n').slice(0, 2000);
-      const lead = check<{ id: string; created_at: string }>(await ctx.db.from('company_leads').insert({
-        name, company: org.name.slice(0, 160), phone: phone ?? org.contact_phone, email: ctx.email ?? org.billing_email, size_band: org.size_band, industry: org.industry,
-        need, locale: typeof org.settings?.locale === 'string' ? org.settings.locale : null, status: 'new', org_id: org.id, source: SEATS_SOURCE, ip_hash: ctx.ipHash,
-      }).select('id,created_at').single());
+      // Looked up and written under one lock per workspace (status 'new', source SEATS_SOURCE),
+      // so a double click or two HR people at once make one lead.
+      const lead = check<{ id: string; created_at: string; duplicate: boolean }>(await ctx.db.rpc('company_request_seats', {
+        p_org: org.id, p_since: since,
+        p_lead: {
+          name, company: org.name.slice(0, 160), phone: phone ?? org.contact_phone, email: ctx.email ?? org.billing_email, size_band: org.size_band, industry: org.industry,
+          need, locale: typeof org.settings?.locale === 'string' ? org.settings.locale : null, ip_hash: ctx.ipHash,
+        },
+      }));
+      if (lead.duplicate) return { requested_at: lead.created_at, duplicate: true };
       await ctx.audit('insights.seats_requested', lead.id, { seats });
       return { requested_at: lead.created_at, duplicate: false };
     },

@@ -54,6 +54,12 @@ export function createCompanyHandler(deps: HandlerDeps) {
   return async (req: Request): Promise<Response> => {
     const origin = req.headers.get('Origin');
     if (req.method === 'OPTIONS') return new Response('ok', { headers: cors(origin) });
+    // A browser always names the page's origin on a cross-site request, even a "simple" one that
+    // skips the preflight, so a page on another site cannot make its visitors send anything here.
+    // Servers (the API, the scheduler) send no Origin and are not affected.
+    if (origin !== null && deps.origins.length && !deps.origins.includes(origin)) {
+      return json(403, { code: 'origin_not_allowed', error: 'Requests from this site are not accepted.' }, origin);
+    }
     const url = new URL(req.url);
     const path = url.pathname.replace(/^.*?\/company\/?/, '').replace(/\/+$/, '');
     try {

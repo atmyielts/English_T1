@@ -159,10 +159,53 @@ export function seed(db: FakeDb, world: World) {
       });
     }
   });
+
+  // --- Required levels, spend, saved reports (analytics pages) ------------------
+  const requirement = (row: Row) => db.rows('company_level_requirements').push({ id: crypto.randomUUID(), org_id: orgId, job_role: null, department_id: null, skills: {}, due_date: null, source: 'hr', note: null, created_by: owner, ...row });
+  requirement({ job_role: 'hospitality', level: 'b1', skills: { speaking: 'b1', listening: 'b1' }, due_date: localDay(now, 75), source: 'suggestion' });
+  requirement({ job_role: 'sales', level: 'b2', skills: { speaking: 'b2' }, due_date: localDay(now, 20) });
+  requirement({ job_role: 'banking_finance', level: 'b1', skills: { reading: 'b1' }, due_date: localDay(now, -5), note: 'Agreed with the finance director' });
+  requirement({ level: 'a2' });
+
+  const spend = (days: number, amount: number, currency: string, category: string, description: string | null) => db.rows('company_training_spend').push({ id: crypto.randomUUID(), org_id: orgId, spent_on: localDay(now, days), amount, currency, category, description, created_by: owner, created_at: at(now, days, 12) });
+  spend(-40, 18_000_000, 'UZS', 'schood', 'Seats, first quarter');
+  spend(-12, 6_500_000, 'UZS', 'trainer', 'Live workshop: guest complaints');
+  spend(-3, 1_200_000, 'UZS', 'materials', 'Printed glossaries');
+  spend(-20, 400, 'USD', 'other', 'Speaking club hosts');
+
+  const view = (name: string, config: Row) => db.rows('company_saved_views').push({ id: crypto.randomUUID(), org_id: orgId, name, config, created_by: owner, created_at: at(now, -9, 10), updated_at: at(now, -9, 10) });
+  view('Board pack: departments', { rows: 'department', columns: ['people', 'tested', 'avg_level', 'compliance_pct', 'moved_up', 'active', 'hours'], filters: { department_ids: [], job_roles: [], levels: [], seat: 'any' }, period: { preset: 'last_90' } });
+  view('Monthly activity', { rows: 'month', columns: ['active', 'hours', 'lessons', 'tests_graded', 'sessions_attended'], filters: { department_ids: [], job_roles: [], levels: [], seat: 'any' }, period: { preset: 'this_year' } });
+
+  // --- Challenge and session depth ------------------------------------------------
+  const september = db.rows('company_challenges').find((row) => row.title === 'September minutes challenge');
+  if (september) september.prize = 'Lunch with the general manager';
+  const cupStart = localDay(now, -6);
+  db.rows('company_challenges').push({
+    id: crypto.randomUUID(), org_id: orgId, title: 'Department cup', description: 'Departments team up. The team with the most points per person wins, so size gives no advantage.', metric: 'points', starts_on: cupStart, ends_on: localDay(now, 21),
+    department_ids: [departments.front, departments.sales, departments.finance], ended_at: null, created_by: owner, created_at: at(now, -7, 10), updated_at: at(now, -7, 10), template: 'department_cup', mode: 'teams', prize: 'Team dinner',
+    teams: [{ id: 'team-1', name: 'Front of house', department_ids: [departments.front] }, { id: 'team-2', name: 'Back office', department_ids: [departments.sales, departments.finance] }], final_results: null, finished_at: null,
+  });
+  const series = crypto.randomUUID();
+  for (let week = 0; week < 4; week++) {
+    db.rows('company_sessions').push({
+      id: crypto.randomUUID(), org_id: orgId, title: 'Weekly speaking club', kind: 'class', trainer: 'Schood trainer', starts_at: at(now, 3 + week * 7, 17), duration_minutes: 45, location: 'Room 2', link: null,
+      department_ids: [departments.front], member_ids: [], notes: 'Bring a real guest situation from this week.', status: 'scheduled', created_by: owner, created_at: at(now, -2, 10), updated_at: at(now, -2, 10), series_id: series, trainer_notes: null,
+    });
+  }
+  const pastSession = db.rows('company_sessions').find((row) => row.id === past);
+  if (pastSession) pastSession.trainer_notes = 'Covered greetings and holding a call. Next time: taking messages accurately.';
 }
 
 /** Canned AI summary built from the report numbers it is sent. */
 export const ai = {
+  'company-executive-narrative': (payload: unknown) => {
+    const data = payload as { people: { people: number; tested: number }; compliance: { with_requirement: number; meets: number }; activity: { active: number; minutes: number }; level_movement: { up: number } };
+    return {
+      headline: `${data.compliance.meets} of ${data.compliance.with_requirement} people meet the level their job requires`,
+      paragraphs: [`${data.people.tested} of ${data.people.people} people have a tested level. ${data.activity.active} learners were active for ${Math.round(data.activity.minutes / 60)} hours this month, and ${data.level_movement.up} moved up a level.`],
+    };
+  },
   'company-report-summary': (payload: unknown) => {
     const data = payload as { people: number; active_learners: number; sharing_progress: number; minutes: number; lessons: number; level_movement: { up: number; first_test: number }; departments: { name: string; minutes: number }[]; hiring: { graded: number; waiting_for_decision: number } | null; training: { overdue: number } };
     const best = [...data.departments].sort((a, b) => b.minutes - a.minutes)[0];

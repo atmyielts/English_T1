@@ -1,3 +1,4 @@
+import { insightsMoreRu } from './insights.more.ru.ts';
 import type { InsightsKey } from './insights.en.ts';
 
 export const insightsRu: Record<InsightsKey, string> = {
@@ -435,4 +436,5 @@ export const insightsRu: Record<InsightsKey, string> = {
   'insights.error.session_has_attendance': 'Посещаемость этого занятия уже отмечена.',
   'insights.error.session_not_found': 'Занятие не найдено.',
   'insights.error.session_not_started': 'Посещаемость можно отметить, когда занятие начнётся.',
+  ...insightsMoreRu,
 };

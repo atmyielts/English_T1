@@ -9,15 +9,16 @@ import { useWorkspace } from '../../session.tsx';
 import { tashkentDate } from './dates.ts';
 import { LevelBadge, Loading, Progress, useDate, useLoad, useLocalized, type Localized } from './lib.tsx';
 
-interface Stats { people: number; shared: number; hidden: number; done: number; completion: number | null; lessons_percent: number | null; at_target: number | null; overdue: boolean }
+interface Stats { people: number; shared: number; hidden: number; done: number; unfinished?: number; completion: number | null; lessons_percent: number | null; at_target: number | null; overdue: boolean }
 interface Assignment {
-  id: string; track_code: string | null; track_title: Localized | null; track_lessons: number; target_level: string | null; due_date: string | null;
+  id: string; track_code: string | null; track_title: Localized | null; track_lessons: number; is_course?: boolean; target_level: string | null; due_date: string | null;
   department_id: string | null; member_id: string | null; person_name: string | null; note: string | null; status: 'active' | 'done' | 'cancelled'; created_at: string; stats: Stats;
 }
 interface Person { member_id: string; full_name: string | null; email: string | null; department_id: string | null; level: string | null; shared: boolean; lessons_done: number | null; lessons_total: number; meets_target: boolean | null; done: boolean | null; last_active: string | null }
 interface Overview {
   can_manage: boolean;
   tracks: { code: string; title: Localized; lessons: number }[];
+  courses?: { code: string; title: Localized; lessons: number }[];
   people: { id: string; full_name: string | null; email: string | null; department_id: string | null; job_role: string; level: string | null }[];
   assignments: Assignment[];
 }
@@ -26,9 +27,12 @@ export function TrainingPlan() {
   const t = useAppT();
   const { org } = useWorkspace();
   const { data, error, reload } = useLoad<Overview>(`orgs/${org.id}/assignments`);
-  const [filter, setFilter] = useState<'active' | 'all'>('active');
+  const [filter, setFilter] = useState<'active' | 'overdue' | 'all'>('active');
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkNotice, setBulkNotice] = useState('');
   if (!data) return <Loading error={error}/>;
-  const list = data.assignments.filter((row) => filter === 'all' || row.status === 'active');
+  const list = data.assignments.filter((row) => filter === 'all' || (row.status === 'active' && (filter === 'active' || row.stats.overdue)));
+  const overdue = data.assignments.filter((row) => row.status === 'active' && row.stats.overdue).length;
   return <div className="training-page">
     <header className="training-head">
       <h1>{t('training.plan.title')}</h1>
@@ -39,18 +43,58 @@ export function TrainingPlan() {
       <h2 id="training-plan-list">{t('training.plan.list')}</h2>
       <div className="company-toolbar">
         <label>{t('training.plan.show')}
-          <select value={filter} onChange={(event) => setFilter(event.target.value as 'active' | 'all')}>
+          <select value={filter} onChange={(event) => setFilter(event.target.value as 'active' | 'overdue' | 'all')}>
             <option value="active">{t('training.plan.showActive')}</option>
+            <option value="overdue">{t('training.plan.showOverdue', { count: overdue })}</option>
             <option value="all">{t('training.plan.showAll')}</option>
           </select>
         </label>
       </div>
+      {overdue > 0 && <p className="training-p-overdue" role="status">{t('training.plan.overdueCount', { count: overdue })} {filter !== 'overdue' && <button type="button" className="quiet" onClick={() => setFilter('overdue')}>{t('training.plan.showThem')}</button>}</p>}
+      {bulkNotice && <p className="notice" role="status">{bulkNotice}</p>}
+      {data.can_manage && selected.length > 0 && <BulkReassign ids={selected} onDone={async (message) => { setBulkNotice(message); setSelected([]); await reload(); }}/>}
       {list.length === 0 ? <p>{t('training.plan.empty')}</p> : <ul className="training-assignments">
-        {list.map((row) => <AssignmentItem key={row.id} row={row} canManage={data.can_manage} onChanged={reload}/>)}
+        {list.map((row) => <AssignmentItem key={row.id} row={row} canManage={data.can_manage} onChanged={reload}
+          selected={selected.includes(row.id)} onSelect={(on) => setSelected(on ? [...selected, row.id] : selected.filter((id) => id !== row.id))}/>)}
       </ul>}
       <p className="hint">{t('training.plan.privacy')}</p>
     </section>
   </div>;
+}
+
+/** HR moves overdue work on: a new date for all, or personal assignments for those not finished. */
+function BulkReassign({ ids, onDone }: { ids: string[]; onDone: (message: string) => Promise<void> }) {
+  const t = useAppT(), problem = useErrorText();
+  const { org } = useWorkspace();
+  const [mode, setMode] = useState<'extend' | 'unfinished'>('extend');
+  const [due, setDue] = useState(''), [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false), [failure, setFailure] = useState('');
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true); setFailure('');
+    try {
+      const result = await api<{ extended: number; created: number; skipped: number }>(`orgs/${org.id}/assignments/reassign`, { method: 'POST', body: { mode, assignment_ids: ids, due_date: due, note: note || null } });
+      await onDone(t('training.plan.bulkDone', { extended: result.extended, created: result.created }));
+    } catch (cause) {
+      setFailure(problem(cause));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <form className="training-p-bulk" onSubmit={submit} aria-label={t('training.plan.bulkTitle')}>
+    <p><strong>{t('training.plan.bulkSelected', { count: ids.length })}</strong></p>
+    <fieldset>
+      <legend>{t('training.plan.bulkHow')}</legend>
+      <label className="check"><input type="radio" name="training-bulk" checked={mode === 'extend'} onChange={() => setMode('extend')}/>{t('training.plan.bulkExtend')}</label>
+      <label className="check"><input type="radio" name="training-bulk" checked={mode === 'unfinished'} onChange={() => setMode('unfinished')}/>{t('training.plan.bulkUnfinished')}</label>
+    </fieldset>
+    <div className="training-form-row">
+      <label>{t('training.plan.bulkDue')}<input type="date" required min={tashkentDate(new Date())} value={due} onChange={(event) => setDue(event.target.value)}/></label>
+      <label><span>{t('training.plan.note')} <span className="hint">{t('common.optional')}</span></span><input maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)}/></label>
+    </div>
+    {failure && <p className="error" role="alert">{failure}</p>}
+    <button disabled={busy || !due}>{t('training.plan.bulkApply')}</button>
+  </form>;
 }
 
 function AssignForm({ overview, onDone }: { overview: Overview; onDone: () => Promise<void> }) {
@@ -97,6 +141,9 @@ function AssignForm({ overview, onDone }: { overview: Overview; onDone: () => Pr
         <label>{t('training.plan.track')}
           <select value={form.track_code} onChange={(event) => setForm({ ...form, track_code: event.target.value })}>
             <option value="">{t('training.plan.noTrack')}</option>
+            {(overview.courses ?? []).length > 0 && <optgroup label={t('training.builder.ours')}>
+              {(overview.courses ?? []).map((course) => <option key={course.code} value={course.code}>{pick(course.title)} ({t('training.plan.lessons', { count: course.lessons })})</option>)}
+            </optgroup>}
             {overview.tracks.map((track) => <option key={track.code} value={track.code}>{pick(track.title)} ({t('training.plan.lessons', { count: track.lessons })})</option>)}
           </select>
         </label>
@@ -139,7 +186,7 @@ function AssignForm({ overview, onDone }: { overview: Overview; onDone: () => Pr
   </section>;
 }
 
-function AssignmentItem({ row, canManage, onChanged }: { row: Assignment; canManage: boolean; onChanged: () => Promise<void> }) {
+function AssignmentItem({ row, canManage, onChanged, selected, onSelect }: { row: Assignment; canManage: boolean; onChanged: () => Promise<void>; selected: boolean; onSelect: (on: boolean) => void }) {
   const t = useAppT(), pick = useLocalized(), problem = useErrorText(), when = useDate();
   const { org, departments } = useWorkspace();
   const [people, setPeople] = useState<Person[] | null>(null);
@@ -172,10 +219,12 @@ function AssignmentItem({ row, canManage, onChanged }: { row: Assignment; canMan
     }
   }
 
-  return <li className="training-assignment">
+  const title = row.track_title ? pick(row.track_title) : row.track_code?.startsWith('c-') ? t('training.plan.courseGone') : t('training.plan.levelOnly');
+  return <li className={`training-assignment${stats.overdue ? ' is-overdue' : ''}`}>
     <div className="training-assignment-head">
+      {canManage && row.status === 'active' && <label className="check training-p-select"><input type="checkbox" checked={selected} onChange={(event) => onSelect(event.target.checked)}/><span className="visually-hidden">{t('training.plan.bulkSelect', { title })}</span></label>}
       <div>
-        <strong>{row.track_title ? pick(row.track_title) : t('training.plan.levelOnly')}</strong>
+        <strong>{title}{row.is_course && <> <span className="company-badge">{t('training.path.kindCourse')}</span></>}</strong>
         <span>{scope}
           {row.target_level && <> · {t('training.plan.targetShort', { level: isLevel(row.target_level) ? LEVEL_LABEL[row.target_level] : row.target_level })}</>}
           {row.due_date && <> · {t('training.me.due', { date: when(row.due_date) })}</>}
@@ -194,6 +243,7 @@ function AssignmentItem({ row, canManage, onChanged }: { row: Assignment; canMan
       </div>
       {stats.lessons_percent !== null && <span>{t('training.plan.lessonsPercent', { percent: stats.lessons_percent })}</span>}
       {stats.at_target !== null && <span>{t('training.plan.atTarget', { count: stats.at_target, total: stats.people })}</span>}
+      {stats.overdue && (stats.unfinished ?? 0) > 0 && <span className="training-p-behind">{t('training.plan.behind', { count: stats.unfinished ?? 0 })}</span>}
       {stats.hidden > 0 && <span className="hint">{t('training.plan.hidden', { count: stats.hidden })}</span>}
     </div>
     <div className="company-actions">

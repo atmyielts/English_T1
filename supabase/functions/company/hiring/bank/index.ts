@@ -1,15 +1,22 @@
 // The Company English test bank, indexed for the engine. Server-only: answer keys
 // never leave the function before an attempt is submitted (and HR sees totals, not keys).
-import { GRAMMAR } from './grammar.ts';
-import { LISTENING } from './listening.ts';
-import { READING } from './reading.ts';
-import { SPEAKING } from './speaking.ts';
+import { GRAMMAR as CORE_GRAMMAR } from './grammar.ts';
+import { LISTENING as CORE_LISTENING } from './listening.ts';
+import { READING as CORE_READING } from './reading.ts';
+import { ROLE_BANKS } from './roles/index.ts';
+import { SPEAKING as CORE_SPEAKING } from './speaking.ts';
 import type { ChoiceItem, ListeningScript, ProductionTask, Question, ReadingText } from './types.ts';
-import { VOCABULARY } from './vocabulary.ts';
-import { WRITING } from './writing.ts';
+import { VOCABULARY as CORE_VOCABULARY } from './vocabulary.ts';
+import { WRITING as CORE_WRITING } from './writing.ts';
 
 export * from './types.ts';
-export { GRAMMAR, LISTENING, READING, SPEAKING, VOCABULARY, WRITING };
+
+export const GRAMMAR: ChoiceItem[] = [...CORE_GRAMMAR, ...ROLE_BANKS.flatMap((bank) => bank.grammar)];
+export const VOCABULARY: ChoiceItem[] = [...CORE_VOCABULARY, ...ROLE_BANKS.flatMap((bank) => bank.vocabulary)];
+export const READING: ReadingText[] = [...CORE_READING, ...ROLE_BANKS.flatMap((bank) => bank.reading)];
+export const LISTENING: ListeningScript[] = [...CORE_LISTENING, ...ROLE_BANKS.flatMap((bank) => bank.listening)];
+export const WRITING: ProductionTask[] = [...CORE_WRITING, ...ROLE_BANKS.flatMap((bank) => bank.writing)];
+export const SPEAKING: ProductionTask[] = [...CORE_SPEAKING, ...ROLE_BANKS.flatMap((bank) => bank.speaking)];
 
 export type Passage = ReadingText | ListeningScript;
 

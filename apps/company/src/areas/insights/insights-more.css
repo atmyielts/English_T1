@@ -1,0 +1,127 @@
+/* Analytics pages: framework, skills gap, at-risk, cohorts, spend, executive one-pager, reports, manager home, winners. */
+/* Keeps hidden header text (absolutely positioned) inside the scrolling table, not widening the page. */
+.insights-more .company-table-wrap{position:relative}
+.insights-more .insights-cell-note{display:block;font-weight:500;font-size:.75rem;color:var(--muted);margin-top:.1rem}
+.insights-inline{display:inline-flex;flex-direction:column;gap:.2rem;font-size:.8rem;min-width:0}
+.insights-row-actions{white-space:nowrap}
+.insights-row-actions button{min-height:32px;padding:.3rem .6rem;margin-right:.3rem}
+.insights-row-current{background:#fffbeb}
+.insights-link-button{all:unset;cursor:pointer;font-weight:700;color:var(--navy);text-decoration:underline;padding:.15rem .3rem}
+.insights-link-button:focus-visible{outline:2px solid var(--navy);outline-offset:1px;border-radius:4px}
+.insights-plain-list{list-style:none;margin:0 0 .75rem;padding:0;display:grid;gap:.6rem}
+.insights-plain-list li{display:grid;gap:.1rem;min-width:0;overflow-wrap:anywhere}
+.insights-plain-list span{font-size:.85rem}
+.insights-plain-list small{font-size:.75rem;color:var(--muted)}
+
+/* Framework */
+.insights-skill-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:.6rem}
+.insights-skill-list{display:inline-flex;flex-wrap:wrap;gap:.2rem .6rem;font-size:.8rem}
+.insights-suggestions{list-style:none;margin:.5rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:.6rem}
+.insights-suggestions li{display:flex;justify-content:space-between;align-items:center;gap:.6rem;border:1px solid rgb(15 23 42/.1);border-radius:10px;padding:.6rem .75rem;min-width:0}
+.insights-suggestions li>div{display:grid;gap:.15rem;min-width:0;overflow-wrap:anywhere}
+.insights-suggestions small{font-size:.72rem;color:var(--muted)}
+.insights-suggestion-used{background:rgb(15 23 42/.025)}
+.insights-suggestion-levels{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}
+.insights-suggestions button{min-height:32px;padding:.3rem .7rem;flex:none}
+
+/* Heat map: red-ish at low coverage to green at full; text stays dark and each cell also has numbers. */
+.insights-heat th,.insights-heat td{text-align:center;vertical-align:middle}
+.insights-heat tbody th{text-align:left}
+.insights-heat-cell{padding:2px!important}
+.insights-heat-cell button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:.05rem;width:100%;min-width:3.4rem;min-height:2.6rem;justify-content:center;border-radius:6px;cursor:pointer;color:inherit}
+.insights-heat-cell button:hover{box-shadow:inset 0 0 0 2px rgb(15 23 42/.35)}
+.insights-heat-cell button:focus-visible{outline:2px solid var(--navy);outline-offset:-2px}
+.insights-heat-cell strong{font-size:.85rem}
+.insights-heat-cell small{font-size:.68rem;font-variant-numeric:tabular-nums}
+.insights .insights-heat-0{background:#fecaca;color:#1f2937}.insights .insights-heat-1{background:#fed7aa;color:#1f2937}.insights .insights-heat-2{background:#fef08a;color:#1f2937}
+.insights .insights-heat-3{background:#bbf7d0;color:#1f2937}.insights .insights-heat-4{background:#4ade80;color:#052e16}.insights .insights-heat-none{background:#f3f0ea;color:#4b5563}
+.insights-levels th,.insights-levels td{text-align:center}
+.insights-levels tbody th{text-align:left}
+.insights-level-bar{box-shadow:inset 0 0 0 2px var(--navy);border-radius:4px}
+
+/* At-risk cards */
+.insights-risk-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:.9rem;align-items:start}
+.insights-risk{border:1px solid rgb(15 23 42/.12);border-radius:12px;padding:.85rem 1rem;background:var(--card,#fff);display:grid;gap:.5rem;min-width:0;overflow-wrap:anywhere}
+.insights-risk header{display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start;flex-wrap:wrap}
+.insights-risk h3{margin:0;font-size:1rem}
+.insights-risk .insights-meta{margin:.15rem 0 0}
+.insights-risk-reasons{margin:0;padding-left:1.1rem;font-size:.88rem;display:grid;gap:.2rem}
+.insights-risk .company-actions{flex-wrap:wrap;gap:.4rem}
+.insights-risk .company-actions button,.insights-risk .company-actions .button-link{min-height:34px;padding:.35rem .7rem;font-size:.82rem}
+.insights-risk .hint,.insights-risk .notice,.insights-risk .error{margin:0;font-size:.8rem}
+.insights-nudge summary{cursor:pointer;font-size:.8rem;color:var(--muted)}
+.insights-nudge p{margin:.35rem 0 0;font-size:.85rem;background:rgb(15 23 42/.03);border-radius:8px;padding:.5rem .65rem;white-space:pre-wrap}
+
+/* Cohort matrix */
+.insights-matrix th,.insights-matrix td{text-align:center;min-width:2.6rem}
+.insights-matrix tbody th{text-align:left}
+.insights-move-up{background:#bbf7d0;font-weight:700}.insights-move-same{background:#f3f0ea;font-weight:600}.insights-move-down{background:#fecaca;font-weight:700}
+
+/* Report builder */
+.insights-check-group{margin-bottom:.5rem}
+.insights-check-title{margin:0 0 .2rem;font-size:.75rem;font-weight:700;color:var(--muted)}
+.insights-check-row{display:flex;flex-wrap:wrap;gap:.25rem .9rem}
+.insights-check-row .check{margin:0;font-size:.85rem}
+.insights-filters summary{cursor:pointer;font-weight:650;margin-bottom:.4rem}
+.insights-filters fieldset{margin-bottom:.5rem}
+.insights-save-view{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;border-top:1px solid rgb(15 23 42/.08);padding-top:.75rem}
+.insights-save-view label{flex:1 1 200px;min-width:0}
+.insights-more tfoot th,.insights-more tfoot td{border-top:2px solid rgb(15 23 42/.2)}
+
+/* Winners */
+.insights-winners{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:1rem;align-items:start}
+.insights-winner{border:1px solid rgb(15 23 42/.12);border-radius:12px;padding:1rem;background:var(--card,#fff);min-width:0;overflow-wrap:anywhere}
+.insights-winner h2{margin:0 0 .25rem;font-size:1.05rem}
+.insights-winner-prize{margin:.35rem 0;font-size:.85rem;font-weight:650}
+.insights-winner-team{margin:.35rem 0;padding:.45rem .65rem;background:#f0fdf4;border-radius:8px;font-size:.88rem}
+.insights-winner-team small{color:var(--muted)}
+.insights-team-editor{display:grid;gap:.75rem}
+.insights-team-row{border:1px solid rgb(15 23 42/.12);border-radius:10px;padding:.6rem .75rem;display:grid;gap:.35rem;min-width:0}
+.insights-template-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:.5rem}
+.insights-template{all:unset;box-sizing:border-box;display:grid;gap:.15rem;cursor:pointer;border:1px solid rgb(15 23 42/.15);border-radius:10px;padding:.6rem .75rem;min-width:0;overflow-wrap:anywhere}
+.insights-template:hover,.insights-template[aria-pressed="true"]{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.insights-template:focus-visible{outline:2px solid var(--navy);outline-offset:1px}
+.insights-template small{font-size:.75rem;color:var(--muted)}
+
+/* The one-pager fills one printed A4 page. On screen it reads like the sheet it will become. */
+.insights-onepager{background:#fff;color:#111827;border:1px solid rgb(15 23 42/.12);border-radius:12px;padding:1.5rem;display:grid;gap:.9rem;max-width:210mm;width:100%;box-sizing:border-box;margin:0 auto;min-width:0;overflow-wrap:anywhere}
+.insights-onepager>header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;border-bottom:2px solid var(--navy);padding-bottom:.6rem}
+.insights-onepager .eyebrow{margin:0;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#6b7280}
+.insights-onepager h2{margin:.1rem 0;font-size:1.3rem}
+.insights-onepager header p{margin:0}
+.insights-onepager-stamp{font-size:.72rem;color:#6b7280;text-align:right;max-width:16rem}
+.insights-onepager h3{margin:0 0 .35rem;font-size:.85rem}
+.insights-onepager section{min-width:0}
+.insights-onepager-note{background:#f8fafc;border-left:3px solid var(--navy);padding:.55rem .75rem;border-radius:0 8px 8px 0}
+.insights-onepager-note p{margin:.15rem 0;font-size:.85rem}
+.insights-onepager-check{color:#92400e;font-size:.75rem}
+.insights-onepager-kpis{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+.insights-onepager-kpis div{border:1px solid #e5e7eb;border-radius:8px;padding:.5rem .6rem;display:grid;gap:.05rem;min-width:0}
+.insights-onepager-kpis dt{font-size:.7rem;font-weight:650;color:#4b5563}
+.insights-onepager-kpis dd{margin:0;font-size:1.3rem;font-weight:750}
+.insights-onepager-kpis small{font-size:.68rem;color:#6b7280}
+.insights-onepager-delta{font-weight:650;color:#374151}
+.insights-onepager-small{margin:.25rem 0 0;font-size:.72rem;color:#4b5563}
+.insights-onepager-table{width:100%;border-collapse:collapse;font-size:.76rem}
+.insights-onepager-table th,.insights-onepager-table td{padding:.2rem .3rem;border-bottom:1px solid #e5e7eb;text-align:right;font-variant-numeric:tabular-nums}
+.insights-onepager-table thead th{font-size:.68rem;color:#4b5563;font-weight:650}
+.insights-onepager-table tbody th,.insights-onepager-table thead th:first-child{text-align:left;font-weight:600}
+.insights-onepager-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:.9rem}
+.insights-onepager-list{list-style:none;margin:0;padding:0;display:grid;gap:.2rem;font-size:.78rem}
+.insights-onepager-list small{display:block;font-size:.68rem;color:#6b7280}
+.insights-onepager>footer{font-size:.66rem;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:.4rem}
+@media (max-width:480px){
+  .insights-onepager{padding:1rem}
+  .insights-onepager-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .insights-onepager-stamp{text-align:left}
+  .insights-onepager-table{font-size:.7rem}
+}
+@media print{
+  .insights-exec{display:block}
+  .insights-exec>*:not(.insights-onepager){display:none!important}
+  .insights-onepager{border:0;border-radius:0;padding:0;max-width:none;gap:.55rem;font-size:10pt;break-inside:avoid;page-break-inside:avoid}
+  .insights-onepager section,.insights-onepager dl,.insights-onepager-two{break-inside:avoid}
+  .insights-onepager .insights-strip{height:1.2rem}
+  .insights-onepager-kpis dd{font-size:1.1rem}
+  .insights-heat-cell,.insights-onepager .insights-strip>span{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

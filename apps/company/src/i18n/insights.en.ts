@@ -1,3 +1,4 @@
+import { insightsMoreEn } from './insights.more.en.ts';
 // Insights area text. Keys start with "insights.".
 export const insightsEn = {
   'insights.nav.reports': 'Reports',
@@ -434,5 +435,6 @@ export const insightsEn = {
   'insights.error.session_has_attendance': 'Attendance is already marked for this session.',
   'insights.error.session_not_found': 'Session not found.',
   'insights.error.session_not_started': 'Attendance can be marked once the session has started.',
+  ...insightsMoreEn,
 } as const;
 export type InsightsKey = keyof typeof insightsEn;

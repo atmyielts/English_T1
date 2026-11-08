@@ -3,7 +3,7 @@ import type { OrgRole } from '../../../../packages/company-core/src/mod.ts';
 import type { AppKey } from '../i18n/index.ts';
 
 /** Navigation groups in the workspace sidebar, in display order. */
-export const NAV_SECTIONS = ['overview', 'me', 'people', 'hiring', 'training', 'insights'] as const;
+export const NAV_SECTIONS = ['overview', 'me', 'people', 'hiring', 'training', 'insights', 'connect'] as const;
 export type NavSection = (typeof NAV_SECTIONS)[number];
 
 /**

@@ -49,6 +49,11 @@ export function readAssessment(input: Record<string, unknown>, kind: AssessmentR
   const settings: AssessmentSettings = { ...(existing ? settingsOf(existing) : {}) };
   if (kind === 'hiring') {
     if (!existing || has('show_level')) settings.show_level = input.show_level === true;
+    if (has('skill_minimums') || has('skills')) {
+      // Only skills the test measures can have a minimum, so dropping a skill drops its minimum.
+      const raw = has('skill_minimums') ? input.skill_minimums : settings.skill_minimums;
+      settings.skill_minimums = readSkillMinimums(raw, (out.skills ?? existing?.skills ?? []) as string[]);
+    }
   } else {
     settings.show_level = true;
     if (!existing || has('audience')) {
@@ -65,6 +70,18 @@ export function readAssessment(input: Record<string, unknown>, kind: AssessmentR
   return out;
 }
 
+function readSkillMinimums(value: unknown, skills: readonly string[]): Partial<Record<Skill, Level>> {
+  if (value === undefined || value === null) return {};
+  if (typeof value !== 'object' || Array.isArray(value)) throw new CompanyError('invalid_field', 'skill_minimums must be an object.', 400, { field: 'skill_minimums' });
+  const out: Partial<Record<Skill, Level>> = {};
+  for (const [skill, level] of Object.entries(value)) {
+    if (level === null || level === '') continue;
+    if (!(SKILLS as readonly string[]).includes(skill) || !isLevel(level)) throw new CompanyError('invalid_field', 'skill_minimums has an unknown skill or level.', 400, { field: 'skill_minimums' });
+    if (skills.includes(skill)) out[skill as Skill] = level;
+  }
+  return out;
+}
+
 /** Whether a member is in a campaign's audience. */
 export function inAudience(assessment: AssessmentRow, member: Pick<MemberRow, 'id' | 'department_id'>): boolean {
   const audience = settingsOf(assessment).audience ?? { type: 'all', ids: [] };
@@ -73,10 +90,18 @@ export function inAudience(assessment: AssessmentRow, member: Pick<MemberRow, 'i
   return audience.ids.includes(member.id);
 }
 
-/** Whether a graded result reaches the test's minimum level (null when there is no minimum or no result). */
-export function meetsMinimum(attempt: Pick<AttemptRow, 'overall_level'>, assessment: Pick<AssessmentRow, 'min_level'>): boolean | null {
-  if (!assessment.min_level || !attempt.overall_level || !isLevel(attempt.overall_level)) return null;
-  return levelIndex(attempt.overall_level) >= levelIndex(assessment.min_level);
+/**
+ * Whether a graded result reaches the test's requirements: the overall minimum and every
+ * skill minimum it has. Null when there are none or there is no result yet.
+ */
+export function meetsMinimum(attempt: Pick<AttemptRow, 'overall_level'> & { skill_results?: AttemptRow['skill_results'] }, assessment: Pick<AssessmentRow, 'min_level'> & { settings?: AssessmentRow['settings'] }): boolean | null {
+  const minimums = Object.entries(assessment.settings?.skill_minimums ?? {}) as [Skill, Level][];
+  if ((!assessment.min_level && !minimums.length) || !attempt.overall_level || !isLevel(attempt.overall_level)) return null;
+  if (assessment.min_level && levelIndex(attempt.overall_level) < levelIndex(assessment.min_level)) return false;
+  return minimums.every(([skill, level]) => {
+    const reached = attempt.skill_results?.[skill]?.level;
+    return !reached || !isLevel(reached) || levelIndex(reached) >= levelIndex(level);
+  });
 }
 
 /** Names the current link without revealing it, so a browser can tell whether the link it remembers is still the live one. */
@@ -87,7 +112,7 @@ export function assessmentView(row: AssessmentRow) {
   return { ...rest, settings: settingsOf(row), has_link: Boolean(link_token_hash), link_id: linkId(link_token_hash) };
 }
 
-export function stats(attempts: Pick<AttemptRow, 'status' | 'overall_level' | 'overall_score' | 'decision'>[], assessment: Pick<AssessmentRow, 'min_level'>) {
+export function stats(attempts: (Pick<AttemptRow, 'status' | 'overall_level' | 'overall_score' | 'decision'> & { skill_results?: AttemptRow['skill_results'] })[], assessment: Pick<AssessmentRow, 'min_level'> & { settings?: AssessmentRow['settings'] }) {
   const graded = attempts.filter((attempt) => attempt.status === 'graded');
   const scores = graded.map((attempt) => Number(attempt.overall_score)).filter(Number.isFinite);
   const levels: Partial<Record<Level, number>> = {};
@@ -151,7 +176,8 @@ export function attemptReport(attempt: AttemptRow, assessment: AssessmentRow, sa
   };
 }
 
-const cell = (value: unknown): string => {
+/** A CSV cell that a spreadsheet will show as text, never run as a formula. */
+export const csvCell = (value: unknown): string => {
   let out = value === null || value === undefined ? '' : String(value);
   // Spreadsheet formula injection: a cell starting with = + - @ is shown as text.
   if (/^[=+\-@\t\r]/.test(out)) out = `'${out}`;
@@ -169,6 +195,6 @@ export function attemptsCsv(rows: ReturnType<typeof attemptRow>[], skills: Skill
       return [result ? LEVEL_LABEL[result.level] : '', result ? result.score : ''];
     }),
     row.meets === null ? '' : row.meets ? 'yes' : 'no', row.decision ?? '', row.notes ?? '', row.flags.map((flag: Flag) => flag.code).join(' '), row.certificate_code ?? '',
-  ].map(cell).join(','));
-  return `﻿${[header.map(cell).join(','), ...lines].join('\r\n')}\r\n`;
+  ].map(csvCell).join(','));
+  return `﻿${[header.map(csvCell).join(','), ...lines].join('\r\n')}\r\n`;
 }

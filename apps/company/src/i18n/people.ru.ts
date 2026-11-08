@@ -1,6 +1,9 @@
 import type { PeopleKey } from './people.en.ts';
 
+import { peopleOpsRu } from './people.ops.ru.ts';
+
 export const peopleRu: Record<PeopleKey, string> = {
+  ...peopleOpsRu,
   'people.nav.people': 'Сотрудники',
   'people.nav.departments': 'Отделы',
   'people.nav.settings': 'Настройки',

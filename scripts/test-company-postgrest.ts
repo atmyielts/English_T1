@@ -16,7 +16,11 @@ import { allRoutes } from '../supabase/functions/company/routes.ts';
 import { TRACKS } from '../supabase/functions/company/training/tracks/index.ts';
 import { ACTIVITY_KINDS } from '../packages/company-core/src/mod.ts';
 import { DAILY_SELF_REPORTED_MINUTES } from '../supabase/functions/company/training/shared.ts';
-import type { AiCall, Route } from '../supabase/functions/company/types.ts';
+import { hiringTrainingV2 } from './company-postgrest-v2-hiring-training.ts';
+import { coachConnectV2 } from './company-postgrest-v2-coach-connect.ts';
+import { insightsOpsV2 } from './company-postgrest-v2-insights-ops.ts';
+import type { V2Harness } from './company-postgrest-v2-harness.ts';
+import type { AiCall, CompanyEnv, Route } from '../supabase/functions/company/types.ts';
 
 // PostgREST is pinned to what production runs (supabase/.temp/rest-version). Production
 // Postgres is 17; the brief for this harness and test-company-db.mjs use 16-alpine.
@@ -190,9 +194,30 @@ async function setUpDatabase(): Promise<number> {
   if (!ready) throw new Error('Postgres did not become ready');
   await sql(BOOTSTRAP);
   await sql(await Deno.readTextFile(new URL('supabase/tests/company.fixture.sql', ROOT)));
+  await sql(`alter table public.users add column telegram_chat_id text unique, add column full_name text, add column email text;
+    create table public.internal_runtime_secrets (key text primary key, secret text not null);
+    revoke all on public.internal_runtime_secrets from public, anon, authenticated;
+    create table public.academy_contacts (id uuid primary key default gen_random_uuid(), user_id uuid, telegram_id text);`);
+  // Use the owning shared Telegram DDL/RPC bodies, rather than mocks that would
+  // hide incompatible parameter names or confirmation behavior.
+  const telegramBase = await Deno.readTextFile(new URL('supabase/migrations/20260608195000_telegram_bot.sql', ROOT));
+  const telegramGrowth = await Deno.readTextFile(new URL('supabase/migrations/20260812130000_telegram_growth_system.sql', ROOT));
+  const extract = (source: string, pattern: RegExp) => {
+    const found = source.match(pattern)?.[0];
+    if (!found) throw new Error(`Shared Telegram fixture source no longer matches ${pattern}`);
+    return found;
+  };
+  await sql(extract(telegramGrowth, /create table if not exists public\.telegram_acquisition_sessions \([\s\S]*?\n\);/));
+  await sql(extract(telegramBase, /create table if not exists public\.telegram_link_tokens \([\s\S]*?\n\);/));
+  await sql(extract(telegramGrowth, /alter table public\.telegram_link_tokens[\s\S]*?;/));
+  for (const name of ['issue_telegram_link_token', 'confirm_telegram_link_token']) {
+    await sql(extract(telegramGrowth, new RegExp(`create or replace function public\\.${name}\\([\\s\\S]*?\\n\\$\\$;`)));
+  }
+  await sql(`revoke all on function public.issue_telegram_link_token(uuid,text,uuid), public.confirm_telegram_link_token(text,uuid) from public,anon,authenticated;
+    grant execute on function public.issue_telegram_link_token(uuid,text,uuid), public.confirm_telegram_link_token(text,uuid) to service_role;`);
   await sql(ENGLISH_DDL);
-  const migrations = [...Deno.readDirSync(new URL('supabase/migrations/', ROOT))].map((entry) => entry.name).filter((name) => /^20261031\d+_company_.*\.sql$/.test(name)).sort();
-  if (migrations.length !== 4) throw new Error(`Expected 4 company migrations, found: ${migrations.join(', ')}`);
+  const migrations = [...Deno.readDirSync(new URL('supabase/migrations/', ROOT))].map((entry) => entry.name).filter((name) => /^\d+_company_.*\.sql$/.test(name)).sort();
+  if (!migrations.length) throw new Error('No Company English migrations found');
   for (const file of migrations) await sql(await Deno.readTextFile(new URL(`supabase/migrations/${file}`, ROOT)));
   await sql(SEED);
   console.log(`Database: fixture + English tables + ${migrations.length} migrations applied.`);
@@ -229,6 +254,29 @@ const logs: string[] = [];
 const dbFailures: string[] = [];
 const coverage = new Map<string, { statuses: Set<number>; ok: boolean }>();
 let currentArea = 'setup', requests = 0, assertions = 0, dbRequests = 0, transportRetries = 0, longestUrl = 0;
+let firstTransportError = '';
+/**
+ * At most this many PostgREST requests in flight: enough for every race test to be a real race,
+ * few enough that a GitHub runner does not drop new connections in a burst (it did at 24).
+ */
+const DB_IN_FLIGHT = 8;
+/** The whole cause chain: Deno 2.9 reports only "fetch failed" and keeps the reason in cause. */
+const describeError = (error: unknown): string => {
+  const parts: string[] = [];
+  for (let at: unknown = error, depth = 0; at && depth < 5; depth++) {
+    parts.push(String(at));
+    at = (at as { cause?: unknown }).cause;
+  }
+  return parts.join(" <- ");
+};
+const dbSlot = (() => {
+  let free = DB_IN_FLIGHT;
+  const waiting: (() => void)[] = [];
+  return {
+    take: () => free > 0 ? (free--, Promise.resolve()) : new Promise<void>((resolve) => waiting.push(resolve)),
+    give: () => { const next = waiting.shift(); if (next) next(); else free++; },
+  };
+})();
 const key = (route: Pick<Route, 'method' | 'path'>) => `${route.method} ${route.path}`;
 for (const route of allRoutes) coverage.set(key(route), { statuses: new Set(), ok: false });
 
@@ -289,6 +337,7 @@ const aiStub = ((request: { feature: string; userPayload: string }, fallback: un
     case 'company-speaking-grade':
       return reply({ criteria: { task: 60, organisation: 62, grammar: 58, vocabulary: 64, fluency: 60, pronunciation: 61 }, strengths: ['Polite'], improvements: ['Longer answers'], summary: 'Understandable.' });
     case 'company-roleplay':
+      if (request.userPayload.includes('hint_for')) return reply({ say: 'May I confirm the booking details?', why: 'Ask one clear question.' });
       return request.userPayload.includes('learner_says')
         ? reply({ reply: 'I see. Could you tell me more about the room?', done: false, tip: 'Say "May I help you?"' })
         : reply({ score: 72, summary: 'Good effort.', goal_met: true, good_phrases: ['How may I help you?'], better_phrases: [{ said: 'I no know', better: "I don't know", why: 'Grammar' }], checklist: [{ item: 'Greeted', done: true }], next_step: 'Practise more.' });
@@ -296,6 +345,19 @@ const aiStub = ((request: { feature: string; userPayload: string }, fallback: un
       return reply({ corrected: 'Dear team, please find the report attached.', score: 75, summary: 'Small fixes.', tone: 'Polite', tone_notes: ['Good'], changes: [{ original: 'pls', corrected: 'please', why: 'Formal' }], checklist: [{ item: 'Greeting', done: true }] });
     case 'company-report-summary':
       return reply({ headline: 'Steady month', paragraphs: ['People learned.', 'Tests ran.'], actions: ['Book a session.', 'Review targets.'] });
+    case 'company-executive-narrative':
+      return reply({ headline: 'Review the measured gaps', paragraphs: ['Use the recorded results to plan the next steps.'], actions: ['Review the training assignments.'] });
+    case 'company-phrase-finder':
+      return reply({ options: [{ english: 'Could you confirm the booking, please?', note: 'Вежливая просьба.', back: 'Пожалуйста, подтвердите бронирование.' }] });
+    case 'company-interview-kit':
+      return reply({ questions: ['How would you greet a guest?', 'How would you explain a delay?', 'How would you confirm the next step?'].map((question) => ({ skill: 'speaking', question, listen_for: 'A clear and polite response.', follow_up: 'Could you give an example?' })) });
+    case 'company-lesson-draft': {
+      const payload = JSON.parse(request.userPayload);
+      if (Array.isArray(payload.items)) return reply({ items: payload.items.map((item: { key: string }) => ({ key: item.key, ru: 'Подтвердите время встречи.', uz: 'Uchrashuv vaqtini tasdiqlang.' })) });
+      if (payload.step) return reply(TRACKS[0].lessons[0]);
+      const scenario = TRACKS[0].scenarios[0];
+      return reply({ ...scenario, learner_role: scenario.learnerRole });
+    }
     default:
       throw new Error(`The AI stub has no reply for feature ${request.feature}`);
   }
@@ -306,9 +368,10 @@ const aiStub = ((request: { feature: string; userPayload: string }, fallback: un
 // ---------------------------------------------------------------------------
 let handler: (req: Request) => Promise<Response>;
 let db: any;
+let env: CompanyEnv;
 
 type Expect = number | number[] | ((status: number) => boolean);
-interface CallOptions { as?: string; body?: unknown; expect?: Expect; ip?: string; allowLog?: RegExp; allowDb?: RegExp; label?: string }
+interface CallOptions { as?: string; body?: unknown; expect?: Expect; ip?: string; headers?: Record<string, string>; allowLog?: RegExp; allowDb?: RegExp; label?: string }
 const matches = (expect: Expect, status: number) => typeof expect === 'function' ? expect(status) : Array.isArray(expect) ? expect.includes(status) : expect === status;
 
 async function call(method: string, path: string, options: CallOptions = {}): Promise<{ status: number; body: any }> {
@@ -322,6 +385,7 @@ async function call(method: string, path: string, options: CallOptions = {}): Pr
       'x-forwarded-for': options.ip ?? '198.51.100.1',
       'user-agent': 'company-postgrest-harness',
       ...(options.as ? { Authorization: `Bearer ${options.as}` } : {}),
+      ...options.headers,
     },
     ...(options.body === undefined || method === 'GET' || method === 'DELETE' ? {} : { body: JSON.stringify(options.body) }),
   }));
@@ -430,7 +494,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', 'public/leads', { label: 'honeypot stores nothing', body: { ...lead, company: 'Bot Inc', website: 'http://x' }, ip: '203.0.113.5' });
     await call('POST', 'public/leads', { label: 'too fast stores nothing', body: { ...lead, company: 'Fast Inc', elapsed_ms: 100 }, ip: '203.0.113.5' });
     await eqSql('bots stored nothing', `select count(*) from company_leads where company in ('Bot Inc','Fast Inc')`, '0');
-    await call('POST', 'public/leads', { label: 'no contact', body: { name: 'No Contact', company: 'Nobody' }, expect: 400, ip: '203.0.113.6' });
+    await call('POST', 'public/leads', { label: 'no contact', body: { name: 'No Contact', company: 'Nobody', elapsed_ms: 9000 }, expect: 400, ip: '203.0.113.6' });
     await call('POST', 'public/leads', { label: 'bad interest', body: { ...lead, interests: ['nonsense'] }, expect: 400, ip: '203.0.113.6' });
     for (let i = 0; i < 4; i++) await call('POST', 'public/leads', { label: 'daily allowance', body: { ...lead, company: `Rate ${i}` }, ip: '203.0.113.7' });
     await call('POST', 'public/leads', { body: { ...lead, company: 'Rate 4' }, ip: '203.0.113.7' });
@@ -1096,7 +1160,7 @@ async function scenario(port: number, serviceJwt: string) {
 
   await area('training: tracks and lessons', async () => {
     const tracks = await call('GET', `${o()}/tracks`, { as: EMP1 });
-    eq('11 tracks', tracks.body?.tracks?.length, 11);
+    eq('every job-role track', tracks.body?.tracks?.length, TRACKS.length);
     eq('recommended', tracks.body?.recommended, 'hospitality');
     const track = TRACKS.find((entry) => entry.code === 'hospitality')!;
     const detail = await call('GET', `${o()}/tracks/hospitality`, { as: EMP1 });
@@ -1458,7 +1522,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', `${o()}/assessments`, { label: 'closes_at far in the future', as: ADMIN, body: { title: 'Far future', closes_at: '+100000-01-01T00:00:00Z' }, expect: refused });
     // NUL characters: valid JSON, refused by every Postgres text and jsonb column.
     const nul = 'A\u0000B name';
-    await call('POST', 'public/leads', { label: 'NUL in a public form', body: { name: nul, company: 'Nul Co', phone: '+998901234567' }, ip: '203.0.113.90', expect: 400 });
+    await call('POST', 'public/leads', { label: 'NUL in a public form', body: { name: nul, company: 'Nul Co', phone: '+998901234567', elapsed_ms: 9000 }, ip: '203.0.113.90', expect: 400 });
     await call('POST', `${o()}/departments`, { label: 'NUL in a name', as: ADMIN, body: { name: nul }, expect: 400 });
     await call('POST', `${o()}/departments`, { label: 'a lone surrogate in a name', as: ADMIN, body: { name: 'Bad \ud83d name' }, expect: 400 });
     await call('POST', `${o()}/writing/check`, { label: 'NUL in a draft', as: EMP1, body: { text: `${WRITING} ${nul}` }, expect: 400 });
@@ -1750,7 +1814,7 @@ async function scenario(port: number, serviceJwt: string) {
     await call('POST', 'public/attempts/submit', { body: { key: candidate.body?.key, answers: answersFor(candidate.body?.attempt?.section) } });
     // Elsewhere: an invitation not yet accepted, a demo request, and audit text naming them.
     const elsewhere = await call('POST', `${o()}/invites`, { as: ADMIN, body: { full_name: 'Closing Person', email: closing } });
-    await call('POST', 'public/leads', { body: { name: 'Closing Person', company: 'Closing Lead', email: closing, phone: '+998901112233', need: 'Tell me more.' }, ip: '203.0.113.200' });
+    await call('POST', 'public/leads', { body: { name: 'Closing Person', company: 'Closing Lead', email: closing, phone: '+998901112233', need: 'Tell me more.', elapsed_ms: 9000 }, ip: '203.0.113.200' });
 
     // What account closure does: the registered tables by user_id, then the hook.
     for (const table of ['company_roleplay_sessions', 'company_writing_checks', 'company_activity', 'company_lesson_progress', 'company_attempts', 'company_members']) {
@@ -1849,6 +1913,29 @@ async function scenario(port: number, serviceJwt: string) {
     ok('retry re-synced', staffRetry.body?.synced >= 1 && !staffRetry.body?.access_sync_failed, staffRetry.body);
   });
 
+  const v2: V2Harness = {
+    call, sql, area, eq, ok, need, db, state: S,
+    configureConnect: (config) => { env.connect = config; },
+    users: { owner: OWNER, admin: ADMIN, manager: MANAGER, employee: EMP1, employee2: EMP2, otherOwner: OTHER_OWNER, staff: STAFF },
+  };
+  await hiringTrainingV2(v2);
+  await insightsOpsV2(v2);
+  await coachConnectV2(v2);
+
+  await area('v2 site: public check and lead attribution', async () => {
+    const opened = await call('GET', 'public/check', { ip: '203.0.113.240' });
+    ok('public check has no answer keys', opened.body.items.every((item: any) => !('answer' in item)));
+    const result = await call('POST', 'public/check/score', { ip: '203.0.113.240', body: { answers: { g1: 1, v1: 0 } } });
+    eq('check is labelled an estimate', result.body.estimate, true);
+    await call('POST', 'public/check/score', { ip: '203.0.113.240', body: { answers: {} }, expect: 400 });
+    await call('POST', 'public/leads', { ip: '203.0.113.240', body: {
+      name: 'Test Lead', company: 'Test attribution', email: 'fixture@example.uz', elapsed_ms: 9000,
+      utm: { source: 'telegram', campaign: 'company-v2' }, landing_path: '/for/hotels?private=1',
+      referrer_host: 'Example.COM', check_answers: { g1: 1, v1: 0 },
+    } });
+    await eqSql('attribution drops query strings', "select utm_source||'|'||landing_path||'|'||referrer_host||'|'||(check_result->>'estimate') from company_leads where company='Test attribution'", 'telegram|/for/hotels|example.com|true');
+  });
+
   await area('last: closing a workspace', async () => {
     await call('POST', `${o()}/people/me/leave`, { label: 'an ordinary leave still works', as: EMP5 });
     await call('PATCH', `staff/orgs/${S.org}`, { as: STAFF, body: { status: 'closed' } });
@@ -1858,7 +1945,7 @@ async function scenario(port: number, serviceJwt: string) {
     const me = await call('GET', 'me', { as: OWNER });
     ok('closed workspace left the list', !me.body?.workspaces?.some((row: any) => row.org?.id === S.org), me.body?.workspaces);
     await call('GET', `public/t/${S.testToken}`, { label: 'candidate sees it closed' });
-    await call('POST', `public/t/${S.testToken}/start`, { label: 'closed workspace', body: { name: 'After Close', email: 'after@example.uz', consent: true }, expect: 409 });
+    await call('POST', `public/t/${S.testToken}/start`, { label: 'closed workspace', body: { name: 'After Close', email: 'after@example.uz', consent: true }, expect: 403 });
     await call('POST', `join/${S.openLink}`, { label: 'closed', as: EMP9, body: { consent: true }, expect: 403 });
   });
 }
@@ -1878,16 +1965,32 @@ async function main(): Promise<number> {
     dbRequests++;
     longestUrl = Math.max(longestUrl, url.pathname.length + url.search.length);
     // Docker Desktop's port proxy now and then drops a kept-alive connection before PostgREST
-    // sees the request. That is the test rig, not the product, so try again; the count is reported.
+    // sees the request, and a small CI runner refuses connections in a burst. That is the test rig,
+    // not the product, so cap the requests in flight and try again; the count is reported.
     let response: Response | null = null;
-    for (let attempt = 0; !response; attempt++) {
-      try {
-        response = await fetch(url, init);
-      } catch (cause) {
-        if (attempt >= 4 || !String(cause).includes('connection closed before message completed')) throw cause;
-        transportRetries++;
-        await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    await dbSlot.take();
+    try {
+      for (let attempt = 0; !response; attempt++) {
+        try {
+          response = await fetch(url, init);
+        } catch (cause) {
+          const message = describeError(cause);
+          const method = (init?.method ?? 'GET').toUpperCase();
+          // A write that may have committed before the connection dropped is not repeated, or a
+          // race assertion could count it twice. These errors happen before the request is sent.
+          const unsent = /connection closed before message completed|Connection refused|tcp connect error|ECONNREFUSED|client error \(Connect\)/i.test(message);
+          const transport = cause instanceof TypeError && (unsent || method === 'GET' || method === 'HEAD');
+          if (attempt >= 4 || !transport) {
+            if (!firstTransportError) firstTransportError = `not retried: ${method} ${message}`.slice(0, 400);
+            throw cause;
+          }
+          if (!firstTransportError) firstTransportError = message.slice(0, 300);
+          transportRetries++;
+          await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+        }
       }
+    } finally {
+      dbSlot.give();
     }
     if (response.status >= 400) {
       let body = await response.clone().text();
@@ -1901,11 +2004,12 @@ async function main(): Promise<number> {
     return response;
   };
   db = createClient(`http://127.0.0.1:${port}`, serviceJwt, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: dbFetch } });
+  env = { pilotTests: 10, selfServe: true, aiDailyLimit: 300, appUrl: 'https://company.schood.online' };
   handler = createCompanyHandler({
     db,
     userFromToken: (token) => Promise.resolve(USERS.includes(token) ? { id: token, email: emailOf(token) } : null),
     origins: ['https://company.schood.online'],
-    env: { pilotTests: 10, selfServe: true, aiDailyLimit: 300, appUrl: 'https://company.schood.online' },
+    env,
     ai: aiStub,
     routes: allRoutes,
   });
@@ -1917,9 +2021,13 @@ async function main(): Promise<number> {
   const refusedOnly = all.filter(([, entry]) => !entry.ok && entry.statuses.size);
   const never = all.filter(([, entry]) => !entry.statuses.size);
   console.log(`\n================ Coverage: ${reached.length}/${all.length} routes reached a 2xx (${requests} requests, ${dbRequests} PostgREST calls, ${transportRetries} transport retries, ${assertions} assertions, longest URL ${longestUrl} characters)`);
+  if (firstTransportError) console.log(`First transport error (retried): ${firstTransportError}`);
   for (const [name, entry] of refusedOnly) console.log(`  refused only  ${name}  [${[...entry.statuses].join(',')}]`);
   for (const [name] of never) console.log(`  NEVER CALLED  ${name}`);
   console.log(`AI calls: ${JSON.stringify(aiCalls)}`);
+
+  if (refusedOnly.length) failures.push({ kind: 'blocked', area: 'coverage', label: 'no successful request', detail: refusedOnly.map(([name]) => name).join(', ') });
+  if (never.length) failures.push({ kind: 'blocked', area: 'coverage', label: 'unexercised', detail: never.map(([name]) => name).join(', ') });
 
   const groups = new Map<string, Failure[]>();
   for (const failure of failures) {
@@ -1934,8 +2042,7 @@ async function main(): Promise<number> {
     const first = list[0];
     console.log(`\n[${first.kind}] (${first.area}) ${first.label}${list.length > 1 ? ` (x${list.length})` : ''}\n  ${first.detail.replaceAll('\n', '\n  ')}`);
   }
-  if (never.length) failures.push({ kind: 'blocked', area: 'coverage', label: 'unexercised', detail: never.map(([name]) => name).join(', ') });
-  return failures.length || never.length ? 1 : 0;
+  return failures.length ? 1 : 0;
 }
 
 let exitCode = 1;
