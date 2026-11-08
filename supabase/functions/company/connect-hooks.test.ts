@@ -1,11 +1,12 @@
 // Webhooks: where they may point (including redirects), signatures, the queue and its
 // backoff, and that nothing leaves while the switch is off.
-import { assert, assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
+import { assert, assertEquals, assertNotEquals, assertRejects } from 'jsr:@std/assert@1';
 import { routes as connect } from './connect.ts';
 import { routes as core } from './core.ts';
 import type { ConnectConfig, WebhookAdapter } from './connect/shared.ts';
 import { createWebhookTransport, isBlockedAddress, urlProblem } from './connect/ssrf.ts';
-import { pinnedOptions } from './connect/https.ts';
+import { pinnedHttps, statusLine } from './connect/https.ts';
+import { selfSignedCert } from './testing-tls.ts';
 import { BACKOFF_SECONDS, emitEvent, eventBody, processQueue, scanEvents, signPayload } from './connect/webhooks.ts';
 import { FakeDb, TEST_ENV, testHandler } from './testing.ts';
 import type { CompanyEnv, OrgRow, Route } from './types.ts';
@@ -102,28 +103,91 @@ Deno.test('signature: HMAC-SHA256 over timestamp and body, checkable by a receiv
   assertNotEquals(await signPayload('other', '{"a":1}', NOW), signature);
 });
 
-Deno.test('transport pins the validated DNS answer and retains the original TLS identity', async () => {
-  let connected = '', tlsName: unknown, verifiesCertificate: unknown;
-  const send = createWebhookTransport({
-    resolve: () => Promise.resolve(['93.184.216.34']),
-    fetch: (url, init, address) => {
-      const options = pinnedOptions(url, init, address);
-      tlsName = options.servername;
-      verifiesCertificate = options.rejectUnauthorized;
-      assertEquals(options.hostname, 'hooks.example.com');
-      assertEquals(options.agent, false);
-      assertEquals(options.family, 4);
-      assertEquals(options.headers && (options.headers as Record<string, unknown>)['Content-Length'], 2);
-      // Even if the DNS name changes now, the socket's lookup returns the answer
-      // that passed validation, without resolving the name again.
-      options.lookup!('hooks.example.com', {}, (_error, result) => { connected = String(result); });
-      return Promise.resolve({ status: 204, body: null });
-    },
-  });
-  assertEquals(await send({ url: 'https://hooks.example.com/in', body: '{}', headers: {} }), { ok: true, status: 204 });
-  assertEquals(connected, '93.184.216.34');
-  assertEquals(tlsName, 'hooks.example.com');
-  assertEquals(verifiesCertificate, true);
+/** A real local TLS server for hooks.example.com. `answer` decides what each connection gets back. */
+async function tlsServer(answer: (request: string) => string | null) {
+  const { cert, key } = await selfSignedCert('hooks.example.com');
+  const listener = Deno.listenTls({ hostname: '127.0.0.1', port: 0, cert, key });
+  const seen: string[] = [], open: Deno.Conn[] = [];
+  const served = (async () => {
+    for await (const conn of listener) {
+      open.push(conn);
+      (async () => {
+        try {
+          const buffer = new Uint8Array(8192);
+          const read = await conn.read(buffer);
+          const request = new TextDecoder().decode(buffer.subarray(0, read ?? 0));
+          seen.push(request);
+          const reply = answer(request);
+          if (reply !== null) { await conn.write(new TextEncoder().encode(reply)); conn.close(); }
+        } catch (cause) {
+          seen.push(`refused: ${(cause as Error).message}`);
+        }
+      })();
+    }
+  })();
+  const port = (listener.addr as Deno.NetAddr).port;
+  const asked: { hostname: string; port: number }[] = [];
+  // Records where the sender asked to go, then reaches the local server instead.
+  const connect = (options: { hostname: string; port: number }) => { asked.push(options); return Deno.connect({ hostname: '127.0.0.1', port }); };
+  const close = async () => {
+    listener.close();
+    for (const conn of open) try { conn.close(); } catch { /* closed */ }
+    await served.catch(() => undefined);
+  };
+  return { cert, seen, asked, connect, close };
+}
+
+Deno.test('transport pins the validated DNS answer and retains the original TLS identity (real TLS server)', async () => {
+  const server = await tlsServer(() => 'HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n');
+  try {
+    const send = createWebhookTransport({
+      resolve: () => Promise.resolve(['93.184.216.34']),
+      fetch: (url, init, address) => pinnedHttps(url, init, address, { caCerts: [server.cert], connect: server.connect }),
+    });
+    assertEquals(await send({ url: 'https://hooks.example.com/in?x=1', body: '{}', headers: { 'X-Schood-Event': 'test.graded' } }), { ok: true, status: 204 });
+    // The socket went to the answer that passed validation, never the name.
+    assertEquals(server.asked, [{ hostname: '93.184.216.34', port: 443 }]);
+    const [request] = server.seen;
+    assert(request.startsWith('POST /in?x=1 HTTP/1.1\r\nHost: hooks.example.com\r\n'), request);
+    assert(/\r\ncontent-length: 2\r\n/i.test(request), request);
+    assert(/\r\nconnection: close\r\n/i.test(request), request);
+    assert(/\r\nx-schood-event: test.graded\r\n/i.test(request), request);
+    assert(/\r\ncontent-type: application\/json\r\n/i.test(request), request);
+    assert(request.endsWith('\r\n\r\n{}'), request);
+
+    // The certificate is checked against the URL's name: one for another name is refused.
+    assertEquals((await send({ url: 'https://other.example.com/in', body: '{}', headers: {} })).error, 'network');
+    // And against trusted roots: without the test root the self-signed one is refused.
+    const strict = createWebhookTransport({ resolve: () => Promise.resolve(['93.184.216.34']), fetch: (url, init, address) => pinnedHttps(url, init, address, { connect: server.connect }) });
+    assertEquals((await strict({ url: 'https://hooks.example.com/in', body: '{}', headers: {} })).error, 'network');
+    assertEquals(server.seen.filter((line) => line.startsWith('POST')).length, 1);
+
+    // A blocked address is refused before any connection is opened.
+    const before = server.asked.length;
+    await assertRejects(() => pinnedHttps('https://hooks.example.com/in', { body: '{}' }, '10.0.0.1', { caCerts: [server.cert], connect: server.connect }), Error, 'Blocked');
+    assertEquals(server.asked.length, before);
+    // Nothing can be smuggled into the request through a header.
+    await assertRejects(() => pinnedHttps('https://hooks.example.com/in', { body: '{}', headers: { 'X-A': 'b\r\nX-Injected: 1' } }, '93.184.216.34', { caCerts: [server.cert], connect: server.connect }));
+  } finally {
+    await server.close();
+  }
+});
+
+Deno.test('transport: a silent endpoint times out and an endless answer is cut off (real TLS server)', async () => {
+  const silent = await tlsServer(() => null);
+  const endless = await tlsServer(() => 'HTTP/1.1 200 ' + 'x'.repeat(40_000));
+  try {
+    const slow = createWebhookTransport({ resolve: () => Promise.resolve(['93.184.216.34']), timeoutMs: 300, fetch: (url, init, address) => pinnedHttps(url, init, address, { caCerts: [silent.cert], connect: silent.connect }) });
+    const started = Date.now();
+    assertEquals(await slow({ url: 'https://hooks.example.com/in', body: '{}', headers: {} }), { ok: false, error: 'timeout' });
+    assert(Date.now() - started < 5_000);
+    await assertRejects(() => pinnedHttps('https://hooks.example.com/in', { body: '{}' }, '93.184.216.34', { caCerts: [endless.cert], connect: endless.connect }), Error, 'too long');
+    assertEquals(statusLine(new TextEncoder().encode('HTTP/1.1 202 Accepted\r\n')), 202);
+    assertEquals(statusLine(new TextEncoder().encode('HTTP/1.1 202 Acc')), null);
+  } finally {
+    await silent.close();
+    await endless.close();
+  }
 });
 
 Deno.test('register: https public URLs only, HR only, the secret once, capped', async () => {

@@ -27,7 +27,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Shared catalogue and API routes (roles, quotas, tests, scoring, training, insights)
-        run: deno test --no-lock packages/company-core/src/ supabase/functions/company/
+        run: deno test --no-lock --allow-net=127.0.0.1 packages/company-core/src/ supabase/functions/company/
       - name: Function type check
         run: deno check --no-lock supabase/functions/company/index.ts
   database:

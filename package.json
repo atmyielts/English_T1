@@ -25,7 +25,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test:company": "deno check --no-lock supabase/functions/company/index.ts && deno test --no-lock --allow-env --allow-read supabase/functions/company/ packages/company-core/src/ apps/company/site-assets.test.ts",
+    "test:company": "deno check --no-lock supabase/functions/company/index.ts && deno test --no-lock --allow-env --allow-read --allow-net=127.0.0.1 supabase/functions/company/ packages/company-core/src/ apps/company/site-assets.test.ts",
     "test:company:db": "node scripts/test-company-db.mjs && node scripts/test-company-billing-concurrency.mjs",
     "test:company:api": "deno run --no-lock -A scripts/test-company-postgrest.ts",
     "verify:company": "npm run test:company && npm run test:company:db && npm run test:company:api && npm --workspace apps/company run build && deno check --no-lock supabase/functions/company/index.ts && npm run verify:prod",
