@@ -285,6 +285,30 @@ async function finish(ctx: Ctx, challenge: ChallengeRow): Promise<FinalResults> 
   return final;
 }
 
+/**
+ * A frozen result without one person's numbers, for when their learning is erased: they leave
+ * the ranking, and their value comes off the totals of the challenge and of the department and
+ * team they are in now. Null when they were not in it.
+ */
+export function withoutMember(final: FinalResults, member: { id: string; department_id: string | null }, teams: Team[]): FinalResults | null {
+  const row = final.people.find((person) => person.member_id === member.id);
+  if (!row) return null;
+  const value = row.value;
+  const people = rank(final.people.filter((person) => person.member_id !== member.id).map(({ member_id, value }) => ({ member_id, value })), (person) => person.value);
+  const regroup = (groups: GroupStanding[], has: (group: Omit<GroupStanding, 'rank'>) => boolean) => rank(groups.map(({ rank: _rank, ...group }): Omit<GroupStanding, 'rank'> => {
+    if (!has(group)) return group;
+    const total = Math.max(0, group.total - value);
+    return { ...group, total, active: Math.max(0, group.active - (value > 0 ? 1 : 0)), average: group.participants ? Math.round(total / group.participants * 10) / 10 : 0 };
+  }), (group) => group.average * 1e6 + group.total);
+  const department = member.department_id;
+  const teamIds = new Set(teams.filter((team) => department !== null && team.department_ids.includes(department)).map((team) => team.id));
+  return {
+    ...final, people, total: Math.max(0, final.total - value), active: Math.max(0, final.active - (value > 0 ? 1 : 0)),
+    departments: regroup(final.departments ?? [], (group) => group.id === department),
+    teams: regroup(final.teams ?? [], (group) => teamIds.has(group.id)),
+  };
+}
+
 /** Auto-finish: challenges that passed their end date get their winners when anyone next looks. */
 async function finishDue(ctx: Ctx, rows: ChallengeRow[], today: string): Promise<void> {
   const due = rows.filter((row) => !row.final_results && challengeStatus(row, today) === 'finished').slice(0, FINISH_PER_READ);

@@ -327,7 +327,7 @@ export const connectUz: Record<ConnectKey, string> = {
   'connect.privacy.exportHint': 'Roziligisiz faylda faqat a’zolik va kompaniya testlari natijalari bo‘ladi. Mashqlari matni hech qachon kiritilmaydi.',
   'connect.privacy.exported': 'Fayl yuklab olindi. Bu eksport amallar jurnaliga yozildi.',
   'connect.privacy.erase': 'O‘qish ma’lumotlarini o‘chirish',
-  'connect.privacy.eraseLead': 'Bu kishining kabinetdagi darslari, daqiqalari, rolli suhbatlari, yozuv tekshiruvlari, takrorlash kartalari, kurs sertifikatlari va davomatini o‘chiradi. A’zoligi va kompaniya testlari natijalari qoladi. Shaxsiy Schood English akkaunti o‘zgarmaydi. Buni qaytarib bo‘lmaydi.',
+  'connect.privacy.eraseLead': 'Bu kishining kabinetdagi darslari, daqiqalari, rolli suhbatlari, yozuv tekshiruvlari, takrorlash kartalari, kurs sertifikatlari, davomati, ulashilgan nishonlari hamda yakunlangan musobaqalardagi o‘rni va natijasini o‘chiradi. A’zoligi va kompaniya testlari natijalari qoladi. Shaxsiy Schood English akkaunti o‘zgarmaydi. Buni qaytarib bo‘lmaydi.',
   'connect.privacy.eraseType': 'Tasdiqlash uchun ERASE deb yozing',
   'connect.privacy.eraseGo': 'Butunlay o‘chirish',
   'connect.privacy.erased': 'O‘chirilgan yozuvlar: {total}.',

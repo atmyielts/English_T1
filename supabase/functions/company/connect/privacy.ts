@@ -5,6 +5,7 @@
 // out of an HR export; a person's own export includes it. Private AI-tutor chats in
 // Schood English are not in these tables and are never read.
 import { csv, fetchAll } from '../insights/common.ts';
+import { withoutMember, type ChallengeRow } from '../insights/challenges.ts';
 import { loadMember } from '../people/shared.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { isCalendarDate, obj } from '../util.ts';
@@ -189,6 +190,16 @@ export const privacyRoutes: Route[] = [
         const result = await ctx.db.from('company_coach_kudos').delete().eq('org_id', ctx.org!.id).eq(column, member.id).select('id');
         if (result.error && !missingTable(result.error.code)) throw new Error(`${result.error.code ?? 'db'}: ${result.error.message}`);
         counts.company_coach_kudos += (result.data as unknown[] | null)?.length ?? 0;
+      }
+      // Finished challenges keep a frozen copy of everyone's numbers, which never recomputes:
+      // take this person's out of it, or their name and score would stay on the winners page.
+      counts.company_challenges = 0;
+      const frozen = check<Pick<ChallengeRow, 'id' | 'teams' | 'final_results'>[]>(await ctx.db.from('company_challenges').select('id,teams,final_results').eq('org_id', ctx.org!.id).not('final_results', 'is', null));
+      for (const challenge of frozen) {
+        const final = challenge.final_results && withoutMember(challenge.final_results, member, challenge.teams ?? []);
+        if (!final) continue;
+        check(await ctx.db.from('company_challenges').update({ final_results: final }).eq('id', challenge.id).eq('org_id', ctx.org!.id));
+        counts.company_challenges++;
       }
       await ctx.audit('privacy.learning_erased', member.id, { counts });
       return { erased: counts };

@@ -336,7 +336,7 @@ export const connectEn = {
   'connect.privacy.exportHint': 'Without their agreement the file holds membership and company test results only. The text of their practice is never included.',
   'connect.privacy.exported': 'The file has been downloaded. This export is in the audit log.',
   'connect.privacy.erase': 'Erase learning data',
-  'connect.privacy.eraseLead': 'Deletes this person\'s lessons, minutes, role-plays, writing checks, practice deck, course certificates and attendance in this workspace. Their membership and company test results stay. Their own Schood English account is not touched. This cannot be undone.',
+  'connect.privacy.eraseLead': 'Deletes this person\'s lessons, minutes, role-plays, writing checks, practice deck, course certificates, attendance, shared badges and their place and score in finished challenges in this workspace. Their membership and company test results stay. Their own Schood English account is not touched. This cannot be undone.',
   'connect.privacy.eraseType': 'Type ERASE to confirm',
   'connect.privacy.eraseGo': 'Erase for good',
   'connect.privacy.erased': 'Erased: {total} records.',
