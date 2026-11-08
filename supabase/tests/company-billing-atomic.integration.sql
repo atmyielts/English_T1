@@ -91,6 +91,33 @@ begin
     insert into public.company_contracts(org_id,title,renewed_from) values (org,'Renewal three',contract);
   end;
 
+  -- One learning seat at a time under the workspace lock; a request for seats once a day.
+  declare
+    first_person uuid;
+    second_person uuid;
+    reply jsonb;
+  begin
+    insert into public.company_members(org_id,full_name,role,status) values (org,'Seat one','employee','active') returning id into first_person;
+    insert into public.company_members(org_id,full_name,role,status) values (org,'Seat two','employee','active') returning id into second_person;
+    update public.company_orgs set seats_limit = (select count(*) from public.company_members where org_id = org and seat and status <> 'removed') + 1 where id = org;
+    assert public.company_claim_seat(org, first_person) = 'claimed', 'the free seat is claimed';
+    assert public.company_claim_seat(org, first_person) = 'already', 'a second claim for the same person changes nothing';
+    assert public.company_claim_seat(org, second_person) = 'full', 'no seat beyond the limit';
+    assert not (select seat from public.company_members where id = second_person);
+    update public.company_members set status = 'removed' where id = second_person;
+    assert public.company_claim_seat(org, second_person) = 'missing';
+    reply := public.company_request_seats(org, '{"name":"HR","company":"Atomic billing"}', at_time - interval '1 day');
+    assert not (reply->>'duplicate')::boolean, 'the first seat request makes a lead';
+    reply := public.company_request_seats(org, '{"name":"HR","company":"Atomic billing"}', at_time - interval '1 day');
+    assert (reply->>'duplicate')::boolean, 'a second one the same day finds it';
+    assert (select count(*) from public.company_leads where org_id = org and source = 'company_seats') = 1;
+    assert (select status from public.company_leads where org_id = org and source = 'company_seats') = 'new';
+  end;
+  assert not has_function_privilege('authenticated','public.company_claim_seat(uuid,uuid)','execute');
+  assert not has_function_privilege('anon','public.company_request_seats(uuid,jsonb,timestamptz)','execute');
+  assert has_function_privilege('service_role','public.company_claim_seat(uuid,uuid)','execute');
+  assert has_function_privilege('service_role','public.company_request_seats(uuid,jsonb,timestamptz)','execute');
+
   assert not has_function_privilege('authenticated','public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz)','execute');
   assert not has_function_privilege('anon','public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz)','execute');
   assert has_function_privilege('service_role','public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz)','execute');

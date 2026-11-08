@@ -222,6 +222,25 @@ Deno.test('seat requests: the employee asks, HR decides within the limit, once',
   assertEquals(db.rows('company_members').find((row) => row.id === ID.worker2)!.seat, false);
 });
 
+Deno.test('seat requests: approvals racing for the last free seat give it to exactly one', async () => {
+  const { db, call } = setup({ seats_limit: 3 });
+  // Two of three seats are taken, three people ask, and HR approves all three at once.
+  db.rows('company_members').find((row) => row.id === ID.owner)!.seat = true;
+  db.rows('company_members').find((row) => row.id === ID.hr)!.seat = true;
+  const asked = [];
+  for (const [user, id] of [[WORKER, ID.worker], [WORKER2, ID.worker2], [MANAGER, ID.manager]] as const) {
+    const reply = await call('POST', `orgs/${ORG}/profile/requests`, { user, body: { kind: 'seat' } });
+    assertEquals(reply.status, 200, id);
+    asked.push(reply.body.request.id as string);
+  }
+  const decided = await Promise.all(asked.map((id, index) => call('POST', `orgs/${ORG}/people/requests/${id}`, { user: index % 2 ? OWNER : HR, body: { decision: 'approve' } })));
+  // Before, each turned the seat on, counted too many and backed out, so all could fail.
+  assertEquals(decided.filter((reply) => reply.status === 200).length, 1);
+  assertEquals(decided.filter((reply) => reply.status === 409).map((reply) => reply.body.code), ['seats_full', 'seats_full']);
+  assertEquals(db.rows('company_members').filter((row) => row.org_id === ORG && row.seat).length, 3);
+  assertEquals(db.rows('company_member_requests').filter((row) => row.status === 'pending').length, 2);
+});
+
 Deno.test('requests: a pilot has no seats to ask for; a job role change goes through HR; another workspace’s request is not found', async () => {
   const pilot = setup({ status: 'pilot', seats_limit: 0 });
   assertEquals((await pilot.call('POST', `orgs/${ORG}/profile/requests`, { user: WORKER, body: { kind: 'seat' } })).body.code, 'seats_inactive');

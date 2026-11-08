@@ -146,10 +146,12 @@ export const requestRoutes: Route[] = [
       let access = 'none';
       if (decision === 'approve' && request.kind === 'job_role' && request.job_role) check(await ctx.db.from('company_members').update({ job_role: request.job_role }).eq('id', member.id));
       if (decision === 'approve' && request.kind === 'seat' && !member.seat) {
-        check(await ctx.db.from('company_members').update({ seat: true }).eq('id', member.id));
-        if (await seatCount(ctx.db, org.id) > org.seats_limit) {
-          check(await ctx.db.from('company_members').update({ seat: false }).eq('id', member.id));
+        // Counted and turned on under the workspace lock: of several approvals for the last
+        // free seat one wins, instead of each turning it on, counting too many and backing out.
+        const claim = check<string>(await ctx.db.rpc('company_claim_seat', { p_org: org.id, p_member: member.id }));
+        if (claim === 'full' || claim === 'missing') {
           check(await ctx.db.from('company_member_requests').update({ status: 'pending', decided_by: null, decided_at: null }).eq('id', request.id));
+          if (claim === 'missing') throw new CompanyError('member_removed', 'This person was removed from the workspace.', 409);
           throw new CompanyError('seats_full', 'All learning seats are in use.', 409, { limit: org.seats_limit });
         }
         access = await syncAccess(ctx.db, member.user_id);

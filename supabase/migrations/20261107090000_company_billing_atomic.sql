@@ -101,3 +101,49 @@ end;
 $$;
 revoke all on function public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz) from public, anon, authenticated;
 grant execute on function public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz) to service_role;
+
+-- Turns one learning seat on under the workspace lock, so of several approvals for the
+-- last free seat exactly one wins and the others are told it is full.
+-- 'claimed', 'already' (the person had one), 'full' or 'missing'.
+create or replace function public.company_claim_seat(p_org uuid, p_member uuid)
+returns text
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  seat_limit integer;
+  person public.company_members%rowtype;
+  used integer;
+begin
+  select seats_limit into seat_limit from public.company_orgs where id = p_org for update;
+  if not found then return 'missing'; end if;
+  select * into person from public.company_members where id = p_member and org_id = p_org for update;
+  if not found or person.status = 'removed' then return 'missing'; end if;
+  if person.seat then return 'already'; end if;
+  select count(*) into used from public.company_members where org_id = p_org and seat and status <> 'removed';
+  if used >= coalesce(seat_limit, 0) then return 'full'; end if;
+  update public.company_members set seat = true where id = p_member;
+  return 'claimed';
+end;
+$$;
+revoke all on function public.company_claim_seat(uuid,uuid) from public, anon, authenticated;
+grant execute on function public.company_claim_seat(uuid,uuid) to service_role;
+
+-- "Talk to Schood about seats": one lead per workspace a day, also when HR clicks twice
+-- or two people click at once. Returns the new or the recent lead, and whether it was recent.
+create or replace function public.company_request_seats(p_org uuid, p_lead jsonb, p_since timestamptz)
+returns jsonb
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  recent public.company_leads%rowtype;
+  made public.company_leads%rowtype;
+begin
+  perform pg_advisory_xact_lock(hashtextextended('company_seats:' || p_org::text, 0));
+  select * into recent from public.company_leads where org_id = p_org and source = 'company_seats' and created_at >= p_since order by created_at desc limit 1;
+  if found then return jsonb_build_object('id', recent.id, 'created_at', recent.created_at, 'duplicate', true); end if;
+  insert into public.company_leads(name, company, phone, email, size_band, industry, need, locale, status, org_id, source, ip_hash)
+    values (p_lead->>'name', p_lead->>'company', p_lead->>'phone', p_lead->>'email', p_lead->>'size_band', p_lead->>'industry', p_lead->>'need', p_lead->>'locale', 'new', p_org, 'company_seats', p_lead->>'ip_hash')
+    returning * into made;
+  return jsonb_build_object('id', made.id, 'created_at', made.created_at, 'duplicate', false);
+end;
+$$;
+revoke all on function public.company_request_seats(uuid,jsonb,timestamptz) from public, anon, authenticated;
+grant execute on function public.company_request_seats(uuid,jsonb,timestamptz) to service_role;

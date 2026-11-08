@@ -387,6 +387,15 @@ Deno.test('a seats request reaches the Schood pipeline once a day', async () => 
   assertEquals(overview.body.seats_requested_at, lead.created_at);
 });
 
+Deno.test('seats requests sent at the same moment make one lead', async () => {
+  const { db, call } = setup();
+  const replies = await Promise.all([1, 2, 3].map(() => call('POST', `orgs/${ORG}/insights/seats-request`, { user: ADMIN, body: { seats: 5 } })));
+  assertEquals(replies.map((reply) => reply.status), [200, 200, 200]);
+  assertEquals(replies.filter((reply) => reply.body.duplicate === false).length, 1);
+  assertEquals(db.rows('company_leads').filter((row) => row.source === 'company_seats').length, 1);
+  assertEquals(db.rows('company_audit').filter((row) => row.action === 'insights.seats_requested').length, 1);
+});
+
 Deno.test('someone first tested inside the period still counts as moving up on a retest', async () => {
   const { db, call } = setup();
   db.rows('company_attempts').push(

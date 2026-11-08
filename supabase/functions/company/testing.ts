@@ -24,6 +24,33 @@ export class FakeDb {
   };
   constructor(seed: Record<string, Row[]> = {}) {
     for (const [table, rows] of Object.entries(seed)) this.tables[table] = rows.map((row) => ({ ...row }));
+    // Stand-ins for small atomic SQL functions, each one step as it is under its lock in
+    // Postgres (the SQL itself is tested against Postgres). A test may replace any of them.
+    this.rpcs.company_claim_seat = ({ p_org, p_member }) => {
+      const org = this.rows('company_orgs').find((row) => row.id === p_org);
+      const person = this.rows('company_members').find((row) => row.id === p_member && row.org_id === p_org);
+      if (!org || !person || person.status === 'removed') return 'missing';
+      if (person.seat) return 'already';
+      const used = this.rows('company_members').filter((row) => row.org_id === p_org && row.seat && row.status !== 'removed').length;
+      if (used >= Number(org.seats_limit ?? 0)) return 'full';
+      person.seat = true;
+      return 'claimed';
+    };
+    this.rpcs.company_request_seats = ({ p_org, p_lead, p_since }) => {
+      const recent = this.rows('company_leads').filter((row) => row.org_id === p_org && row.source === 'company_seats' && String(row.created_at) >= String(p_since)).sort((a, b) => compare(b.created_at, a.created_at))[0];
+      if (recent) return { id: recent.id, created_at: recent.created_at, duplicate: true };
+      const made = { id: crypto.randomUUID(), ...(p_lead as Row), status: 'new', org_id: p_org, source: 'company_seats', created_at: new Date(Date.parse(String(p_since)) + 86_400_000).toISOString() };
+      this.rows('company_leads').push(made);
+      return { id: made.id, created_at: made.created_at, duplicate: false };
+    };
+    // Hourly limiters answer "allowed" unless a test counts them itself.
+    this.rpcs.company_hiring_hit = () => true;
+    const dayHits = new Map<string, number>();
+    this.rpcs.company_connect_day_hit = ({ p_bucket, p_limit, p_at }) => {
+      const key = `${String(p_at).slice(0, 10)}:${p_bucket}`, hits = (dayHits.get(key) ?? 0) + 1;
+      dayHits.set(key, hits);
+      return hits <= Number(p_limit);
+    };
   }
   rows(table: string): Row[] {
     return (this.tables[table] ??= []);
