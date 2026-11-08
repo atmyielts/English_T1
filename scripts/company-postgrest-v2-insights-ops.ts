@@ -128,7 +128,8 @@ export async function insightsOpsV2(h: V2Harness) {
     eq('competing payments cannot overpay', race.map((row) => row.status).sort(), [200, 409]);
     eq('payment total remains exact', Number((await db.from('company_invoices').select('paid_amount').eq('id', id).single()).data.paid_amount), 80000);
     await call('POST', `staff/invoices/${id}/payments`, { ...staff, body: { amount: 32000, key: 'v2-payment-remainder' } });
-    const override = { seats_limit: original.seats_limit, tests_limit: original.tests_limit, contract_ends_at: original.contract_ends_at?.slice(0, 10) ?? null };
+    // No end date is an explicit choice now; an empty end is refused rather than clearing it.
+    const override = { seats_limit: original.seats_limit, tests_limit: original.tests_limit, ...(original.contract_ends_at ? { contract_ends_at: original.contract_ends_at.slice(0, 10) } : { open_ended: true }) };
     const activated = await call('POST', `staff/invoices/${id}/activate`, { ...staff, body: override });
     eq('activation performs the staff click once', activated.body.duplicate, false);
     eq('activation retry is idempotent', (await call('POST', `staff/invoices/${id}/activate`, { ...staff, body: override })).body.duplicate, true);
@@ -141,6 +142,53 @@ export async function insightsOpsV2(h: V2Harness) {
     await call('POST', `staff/invoices/${id}/void`, staff);
     // Preserve the exact pre-scenario timestamp after testing date-based overrides.
     await sql(`update public.company_orgs set contract_ends_at = ${original.contract_ends_at ? `'${original.contract_ends_at}'::timestamptz` : 'null'} where id = '${S.org}';`);
+  });
+
+  await area('v2 operations: activation keeps the contract end, grants contract tests once, one renewal', async () => {
+    const original = (await db.from('company_orgs').select('status,seats_limit,tests_limit,tests_used,contract_ends_at').eq('id', S.org).single()).data;
+    const end = instant(90);
+    await sql(`update public.company_orgs set tests_used = 0, tests_limit = 500, contract_ends_at = '${end}'::timestamptz where id = '${S.org}';`);
+    const endNow = async () => Date.parse((await db.from('company_orgs').select('contract_ends_at').eq('id', S.org).single()).data.contract_ends_at ?? 'NaN');
+    const paidInvoice = async (contract: string | null, key: string) => {
+      const made = await call('POST', `staff/orgs/${S.org}/invoices`, { ...staff, body: { ...(contract ? { contract_id: contract } : {}), lines: [{ description: 'Recorded seats', quantity: 1, unit_price: 1000 }], vat_percent: 0 } });
+      const id = need(made.body.invoice?.id, 'invoice');
+      await call('POST', `staff/invoices/${id}/payments`, { ...staff, body: { amount: 1000, key } });
+      return id;
+    };
+    const seats = original.seats_limit;
+    // The form used to send contract_ends_at: null for an empty box, which made the plan never end.
+    const plain = await paidInvoice(null, 'v2-open-end-1');
+    const blank = await call('POST', `staff/invoices/${plain}/activate`, { ...staff, body: { seats_limit: seats, tests_limit: 500, contract_ends_at: null }, expect: 400 });
+    eq('an empty contract end is refused', blank.body.code, 'open_end_unconfirmed');
+    eq('the end is untouched by the refusal', await endNow(), Date.parse(end));
+    await call('POST', `staff/invoices/${plain}/activate`, { ...staff, body: { seats_limit: seats, tests_limit: 500 } });
+    eq('activating without an end keeps the current end', await endNow(), Date.parse(end));
+
+    const made = await call('POST', `staff/orgs/${S.org}/contracts`, { ...staff, body: { title: 'Instalment agreement', seats, tests: 100, price_per_seat: 1000, term_months: 12, end_date: shift(200) } });
+    const contract = need(made.body.contract?.id, 'contract');
+    await call('PATCH', `staff/contracts/${contract}`, { ...staff, body: { status: 'signed' } });
+    const first = await paidInvoice(contract, 'v2-grant-1');
+    await call('POST', `staff/invoices/${first}/activate`, { ...staff, body: {} });
+    eq('the first invoice grants the contract tests', (await db.from('company_orgs').select('tests_limit').eq('id', S.org).single()).data.tests_limit, 100);
+    await sql(`update public.company_orgs set tests_used = 80 where id = '${S.org}';`);
+    const second = await paidInvoice(contract, 'v2-grant-2');
+    eq('the page knows the tests were granted', (await call('GET', `staff/invoices/${second}`, staff)).body.contract_tests_granted, true);
+    await call('POST', `staff/invoices/${second}/activate`, { ...staff, body: {} });
+    eq('a second invoice on the contract does not grant its tests again', (await db.from('company_orgs').select('tests_limit').eq('id', S.org).single()).data.tests_limit, 100);
+
+    // Four renew clicks at the same moment: one quote, the others are told it exists.
+    const renewals = await Promise.all([1, 2, 3, 4].map(() => call('POST', `staff/contracts/${contract}/renew`, { ...staff, allowDb: /23505|duplicate key/ })));
+    eq('one renewal is opened', renewals.filter((reply) => reply.body.duplicate === false).length, 1);
+    eq('every click sees the same renewal', new Set(renewals.map((reply) => reply.body.contract?.id)).size, 1);
+    eq('one renewal row', (await db.from('company_contracts').select('id').eq('renewed_from', contract)).data.length, 1);
+
+    for (const id of [plain, first, second]) {
+      const rows = await db.from('company_invoice_payments').select('id').eq('invoice_id', id);
+      for (const payment of rows.data) await call('DELETE', `staff/invoices/${id}/payments/${payment.id}`, staff);
+      await call('POST', `staff/invoices/${id}/void`, staff);
+    }
+    await sql(`update public.company_contracts set status = 'lost' where id = '${contract}' or renewed_from = '${contract}';`);
+    await sql(`update public.company_orgs set status = '${original.status}', seats_limit = ${original.seats_limit}, tests_limit = ${original.tests_limit ?? 'null'}, tests_used = ${original.tests_used}, contract_ends_at = ${original.contract_ends_at ? `'${original.contract_ends_at}'::timestamptz` : 'null'} where id = '${S.org}';`);
   });
 
   await area('v2 operations: founder reports, pipeline and audited workspace view', async () => {

@@ -58,7 +58,8 @@ export function stubInvoiceCommands(db: FakeDb): void {
       const seats = input.seats_limit ?? contract?.seats ?? org.seats_limit;
       const used = db.rows('company_members').filter((row) => row.org_id === org.id && row.seat && row.status !== 'removed').length;
       if (Number(seats) < used) return fail('seats_below_used', 409, { used, field: 'seats_limit' });
-      const tests = 'tests_limit' in input ? input.tests_limit : contract ? contract.tests === null ? null : Number(org.tests_used) + Number(contract.tests) : org.tests_limit;
+      const granted = Boolean(contract) && db.rows('company_invoices').some((row) => row.contract_id === contract!.id && row.id !== inv.id && row.activated_at);
+      const tests = 'tests_limit' in input ? input.tests_limit : contract && !granted ? contract.tests === null ? null : Number(org.tests_used) + Number(contract.tests) : org.tests_limit;
       const ends = 'contract_ends_at' in input ? input.contract_ends_at : contract?.end_date ? new Date(`${contract.end_date}T23:59:59+05:00`).toISOString() : org.contract_ends_at;
       Object.assign(org, { status: 'active', seats_limit: seats, tests_limit: tests, contract_ends_at: ends });
       Object.assign(inv, { activated_at: p_now, activated_by: p_actor });

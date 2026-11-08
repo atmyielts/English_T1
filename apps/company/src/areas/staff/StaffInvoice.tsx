@@ -13,10 +13,13 @@ interface Data {
   invoice: InvoiceDetail;
   payments: { id: string; amount: number; paid_on: string; reference: string | null }[];
   contract: ContractView | null;
+  /** Another invoice on the same contract was already activated, so its tests are not added again. */
+  contract_tests_granted?: boolean;
   org: { id: string; name: string; status: string; seats_limit: number; tests_limit: number | null; tests_used: number; contract_ends_at: string | null };
   seats_used: number;
 }
 const tashkentDay = () => new Date(Date.now() + 5 * 3_600_000).toISOString().slice(0, 10);
+const tashkentDate = (iso: string | null | undefined) => iso ? new Date(new Date(iso).getTime() + 5 * 3_600_000).toISOString().slice(0, 10) : '';
 const newKey = () => crypto.randomUUID();
 
 export function StaffInvoice({ invoiceId }: { invoiceId: string }) {
@@ -25,7 +28,7 @@ export function StaffInvoice({ invoiceId }: { invoiceId: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState(''), [notice, setNotice] = useState(''), [busy, setBusy] = useState(false);
   const [payment, setPayment] = useState({ amount: '', paid_on: tashkentDay(), reference: '' });
-  const [activation, setActivation] = useState({ seats: '', tests: '', unlimited: false, ends: '' });
+  const [activation, setActivation] = useState({ seats: '', tests: '', unlimited: false, ends: '', openEnded: false });
   const [syncFailed, setSyncFailed] = useState(false);
   const [confirmVoid, setConfirmVoid] = useState(false);
   // New for each payment form, so a double click or a retry records one payment.
@@ -35,11 +38,14 @@ export function StaffInvoice({ invoiceId }: { invoiceId: string }) {
       const next = await api<Data>(`staff/invoices/${encodeURIComponent(invoiceId)}`);
       setData(next);
       setPayment((current) => ({ ...current, amount: next.invoice.balance > 0 ? String(next.invoice.balance) : '' }));
-      const { contract, org } = next;
+      const { org } = next;
+      // A contract's tests are added once; a later invoice on it keeps the workspace's limit.
+      const contract = next.contract_tests_granted ? null : next.contract;
       setActivation({
-        seats: String(contract?.seats ?? org.seats_limit), unlimited: contract ? contract.tests === null : org.tests_limit === null,
+        seats: String(next.contract?.seats ?? org.seats_limit), unlimited: contract ? contract.tests === null : org.tests_limit === null,
         tests: contract ? (contract.tests === null ? '' : String(org.tests_used + contract.tests)) : org.tests_limit === null ? '' : String(org.tests_limit),
-        ends: contract?.end_date ?? '',
+        // The current end stays unless staff change it; no end date is a box they tick on purpose.
+        ends: next.contract?.end_date ?? tashkentDate(org.contract_ends_at), openEnded: false,
       });
       setError('');
     } catch (cause) {
@@ -76,7 +82,9 @@ export function StaffInvoice({ invoiceId }: { invoiceId: string }) {
     event.preventDefault();
     void run(async () => {
       const response = await api<{ access_sync_failed?: boolean }>(`staff/invoices/${invoice.id}/activate`, { method: 'POST', body: {
-        seats_limit: Number(activation.seats || 0), tests_limit: activation.unlimited ? null : Number(activation.tests || 0), contract_ends_at: activation.ends || null,
+        seats_limit: Number(activation.seats || 0), tests_limit: activation.unlimited ? null : Number(activation.tests || 0),
+        // An empty date is left out, so the server keeps the end it has.
+        ...(activation.openEnded ? { open_ended: true } : activation.ends ? { contract_ends_at: activation.ends } : {}),
       } });
       setSyncFailed(Boolean(response.access_sync_failed));
     }, t('staff.invoice.activated'));
@@ -116,8 +124,10 @@ export function StaffInvoice({ invoiceId }: { invoiceId: string }) {
             <label>{t('staff.plan.seats')}<input type="number" required min={data.seats_used} max={100000} value={activation.seats} onChange={(event) => setActivation({ ...activation, seats: event.target.value })}/></label>
             <label>{t('staff.plan.tests')}<input type="number" min={0} max={1000000} disabled={activation.unlimited} required={!activation.unlimited} value={activation.tests} onChange={(event) => setActivation({ ...activation, tests: event.target.value })}/></label>
             <label className="check"><input type="checkbox" checked={activation.unlimited} onChange={(event) => setActivation({ ...activation, unlimited: event.target.checked })}/>{t('staff.plan.unlimited')}</label>
-            <label>{t('staff.plan.contract')}<input type="date" value={activation.ends} onChange={(event) => setActivation({ ...activation, ends: event.target.value })}/></label>
+            <label>{t('staff.plan.contract')}<input type="date" disabled={activation.openEnded} value={activation.openEnded ? '' : activation.ends} onChange={(event) => setActivation({ ...activation, ends: event.target.value })}/></label>
+            <label className="check"><input type="checkbox" checked={activation.openEnded} onChange={(event) => setActivation({ ...activation, openEnded: event.target.checked })}/>{t('staff.invoice.noEnd')}</label>
             <p className="hint people-span">{t('staff.invoice.testsNote', { used: org.tests_used })}</p>
+            {data.contract_tests_granted && <p className="hint people-span">{t('staff.invoice.testsGranted')}</p>}
             <div className="people-form-actions"><button disabled={busy}>{t('staff.invoice.activate')}</button></div>
           </form>}
         </section>}

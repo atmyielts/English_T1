@@ -84,6 +84,8 @@ export const staffOpsEn = {
   'staff.invoice.activateAfter': 'This becomes possible once the invoice is fully paid. Paying does not change the plan by itself.',
   'staff.invoice.activateLead': 'Now: {status}, {used} seats in use. Check the numbers, then activate.',
   'staff.invoice.testsNote': 'The workspace has used {used} tests so far, and its limit counts those too.',
+  'staff.invoice.noEnd': 'No end date: the plan stays open until someone changes it',
+  'staff.invoice.testsGranted': 'Another invoice on this contract already added its tests, so the limit stays as it is.',
   'staff.invoice.activate': 'Activate these seats and tests',
   'staff.invoice.activated': 'Plan updated and access synced.',
   'staff.invoice.activatedOn': 'Activated on {date}.',

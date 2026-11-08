@@ -20,6 +20,7 @@ declare
   ends timestamptz;
   next_doc integer;
   doc_year integer;
+  granted boolean := false;
 begin
   select * into inv from public.company_invoices where id = p_invoice for update;
   if not found then return jsonb_build_object('code','invoice_not_found','message','Invoice not found.','status',404); end if;
@@ -84,7 +85,10 @@ begin
     seats := case when p_input ? 'seats_limit' then (p_input->>'seats_limit')::integer else coalesce(contract.seats,org.seats_limit) end;
     select count(*) into used from public.company_members where org_id = org.id and seat and status <> 'removed';
     if seats < used then return jsonb_build_object('code','seats_below_used','message','Turn off seats before reducing the limit.','status',409,'field','seats_limit','used',used); end if;
-    tests := case when p_input ? 'tests_limit' then (p_input->>'tests_limit')::integer when contract.id is not null then case when contract.tests is null then null else org.tests_used + contract.tests end else org.tests_limit end;
+    -- A contract's tests are granted once: a later invoice on it (an instalment) keeps the limit.
+    -- Read after the org lock, so two invoices of one contract activated together see each other.
+    granted := contract.id is not null and exists(select 1 from public.company_invoices i where i.contract_id = contract.id and i.id <> inv.id and i.activated_at is not null);
+    tests := case when p_input ? 'tests_limit' then (p_input->>'tests_limit')::integer when contract.id is not null and not granted then case when contract.tests is null then null else org.tests_used + contract.tests end else org.tests_limit end;
     ends := case when p_input ? 'contract_ends_at' then (p_input->>'contract_ends_at')::timestamptz when contract.end_date is not null then ((contract.end_date + time '23:59:59') at time zone 'Asia/Tashkent') else org.contract_ends_at end;
     if ends is not null and ends <= p_now then return jsonb_build_object('code','contract_end_past','message','Choose a contract end in the future.','status',400,'field','contract_ends_at'); end if;
     if seats is null or seats < 0 or seats > 100000 or tests < 0 then return jsonb_build_object('code','invalid_field','message','Enter a valid plan limit.','status',400); end if;

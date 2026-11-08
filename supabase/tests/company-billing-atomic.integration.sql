@@ -58,6 +58,39 @@ begin
   answer := public.company_invoice_command(other_invoice,actor,'activate','{"seats_limit":9}',at_time);
   assert (answer->>'duplicate')::boolean;
   assert (select seats_limit from public.company_orgs where id = org) = 7, 'duplicate click does not replace the plan';
+  -- A contract's tests are granted once: a second invoice on it keeps the limit.
+  declare
+    contract uuid;
+    first_inv uuid;
+    second_inv uuid;
+    renewal_blocked boolean := false;
+  begin
+    update public.company_orgs set tests_used = 0, tests_limit = 10 where id = org;
+    insert into public.company_contracts(org_id,title,status,seats,tests,start_date,end_date) values (org,'Instalments','signed',7,100,'2026-11-01','2027-10-31') returning id into contract;
+    insert into public.company_invoices(org_id,contract_id,number,issue_date,total) values (org,contract,'ATOMIC-3','2026-11-07',100) returning id into first_inv;
+    insert into public.company_invoices(org_id,contract_id,number,issue_date,total) values (org,contract,'ATOMIC-4','2026-11-07',100) returning id into second_inv;
+    perform public.company_invoice_command(first_inv,actor,'payment','{"amount":100}',at_time);
+    perform public.company_invoice_command(second_inv,actor,'payment','{"amount":100}',at_time);
+    answer := public.company_invoice_command(first_inv,actor,'activate','{}',at_time);
+    assert not (answer->>'duplicate')::boolean;
+    assert (select tests_limit from public.company_orgs where id = org) = 100, 'the first invoice grants the contract tests';
+    update public.company_orgs set tests_used = 80 where id = org;
+    answer := public.company_invoice_command(second_inv,actor,'activate','{}',at_time);
+    assert not (answer->>'duplicate')::boolean;
+    assert (select tests_limit from public.company_orgs where id = org) = 100, 'a second invoice on the contract does not grant its tests again';
+    assert (select contract_ends_at from public.company_orgs where id = org) = (('2027-10-31'::date + time '23:59:59') at time zone 'Asia/Tashkent'), 'the default end is the contract end';
+
+    -- One open renewal per contract; a lost one does not block the next.
+    insert into public.company_contracts(org_id,title,renewed_from) values (org,'Renewal one',contract);
+    begin
+      insert into public.company_contracts(org_id,title,renewed_from) values (org,'Renewal two',contract);
+    exception when unique_violation then renewal_blocked := true;
+    end;
+    assert renewal_blocked, 'a second open renewal of one contract is refused';
+    update public.company_contracts set status = 'lost' where renewed_from = contract;
+    insert into public.company_contracts(org_id,title,renewed_from) values (org,'Renewal three',contract);
+  end;
+
   assert not has_function_privilege('authenticated','public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz)','execute');
   assert not has_function_privilege('anon','public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz)','execute');
   assert has_function_privilege('service_role','public.company_invoice_command(uuid,uuid,text,jsonb,timestamptz)','execute');

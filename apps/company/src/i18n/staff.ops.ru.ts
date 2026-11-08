@@ -85,6 +85,8 @@ export const staffOpsRu: Record<StaffOpsKey, string> = {
   'staff.invoice.activateAfter': 'Станет доступно после полной оплаты счёта. Сама оплата тариф не меняет.',
   'staff.invoice.activateLead': 'Сейчас: {status}, занято мест: {used}. Проверьте числа и активируйте.',
   'staff.invoice.testsNote': 'В кабинете уже использовано тестов: {used}, и лимит учитывает их.',
+  'staff.invoice.noEnd': 'Без даты окончания: тариф действует, пока его не изменят',
+  'staff.invoice.testsGranted': 'Другой счёт по этому договору уже добавил его тесты, поэтому лимит не меняется.',
   'staff.invoice.activate': 'Активировать эти места и тесты',
   'staff.invoice.activated': 'Тариф обновлён, доступы синхронизированы.',
   'staff.invoice.activatedOn': 'Активировано {date}.',

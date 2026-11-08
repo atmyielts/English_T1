@@ -63,7 +63,14 @@ export function invoiceView(row: InvoiceRow, day: string) {
 function signingDates(row: { start_date: string | null; end_date: string | null; renewal_date: string | null; term_months: number }, day: string) {
   const start_date = row.start_date ?? day;
   const end_date = row.end_date ?? addDays(addMonths(start_date, row.term_months), -1);
+  // A start filled in as today can land after an end that is already past.
+  if (end_date < start_date) throw new CompanyError('dates_order', 'The end date must not be before the start date.', 400, { field: 'end_date' });
   return { start_date, end_date, renewal_date: row.renewal_date ?? addDays(end_date, -30) };
+}
+
+/** True when another invoice on this contract was already activated, so its tests were granted once. */
+async function contractTestsGranted(db: Db, contractId: string, invoiceId: string): Promise<boolean> {
+  return check<{ id: string }[]>(await db.from('company_invoices').select('id').eq('contract_id', contractId).neq('id', invoiceId).not('activated_at', 'is', null).limit(1)).length > 0;
 }
 
 function readContract(input: Record<string, unknown>, current?: ContractRow): Record<string, unknown> {
@@ -345,14 +352,21 @@ export const billingRoutes: Route[] = [
     async handle(ctx, params) {
       const current = await loadContract(ctx, params.contract);
       await loadOrg(ctx, current.org_id);
-      const existing = check<ContractRow[]>(await ctx.db.from('company_contracts').select(CONTRACT_COLUMNS).eq('renewed_from', current.id).neq('status', 'lost'));
+      const open = async () => check<ContractRow[]>(await ctx.db.from('company_contracts').select(CONTRACT_COLUMNS).eq('renewed_from', current.id).neq('status', 'lost'));
+      const existing = await open();
       if (existing.length) return { contract: contractView(existing[0]), duplicate: true };
       const start_date = addDays(current.end_date ?? today(ctx), 1);
-      const created = check<ContractRow>(await ctx.db.from('company_contracts').insert({
+      const inserted = await ctx.db.from('company_contracts').insert({
         org_id: current.org_id, title: current.title, status: 'quote', seats: current.seats, tests: current.tests, price_per_seat: current.price_per_seat, tests_fee: current.tests_fee,
         term_months: current.term_months, currency: 'UZS', start_date, end_date: addDays(addMonths(start_date, current.term_months), -1), renewal_date: null, signed_at: null, notes: null,
         renewed_from: current.id, created_by: ctx.user,
-      }).select(CONTRACT_COLUMNS).single());
+      }).select(CONTRACT_COLUMNS).single();
+      // A second tab that renewed at the same moment won the unique index: answer with its quote.
+      if ((inserted.error as { code?: string } | null)?.code === '23505') {
+        const winner = await open();
+        if (winner.length) return { contract: contractView(winner[0]), duplicate: true };
+      }
+      const created = check<ContractRow>(inserted);
       await ctx.audit('contract.renewal_opened', created.id, { from: current.id });
       return { contract: contractView(created), duplicate: false };
     },
@@ -382,11 +396,13 @@ export const billingRoutes: Route[] = [
       if (![subtotal, vat_amount, subtotal + vat_amount].every(Number.isSafeInteger)) {
         throw new CompanyError('invalid_field', 'The invoice amount is too large.', 400, { field: 'lines' });
       }
+      // Everything is checked before a number is taken, so a refused request leaves no gap in the sequence.
+      const notes = text(input.notes, 'notes', { max: 2000, optional: true });
       const seller = await sellerDetails(ctx), buyer = await buyerDetails(ctx, org);
       const number = await nextNumber(ctx.db, 'invoice', Number(issue_date.slice(0, 4)));
       const created = checkUnique<InvoiceRow>(await ctx.db.from('company_invoices').insert({
         org_id: org.id, contract_id, number, act_number: null, act_date: null, issue_date, due_date, status: 'issued', currency: 'UZS', lines, subtotal, vat_percent, vat_amount,
-        total: subtotal + vat_amount, paid_amount: 0, paid_on: null, seller, buyer, notes: text(input.notes, 'notes', { max: 2000, optional: true }), activated_at: null, created_by: ctx.user,
+        total: subtotal + vat_amount, paid_amount: 0, paid_on: null, seller, buyer, notes, activated_at: null, created_by: ctx.user,
       }).select(INVOICE_COLUMNS).single(), () => new CompanyError('number_busy', 'Several documents are being issued at once. Try again.', 409));
       await ctx.audit('invoice.issued', created.id, { number, total: created.total, contract_id });
       return { invoice: invoiceView(created, day) };
@@ -399,7 +415,8 @@ export const billingRoutes: Route[] = [
       const org = await loadOrg(ctx, invoice.org_id);
       const payments = await fetchAll<Record<string, unknown>>(() => ctx.db.from('company_invoice_payments').select('id,amount,paid_on,reference,created_at').eq('invoice_id', invoice.id).order('paid_on').order('id'));
       const contract = invoice.contract_id ? check<ContractRow | null>(await ctx.db.from('company_contracts').select(CONTRACT_COLUMNS).eq('id', invoice.contract_id).maybeSingle()) : null;
-      return { invoice: invoiceView(invoice, today(ctx)), payments, contract: contract ? contractView(contract) : null, org: { id: org.id, name: org.name, status: org.status, seats_limit: org.seats_limit, tests_limit: org.tests_limit, tests_used: org.tests_used, contract_ends_at: org.contract_ends_at }, seats_used: await seatCount(ctx.db, org.id) };
+      const contract_tests_granted = contract ? await contractTestsGranted(ctx.db, contract.id, invoice.id) : false;
+      return { invoice: invoiceView(invoice, today(ctx)), payments, contract: contract ? contractView(contract) : null, contract_tests_granted, org: { id: org.id, name: org.name, status: org.status, seats_limit: org.seats_limit, tests_limit: org.tests_limit, tests_used: org.tests_used, contract_ends_at: org.contract_ends_at }, seats_used: await seatCount(ctx.db, org.id) };
     },
   },
   {
@@ -490,17 +507,25 @@ export const billingRoutes: Route[] = [
       const seats = 'seats_limit' in input ? int(input.seats_limit, 'seats_limit', { min: 0, max: 100_000 })! : contract?.seats ?? org.seats_limit;
       const used = await seatCount(ctx.db, org.id);
       if (seats < used) throw new CompanyError('seats_below_used', `${used} seats are in use. Turn some off first.`, 409, { field: 'seats_limit', used });
-      // The workspace's counter runs for its whole life, so a contract's tests come on top of those already used.
+      // The workspace's counter runs for its whole life, so a contract's tests come on top of those already used,
+      // once: a later invoice on the same contract (an instalment) keeps the limit as it is.
+      const granted = contract ? await contractTestsGranted(ctx.db, contract.id, invoice.id) : false;
       const tests = 'tests_limit' in input
         ? (input.tests_limit === null ? null : int(input.tests_limit, 'tests_limit', { min: 0, max: 1_000_000 }))
-        : contract ? (contract.tests === null ? null : org.tests_used + contract.tests) : org.tests_limit;
-      const ends = 'contract_ends_at' in input ? contractEnd(input.contract_ends_at) : contract?.end_date ? contractEnd(contract.end_date) : org.contract_ends_at;
+        : contract && !granted ? (contract.tests === null ? null : org.tests_used + contract.tests) : org.tests_limit;
+      // A plan with no end date is a choice staff make on purpose ({ open_ended: true }), never an empty box.
+      const openEnded = input.open_ended === true;
+      if ('open_ended' in input && typeof input.open_ended !== 'boolean') throw new CompanyError('invalid_field', 'open_ended must be true or false.', 400, { field: 'open_ended' });
+      const endGiven = 'contract_ends_at' in input && input.contract_ends_at !== null && input.contract_ends_at !== '';
+      if (openEnded && endGiven) throw new CompanyError('invalid_field', 'Choose either a contract end or no end date.', 400, { field: 'contract_ends_at' });
+      if ('contract_ends_at' in input && !endGiven && !openEnded) throw new CompanyError('open_end_unconfirmed', 'Enter a contract end, or confirm that the plan has no end date.', 400, { field: 'contract_ends_at' });
+      const ends = openEnded ? null : endGiven ? contractEnd(input.contract_ends_at) : contract?.end_date ? contractEnd(contract.end_date) : org.contract_ends_at;
       if (ends && contractEnded({ contract_ends_at: ends }, ctx.now())) throw new CompanyError('contract_end_past', 'Choose a contract end in the future.', 400, { field: 'contract_ends_at' });
       // Only explicit overrides cross the boundary; defaults are derived again under the database lock.
       const overrides: Record<string, unknown> = {};
       if ('seats_limit' in input) overrides.seats_limit = seats;
       if ('tests_limit' in input) overrides.tests_limit = tests;
-      if ('contract_ends_at' in input) overrides.contract_ends_at = ends;
+      if (openEnded || endGiven) overrides.contract_ends_at = ends;
       const claimed = await invoiceCommand(ctx, invoice, 'activate', overrides);
       if (claimed.duplicate) return { invoice: invoiceView(claimed.invoice, today(ctx)), duplicate: true };
       const synced = await syncOrg(ctx, org.id);

@@ -46,6 +46,8 @@ create table if not exists public.company_contracts (
 );
 create index if not exists company_contracts_org_idx on public.company_contracts (org_id, created_at desc);
 create index if not exists company_contracts_status_idx on public.company_contracts (status, end_date);
+-- One open renewal per contract, so two renew clicks at once cannot open two quotes.
+create unique index if not exists company_contracts_renewed_from_uq on public.company_contracts (renewed_from) where renewed_from is not null and status <> 'lost';
 
 create table if not exists public.company_invoices (
   id uuid primary key default gen_random_uuid(),

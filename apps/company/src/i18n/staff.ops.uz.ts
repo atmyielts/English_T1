@@ -85,6 +85,8 @@ export const staffOpsUz: Record<StaffOpsKey, string> = {
   'staff.invoice.activateAfter': 'Hisob to‘liq to‘langach mumkin bo‘ladi. To‘lovning o‘zi tarifni o‘zgartirmaydi.',
   'staff.invoice.activateLead': 'Hozir: {status}, band o‘rinlar: {used}. Raqamlarni tekshirib, faollashtiring.',
   'staff.invoice.testsNote': 'Kabinet hozirgacha {used} ta test ishlatgan, limit ularni ham hisobga oladi.',
+  'staff.invoice.noEnd': 'Tugash sanasisiz: tarif kimdir o‘zgartirmaguncha amal qiladi',
+  'staff.invoice.testsGranted': 'Bu shartnoma bo‘yicha boshqa hisob uning testlarini allaqachon qo‘shgan, shuning uchun limit o‘zgarmaydi.',
   'staff.invoice.activate': 'Shu o‘rin va testlarni faollashtirish',
   'staff.invoice.activated': 'Tarif yangilandi, kirish huquqlari sinxronlandi.',
   'staff.invoice.activatedOn': '{date} da faollashtirilgan.',

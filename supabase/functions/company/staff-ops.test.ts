@@ -258,6 +258,97 @@ Deno.test('activating refuses to drop below seats in use, and a closed workspace
   assertEquals((await call('POST', `staff/invoices/${invoice.id}/activate`, { user: STAFF, body: { seats_limit: 5 } })).body.code, 'org_closed');
 });
 
+Deno.test('activating with an empty end keeps the contract end; no end date only when staff say so', async () => {
+  const { db, call } = setup();
+  const org = db.rows('company_orgs')[0];
+  Object.assign(org, { status: 'active', seats_limit: 7, tests_limit: 500, contract_ends_at: '2027-02-06T18:59:59.000Z' });
+  const pay = async (invoice: { id: string; total: number }, key: string) => await call('POST', `staff/invoices/${invoice.id}/payments`, { user: STAFF, body: { amount: invoice.total, key } });
+  const first = await invoiceFor(call);
+  await pay(first, 'form-key-open-1');
+  // What the old form sent for an empty date box: refused, and nothing changes.
+  const blank = await call('POST', `staff/invoices/${first.id}/activate`, { user: STAFF, body: { seats_limit: 7, tests_limit: 500, contract_ends_at: null } });
+  assertEquals([blank.status, blank.body.code, blank.body.field], [400, 'open_end_unconfirmed', 'contract_ends_at']);
+  assertEquals((await call('POST', `staff/invoices/${first.id}/activate`, { user: STAFF, body: { seats_limit: 7, contract_ends_at: '' } })).body.code, 'open_end_unconfirmed');
+  assertEquals([org.contract_ends_at, db.rows('company_invoices')[0].activated_at], ['2027-02-06T18:59:59.000Z', null]);
+  // The form now leaves an empty box out: the end stays.
+  const kept = await call('POST', `staff/invoices/${first.id}/activate`, { user: STAFF, body: { seats_limit: 7, tests_limit: 500 } });
+  assertEquals([kept.status, kept.body.duplicate], [200, false]);
+  assertEquals(org.contract_ends_at, '2027-02-06T18:59:59.000Z');
+  // The prefill a staff member sees is the current end, not an empty box.
+  assertEquals((await call('GET', `staff/invoices/${first.id}`, { user: STAFF })).body.org.contract_ends_at, '2027-02-06T18:59:59.000Z');
+  // An open-ended plan is an explicit choice, and cannot be mixed with a date.
+  const second = await invoiceFor(call);
+  await pay(second, 'form-key-open-2');
+  assertEquals((await call('POST', `staff/invoices/${second.id}/activate`, { user: STAFF, body: { open_ended: true, contract_ends_at: '2027-05-01' } })).body.code, 'invalid_field');
+  assertEquals((await call('POST', `staff/invoices/${second.id}/activate`, { user: STAFF, body: { open_ended: 'yes' } })).body.code, 'invalid_field');
+  const open = await call('POST', `staff/invoices/${second.id}/activate`, { user: STAFF, body: { seats_limit: 7, open_ended: true } });
+  assertEquals([open.status, org.contract_ends_at], [200, null]);
+  const audit = db.rows('company_audit').filter((row) => row.action === 'invoice.activated').at(-1)!;
+  assertEquals((audit.details as Record<string, { to: unknown }>).contract_ends_at.to, null);
+});
+
+Deno.test('a contract’s tests are granted once, however many invoices it has', async () => {
+  const { db, call } = setup();
+  const live = await signed(call);
+  const org = db.rows('company_orgs')[0];
+  const activate = async (body: Record<string, unknown> = {}) => {
+    const invoice = await invoiceFor(call, live.id);
+    await call('POST', `staff/invoices/${invoice.id}/payments`, { user: STAFF, body: { amount: invoice.total, key: `form-key-${crypto.randomUUID()}` } });
+    const before = await call('GET', `staff/invoices/${invoice.id}`, { user: STAFF });
+    const done = await call('POST', `staff/invoices/${invoice.id}/activate`, { user: STAFF, body });
+    assertEquals(done.status, 200);
+    return before.body.contract_tests_granted;
+  };
+  assertEquals(await activate(), false);
+  assertEquals(org.tests_limit, 103);
+  org.tests_used = 80;
+  // The second instalment on the same 100-test contract keeps the limit (it used to give 180).
+  assertEquals(await activate(), true);
+  assertEquals(org.tests_limit, 103);
+  org.tests_used = 150;
+  org.tests_limit = 160;
+  assertEquals(await activate(), true);
+  assertEquals(org.tests_limit, 160);
+  // Staff can still type a new limit on purpose.
+  await activate({ tests_limit: 300 });
+  assertEquals(org.tests_limit, 300);
+});
+
+Deno.test('a refused invoice does not use up a number', async () => {
+  const { db, call } = setup();
+  const first = await invoiceFor(call);
+  assertEquals(first.number, 'S-2026-00001');
+  for (const notes of ['x'.repeat(2001), 42]) {
+    const refused = await call('POST', `staff/orgs/${ORG}/invoices`, { user: STAFF, body: { lines: [{ description: 'Seats', quantity: 1, unit_price: 5 }], notes } });
+    assertEquals([refused.status, refused.body.code], [400, 'invalid_field']);
+  }
+  assertEquals(db.rows('company_doc_counters').find((row) => row.kind === 'invoice')!.last, 1);
+  assertEquals((await invoiceFor(call)).number, 'S-2026-00002');
+});
+
+Deno.test('signing a contract whose only date is a past end says dates_order, not 500', async () => {
+  const { db, call } = setup();
+  const made = await call('POST', `staff/orgs/${ORG}/contracts`, { user: STAFF, body: { title: 'Old deal', status: 'signed', end_date: '2020-01-01' } });
+  assertEquals([made.status, made.body.code, made.body.field], [400, 'dates_order', 'end_date']);
+  assertEquals(db.rows('company_contracts').length, 0);
+  const quote = await call('POST', `staff/orgs/${ORG}/contracts`, { user: STAFF, body: { title: 'Old deal', end_date: '2020-01-01' } });
+  assertEquals(quote.status, 200);
+  const sign = await call('PATCH', `staff/contracts/${quote.body.contract.id}`, { user: STAFF, body: { status: 'signed' } });
+  assertEquals([sign.status, sign.body.code], [400, 'dates_order']);
+  assertEquals(db.rows('company_contracts')[0].status, 'quote');
+});
+
+Deno.test('two renew clicks at once open one renewal quote', async () => {
+  const { db, call } = setup();
+  db.uniques.company_contracts = [{ columns: ['renewed_from'], where: (row) => row.renewed_from !== null && row.renewed_from !== undefined && row.status !== 'lost' }];
+  const live = await signed(call);
+  const replies = await Promise.all([1, 2, 3, 4].map(() => call('POST', `staff/contracts/${live.id}/renew`, { user: STAFF })));
+  assertEquals(replies.map((reply) => reply.status), [200, 200, 200, 200]);
+  assertEquals(replies.filter((reply) => reply.body.duplicate === false).length, 1);
+  assertEquals(new Set(replies.map((reply) => reply.body.contract.id)).size, 1);
+  assertEquals(db.rows('company_contracts').filter((row) => row.renewed_from === live.id).length, 1);
+});
+
 Deno.test('an act gets one number and keeps it; a cancelled invoice gets none', async () => {
   const { call } = setup();
   const invoice = await invoiceFor(call);
