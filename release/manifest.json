@@ -1,35 +1,39 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-private-mock-staging",
+  "releaseId": "sat-numeric-answer-scoring",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
-  "migrations": [
-    "20261123170000_sat_admin_review_draft_visibility.sql"
-  ],
+  "migrations": [],
   "edgeFunctions": [
-    "start-session"
+    "review-session",
+    "score-session",
+    "score-session-v2"
   ],
   "workers": [],
+  "sharedEdgeConsumers": [
+    "review-session",
+    "score-session",
+    "score-session-v2"
+  ],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261123170000_sat_admin_review_draft_visibility.sql",
-    "function:start-session",
-    "verify:sat-draft-access",
-    "catalogue:stage-inactive-sat-mocks"
+    "function:score-session",
+    "function:score-session-v2",
+    "function:review-session",
+    "verify:sat-written-math",
+    "catalogue:activate-sat-mocks"
   ],
   "manualFollowUps": [
-    "Run supabase db push --linked from the scoped migration directory after confirming the dry run lists only the SAT migration.",
-    "Run supabase functions deploy start-session and preserve the deployed JWT configuration.",
-    "Verify one inactive SAT draft before importing the other 49 through the administration builder."
+    "Run supabase functions deploy score-session with its existing JWT setting.",
+    "Run supabase functions deploy score-session-v2 with its existing JWT setting.",
+    "Run supabase functions deploy review-session with its existing JWT setting.",
+    "Verify the scores and question review on a completed synthetic SAT attempt before exposing the new catalogue."
   ],
   "verification": [
-    "Confirm administrators can review the new mock and an entitled learner cannot open it or start a session.",
-    "Read back the saved modules, questions, and answer keys against the verified archive.",
-    "Confirm the existing learner catalogue still contains the same active mocks."
+    "Confirm fractional and decimal representations of an equal value earn credit, incorrect signs and distinct decimals do not, and question review agrees with the score."
   ],
   "rollback": {
-    "edge": "Restore the previous start-session bundle if needed. Leave the database protection in place while SAT review drafts exist.",
-    "catalogue": "Leave all newly staged tests inactive until editorial review and grading validation are complete."
+    "functions": "Restore the previously downloaded versions of the three Edge Functions. Deactivate the new SAT batch if the written Math checks regress."
   }
 }

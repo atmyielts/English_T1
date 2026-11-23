@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { emitOpsAlert, logOpsEvent, requestIdFrom, withRequestIdHeader } from "../_shared/ops-observability.ts";
 import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
 import { applyToefl2026ToSections, computeToefl2026Session, isToefl2026Experience, toefl2026Summary } from "../_shared/toefl-2026-session.ts";
+import { SAT_SIMULATOR_PRODUCT_ID, satNumericAnswerMatches } from "../_shared/sat-numeric-answer.ts";
 
 type Json = Record<string, unknown>;
 
@@ -318,7 +319,7 @@ const scoreTokenMap = (
   return { score, max: keys.length };
 };
 
-const scoreUnit = (unitType: string, correct: any, responseData: any): UnitScore => {
+const scoreUnit = (unitType: string, correct: any, responseData: any, satMath = false): UnitScore => {
   if (!correct) return { score: 0, max: 0 };
 
   if (unitType === "question_single_choice") {
@@ -345,8 +346,9 @@ const scoreUnit = (unitType: string, correct: any, responseData: any): UnitScore
     const expected: string[] = Array.isArray(correct.answers) ? correct.answers.map((entry: unknown) => String(entry)) : [];
     const actualRaw =
       typeof responseData === "string" ? responseData : String(responseData?.text ?? responseData?.answer ?? "");
+    const numericMatch = satMath ? satNumericAnswerMatches(actualRaw, expected) : null;
     const actual = normalizeText(actualRaw);
-    const ok = expected.some((e) => normalizeText(e) === actual);
+    const ok = numericMatch ?? expected.some((e) => normalizeText(e) === actual);
     return { score: ok ? 1 : 0, max: expected.length > 0 ? 1 : 0 };
   }
 
@@ -713,6 +715,9 @@ serve(async (req) => {
     const productSlug = String((productRow as any)?.metadata?.slug ?? "")
       .trim()
       .toLowerCase();
+    const isSatProduct =
+      experienceRow.product_id === SAT_SIMULATOR_PRODUCT_ID ||
+      productSlug === "sat-exam-simulator" || productSlug === "sat-simulator";
     const isToeflProduct =
       productSlug === "toefl-ibt-simulator" ||
       String(experienceRow.product_id) === "b262ffa8-9912-4eba-93d7-58af3164d1cc";
@@ -826,6 +831,7 @@ serve(async (req) => {
 
     for (const s of sectionRows) {
       const type = String((s.metadata as any)?.type ?? "unknown");
+      const satMath = isSatProduct && type === "math";
 
       // Collect scorable unit ids in this section
       const scorableUnitIds: string[] = [];
@@ -844,7 +850,7 @@ serve(async (req) => {
         const key = keyByUnitId.get(unitId);
         const resp = latestResponseByUnitId.get(unitId);
         if (!unit || !key) continue;
-        const { score, max: unitMax } = scoreUnit(unit.type, key.correct, resp);
+        const { score, max: unitMax } = scoreUnit(unit.type, key.correct, resp, satMath);
         raw += score;
         max += unitMax;
       }

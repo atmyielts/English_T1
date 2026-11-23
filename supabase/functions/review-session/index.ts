@@ -4,6 +4,7 @@ import { signStorageRef } from "../_shared/media-storage.ts";
 import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
 import { toefl2026TierFilterFor } from "../_shared/toefl-2026-session.ts";
 import { productIdsGrantingAccess } from "../_shared/product-bundles.ts";
+import { SAT_SIMULATOR_PRODUCT_ID, satNumericAnswerMatches } from "../_shared/sat-numeric-answer.ts";
 
 type Json = Record<string, unknown>;
 
@@ -151,7 +152,7 @@ const scoreTokenMap = (
   return { score, max: keys.length };
 };
 
-const scoreUnit = (unitType: string, correct: any, responseData: any): UnitScore => {
+const scoreUnit = (unitType: string, correct: any, responseData: any, satMath: boolean): UnitScore => {
   if (!correct) return { score: 0, max: 0 };
 
   if (unitType === "question_single_choice") {
@@ -178,8 +179,9 @@ const scoreUnit = (unitType: string, correct: any, responseData: any): UnitScore
     const expected: string[] = Array.isArray(correct.answers) ? correct.answers.map((entry: unknown) => String(entry)) : [];
     const actualRaw =
       typeof responseData === "string" ? responseData : String(responseData?.text ?? responseData?.answer ?? "");
+    const numericMatch = satMath ? satNumericAnswerMatches(actualRaw, expected) : null;
     const actual = normalizeText(actualRaw);
-    const ok = expected.some((e) => normalizeText(e) === actual);
+    const ok = numericMatch ?? expected.some((e) => normalizeText(e) === actual);
     return { score: ok ? 1 : 0, max: expected.length > 0 ? 1 : 0 };
   }
 
@@ -590,14 +592,17 @@ serve(async (req) => {
     const keyRows = (keys ?? []) as KeyRow[];
     const keyByUnitId = new Map(keyRows.map((k) => [k.content_unit_id, k.correct]));
 
+    const satMathSections = new Set(productId === SAT_SIMULATOR_PRODUCT_ID
+      ? sectionRows.filter((section) => section.metadata?.type === "math").map((section) => section.id)
+      : []);
     const reviewUnits = resolvedUnitRows.map((u) => {
+      const section_id = partToSectionId.get(u.part_id) ?? "";
       const answer = latestAnswers[u.id] ?? null;
       const correct = (keyByUnitId.has(u.id) ? keyByUnitId.get(u.id) : null) as Json | null;
-      const scored = correct ? scoreUnit(u.type, correct, answer) : null;
+      const scored = correct ? scoreUnit(u.type, correct, answer, satMathSections.has(section_id)) : null;
       const score = scored ? scored.score : null;
       const max_score = scored ? scored.max : null;
       const is_correct = scored && scored.max > 0 ? scored.score === scored.max : null;
-      const section_id = partToSectionId.get(u.part_id) ?? "";
 
       return {
         id: u.id,
