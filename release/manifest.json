@@ -15,7 +15,7 @@
     "verify:entitled-sat-practice-bank"
   ],
   "manualFollowUps": [
-    "Deploy the sat-practice Edge Function preserving its current JWT verification setting.",
+    "Run supabase functions deploy sat-practice with JWT verification enabled.",
     "Confirm a paid-access test account can read questions at and beyond the previous catalog limit, with answers withheld until submission."
   ],
   "verification": [
