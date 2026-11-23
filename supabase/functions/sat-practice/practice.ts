@@ -18,9 +18,21 @@ export const addDays = (iso: string, days: number) => {
 };
 
 export async function loadCatalog(sb: any, userId: string): Promise<CatalogEntry[]> {
-  const { data, error } = await sb.rpc('select_sat_practice_catalog', { p_user_id: userId });
-  if (error || !Array.isArray(data)) throw new AttemptError(503, 'The question bank is temporarily unavailable. Please retry.', 'bank_unavailable');
-  return normalizeCatalog(data);
+  const args = { p_user_id: userId };
+  const pageSize = 1000;
+  const unavailable = () => new AttemptError(503, 'The question bank is temporarily unavailable. Please retry.', 'bank_unavailable');
+  const first = await sb.rpc('select_sat_practice_catalog', args, { count: 'exact' }).range(0, pageSize - 1);
+  if (first.error || !Array.isArray(first.data) || typeof first.count !== 'number') throw unavailable();
+
+  // The RPC orders by bank_order. PostgREST caps each response at max_rows.
+  const rows: unknown[] = [...first.data];
+  while (rows.length < first.count) {
+    const offset = rows.length;
+    const page = await sb.rpc('select_sat_practice_catalog', args).range(offset, offset + pageSize - 1);
+    if (page.error || !Array.isArray(page.data) || page.data.length === 0) throw unavailable();
+    rows.push(...page.data);
+  }
+  return normalizeCatalog(rows);
 }
 
 // ------------------------------------------------------------------- bank
