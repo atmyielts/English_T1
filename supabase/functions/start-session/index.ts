@@ -281,7 +281,7 @@ serve(async (req) => {
 
     const { data: experienceRow, error: expErr } = await sb
       .from("experiences")
-      .select("id, product_id, metadata")
+      .select("id, product_id, is_active, metadata")
       .eq("id", experienceId)
       .maybeSingle();
 
@@ -297,6 +297,14 @@ serve(async (req) => {
 
     const { data: userRow } = await sb.from("users").select("role").eq("id", authedUserId).maybeSingle();
     const isAdmin = String((userRow as any)?.role ?? "").toLowerCase() === "admin";
+    if (
+      !isAdmin &&
+      productId === "5cf6e8e2-e6b1-4f8f-9d35-1c932866d6ef" &&
+      experienceRow.is_active === false &&
+      experienceMetadata.admin_review_only === true
+    ) {
+      return json(404, { error: "Experience not found" });
+    }
 
     let tenantId: string | null = body?.tenant_id ? String(body.tenant_id) : null;
 
