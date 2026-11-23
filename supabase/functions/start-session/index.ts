@@ -289,6 +289,7 @@ serve(async (req) => {
     if (!experienceRow) return json(404, { error: "Experience not found" });
 
     const productId = String((experienceRow as any).product_id ?? "");
+    const isSatProduct = productId === "5cf6e8e2-e6b1-4f8f-9d35-1c932866d6ef";
     const experienceMetadata = isObject((experienceRow as any)?.metadata) ? ((experienceRow as any).metadata as Record<string, unknown>) : {};
     const adaptivePath = readAdaptivePath(experienceMetadata);
     if (adaptivePath && !isObject((sessionMetadata as any).adaptive_path)) {
@@ -299,7 +300,7 @@ serve(async (req) => {
     const isAdmin = String((userRow as any)?.role ?? "").toLowerCase() === "admin";
     if (
       !isAdmin &&
-      productId === "5cf6e8e2-e6b1-4f8f-9d35-1c932866d6ef" &&
+      isSatProduct &&
       experienceRow.is_active === false &&
       experienceMetadata.admin_review_only === true
     ) {
@@ -391,7 +392,7 @@ serve(async (req) => {
         const sessionLimit = Math.max(1, guardrails.maxConcurrentSessionsPerProduct);
         const { data: openSessions, error: openSessionsError } = await sb
           .from("sessions")
-          .select("id, status, created_at, metadata, experiences!inner(product_id)")
+          .select("id, experience_id, status, created_at, metadata, experiences!inner(product_id)")
           .eq("user_id", authedUserId)
           .eq("experiences.product_id", productId)
           .in("status", ["created", "active", "paused"])
@@ -399,12 +400,34 @@ serve(async (req) => {
           .limit(sessionLimit + 2);
 
         if (openSessionsError) return json(500, { error: "Failed to enforce active session guard", details: openSessionsError });
-        const openRows = (openSessions ?? []) as Array<{ id: string; metadata: unknown }>;
+        const openRows = (openSessions ?? []) as Array<{ id: string; experience_id: string; metadata: unknown }>;
 
         if (openRows.length >= sessionLimit) {
+          if (isSatProduct) {
+            const requestedSections = JSON.stringify(normalizeSectionIds(sessionMetadata.allowed_section_ids).sort());
+            const reusable = openRows.find((row) => {
+              const previousDevice = readSessionDeviceKey(row.metadata);
+              const previousSections = isObject(row.metadata) ? row.metadata.allowed_section_ids : undefined;
+              return row.experience_id === experienceId
+                && (!previousDevice || previousDevice === deviceKey)
+                && JSON.stringify(normalizeSectionIds(previousSections).sort()) === requestedSections;
+            });
+            if (reusable) return json(200, { session_id: reusable.id, reused: true });
+
+            const hasDifferentAttemptOnDevice = openRows.some((row) => {
+              const previousDevice = readSessionDeviceKey(row.metadata);
+              return !previousDevice || previousDevice === deviceKey;
+            });
+            if (hasDifferentAttemptOnDevice) {
+              return json(409, {
+                error: "Resume or finish your active SAT attempt before starting a different test.",
+                code: "different_active_test",
+              });
+            }
+          }
           const latest = openRows[0];
           const latestDeviceKey = readSessionDeviceKey(latest?.metadata);
-          if (latest?.id && (!latestDeviceKey || latestDeviceKey === deviceKey)) {
+          if (!isSatProduct && latest?.id && (!latestDeviceKey || latestDeviceKey === deviceKey)) {
             return json(200, { session_id: latest.id, reused: true });
           }
 
