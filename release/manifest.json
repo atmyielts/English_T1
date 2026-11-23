@@ -1,28 +1,27 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-correct-session-resume",
+  "releaseId": "sat-practice-catalog-pagination",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
   "migrations": [],
   "edgeFunctions": [
-    "start-session"
+    "sat-practice"
   ],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "function:start-session",
-    "verify:sat-candidate-attempt",
-    "catalogue:activate-sat-mocks"
+    "function:sat-practice",
+    "verify:entitled-sat-practice-bank"
   ],
   "manualFollowUps": [
-    "Run supabase functions deploy start-session with its current JWT setting.",
-    "Verify a learner can start a mock, the same attempt resumes, and a different open mock never supplies a mismatched session."
+    "Deploy the sat-practice Edge Function preserving its current JWT verification setting.",
+    "Confirm a paid-access test account can read questions at and beyond the previous catalog limit, with answers withheld until submission."
   ],
   "verification": [
-    "Check that the old active-session limit is enforced and that only an attempt for the same SAT test and module selection can be reused."
+    "Run the SAT Practice Edge tests. Compare the live learner catalogue with both ordered database RPC pages."
   ],
   "rollback": {
-    "edge": "Restore the downloaded prior start-session bundle, keeping the database draft-visibility policy in place."
+    "edge": "Restore the prior sat-practice Edge Function bundle with JWT verification enabled."
   }
 }
