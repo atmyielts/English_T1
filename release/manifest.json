@@ -1,87 +1,50 @@
 {
   "schemaVersion": 1,
-  "releaseId": "company-english-v2",
+  "releaseId": "ielts-private-mock-media",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "company"
-  ],
-  "migrations": [
-    "20261106110000_company_hiring2.sql",
-    "20261106120000_company_training2.sql",
-    "20261106130000_company_insights2.sql",
-    "20261106140000_company_ops.sql",
-    "20261106150000_company_coach.sql",
-    "20261106160000_company_connect.sql",
-    "20261106170000_company_site.sql",
-    "20261107090000_company_billing_atomic.sql",
-    "20261107090100_company_connect_delivery_limits.sql"
-  ],
-  "edgeFunctions": [
-    "company"
-  ],
+  "frontends": [],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
-  "requiredSecrets": [
-    "COMPANY_ALLOWED_ORIGINS",
-    "COMPANY_APP_URL",
-    "COMPANY_EMAIL_ENABLED",
-    "COMPANY_SELF_SERVE",
-    "COMPANY_TELEGRAM_ENABLED",
-    "COMPANY_WEBHOOKS_ENABLED",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "TELEGRAM_BOT_NAME"
+  "sharedEdgeConsumers": [
+    "academy",
+    "academy-learning",
+    "admin-assets",
+    "exam-state",
+    "grade-writing",
+    "grade-writing-v2",
+    "ielts-practice",
+    "partner-office",
+    "review-session",
+    "schood-ai",
+    "voucher-redeem"
   ],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261106110000_company_hiring2.sql",
-    "migration:20261106120000_company_training2.sql",
-    "migration:20261106130000_company_insights2.sql",
-    "migration:20261106140000_company_ops.sql",
-    "migration:20261106150000_company_coach.sql",
-    "migration:20261106160000_company_connect.sql",
-    "migration:20261106170000_company_site.sql",
-    "migration:20261107090000_company_billing_atomic.sql",
-    "migration:20261107090100_company_connect_delivery_limits.sql",
-    "secret:COMPANY_ALLOWED_ORIGINS",
-    "secret:COMPANY_APP_URL",
-    "secret:COMPANY_EMAIL_ENABLED",
-    "secret:COMPANY_SELF_SERVE",
-    "secret:COMPANY_TELEGRAM_ENABLED",
-    "secret:COMPANY_WEBHOOKS_ENABLED",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:TELEGRAM_BOT_NAME",
-    "function:company"
+    "secret:IELTS_MOCK_S3_BUCKET",
+    "secret:IELTS_MOCK_S3_REGION",
+    "secret:IELTS_MOCK_S3_ACCESS_KEY_ID",
+    "secret:IELTS_MOCK_S3_SECRET_ACCESS_KEY",
+    "function:exam-state",
+    "function:review-session",
+    "function:grade-writing",
+    "function:grade-writing-v2",
+    "verify:authenticated-ielts-playback",
+    "catalogue:activate-new-ielts-mocks"
   ],
   "manualFollowUps": [
-    "Pages ships apps/company through the protected PR workflow. The v2 rollout is incomplete until the additive migrations and company function below are deployed.",
-    "Database: dry-run supabase db push --linked --include-all from an isolated release directory containing the installed migrations plus only the nine v2 company migrations. Confirm the production project and expected migration list. Keep all nine pending #220 payment migrations excluded. Then apply and verify with supabase migration list --linked.",
-    "Edge: supabase functions deploy company --project-ref <confirmed-production-ref> from the merged main revision after the additive schema is installed.",
-    "Outbound messages remain off. Do not configure COMPANY_TELEGRAM_ENABLED, COMPANY_EMAIL_ENABLED or COMPANY_WEBHOOKS_ENABLED to true without the owner explicitly choosing to enable the channel. Workspace/person opt-ins, quiet hours and caps also apply.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_ALLOWED_ORIGINS=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_APP_URL=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_EMAIL_ENABLED=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_SELF_SERVE=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_TELEGRAM_ENABLED=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set COMPANY_WEBHOOKS_ENABLED=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set GMAIL_SMTP_APP_PASSWORD=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set GMAIL_SMTP_EMAIL=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "Review the optional existing configuration, without printing its value: supabase secrets set TELEGRAM_BOT_NAME=<owner-supplied-value> --project-ref <confirmed-production-ref>. Leave messaging switches unset or false for this release; do not rotate shared credentials unnecessarily.",
-    "The connect cron worker requires company_connect_secret in internal_runtime_secrets and the existing scheduler/pg_net path. Verify the job installation and limits in the linked project; do not send a real message for a smoke test.",
-    "Privacy and terms text requires owner legal review. Invoices require staff-entered legal and bank details; no prices or legal identities are supplied by code."
+    "Configure the four IELTS_MOCK_S3 settings in Edge Function secrets. The IAM identity is scoped to GetObject for the mock media prefix.",
+    "Deploy only the shared-module consumers used by IELTS mock delivery: supabase functions deploy exam-state, supabase functions deploy review-session, supabase functions deploy grade-writing, and supabase functions deploy grade-writing-v2. Preserve each deployed function's JWT setting.",
+    "Verify playback and writing images before activating the new IELTS mocks and retiring the previous catalogue entries."
   ],
   "verification": [
-    "Local: npm run verify:company. The API test uses throwaway Postgres/PostgREST and synthetic delivery/AI adapters, never production credentials or real recipients.",
-    "Local browser: start npm --workspace apps/company run preview:local -- --host 127.0.0.1, then use the Playwright CLI with scripts/company-browser-smoke.js. Preview data is synthetic.",
-    "After release: confirm company.schood.online public pages, deep links, sitemap.xml and manifest.webmanifest load in EN/RU/UZ. Confirm unsigned me is401 and unknown candidate/report links are404.",
-    "Confirm all nine v2 migrations are applied, all nine #220 payment migrations remain excluded, and the function revision matches merged main.",
-    "Owner signed-in acceptance remains required: tenant/manager scope, pilot testing-only behavior, learning seats, consent, candidate reports, lesson authoring/version reload, invoice payment/activation and private data erasure.",
-    "Confirm every outbound switch remains false/unset, no send occurred during rollout, and legal/company-detail decisions remain visible to the owner."
+    "Verify that each new mock passes the existing admin builder publish gate.",
+    "Confirm an authenticated IELTS mock state supplies playable signed media. Check S3 Range access and confirm that the reader cannot fetch answer-key artifacts.",
+    "Confirm the public catalogue state for authenticated IELTS users after the switch."
   ],
   "rollback": {
-    "pages": "Roll schood-company back to its previous Cloudflare Pages deployment if production health regresses.",
-    "edge": "Redeploy company from the previously deployed main revision (baseline 2db02221) using the confirmed production project ref.",
-    "migration": "Leave additive schema in place. If needed, suspend only the affected workspace and reconcile its company seat access; never alter personal purchases."
+    "catalogue": "Deactivate the 40 new mock experiences and reactivate the archived prior experience IDs.",
+    "edge": "Restore the previous versions of the four manually deployed Edge Function bundles."
   }
 }
