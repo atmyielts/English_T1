@@ -1,50 +1,35 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ielts-private-mock-media",
+  "releaseId": "sat-private-mock-staging",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
-  "migrations": [],
-  "edgeFunctions": [],
-  "workers": [],
-  "sharedEdgeConsumers": [
-    "academy",
-    "academy-learning",
-    "admin-assets",
-    "exam-state",
-    "grade-writing",
-    "grade-writing-v2",
-    "ielts-practice",
-    "partner-office",
-    "review-session",
-    "schood-ai",
-    "voucher-redeem"
+  "migrations": [
+    "20261123170000_sat_admin_review_draft_visibility.sql"
   ],
+  "edgeFunctions": [
+    "start-session"
+  ],
+  "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "secret:IELTS_MOCK_S3_BUCKET",
-    "secret:IELTS_MOCK_S3_REGION",
-    "secret:IELTS_MOCK_S3_ACCESS_KEY_ID",
-    "secret:IELTS_MOCK_S3_SECRET_ACCESS_KEY",
-    "function:exam-state",
-    "function:review-session",
-    "function:grade-writing",
-    "function:grade-writing-v2",
-    "verify:authenticated-ielts-playback",
-    "catalogue:activate-new-ielts-mocks"
+    "migration:20261123170000_sat_admin_review_draft_visibility.sql",
+    "function:start-session",
+    "verify:sat-draft-access",
+    "catalogue:stage-inactive-sat-mocks"
   ],
   "manualFollowUps": [
-    "Configure the four IELTS_MOCK_S3 settings in Edge Function secrets. The IAM identity is scoped to GetObject for the mock media prefix.",
-    "Deploy only the shared-module consumers used by IELTS mock delivery: supabase functions deploy exam-state, supabase functions deploy review-session, supabase functions deploy grade-writing, and supabase functions deploy grade-writing-v2. Preserve each deployed function's JWT setting.",
-    "Verify playback and writing images before activating the new IELTS mocks and retiring the previous catalogue entries."
+    "Run supabase db push --linked from the scoped migration directory after confirming the dry run lists only the SAT migration.",
+    "Run supabase functions deploy start-session and preserve the deployed JWT configuration.",
+    "Verify one inactive SAT draft before importing the other 49 through the administration builder."
   ],
   "verification": [
-    "Verify that each new mock passes the existing admin builder publish gate.",
-    "Confirm an authenticated IELTS mock state supplies playable signed media. Check S3 Range access and confirm that the reader cannot fetch answer-key artifacts.",
-    "Confirm the public catalogue state for authenticated IELTS users after the switch."
+    "Confirm administrators can review the new mock and an entitled learner cannot open it or start a session.",
+    "Read back the saved modules, questions, and answer keys against the verified archive.",
+    "Confirm the existing learner catalogue still contains the same active mocks."
   ],
   "rollback": {
-    "catalogue": "Deactivate the 40 new mock experiences and reactivate the archived prior experience IDs.",
-    "edge": "Restore the previous versions of the four manually deployed Edge Function bundles."
+    "edge": "Restore the previous start-session bundle if needed. Leave the database protection in place while SAT review drafts exist.",
+    "catalogue": "Leave all newly staged tests inactive until editorial review and grading validation are complete."
   }
 }
