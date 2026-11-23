@@ -1,39 +1,28 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-numeric-answer-scoring",
+  "releaseId": "sat-correct-session-resume",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
   "migrations": [],
   "edgeFunctions": [
-    "review-session",
-    "score-session",
-    "score-session-v2"
+    "start-session"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "review-session",
-    "score-session",
-    "score-session-v2"
-  ],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "function:score-session",
-    "function:score-session-v2",
-    "function:review-session",
-    "verify:sat-written-math",
+    "function:start-session",
+    "verify:sat-candidate-attempt",
     "catalogue:activate-sat-mocks"
   ],
   "manualFollowUps": [
-    "Run supabase functions deploy score-session with its existing JWT setting.",
-    "Run supabase functions deploy score-session-v2 with its existing JWT setting.",
-    "Run supabase functions deploy review-session with its existing JWT setting.",
-    "Verify the scores and question review on a completed synthetic SAT attempt before exposing the new catalogue."
+    "Run supabase functions deploy start-session with its current JWT setting.",
+    "Verify a learner can start a mock, the same attempt resumes, and a different open mock never supplies a mismatched session."
   ],
   "verification": [
-    "Confirm fractional and decimal representations of an equal value earn credit, incorrect signs and distinct decimals do not, and question review agrees with the score."
+    "Check that the old active-session limit is enforced and that only an attempt for the same SAT test and module selection can be reused."
   ],
   "rollback": {
-    "functions": "Restore the previously downloaded versions of the three Edge Functions. Deactivate the new SAT batch if the written Math checks regress."
+    "edge": "Restore the downloaded prior start-session bundle, keeping the database draft-visibility policy in place."
   }
 }
