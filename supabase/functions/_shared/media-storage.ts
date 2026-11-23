@@ -97,6 +97,21 @@ const logMediaError = (event: string, detail: Record<string, unknown>, error: un
 
 let cachedS3Config: S3Config | null | undefined;
 let cachedS3Client: S3Client | null | undefined;
+let mockMediaClient: S3Client | undefined;
+
+const getS3ReadClient = (bucket: string): S3Client => {
+  if (bucket !== readEnv("IELTS_MOCK_S3_BUCKET")) return getS3Client();
+  if (mockMediaClient) return mockMediaClient;
+
+  const region = readEnv("IELTS_MOCK_S3_REGION");
+  const accessKeyId = readEnv("IELTS_MOCK_S3_ACCESS_KEY_ID");
+  const secretAccessKey = readEnv("IELTS_MOCK_S3_SECRET_ACCESS_KEY");
+  if (!region || !accessKeyId || !secretAccessKey) {
+    throw new Error("IELTS mock S3 signing is not configured");
+  }
+  mockMediaClient = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
+  return mockMediaClient;
+};
 
 export const getS3Config = (opts?: { required?: boolean }): S3Config | null => {
   if (cachedS3Config !== undefined) {
@@ -138,6 +153,7 @@ const getS3Client = (): S3Client => {
 
 const isS3Ref = (bucket: string, provider: string | null): boolean => {
   if (provider === "s3" || provider === "aws_s3" || provider === "aws") return true;
+  if (bucket === readEnv("IELTS_MOCK_S3_BUCKET")) return true;
   const cfg = getS3Config();
   return !!cfg && cfg.bucket === bucket;
 };
@@ -186,7 +202,7 @@ const signS3Object = async (
   context?: MediaOpContext,
 ): Promise<string | null> => {
   try {
-    const client = getS3Client();
+    const client = getS3ReadClient(bucket);
     return await getSignedUrl(
       client,
       new GetObjectCommand({
