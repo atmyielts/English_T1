@@ -35,6 +35,11 @@ const readingChoices = ['True', 'False', 'Not Given'];
 const guides = new Set([
   'guide-reading-paraphrase-premium', 'guide-writing-task-2-premium', 'guide-speaking-band-7-premium',
 ]);
+const moduleDefinition = read(checkout, 'supabase/functions/_shared/ielts-playbook.ts')
+  .match(/export const MODULE_ORDER = (\[[\s\S]*?\]);/)?.[1];
+assert.ok(moduleDefinition, 'Cannot locate the IELTS Playbook module inventory.');
+const modules = new Set(JSON.parse(moduleDefinition.replace(/,\s*\]/, ']')));
+const destinations = new Set([...modules, ...guides]);
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const wordCount = (value) => value.trim().split(/\s+/).filter(Boolean).length;
 const hasText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -127,12 +132,14 @@ for (const set of offline) {
     set.questions.map(({ answer: key, evidence }) => ({ key, evidence })), stimulus);
 }
 
-assert.equal(playbook.length, 4);
+assert.equal(playbook.length, modules.size + 4);
 assert.equal(new Set(playbook.map(({ slug, id }) => slug + '/' + id)).size, playbook.length);
-assert.deepEqual(new Set(playbook.map((section) => section.slug)), guides);
+assert.deepEqual(new Set(playbook.map((section) => section.slug)), destinations);
+for (const slug of modules) assert.equal(playbook.filter((section) => section.slug === slug).length, 1, slug);
 for (const section of playbook) {
-  assert.ok(guides.has(section.slug) && slugPattern.test(section.id));
+  assert.ok(destinations.has(section.slug) && slugPattern.test(section.id));
   assert.ok([section.heading, section.lead, section.body, section.exercise.prompt, section.exercise.answer].every(hasText));
+  assert.notEqual(section.exercise.prompt, section.exercise.answer);
 }
 
 const tag = '$ielts_eight_week$';
@@ -155,9 +162,14 @@ const practiceSql = generated(
   + 'on conflict (slug) do nothing;\n',
 );
 
+const playbookRows = playbook.map((section) => ({
+  ...section,
+  page_type: modules.has(section.slug) ? 'module' : 'guide',
+  visibility: modules.has(section.slug) ? 'public' : 'premium',
+}));
 const playbookSql = generated(
   'with source as (\n'
-  + '  select item, position from jsonb_array_elements(' + embed(playbook) + ') with ordinality as lines(item, position)\n'
+  + '  select item, position from jsonb_array_elements(' + embed(playbookRows) + ') with ordinality as lines(item, position)\n'
   + '), blocks as (\n'
   + "  select item, md5('schood-ielts-pb-eight-week:' || (item->>'slug') || ':' || (item->>'id'))::uuid as id,\n"
   + "         row_number() over (partition by item->>'slug' order by position) as section_offset\n"
@@ -166,12 +178,15 @@ const playbookSql = generated(
   + '  select p.id, p.slug, coalesce(max(s.sort_order) filter (where s.id not in (select id from blocks)), 0) as base_order\n'
   + '  from public.ielts_playbook_pages p\n'
   + '  left join public.ielts_playbook_page_sections s on s.page_id = p.id\n'
-  + "  where p.locale_code = 'en' and p.visibility = 'premium' and p.slug in (select item->>'slug' from blocks)\n"
+  + "  where p.locale_code = 'en' and p.status = 'published' and exists (\n"
+  + "    select 1 from blocks b where b.item->>'slug' = p.slug\n"
+  + "      and b.item->>'page_type' = p.page_type and b.item->>'visibility' = p.visibility\n"
+  + '  )\n'
   + '  group by p.id, p.slug\n'
   + ')\n'
   + 'insert into public.ielts_playbook_page_sections (id, page_id, block_type, heading, status, sort_order, content, metadata)\n'
   + "select b.id, t.id, 'rich_text', b.item->>'heading', 'published', (t.base_order + b.section_offset)::integer,\n"
-  + "       b.item - 'id' - 'slug' - 'heading', jsonb_build_object('pack', 'eight_week_worked_examples')\n"
+  + "       b.item - 'id' - 'slug' - 'heading' - 'page_type' - 'visibility', jsonb_build_object('pack', 'eight_week_worked_examples')\n"
   + "from blocks b join target t on t.slug = b.item->>'slug'\n"
   + 'on conflict (id) do nothing;\n',
 );
@@ -187,4 +202,4 @@ for (const [name, sql] of outputs) {
     writeFileSync(resolve(outputDir, name), sql);
   }
 }
-console.log('Verified 12 Practice sets, 24 Reading keys, 4 Playbook exercises and 2 offline Listening scripts.');
+console.log(`Verified 12 Practice sets, 24 Reading keys, ${modules.size} regular Playbook modules, 4 premium lesson supplements, and 2 offline Listening scripts.`);
