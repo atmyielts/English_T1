@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Stative and active meanings when planning a service",
+    "explanation_text": "Choose the verb form by asking what the verb means in this sentence. In a service planning meeting, “I think the booking form is clear” gives an opinion. “I’m thinking about removing a question” describes an option under consideration. “We have two spare tablets” describes possession, while “We’re having a trial run” describes an activity. “I see why callers get confused” means I understand their problem, while “I’m seeing the reception manager tomorrow” describes an arranged meeting.\n\nWith taste and feel, notice who or what is doing the tasting or feeling. “The soup tastes salty” and “The strap feels rough” describe qualities. “The cook is tasting the soup” and “The designer is feeling the strap for a seam” describe deliberate checks. The present simple can also describe repeated actions, as in “The cook tastes every batch.” For personal sensations, both “I feel better” and “I’m feeling better” can work. The continuous can emphasize how you feel at the moment.",
+    "contrast_text": "Use the present simple to state an opinion, describe possession, show understanding, or report a sensory quality. Use the present continuous for an activity in progress, such as weighing an option, holding a trial run, or sampling food, and for an arranged meeting. The present simple also works for habitual actions.",
+    "common_error_pattern": "A time cue such as right now can describe a current state as well as an ongoing action. For current possession, say “Right now, we have two spare tablets.” To report an activity in progress, say “Right now, we’re having a trial run.”",
+    "tags": [
+      "b2",
+      "stative-and-active-meanings",
+      "service-planning"
+    ],
+    "examples": [
+      {
+        "bad": "I’m thinking the larger sign is clearer. (Intended meaning: a settled opinion about the sign.)",
+        "good": "I think the larger sign is clearer."
+      },
+      {
+        "bad": "We’re having three portable ramps in stock. (Intended meaning: current possession.)",
+        "good": "We have three portable ramps in stock."
+      },
+      {
+        "bad": "I’m seeing what you mean about the pickup queue. (Intended meaning: I understand your point.)",
+        "good": "I see what you mean about the pickup queue."
+      },
+      {
+        "bad": "The mint tea is tasting bitter. (Intended meaning: a general description of the recipe.)",
+        "good": "The mint tea tastes bitter."
+      }
+    ],
+    "slug": "b2-stative-and-active-meanings",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 390,
+    "focus_area": "stative-and-dynamic-meanings"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Give a view on reminder messages",
+      "instructions": "Complete the sentence with the present simple of think to state your opinion.",
+      "prompt_text": "I ___ the shorter reminder gives customers enough information.",
+      "accepted_answers": [
+        "think"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check what the repair van carries",
+      "instructions": "Use the present simple of have to say what equipment each van has on board.",
+      "prompt_text": "Each repair van ___ a spare card reader.",
+      "accepted_answers": [
+        "has"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Acknowledge a request from callers",
+      "instructions": "Use the present simple of see to show that you understand the reason for the request.",
+      "prompt_text": "I ___ why callers want the callback number read aloud twice.",
+      "accepted_answers": [
+        "see"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Sample a drink for the snack counter",
+      "instructions": "Complete the sentence with the full present continuous form of taste to report what the volunteer is doing now.",
+      "prompt_text": "The volunteer ___ the ginger drink to decide whether it needs more lemon.",
+      "accepted_answers": [
+        "is tasting"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Report the texture of a payment button",
+      "instructions": "Use the present simple of feel to describe the button’s surface.",
+      "prompt_text": "The raised payment button ___ smooth even around the edge.",
+      "accepted_answers": [
+        "feels"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Describe the first-aid stock",
+      "instructions": "Correct the verb phrase with the present simple of have. The sentence describes supplies currently available. Keep the other words.",
+      "prompt_text": "The first-aid station is having enough blankets for the evening event.",
+      "accepted_answers": [
+        "The first-aid station has enough blankets for the evening event."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Describe the trial recipe",
+      "instructions": "Correct the verb phrase with the present simple of taste. The sentence describes a quality of the soup. Keep the other words.",
+      "prompt_text": "The soup on the trial menu is tasting slightly smoky.",
+      "accepted_answers": [
+        "The soup on the trial menu tastes slightly smoky."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Show that a staffing option is under review",
+      "instructions": "Replace “I’m considering” with think in the present continuous followed by about. Keep the rest of the sentence. You may use a contraction.",
+      "prompt_text": "I’m considering moving one adviser to the returns desk.",
+      "accepted_answers": [
+        "I’m thinking about moving one adviser to the returns desk.",
+        "I am thinking about moving one adviser to the returns desk."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Report a rehearsal in progress",
+      "instructions": "Rewrite the sentence to show that the rehearsal is happening at this moment. Replace “hold” with the full present continuous form of have and replace “before each launch” with “right now.”",
+      "prompt_text": "We hold a rehearsal before each launch.",
+      "accepted_answers": [
+        "We are having a rehearsal right now."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Confirm a consultation with the interpreter",
+      "instructions": "Replace “I have an appointment with” with see in the full present continuous form. Keep the person and the time in the same positions.",
+      "prompt_text": "I have an appointment with the interpreter on Thursday.",
+      "accepted_answers": [
+        "I am seeing the interpreter on Thursday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Check a locker door by touch",
+      "instructions": "The technician is checking for damage by touch. Use every tile once. Start with “The technician” and place “for dents.” last.",
+      "prompt_text": "for dents. / the locker door / is / The technician / feeling",
+      "accepted_answers": [
+        "The technician is feeling the locker door for dents."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Describe the café’s routine quality check",
+      "instructions": "Describe a repeated action in the present simple. Use every tile once. Start with “The café supervisor” and place “before opening.” last.",
+      "prompt_text": "the filter coffee / before opening. / tastes / The café supervisor",
+      "accepted_answers": [
+        "The café supervisor tastes the filter coffee before opening."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.stative-and-dynamic-meanings"
+    }
+  ]
+}

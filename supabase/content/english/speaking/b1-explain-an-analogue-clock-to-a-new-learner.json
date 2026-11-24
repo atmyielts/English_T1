@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "b1-explain-an-analogue-clock-to-a-new-learner",
+    "title": "Teach a Friend to Read a Clock Face",
+    "level": "B1",
+    "prompt_text": "You are helping a classmate understand the clock above a station entrance. The short hand points a little past three and the long hand points at four. Explain how to read the time, give another example, and check that your friend understands why the short hand can sit between two numbers.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 67,
+    "target_grammar": "If and when for explaining a rule. Use comparative phrases to distinguish the hands.",
+    "fluency_objective": "Give the time first, then explain both hands in the same order. End with a question your friend can answer.",
+    "pronunciation_objective": "Stress short hand, long hand and the final time differently.",
+    "target_vocabulary": [
+      "clock face",
+      "short hand",
+      "long hand",
+      "twenty past",
+      "between"
+    ],
+    "cues": [
+      {
+        "text": "Explain the time on the example clock.",
+        "keywords": [
+          "twenty past three",
+          "three twenty"
+        ]
+      },
+      {
+        "text": "Describe what each hand tells you.",
+        "keywords": [
+          "short hand",
+          "long hand",
+          "count five"
+        ]
+      },
+      {
+        "text": "Give a second example and a check question.",
+        "keywords": [
+          "for example",
+          "what time",
+          "can you tell",
+          "half past"
+        ]
+      }
+    ],
+    "model_opening": "This one says twenty past three.",
+    "model_answer": "This one says twenty past three. The short hand tells you which hour we are in. It has gone a little past three because the hour has already started. The long hand points at four. If you count five minutes for each number from the top, that makes twenty minutes. When the short hand is between two numbers, start with the one it has just passed.\n\nFor example, imagine the long hand is at six and the short hand is between seven and eight. That would be half past seven. Can you tell me what time it would be with the long hand at three and the short hand just past nine?",
+    "sort_order": 406
+  },
+  "children": []
+}

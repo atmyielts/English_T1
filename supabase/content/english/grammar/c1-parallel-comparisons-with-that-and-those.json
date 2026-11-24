@@ -1,0 +1,173 @@
+{
+  "item": {
+    "title": "Parallel comparisons with that and those",
+    "explanation_text": "When you compare a measurement or outcome with its counterpart, make clear which property you mean on each side. In “The height of the north tower exceeds that of the south tower,” that stands for height. Writing “exceeds the south tower” would put the tower itself in the comparison. You can also repeat the noun explicitly: “exceeds the height of the south tower.” Repetition can help when the preceding text mentions several different measurements.\n\nUse that of for a singular or uncountable noun, such as capacity or attendance, and those of for a plural noun, such as widths or totals. The form depends on the noun it replaces. In “the widths of the main entrances and those of the annex,” those refers to widths even though annex is singular.\n\nA shorter comparison works when the wording supplies a clear reference. In “Attendance was higher at the dress rehearsal than at the first run-through,” the two at-phrases identify the occasions, and attendance supplies the measure for both.",
+    "contrast_text": "Compare “The balcony’s capacity exceeds the stalls’ capacity,” which repeats the measurement, with “The capacity of the balcony exceeds that of the stalls,” which replaces it. In “Capacity is greater in the stalls than on the balcony,” the parallel location phrases make the shared measurement clear.",
+    "common_error_pattern": "A bare building, room, or event name can leave the second measurement unclear. Supply the corresponding property with that of, those of, or explicit repetition. Choose that or those according to the measurement noun being replaced.",
+    "tags": [
+      "c1",
+      "parallel-comparisons",
+      "that-of",
+      "those-of",
+      "reference-agreement",
+      "ellipsis"
+    ],
+    "examples": [
+      {
+        "bad": "The depth of the orchestra pit exceeds the storage trench. (Intended comparison: the depths of the two spaces.)",
+        "good": "The depth of the orchestra pit exceeds that of the storage trench."
+      },
+      {
+        "bad": "The widths of the side aisles differ from that of the central aisles. (Intended comparison: the individual widths of both sets of aisles.)",
+        "good": "The widths of the side aisles differ from those of the central aisles."
+      },
+      {
+        "bad": "The capacity of the main hall exceeds those of the studio. (The studio has one stated capacity.)",
+        "good": "The capacity of the main hall exceeds that of the studio."
+      },
+      {
+        "bad": "Attendance was higher at the invited rehearsal than the technical rehearsal lasted. (Intended comparison: attendance at the two rehearsals.)",
+        "good": "Attendance was higher at the invited rehearsal than at the technical rehearsal."
+      }
+    ],
+    "slug": "c1-parallel-comparisons-with-that-and-those",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 380,
+    "focus_area": "parallel-comparisons"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Compare two spans",
+      "instructions": "Supply the demonstrative and preposition that replace “the span of.”",
+      "prompt_text": "The span of the entrance arch is shorter than ___ the bridge arch.",
+      "accepted_answers": [
+        "that of"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Compare columns by height",
+      "instructions": "Replace “the heights” with one demonstrative. The east portico has several columns of different heights.",
+      "prompt_text": "The column heights of the west portico match ___ of the east portico.",
+      "accepted_answers": [
+        "those"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Compare turnout at two rehearsals",
+      "instructions": "Supply one demonstrative to replace the uncountable noun “attendance.”",
+      "prompt_text": "Attendance at the first spacing rehearsal fell below ___ of the second.",
+      "accepted_answers": [
+        "that"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Repeat the measurement in a cost note",
+      "instructions": "Complete the comparison by repeating “the cost of” before the second project.",
+      "prompt_text": "The cost of reinforcing the fly tower was lower than ___ replacing its roof.",
+      "accepted_answers": [
+        "the cost of"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Compare turnout across time slots",
+      "instructions": "Repeat the preposition used before “the morning run”. Write only the missing preposition.",
+      "prompt_text": "Turnout was higher during the morning run than ___ the evening run.",
+      "accepted_answers": [
+        "during"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix a comparison in an access audit",
+      "instructions": "Replace only “the service tunnel” with a phrase using “that of” to compare the two clearances. Write the full corrected sentence.",
+      "prompt_text": "The clearance of the loading bay exceeds the service tunnel.",
+      "accepted_answers": [
+        "The clearance of the loading bay exceeds that of the service tunnel."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the reference in an attendance report",
+      "instructions": "Each rehearsal type has several recorded totals. Change one word so the sentence compares the two sets of totals. Write the full corrected sentence.",
+      "prompt_text": "The attendance totals of the sectional rehearsals were lower than that of the ensemble rehearsals.",
+      "accepted_answers": [
+        "The attendance totals of the sectional rehearsals were lower than those of the ensemble rehearsals."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Condense a ventilation comparison",
+      "instructions": "Keep the sentence through “than” and replace the repeated measurement with a phrase beginning “that of.”",
+      "prompt_text": "The airflow rate of the north vent is higher than the airflow rate of the south vent.",
+      "accepted_answers": [
+        "The airflow rate of the north vent is higher than that of the south vent."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Compare two sets of landing dimensions",
+      "instructions": "Combine the statements. Start with “The landing dimensions of Stair A,” use “differ from,” and refer to the second set with “those of.”",
+      "prompt_text": "Stair A and Stair B have different landing dimensions.",
+      "accepted_answers": [
+        "The landing dimensions of Stair A differ from those of Stair B."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Shorten a rehearsal summary",
+      "instructions": "Start with “Attendance was higher at” and express the rehearsal names as parallel at-phrases. Use “attendance” only once.",
+      "prompt_text": "Attendance at the final call was higher than attendance at the first call.",
+      "accepted_answers": [
+        "Attendance was higher at the final call than at the first call."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Describe an acoustic measurement",
+      "instructions": "Build the sentence using each tile once. Start with “The reverberation time” and put the gallery measurement first.",
+      "prompt_text": "that of / was longer than / the black box. / The reverberation time / of the gallery",
+      "accepted_answers": [
+        "The reverberation time of the gallery was longer than that of the black box."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Read an attendance chart aloud",
+      "instructions": "Build the sentence using each tile once. Start with “The headcounts” and report the Saturday figures first.",
+      "prompt_text": "those of / The headcounts / exceeded / the Sunday rehearsals. / of the Saturday rehearsals",
+      "accepted_answers": [
+        "The headcounts of the Saturday rehearsals exceeded those of the Sunday rehearsals."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.parallel-comparisons"
+    }
+  ]
+}

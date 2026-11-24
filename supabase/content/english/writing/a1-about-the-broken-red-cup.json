@@ -1,0 +1,50 @@
+{
+  "item": {
+    "slug": "a1-about-the-broken-red-cup",
+    "title": "Leave a Note About a Broken Cup",
+    "level": "A1",
+    "prompt_text": "You broke Maya's red cup. You have put a clean white cup by the kettle for her to use. Write a short note to say what happened, where the white cup is, and when you will buy a new red cup.",
+    "genre": "apology note",
+    "audience": "your flatmate Maya",
+    "target_grammar": "Past simple for the accident, by for place, and will for a promise.",
+    "target_structure": "Apologise, say where to look, then name the day you will replace it.",
+    "target_vocabulary": [
+      "broke",
+      "red cup",
+      "white cup",
+      "kettle",
+      "tomorrow"
+    ],
+    "expected_length_min": 26,
+    "expected_length_max": 57,
+    "checklist": [
+      {
+        "point": "Say what happened.",
+        "keywords": [
+          "i broke",
+          "red cup"
+        ]
+      },
+      {
+        "point": "Say where the white cup is.",
+        "keywords": [
+          "by the kettle",
+          "white cup"
+        ]
+      },
+      {
+        "point": "Give a time for replacing it.",
+        "keywords": [
+          "tomorrow",
+          "on saturday",
+          "buy a new"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    },
+    "sort_order": 389
+  },
+  "children": []
+}

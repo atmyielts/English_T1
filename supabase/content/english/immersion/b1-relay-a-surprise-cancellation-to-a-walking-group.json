@@ -1,0 +1,147 @@
+{
+  "item": {
+    "slug": "b1-relay-a-surprise-cancellation-to-a-walking-group",
+    "title": "Relay a surprise cancellation to a walking group",
+    "level": "B1",
+    "mission_type": "travel",
+    "context_text": "You are helping a group of six organise a guided walk. One member is already on the bus.",
+    "objective_text": "Keep the group together and share an accessible alternative with clear next steps.",
+    "target_vocabulary": [
+      "forecast",
+      "route",
+      "cover",
+      "café",
+      "postpone"
+    ],
+    "success_conditions": [
+      "Keep the group together and share an accessible alternative with clear next steps.",
+      "State the replacement meeting",
+      "Address step-free access",
+      "Clarify tomorrow’s status"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the walk notice",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Normal start: bridge gate at eleven. If the river path closes, meet at the town museum. Admission there is free with the walk ticket. The museum has a lift.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Where does a normal walk start?",
+          "options": [
+            "The museum",
+            "The bus stop",
+            "The bridge gate"
+          ],
+          "answer_index": 2,
+          "explanation": "The normal meeting point is the bridge gate."
+        },
+        {
+          "prompt": "How can a walker enter the museum for free?",
+          "options": [
+            "Show a bus ticket",
+            "Arrive after eleven",
+            "Show the walk ticket"
+          ],
+          "answer_index": 2,
+          "explanation": "The walk ticket covers museum admission."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the tour guide",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The river path is closed this morning. The guide can meet people at the museum at eleven thirty. We won't know about tomorrow’s walk until the river is checked at nine. Keep your ticket today.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "When will the group meet the guide today?",
+          "options": [
+            "Eleven thirty",
+            "Nine",
+            "Eleven"
+          ],
+          "answer_index": 0,
+          "explanation": "The guide gives a delayed time at the museum."
+        },
+        {
+          "prompt": "What is still unknown?",
+          "options": [
+            "Whether tomorrow’s walk will go ahead",
+            "Whether the museum is open today",
+            "Whether tickets should be kept"
+          ],
+          "answer_index": 0,
+          "explanation": "The path will be reassessed at nine tomorrow."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Call the member already travelling",
+      "prompt_text": "The walker says their bus stops by the bridge, and they are worried about missing the new group.",
+      "instructions": "Correct the place and time and reassure them with one useful ticket detail.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 25,
+      "model_answer": "Please get off in town and go to the museum instead of the bridge gate. We meet the guide at eleven thirty. Your walk ticket gets you in for free.",
+      "points": [
+        {
+          "label": "Give new venue",
+          "any": [
+            "museum"
+          ]
+        },
+        {
+          "label": "Give new time",
+          "any": [
+            "eleven thirty",
+            "11:30"
+          ]
+        },
+        {
+          "label": "Clarify ticket use",
+          "any": [
+            "walk ticket gets you in",
+            "walk ticket for free"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Post the group message",
+      "prompt_text": "One member uses stairs with difficulty. Another asks whether to wait for tomorrow instead.",
+      "instructions": "Give the confirmed plan for today and tell the group what remains uncertain for tomorrow. Include useful details without guessing at the path condition.",
+      "goal": "Keep the group together and share an accessible alternative with clear next steps.",
+      "estimated_minutes": 12,
+      "min_words": 45,
+      "model_answer": "Today's river walk is cancelled because the path is closed. Meet at the town museum at eleven thirty. The museum has a lift and accepts your walk ticket for free admission. Please keep the ticket. Tomorrow’s walk is still uncertain until the river is checked at nine, so wait for the next update.",
+      "points": [
+        {
+          "label": "State the replacement meeting",
+          "any": [
+            "town museum"
+          ]
+        },
+        {
+          "label": "Address step-free access",
+          "any": [
+            "has a lift",
+            "there is a lift"
+          ]
+        },
+        {
+          "label": "Clarify tomorrow’s status",
+          "any": [
+            "still uncertain",
+            "wait for the next update"
+          ]
+        }
+      ]
+    }
+  ]
+}

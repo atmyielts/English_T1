@@ -1,0 +1,69 @@
+{
+  "item": {
+    "slug": "c2-publish-an-unfinished-street-noise-map",
+    "title": "Advise on Releasing a Draft Sound Map",
+    "level": "C2",
+    "prompt_text": "A design group drew a map showing how loud a street sounded on one weekday. A community blog wants to publish it before a meeting. The draft can help people point to overlooked locations, but the colours could be mistaken for a permanent ranking of streets. Explain how you would share the map, with what limits, and what comments would justify changing it.",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 118,
+    "target_grammar": "Concession, careful evidential language, and precise conditional boundaries.",
+    "fluency_objective": "Keep the immediate purpose of the draft distinct from any later public comparison. End with a decision rule.",
+    "pronunciation_objective": "Stress that afternoon and usual conditions differently. Pause before the proposed wording for the reader.",
+    "target_vocabulary": [
+      "draft",
+      "measurement",
+      "ranking",
+      "comment",
+      "coverage",
+      "revision"
+    ],
+    "cues": [
+      {
+        "text": "Explain why an early draft could be worth sharing.",
+        "keywords": [
+          "overlooked",
+          "missing location",
+          "draft",
+          "ask people",
+          "open to comments"
+        ]
+      },
+      {
+        "text": "Identify what a one-day sample cannot support.",
+        "keywords": [
+          "one afternoon",
+          "weekday",
+          "usual",
+          "permanent ranking",
+          "does not show"
+        ]
+      },
+      {
+        "text": "Propose a way to display the limits alongside the figure.",
+        "keywords": [
+          "caption",
+          "date",
+          "times",
+          "mark",
+          "note"
+        ]
+      },
+      {
+        "text": "Explain which comments warrant a change or another check.",
+        "keywords": [
+          "repeat",
+          "recheck",
+          "location",
+          "compare",
+          "evidence",
+          "second visit"
+        ]
+      }
+    ],
+    "model_opening": "I would share the draft as a way to ask where we should take the next measurements.",
+    "model_answer": "I would share the draft as a way to ask where we should take the next measurements. Someone who waits outside a school may notice that our map stops just before the busiest crossing. That kind of comment can improve our plan even if it gives us no new sound measurement. I would keep the map out of an article that ranks streets by their usual noise.\n\nShow the date and the measurement times inside the figure so they stay visible if someone shares the image without the accompanying text. I would use a title such as 'Sound levels on one weekday afternoon' and mark places that we did not measure. The legend can explain what the colours mean for that visit. It should not imply that a location will have the same colour on another day.\n\nAsk contributors to give the location, the time they usually hear the noise and what seems to be producing it. A report about a regular evening event could justify a second visit even if it contradicts our afternoon map. A comment saying a street is always quiet, with no time or location, is less useful for changing a measured value. I would record that comment and ask for detail. The map should change when we have new observations, while the questions it helps us ask can change earlier.",
+    "sort_order": 387
+  },
+  "children": []
+}

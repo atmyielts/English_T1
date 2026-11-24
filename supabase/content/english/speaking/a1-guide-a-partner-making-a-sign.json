@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "a1-guide-a-partner-making-a-sign",
+    "title": "Help a Partner Place Two Shapes",
+    "level": "A1",
+    "prompt_text": "You have a blank card, a red square and a yellow circle. Tell your partner to put the square at the top and the circle under it. Ask them to leave the bottom of the card empty for your name.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 26,
+    "target_grammar": "Imperatives with put and leave. Use at the top and under for position.",
+    "fluency_objective": "Look at the steps first. Say one step at a time and listen for where each shape goes.",
+    "pronunciation_objective": "Stress red square and yellow circle. Leave a short pause before the last step.",
+    "target_vocabulary": [
+      "square",
+      "circle",
+      "top",
+      "under",
+      "bottom",
+      "empty"
+    ],
+    "cues": [
+      {
+        "text": "Place the red square at the top.",
+        "keywords": [
+          "square at the top",
+          "red square"
+        ]
+      },
+      {
+        "text": "Place the yellow circle under the square.",
+        "keywords": [
+          "circle under",
+          "under the square",
+          "yellow circle"
+        ]
+      },
+      {
+        "text": "Leave the bottom empty and say why.",
+        "keywords": [
+          "leave the bottom",
+          "space for my name",
+          "write my name"
+        ]
+      }
+    ],
+    "model_opening": "Put the red square at the top of the card, please.",
+    "model_answer": "Put the red square at the top of the card, please. Put the yellow circle under the square. Leave the bottom empty. I want to write my name there.",
+    "sort_order": 366
+  },
+  "children": []
+}

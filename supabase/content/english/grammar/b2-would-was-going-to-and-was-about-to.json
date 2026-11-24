@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Would, was going to and was about to",
+    "explanation_text": "All three forms let you look ahead from a point in the past. Use would + base verb for an event that lay ahead from that point. In a recap of the canceled load-in, “We soon realized the delay would affect the weekend shows” describes an expected consequence as it appeared then. The sentence leaves open whether the shows were actually affected.\n\nUse was or were going to + base verb for an intention or plan already in place. It can also express a prediction based on what was apparent at the time. “The crew were going to bring the flats through the side door” identifies the chosen route before the cancellation. Use was or were about to + base verb when an action was on the point of starting. “Mina was about to unlock the side door when the cancellation message arrived” places the interruption just before she started. A plan can also be about to happen. For planned actions, going to can highlight the intention, while about to highlights how close it was to happening.",
+    "contrast_text": "“The truck would arrive after rehearsal” looks ahead from a past viewpoint. “The driver was going to wait by the stage door” identifies the driver's plan. “The driver was about to pull away when the alert came through” puts the alert at the moment just before departure.",
+    "common_error_pattern": "Keep the past form of be before going to or about to, and match it to the subject. Use a base verb after would and after to in the other two forms.",
+    "tags": [
+      "future-in-the-past",
+      "past-intentions",
+      "imminent-actions"
+    ],
+    "examples": [
+      {
+        "bad": "We knew the road closure would blocked the delivery route.",
+        "good": "We knew the road closure would block the delivery route."
+      },
+      {
+        "bad": "The volunteers was going to clear a path through the lobby.",
+        "good": "The volunteers were going to clear a path through the lobby."
+      },
+      {
+        "bad": "The stage manager about to call the crew when the alert appeared.",
+        "good": "The stage manager was about to call the crew when the alert appeared."
+      },
+      {
+        "bad": "The electrician had just reached for the test switch. At that moment she was about to test the work lights next week.",
+        "good": "The electrician had just reached for the test switch. She was about to test the work lights when the cancellation message arrived."
+      }
+    ],
+    "slug": "b2-would-was-going-to-and-was-about-to",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 360,
+    "focus_area": "future-in-the-past"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Anticipate a scheduling consequence",
+      "instructions": "Complete the coordinator’s expectation from that evening. Use would and the base form of need.",
+      "prompt_text": "When the load-in was canceled, the coordinator realized that the dance group ___ a different rehearsal slot.",
+      "accepted_answers": [
+        "would need"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Recover the original storage plan",
+      "instructions": "Complete the sentence with the past form of be and going to. The note records an intention agreed beforehand.",
+      "prompt_text": "According to the first crew message, the ushers ___ stack the spare chairs in the foyer after closing.",
+      "accepted_answers": [
+        "were going to"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Pinpoint the interrupted announcement",
+      "instructions": "Use the past form of be, about to and press. The announcement was on the point of starting.",
+      "prompt_text": "With her finger on the talk button, the duty manager ___ it when the cancellation alert flashed.",
+      "accepted_answers": [
+        "was about to press"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "fill",
+      "title": "State an abandoned printing plan",
+      "instructions": "Complete the sentence with going to and the base form of print. Write only the missing words.",
+      "prompt_text": "The clerk had decided to skip printing. She was not ___ the list.",
+      "accepted_answers": [
+        "going to print"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Predict the duration of a closure",
+      "instructions": "Complete the forecast as it stood at the time. Use would and remain.",
+      "prompt_text": "After inspecting the damaged ramp, the caretaker expected that the loading entrance ___ closed all weekend.",
+      "accepted_answers": [
+        "would remain"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the equipment return note",
+      "instructions": "Correct the verb after would. Keep all other words and retain the original expectation.",
+      "prompt_text": "The producer assumed the rental company would collected the speakers on Monday.",
+      "accepted_answers": [
+        "The producer assumed the rental company would collect the speakers on Monday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair an interrupted handoff",
+      "instructions": "Insert the missing form of be immediately before about to. Keep all the original words.",
+      "prompt_text": "The two runners about to hand over the door keys when the stage manager called them back.",
+      "accepted_answers": [
+        "The two runners were about to hand over the door keys when the stage manager called them back."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a checklist entry into a plan",
+      "instructions": "Rewrite the entry as one sentence describing an earlier intention. Start with “The props team” and use the past form of be plus going to. Copy the wording after the colon exactly.",
+      "prompt_text": "Props team’s original plan: label the borrowed tables before the load-in.",
+      "accepted_answers": [
+        "The props team was going to label the borrowed tables before the load-in.",
+        "The props team were going to label the borrowed tables before the load-in."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Write the moment the message arrived",
+      "instructions": "Join the two ideas to show that the first action was on the point of starting. Start with “Omar”, use was about to and join the clauses with when. Keep the wording of the second sentence after when.",
+      "prompt_text": "Omar was on the point of lowering the safety barrier. A message from the venue manager came through.",
+      "accepted_answers": [
+        "Omar was about to lower the safety barrier when a message from the venue manager came through."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Recast a past forecast",
+      "instructions": "Replace “was expected to” with would to present the forecast from the box office’s past viewpoint. Start with “The box office expected that” and keep the wording of the forecast from “demand” onward, changing only the target verb phrase.",
+      "prompt_text": "Box office forecast at the time: demand for exchanges was expected to rise after the cancellation notice.",
+      "accepted_answers": [
+        "The box office expected that demand for exchanges would rise after the cancellation notice."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Rebuild the delivery question",
+      "instructions": "Use every tile once to ask about the driver's original plan. Start with “Was” and put “behind the theater” last. Add a question mark.",
+      "prompt_text": "park / the driver / behind the theater / going to / Was",
+      "accepted_answers": [
+        "Was the driver going to park behind the theater?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the interruption first",
+      "instructions": "Use every tile once to reconstruct a staff message about the canceled load-in. Start with the tile beginning “When” and add a comma after that tile.",
+      "prompt_text": "were / the carpenters / carry the first platform inside / When the cancellation came through / about to",
+      "accepted_answers": [
+        "When the cancellation came through, the carpenters were about to carry the first platform inside."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-in-the-past"
+    }
+  ]
+}

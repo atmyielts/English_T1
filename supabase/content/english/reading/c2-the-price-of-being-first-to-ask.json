@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c2-the-price-of-being-first-to-ask",
+    "title": "The Price of Being First to Ask",
+    "level": "C2",
+    "summary": "A policy essay examines whether a free sample can make an otherwise optional purchase feel obligatory.",
+    "content_markdown": "On Saturdays the owner of a small tea shop carried a tray to the door and offered passers-by a taste. She called the tea a present, and most of the cups were taken by people who never bought anything. To save herself time, she eventually moved the tray inside. Her assistant put it at the end of the service counter, where samplers could ask for another infusion and be served in the same queue as paying customers. Sales rose. So did the number of people who walked past without stopping.\n\nAt a traders’ meeting the owner heard two accounts of what had changed. One shopkeeper said that people inclined to buy were more likely to go through the door anyway. Once inside, they simply found the kind of attention that lets a doubtful customer choose. A second suggested that many people preferred to decline a purchase before they had accepted a cup. Once they were standing at a counter and somebody had poured for them, it was harder to step out of the exchange without supplying a reason. The two accounts are compatible. The sales figures alone tell us little about their relative importance.\n\nThe change at this shop matters because it complicates the language of offers. “There is no obligation” can be a true description of a policy. It says what the shop is entitled to demand. To somebody on the other side of the counter, however, it may sound like a description of an ordinary exit: it should be as easy to go as it was to come in. A shop can keep the first promise and quietly fail to provide the second by making refusal require a small but public performance.\n\nThe owner did not put the tray back on the pavement. She moved it instead to a shelf next to the door, with water and a place to leave an empty cup. The assistant stayed at the counter. Anybody who wanted a fuller tasting could go over and ask. Now a person could accept the first offer, leave quietly, or initiate a longer exchange. One customer complained that it made the shop feel less welcoming because nobody personally poured for her. That response deserves to be taken seriously. The conditions of impersonal ease and welcome do not always coincide.\n\nNobody needs to pretend that the tea shop can remove every pressure attached to receiving a favour. Some samplers may feel that taking two cups would call for acknowledgement, wherever they stand. But designers of an invitation have choices about which small acts they require and in which order. A promise that people may leave is more persuasive when leaving does not make them newly conspicuous. The shelf changed neither the tea nor the price. It gave the recipient a moment in which taking a cup and deciding to become a customer were two recognisably separate actions.",
+    "category": "Society",
+    "theme": "commercial samples and the design of a socially easy refusal",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "argumentative essay",
+      "word_count": 481
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What principle about invitations does the essay develop?",
+        "options": [
+          "Personal service should be restricted to people who have already decided to buy.",
+          "An offer is easier to decline when its arrangement lets people leave without a public refusal.",
+          "Shop owners have greater obligations to current customers than to people who accept samples.",
+          "Sales figures should determine where people can collect their samples."
+        ],
+        "answer_index": 1,
+        "explanation": "The essay focuses on how the arrangement can preserve an easy, inconspicuous exit even after someone accepts a taste."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why are the first arrangement’s changed sales figures inconclusive?",
+        "options": [
+          "Nobody kept a count of people who walked into the shop.",
+          "The owner changed the price at the same time she moved the tray.",
+          "The two explanations could both contribute to the same observed result.",
+          "One shopkeeper explains why more people visited and the other why more people left without stopping."
+        ],
+        "answer_index": 2,
+        "explanation": "Selection, personal attention and social pressure may coexist. The observed rise does not isolate which factor mattered most."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the essay include the customer who missed having a cup poured?",
+        "options": [
+          "To show that the owner’s plan failed on its own stated terms",
+          "To suggest that a quieter exit makes people buy tea more often",
+          "To refute the assistant’s assumption that everyone preferred to serve themselves",
+          "To acknowledge a cost in hospitality the new arrangement can have"
+        ],
+        "answer_index": 3,
+        "explanation": "The author takes the objection seriously and concedes that the personal welcome some people value can conflict with easy self-service."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does ‘performance’ mean in the third paragraph?",
+        "options": [
+          "A noticeable social act a person may feel obliged to carry out",
+          "A planned demonstration of how different teas are made",
+          "A shop’s ability to sell successfully over a period",
+          "An employee’s fulfilment of a stated service requirement"
+        ],
+        "answer_index": 0,
+        "explanation": "To leave, a person may feel forced to explain or enact refusal in front of others. The visibility and social burden motivate the word."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Some passers-by took samples at the shop door without making a purchase.",
+        "answer": "true",
+        "explanation": "The opening states that most cups were taken by people who never bought anything."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The final arrangement eliminates the option of a more personal tasting.",
+        "answer": "false",
+        "explanation": "People can still go to the counter and ask the assistant for a fuller tasting."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The assistant earned a commission on purchases from people who first tasted tea.",
+        "answer": "not_given",
+        "explanation": "The assistant’s location and role appear, but the terms of payment do not."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "In the final arrangement the tray is placed on a ___. A longer exchange can be initiated at the ___.",
+        "answers": [
+          [
+            "shelf"
+          ],
+          [
+            "counter"
+          ]
+        ],
+        "word_bank": [
+          "shelf",
+          "tray",
+          "counter",
+          "pavement"
+        ],
+        "explanation": "The fourth paragraph gives the new locations for self-service and conversation."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Two interpretations of the same result",
+          "A move with more than one visible outcome",
+          "A change solves one problem and introduces a cost",
+          "The difference between permission and a comfortable exit",
+          "An explanation of how samples are priced"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The paragraphs establish the move, compare interpretations, draw the key distinction and assess the revision."
+      }
+    ]
+  },
+  "children": []
+}

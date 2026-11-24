@@ -1,0 +1,157 @@
+{
+  "item": {
+    "slug": "c2-review-an-amendment-that-changes-who-can-object",
+    "title": "Review an amendment that changes who can object",
+    "level": "C2",
+    "mission_type": "workplace",
+    "context_text": "Two volunteer boards use the same administrative office. A proposed amendment appears to allow that office to settle changes that both boards previously approved.",
+    "objective_text": "Clarify which decisions can be delegated without removing a board’s existing voice.",
+    "target_vocabulary": [
+      "scope",
+      "delegation",
+      "objection",
+      "mandate",
+      "amendment"
+    ],
+    "success_conditions": [
+      "Clarify which decisions can be delegated without removing a board’s existing voice.",
+      "Limit the sequence discretion",
+      "Keep approval with affected boards",
+      "Explain removal of the rule",
+      "Mention the treatment of silence"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the working text",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Current wording: Each board approves changes to its own allocation. The office implements both boards' decisions. Proposed wording: The office may approve incidental changes to the consolidated allocation unless both boards object within five working days. No shared definition of incidental is recorded.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What happens under the proposal if only one board objects?",
+          "options": [
+            "The office automatically loses authority",
+            "The other board must revise the objection",
+            "The stated condition for blocking approval is unmet"
+          ],
+          "answer_index": 2,
+          "explanation": "The proposed condition requires objections from both boards."
+        },
+        {
+          "prompt": "What term lacks an agreed scope?",
+          "options": [
+            "Office",
+            "Working day",
+            "Incidental"
+          ],
+          "answer_index": 2,
+          "explanation": "The note expressly says incidental is undefined."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear how each group reads the wording",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The office wants to shift the order of approved purchases when a supplier is late. One board thinks that is harmless so long as its total and commitments stay fixed. The other points out that the draft could cover moving money between projects, which changes what was approved.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which activity is the office trying to handle?",
+          "options": [
+            "Dividing a new grant between both boards",
+            "Withdrawing every previous commitment",
+            "Reordering purchases without necessarily changing their substance"
+          ],
+          "answer_index": 2,
+          "explanation": "A supplier delay motivates a scheduling change."
+        },
+        {
+          "prompt": "What feared action is broader than that purpose?",
+          "options": [
+            "Delaying an approved order",
+            "Updating the office calendar",
+            "Changing the allocation between projects"
+          ],
+          "answer_index": 2,
+          "explanation": "A transfer can change an actual board decision."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Give a chair’s intervention",
+      "prompt_text": "The office asks for a faster decision route but cannot defend the phrase ‘both boards object’.",
+      "instructions": "Recognise the legitimate operational need. Separate scheduling discretion from allocation approval. Explain which objection should matter.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 40,
+      "model_answer": "We can delegate the timing of approved purchases where each allocation and commitment stays unchanged. Moving funds between projects changes what a board approved. A single affected board should be able to object to that transfer without waiting for the other board.",
+      "points": [
+        {
+          "label": "Separate scheduling authority",
+          "any": [
+            "timing of approved purchases",
+            "reordering approved purchases"
+          ]
+        },
+        {
+          "label": "Keep existing commitments",
+          "any": [
+            "commitment stays unchanged",
+            "commitments remain unchanged"
+          ]
+        },
+        {
+          "label": "Allow one board to object",
+          "any": [
+            "single affected board",
+            "one affected board"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send wording and a plain-language rationale",
+      "prompt_text": "The chair wants a short proposed clause followed by an explanation for volunteers.",
+      "instructions": "Limit the clause to sequence changes without altering obligations or totals. Preserve approval from each affected board when amounts or purposes change. Explain what happened to the five-day rule.",
+      "goal": "Clarify which decisions can be delegated without removing a board’s existing voice.",
+      "estimated_minutes": 15,
+      "min_words": 70,
+      "model_answer": "The office may vary the sequence of approved purchases when the change leaves their purpose, amounts and existing commitments intact. Any transfer between projects requires approval from each affected board. The proposed five-day objection rule is removed because silence under a shared deadline could override a board that is directly affected. This wording gives the office room to manage delays without giving it responsibility for new spending decisions that have not been approved.",
+      "points": [
+        {
+          "label": "Limit the sequence discretion",
+          "any": [
+            "vary the sequence",
+            "change the sequence"
+          ]
+        },
+        {
+          "label": "Keep approval with affected boards",
+          "any": [
+            "approval from each affected board",
+            "approval by each affected board"
+          ]
+        },
+        {
+          "label": "Explain removal of the rule",
+          "any": [
+            "five-day objection rule is removed",
+            "remove the five-day rule"
+          ]
+        },
+        {
+          "label": "Mention the treatment of silence",
+          "any": [
+            "silence under a shared deadline",
+            "silence as consent"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Purpose with to and for",
+    "explanation_text": "Use to + the base form of a verb to explain what someone wants to achieve by doing something. In “I went to the equipment desk to borrow a headlamp,” the words to borrow tell us why I went there. You can ask about that goal with “Why did you go to the equipment desk?” and answer with “To borrow a headlamp.”\n\nUse for + a noun or for + the -ing form of a verb to describe what an object is meant to be used for. For example, “These pads are for moving furniture” describes the job the pads are meant to help with. “This pouch is for spare batteries” describes what belongs in the pouch. You can ask “What are these pads for?” to find out their intended use.\n\nThese patterns help you focus on a person's goal or an object's use. English also uses for to give a reason for an action, as in “We stopped for lunch.”",
+    "contrast_text": "“We put down the pads to move the cabinet safely” gives our goal in putting down the pads. “The pads are for moving furniture” describes what the pads are meant to be used for.",
+    "common_error_pattern": "After purpose to, use the base verb, as in to borrow. After for, use a noun or an -ing form, as in for spare parts or for moving furniture.",
+    "tags": [
+      "b1",
+      "purpose",
+      "to-infinitive",
+      "for-plus-noun",
+      "for-plus-ing"
+    ],
+    "examples": [
+      {
+        "bad": "I stopped by the equipment desk to borrowing a headlamp.",
+        "good": "I stopped by the equipment desk to borrow a headlamp."
+      },
+      {
+        "bad": "These pads are for move heavy furniture.",
+        "good": "These pads are for moving heavy furniture."
+      },
+      {
+        "bad": "This pouch is for to hold spare batteries.",
+        "good": "This pouch is for holding spare batteries."
+      },
+      {
+        "bad": "We lowered the shelf to made room for the printer.",
+        "good": "We lowered the shelf to make room for the printer."
+      }
+    ],
+    "slug": "b1-purpose-with-to-and-for",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 400,
+    "focus_area": "purpose-infinitives-and-for-phrases"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Borrow a clip-on light",
+      "instructions": "Complete the sentence with two words using to and borrow.",
+      "prompt_text": "I went to the front desk ___ a clip-on light for the evening tour.",
+      "accepted_answers": [
+        "to borrow"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Move a wardrobe",
+      "instructions": "Complete the sentence with two words using for and the -ing form of move.",
+      "prompt_text": "These sliders are ___ a wardrobe across the floor.",
+      "accepted_answers": [
+        "for moving"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Sort the receipts",
+      "instructions": "Complete the sentence with two words using for and the plural of receipt.",
+      "prompt_text": "The blue envelope is ___. Invoices go in the green one.",
+      "accepted_answers": [
+        "for receipts"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Catch the first bus",
+      "instructions": "Complete the sentence with two words using to and catch.",
+      "prompt_text": "We left the hostel before sunrise ___ the first bus.",
+      "accepted_answers": [
+        "to catch"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Water the seedlings",
+      "instructions": "Complete the sentence with two words using for and the -ing form of water.",
+      "prompt_text": "This bottle with small holes in the cap is ___ seedlings.",
+      "accepted_answers": [
+        "for watering"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Check the rehearsal time",
+      "instructions": "Replace only the incorrect verb form after to. Write the full sentence.",
+      "prompt_text": "Leo called the theatre to checking the rehearsal time.",
+      "accepted_answers": [
+        "Leo called the theatre to check the rehearsal time."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Peel the oranges",
+      "instructions": "Keep for and change only the verb form that immediately follows it. Write the full sentence.",
+      "prompt_text": "This little tool is for peel oranges.",
+      "accepted_answers": [
+        "This little tool is for peeling oranges."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Ask about opening a window",
+      "instructions": "Turn the first sentence into a question about Mia's goal. Start with 'Why did' and end with 'the window?'.",
+      "prompt_text": "Mia opened the window. She wanted to let some fresh air in.",
+      "accepted_answers": [
+        "Why did Mia open the window?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Ask about a padded case",
+      "instructions": "Turn the sentence into a question about the case's intended use. Start with 'What is', keep 'this padded case', and put 'for' immediately before the question mark.",
+      "prompt_text": "This padded case is for camera lenses.",
+      "accepted_answers": [
+        "What is this padded case for?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Measure the doorway",
+      "instructions": "Join the ideas in one sentence. Start with 'Sam fetched a tape measure' and add the goal using to + measure. Keep 'the doorway'.",
+      "prompt_text": "Sam fetched a tape measure. He wanted to measure the doorway.",
+      "accepted_answers": [
+        "Sam fetched a tape measure to measure the doorway."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Ask about a spare hook",
+      "instructions": "Use every tile once to make a question about the hook's intended use. Start with 'What' and put 'for' at the end.",
+      "prompt_text": "this spare hook / for / What / is / ?",
+      "accepted_answers": [
+        "What is this spare hook for?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Keep a door from slamming",
+      "instructions": "Use every tile once to make a sentence about the caretaker's goal. Start with 'The caretaker' and put the purpose phrase after 'a doorstop'.",
+      "prompt_text": "to keep / a doorstop / The caretaker / . / used / the door from slamming",
+      "accepted_answers": [
+        "The caretaker used a doorstop to keep the door from slamming."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.purpose-infinitives-and-for-phrases"
+    }
+  ]
+}

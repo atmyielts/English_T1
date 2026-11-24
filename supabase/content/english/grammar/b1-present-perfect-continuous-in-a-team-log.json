@@ -1,0 +1,173 @@
+{
+  "item": {
+    "title": "Present perfect continuous in a team log",
+    "explanation_text": "A community newsletter team log can show how long a job has been in progress or how many things the team has finished. To focus on an activity that is still going on, use the present perfect continuous: have or has + been + the -ing form. For example, “We have been sorting reader letters for an hour” tells the team how long the sorting has been going on. Use for with a length of time and since with a starting point.\n\nTo record a completed count up to now, use the present perfect simple: have or has + the past participle. “We have sorted twelve reader letters so far” gives the number of letters already sorted. The team may still have more letters to sort. Some verbs describe states, such as know. Use the simple form for a state that is still true: “I have known our editor since May.”",
+    "contrast_text": "“We have been checking addresses for an hour” reports the duration of work that is still in progress. “We have checked twenty addresses so far” reports how many checks are complete.",
+    "common_error_pattern": "Use have or has + been + the -ing form for ongoing work. Use have or has + the past participle to report a completed count or an ongoing state with know.",
+    "tags": [
+      "b1",
+      "present-perfect-continuous",
+      "present-perfect-simple",
+      "duration",
+      "completed-count",
+      "community-newsletter"
+    ],
+    "examples": [
+      {
+        "bad": "The layout team has been adjust the margins for half an hour.",
+        "good": "The layout team has been adjusting the margins for half an hour."
+      },
+      {
+        "bad": "We have wrote four teasers for the front page so far.",
+        "good": "We have written four teasers for the front page so far."
+      },
+      {
+        "bad": "Lena has been spoke to a local baker since ten o’clock, and the interview is still going.",
+        "good": "Lena has been speaking to a local baker since ten o’clock, and the interview is still going."
+      },
+      {
+        "bad": "I have been knowing our volunteer illustrator since March.",
+        "good": "I have known our volunteer illustrator since March."
+      }
+    ],
+    "slug": "b1-present-perfect-continuous-in-a-team-log",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 360,
+    "focus_area": "present-perfect-continuous"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Log the recording time",
+      "instructions": "Use record in the present perfect continuous. Write the full verb phrase without a contraction. The recording is still in progress.",
+      "prompt_text": "Maya ___ an audio version of the lead story for forty minutes.",
+      "accepted_answers": [
+        "has been recording"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Report the finished bundles",
+      "instructions": "Use make in the present perfect simple to report the completed count. Write the full verb phrase without a contraction.",
+      "prompt_text": "The distribution volunteers ___ six bundles of newsletters so far.",
+      "accepted_answers": [
+        "have made"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Record when the search began",
+      "instructions": "Use search in the present perfect continuous. Write the full verb phrase without a contraction. The volunteers are still looking.",
+      "prompt_text": "The archive volunteers ___ for a picture of the old cinema since nine o’clock this morning.",
+      "accepted_answers": [
+        "have been searching"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Update the map checklist",
+      "instructions": "Use draw in the present perfect simple to give the number of finished maps. Write the full verb phrase without a contraction.",
+      "prompt_text": "I ___ three maps for the walking guide so far.",
+      "accepted_answers": [
+        "have drawn"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Describe a connection",
+      "instructions": "Complete the verb phrase with know. The two people met last spring and still know each other. Write the full verb phrase without a contraction.",
+      "prompt_text": "Our editor ___ the community gardener since last spring.",
+      "accepted_answers": [
+        "has known"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the photo log",
+      "instructions": "The photo shoot is still in progress. Keep the present perfect continuous and replace only the incorrect form of take. Write the full sentence.",
+      "prompt_text": "Jo has been took pictures of the new playground for twenty minutes.",
+      "accepted_answers": [
+        "Jo has been taking pictures of the new playground for twenty minutes."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the reply count",
+      "instructions": "The team has already sent all five replies. Delete one word to make the sentence present perfect simple. Write the full sentence.",
+      "prompt_text": "We have been sent all five replies to readers.",
+      "accepted_answers": [
+        "We have sent all five replies to readers."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn start time into duration",
+      "instructions": "Write one team log sentence in the present perfect continuous. Start with “Nora has” and use test, the sign-up form, and for thirty minutes, in that order.",
+      "prompt_text": "Nora started to test the sign-up form thirty minutes ago. She is still testing it.",
+      "accepted_answers": [
+        "Nora has been testing the sign-up form for thirty minutes."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn separate uploads into a total",
+      "instructions": "Combine the completed uploads into one present perfect simple sentence. Start with “I have” and use upload, four event photos, and so far, in that order.",
+      "prompt_text": "I uploaded one event photo this morning and three more this afternoon.",
+      "accepted_answers": [
+        "I have uploaded four event photos so far."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Ask how long a job has lasted",
+      "instructions": "Turn the log entry into a present perfect continuous question about duration. Start with “How long” and keep the subject and the rest of the wording for the activity. End with a question mark.",
+      "prompt_text": "The team has been copying announcements into the newsletter template for an hour.",
+      "accepted_answers": [
+        "How long has the team been copying announcements into the newsletter template?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Log work that started at noon",
+      "instructions": "Arrange the tiles to report an activity that is still in progress. Start with “Ravi” and put the time phrase at the end. Use every tile once and add a period.",
+      "prompt_text": "since noon / been / the concert listings / Ravi / checking / has",
+      "accepted_answers": [
+        "Ravi has been checking the concert listings since noon."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Log the number of signed approvals",
+      "instructions": "Arrange the tiles to report the number of approvals collected. Start with “We” and put “so far” at the end. Use every tile once and add a period.",
+      "prompt_text": "collected / so far / three signed approvals / have / We",
+      "accepted_answers": [
+        "We have collected three signed approvals so far."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect-continuous"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "item": {
+    "slug": "c1-explain-two-counts-of-a-reading-room",
+    "title": "Explain Two Different Counts of Room Use",
+    "level": "C1",
+    "prompt_text": "A reading room recorded 120 entries last Saturday. A volunteer checking the same room every hour never counted more than 12 people at once. In a planning meeting, explain why both observations could be correct, which question each can answer, and what extra observation would help staff decide whether to add seats.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 109,
+    "target_grammar": "Relative clauses, comparison, and precise separation of measurement from inference.",
+    "fluency_objective": "Open with a concrete hour that could produce both numbers. Then distinguish the measures and propose a check.",
+    "pronunciation_objective": "Stress entries and at once separately. Slow down when explaining the evidence each measure can provide.",
+    "target_vocabulary": [
+      "turnover",
+      "snapshot",
+      "entries",
+      "occupied",
+      "peak",
+      "interval"
+    ],
+    "cues": [
+      {
+        "text": "Explain a plausible situation that produces both counts.",
+        "keywords": [
+          "short visits",
+          "come and go",
+          "entries",
+          "through the day"
+        ]
+      },
+      {
+        "text": "Say what the total can measure and what the hourly check shows.",
+        "keywords": [
+          "number of visits",
+          "at once",
+          "snapshot",
+          "busy"
+        ]
+      },
+      {
+        "text": "Describe a more direct check for seating demand.",
+        "keywords": [
+          "turned away",
+          "between checks",
+          "looking for a seat",
+          "full",
+          "come back"
+        ]
+      }
+    ],
+    "model_opening": "Both records can be right.",
+    "model_answer": "Both records can be right. Imagine that people come in to look up one thing, then leave after ten minutes. There could be a steady flow through the room without more than a dozen people sitting there at any one time. The bigger figure describes entries through the day. It may include people who returned later. The volunteer's count is a snapshot of how many people were actually there when they looked.\n\nThe entry count is useful if we want to know how much traffic the room handles. The snapshot helps us get a sense of how full it was at selected times. Neither figure tells us whether someone arrived between the checks, could not find a seat, and left. That is the part I would add before we buy furniture.\n\nWe could observe the entrance for a short period on two busy Saturdays and note people who come in looking for a seat. Record how many find one, how many wait, and how many leave while all the seats are occupied. We would then have a better reason to add seats or move them to the part of the room where people actually want to sit.",
+    "sort_order": 381
+  },
+  "children": []
+}

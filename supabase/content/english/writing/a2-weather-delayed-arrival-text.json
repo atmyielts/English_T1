@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "a2-weather-delayed-arrival-text",
+    "title": "Explain Why You Will Arrive Late",
+    "level": "A2",
+    "prompt_text": "Your pottery class starts at 2 p.m. Heavy rain has delayed the bus. You expect to arrive at 2:20. Tell your teacher where you are, give the new arrival time, and ask where to put your bag if the class has already started.",
+    "genre": "message",
+    "audience": "a pottery teacher",
+    "target_grammar": "Now for the current situation, future forms for arrival, and if for the possible classroom situation.",
+    "target_structure": "Say why you are writing, give a reliable estimate, and ask one clear question.",
+    "target_vocabulary": [
+      "delayed",
+      "bus stop",
+      "arrive",
+      "started",
+      "put"
+    ],
+    "expected_length_min": 52,
+    "expected_length_max": 93,
+    "checklist": [
+      {
+        "point": "Give your location and the reason for the delay.",
+        "keywords": [
+          "bus stop",
+          "heavy rain",
+          "bus is late"
+        ]
+      },
+      {
+        "point": "Give the new time.",
+        "keywords": [
+          "2:20",
+          "twenty past two"
+        ]
+      },
+      {
+        "point": "Ask where to leave the bag.",
+        "keywords": [
+          "where should i put",
+          "where can i put",
+          "leave my bag"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    },
+    "sort_order": 347
+  },
+  "children": []
+}

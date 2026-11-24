@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-separate-two-jobs-at-a-weekend-garden",
+    "title": "Separate two jobs at a weekend garden",
+    "level": "B1",
+    "summary": "A coordinator asks new volunteers to follow two different jobs after a storm.",
+    "transcript_text": "There's mud near the shed, so go in through the gate beside the tool rack. If you signed up to plant, collect a tray of seedlings from Ruth. Each row already has a label. Read it before you dig because the plants in the green and brown trays look almost the same. If you are repairing paths, wait behind the tool rack. Kai will bring gravel when he has moved his van. Please leave the small wheelbarrow for the planters. We can share it after the last tray is empty.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 120,
+    "duration_seconds": 45,
+    "audio_url": null,
+    "focus_skill": "sequence",
+    "tags": [
+      "community",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What is the speaker helping two groups do?",
+        "options": [
+          "Choose a new garden plot",
+          "Buy seedlings and gravel",
+          "Find jobs elsewhere",
+          "Start separate jobs in the same garden"
+        ],
+        "answer_index": 3,
+        "explanation": "The instructions distinguish planters and path repairers.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why should volunteers avoid the shed entrance?",
+        "options": [
+          "It is locked all weekend",
+          "Ruth is working there",
+          "It is muddy",
+          "A tray is blocking it"
+        ],
+        "answer_index": 2,
+        "explanation": "Mud near the shed is the reason for changing the entrance.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why must planters read the labels?",
+        "options": [
+          "The labels tell them how to move the van",
+          "The seedlings are difficult to tell apart",
+          "Every tray is empty",
+          "The rows have no names"
+        ],
+        "answer_index": 1,
+        "explanation": "The seedlings in different trays look similar.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Where should path repairers wait?",
+        "options": [
+          "Behind the tool rack",
+          "In the van",
+          "Next to Ruth",
+          "At the end of a planted row"
+        ],
+        "answer_index": 0,
+        "explanation": "The coordinator tells path repairers to wait behind the rack.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "When may the path team share the small wheelbarrow?",
+        "options": [
+          "As soon as Kai arrives",
+          "Before the planting begins",
+          "As soon as the van moves",
+          "After the last tray is empty"
+        ],
+        "answer_index": 3,
+        "explanation": "The planters have priority until they finish the trays.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "through the gate beside the tool rack",
+      "focus_phrase": "the tool rack",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "read it before you dig",
+      "focus_phrase": "before you dig",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "leave the small wheelbarrow for the planters",
+      "focus_phrase": "for the planters",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

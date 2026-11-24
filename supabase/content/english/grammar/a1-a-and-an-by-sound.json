@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "A and an by sound at the fair",
+    "explanation_text": "At the community fair, the lost-item shelf has things of many colors. When you tell a helper about one thing for the first time, you can say “a cap” or “an umbrella.” Use a or an to talk about one thing you can count when you have not said which particular one.\n\nListen to the first sound of the word right after a or an. Use a before a consonant sound, as in “a bag.” Use an before a vowel sound, as in “an egg.” If a word that describes the thing comes first, listen to that word. Say “a blue umbrella” but “an orange cap.” Listen to the sound, even when the spelling may surprise you. Say “a uniform” because uniform starts with the same sound as yes.",
+    "contrast_text": "Say “an umbrella” when umbrella comes right after the article. Say “a blue umbrella” when blue comes right after it. The same noun can take either article because the next sound changes.",
+    "common_error_pattern": "Choosing a or an from the first letter alone, or listening to the noun when an adjective comes before it.",
+    "tags": [
+      "a1",
+      "articles",
+      "indefinite-articles",
+      "a-and-an-by-sound"
+    ],
+    "examples": [
+      {
+        "bad": "We have an bag.",
+        "good": "We have a bag."
+      },
+      {
+        "bad": "I found a egg.",
+        "good": "I found an egg."
+      },
+      {
+        "bad": "This is an blue umbrella.",
+        "good": "This is a blue umbrella."
+      },
+      {
+        "bad": "We have an uniform.",
+        "good": "We have a uniform."
+      }
+    ],
+    "slug": "a1-a-and-an-by-sound",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 410,
+    "focus_area": "a-an-by-sound"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Make a shelf label",
+      "instructions": "Complete the label for one lost item. Write only a or an.",
+      "prompt_text": "___ scarf",
+      "accepted_answers": [
+        "a"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask about a lost snack bag",
+      "instructions": "Complete the visitor's question. Write only a or an.",
+      "prompt_text": "Did anyone find ___ apple in a paper bag?",
+      "accepted_answers": [
+        "an"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Read a note from the face-painting table",
+      "instructions": "Complete the note about one lost item. Write only a or an.",
+      "prompt_text": "Mia found ___ orange hat near the paints.",
+      "accepted_answers": [
+        "an"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Describe a photo for the notice board",
+      "instructions": "Complete the photo caption. Write only a or an.",
+      "prompt_text": "This photo shows ___ red umbrella.",
+      "accepted_answers": [
+        "a"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Record what the dancers left",
+      "instructions": "Complete the shelf record. Uniform starts with the same sound as yes. Write only a or an.",
+      "prompt_text": "The dancers left ___ uniform by the stage.",
+      "accepted_answers": [
+        "a"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Check the lost-item list",
+      "instructions": "The article in this list entry is wrong. Replace it and write the whole entry.",
+      "prompt_text": "a eraser",
+      "accepted_answers": [
+        "an eraser"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix a message to a friend",
+      "instructions": "Replace the wrong article. Keep all the other words and write the full sentence.",
+      "prompt_text": "Leo found a empty box.",
+      "accepted_answers": [
+        "Leo found an empty box."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Add a color to a claim",
+      "instructions": "Add green immediately before umbrella and change the article as needed. Write the full phrase.",
+      "prompt_text": "an umbrella",
+      "accepted_answers": [
+        "a green umbrella"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Shorten a shelf tag",
+      "instructions": "Remove small and change the article as needed. Write the two words for the shorter tag.",
+      "prompt_text": "a small envelope",
+      "accepted_answers": [
+        "an envelope"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Update a description after a closer look",
+      "instructions": "Replace new with old and change the article as needed. Write the whole sentence.",
+      "prompt_text": "I found a new watch.",
+      "accepted_answers": [
+        "I found an old watch."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Give an item to the shelf helper",
+      "instructions": "Use each tile once to make a sentence. Start with “Here is”.",
+      "prompt_text": "a / is / yellow / Here / cup.",
+      "accepted_answers": [
+        "Here is a yellow cup."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Match a child's toy to the shelf",
+      "instructions": "Use each tile once to make a sentence. Start with “It looks like”.",
+      "prompt_text": "elephant. / looks / an / It / like",
+      "accepted_answers": [
+        "It looks like an elephant."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.a-an-by-sound"
+    }
+  ]
+}

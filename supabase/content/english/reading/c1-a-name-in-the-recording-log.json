@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c1-a-name-in-the-recording-log",
+    "title": "A Name in the Recording Log",
+    "level": "C1",
+    "summary": "A community archive distinguishes permission to preserve a conversation from permission to share every part of it.",
+    "content_markdown": "For its exhibition on the closing of the Sernbank mill, the local archive selected a woman’s account of teaching her sister to use a new cutting machine. The interviewee had agreed that staff could keep the recording and that the exhibition could play a particular extract. She had also mentioned a neighbour who no longer lived in town. The neighbour was not the person speaking, and nobody had asked her whether she wanted to be identified. One of the volunteers thought that a signature on the interview form settled every part of the discussion.\n\nArchivist Ines Bell asked the team to consider what that signature actually recorded. The woman had offered her own account for a named purpose. She had not automatically made every detail about another person available for a printed caption. Bell proposed checking the chosen extract separately from the longer recording. She also wanted the archive to record which promises people had made instead of relying on volunteers to remember what a tick on an old form meant.\n\nThe exhibition designer offered to replace the neighbour’s name with a common one. Bell checked the draft and noticed that it still gave the name of the street and the neighbour’s unusual job. Several people from the mill might still recognise her. Replacing a single word would make the extract appear more private without necessarily changing who could identify the person. The designer tried a shorter version that removed the identifying details without losing the action the archive wanted to illustrate: a neighbour had stayed long enough after a shift to help another worker learn.\n\nThe archive stored the original recording under its existing access arrangement and used the shorter passage in the exhibition. Staff added a separate note to the log. It identified the permission attached to the extract rather than stamping the recording as open or closed. If a visitor later asks for a different passage, the archive does not have to reconstruct the whole discussion. A person who did not attend the first meeting can see why one extract was shared and why other details remained in the recording.\n\nBell sometimes worries that recording such limits will look like withholding history. Yet the long interview is still part of the collection. The new note makes the route from private conversation to public excerpt traceable. It also makes it possible for someone to ask for another use without being told that a decision about one moment years earlier somehow settled them all.",
+    "category": "Culture",
+    "theme": "permissions in an oral history archive",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "reported case study",
+      "word_count": 415
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the archive’s revised approach to permission?",
+        "options": [
+          "Record the consent for a particular use separately from how the whole interview may be kept.",
+          "Allow a designer to choose any material after an interview is stored.",
+          "Remove the whole recording when a third person is mentioned.",
+          "Treat the time spent discussing consent as proof that an extract is valuable."
+        ],
+        "answer_index": 0,
+        "explanation": "The archive keeps the recording under its existing arrangement and logs which excerpt may be shared."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which details made the substitution of a different name inadequate?",
+        "options": [
+          "A list of the speakers and an exhibition date",
+          "A street and an unusual job",
+          "An address for the archive and the model of the cutting machine",
+          "The present town and the interviewee’s phone number"
+        ],
+        "answer_index": 1,
+        "explanation": "The combination of street and unusual job could still reveal the neighbour’s identity locally."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why is an extract-specific note more useful than labelling the entire recording “open”?",
+        "options": [
+          "Visitors can learn more quickly how the original machine worked.",
+          "The log can state which use was agreed and support a later decision about another passage.",
+          "Anyone can be identified without needing any more permission.",
+          "The designer will be able to use details left out of the exhibition."
+        ],
+        "answer_index": 1,
+        "explanation": "The team can see why an excerpt was shared without assuming the same decision covers other material."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “traceable” mean in the last paragraph?",
+        "options": [
+          "Easy to reproduce with different names",
+          "Able to be cut into a short recording",
+          "Possible to follow or reconstruct from a record",
+          "Sufficiently short to print on a caption"
+        ],
+        "answer_index": 2,
+        "explanation": "The new log lets a future worker follow how an interview became a particular exhibition extract."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The interviewee had agreed that the archive could keep the recording.",
+        "answer": "true",
+        "explanation": "The first paragraph makes the consent to keep the interview explicit."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The exhibition used an extract that retained the neighbour’s unusual job and street.",
+        "answer": "false",
+        "explanation": "The displayed version removes those identifying details while keeping the core event."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage gives the name of the person who conducted the first interview.",
+        "answer": "not_given",
+        "explanation": "It identifies the archivist and roles in the later discussion, but not the original interviewer."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "A volunteer expected a ___ on the old form to settle the issue. The archive placed a new note in the ___.",
+        "answers": [
+          [
+            "signature"
+          ],
+          [
+            "log"
+          ]
+        ],
+        "word_bank": [
+          "street",
+          "log",
+          "signature",
+          "extract"
+        ],
+        "explanation": "The opening volunteer relies on the signature. The fourth paragraph describes the separate note in the log."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Why a different name may leave an identity visible",
+          "What the original agreement covers",
+          "Keeping a public decision available to future staff",
+          "A third person comes into the account",
+          "A new recording made for the exhibition"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The first four paragraphs raise the neighbour’s situation, examine the original agreement, test a possible fix and record the final decision."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a2-the-extra-sponge-on-the-clay-table",
+    "title": "The Extra Sponge on the Clay Table",
+    "level": "A2",
+    "summary": "A pottery-room handout separates the materials for two kinds of clean-up.",
+    "content_markdown": "You will find two sponges on the pottery table. The larger, flat sponge is for the table. The smaller one belongs in the bowl under the tap. Set your finished clay work on the shelf before you clean. Put your name beside the work so nobody takes it by mistake.\n\nUse the flat sponge to wipe the clay marks off the table. Rinse the sponge in the grey bucket on the floor. Do not use the sink for this job. There is a lot of clay on the sponge, and the clay needs to go in the bucket. I will empty the bucket after the class.\n\nThe small sponge is for the tools. First scrape any large pieces of clay into the tray in the middle of the room. Then use the sponge on the tool handles. Leave clean tools on the cloth beside the tap. If you find a tool with a loose handle, put it on my desk instead of with the clean ones. I can check it before the next class.",
+    "category": "Everyday",
+    "theme": "cleaning a pottery worktable",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "workroom handout",
+      "word_count": 174
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the handout mainly explain?",
+        "options": [
+          "How a class makes a clay bowl",
+          "How to choose the largest piece of clay",
+          "Why the table needs a new shelf",
+          "How to clean the table and its tools"
+        ],
+        "answer_index": 3,
+        "explanation": "It gives separate steps for the worktable and the tools."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which sponge is for the table?",
+        "options": [
+          "The larger flat one",
+          "The smaller one by the tap",
+          "Either sponge in the sink",
+          "A sponge in the teacher’s desk"
+        ],
+        "answer_index": 0,
+        "explanation": "The first paragraph names the larger, flat sponge for the table."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why should students rinse that sponge in the grey bucket?",
+        "options": [
+          "They need hot water from the teacher.",
+          "The clay from the sponge needs to go into the bucket rather than the sink.",
+          "The smaller sponge is already in the bucket.",
+          "The sink has too many clean tools in it."
+        ],
+        "answer_index": 1,
+        "explanation": "The instructor says that the clay marks belong in the bucket and explicitly tells students not to use the sink for this job."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “loose handle” mean?",
+        "options": [
+          "A handle that has just been painted",
+          "A handle that is hard to lift",
+          "A handle that can move because it is not fixed tightly",
+          "A handle that belongs in the grey bucket"
+        ],
+        "answer_index": 2,
+        "explanation": "The instructor wants to check it before another person can use the tool."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Students should put their finished work on a shelf before cleaning.",
+        "answer": "true",
+        "explanation": "The first paragraph tells them to move the work to the shelf."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Students should put large pieces of clay in the sink.",
+        "answer": "false",
+        "explanation": "The text directs large clay pieces into the tray in the middle of the room."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The text says how long the next class will last.",
+        "answer": "not_given",
+        "explanation": "It mentions the next class as a deadline for checking tools, but gives no duration."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Rinse the big sponge in the grey ___. Leave clean tools on the ___ beside the tap.",
+        "answers": [
+          [
+            "bucket"
+          ],
+          [
+            "cloth"
+          ]
+        ],
+        "word_bank": [
+          "cloth",
+          "shelf",
+          "bucket",
+          "tray"
+        ],
+        "explanation": "The second paragraph names the bucket, and the third gives the place for clean tools."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Cleaning the work surface",
+          "Where clean and damaged tools go",
+          "Putting away your work first",
+          "Making a handle for a finished pot"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The first paragraph prepares the area, the second cleans the table, and the third sorts the tools."
+      }
+    ]
+  },
+  "children": []
+}

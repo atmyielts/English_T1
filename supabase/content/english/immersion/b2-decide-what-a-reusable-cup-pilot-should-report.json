@@ -1,0 +1,159 @@
+{
+  "item": {
+    "slug": "b2-decide-what-a-reusable-cup-pilot-should-report",
+    "title": "Decide what a reusable cup pilot should report",
+    "level": "B2",
+    "mission_type": "workplace",
+    "context_text": "Your music venue is trying a deposit on reusable cups. The sponsor asks for one headline before the second month of the trial.",
+    "objective_text": "Describe what the trial shows and avoid overclaiming from an incomplete count.",
+    "target_vocabulary": [
+      "return rate",
+      "counts",
+      "comparable",
+      "venues",
+      "deposit"
+    ],
+    "success_conditions": [
+      "Describe what the trial shows and avoid overclaiming from an incomplete count.",
+      "Report the Friday denominator",
+      "Report the Saturday denominator",
+      "Keep the Saturday tray separate",
+      "Improve closing",
+      "Separate refunds"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the pilot table",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Friday: 200 cups issued, 180 scanned back. Saturday: 300 issued, 210 scanned back. On Saturday a tray of unscanned cups was recovered the next morning. No verified tray count exists at the time of reporting.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which day had the higher share of cups scanned back?",
+          "options": [
+            "Friday",
+            "Saturday",
+            "Both were equal"
+          ],
+          "answer_index": 0,
+          "explanation": "Friday recorded 180 out of 200, while Saturday recorded 210 out of 300."
+        },
+        {
+          "prompt": "Why is Saturday’s final return count uncertain?",
+          "options": [
+            "Some cups left the venue recording system unscanned and were later recovered",
+            "The number originally issued is missing",
+            "Saturday used only disposable cups"
+          ],
+          "answer_index": 0,
+          "explanation": "The extra tray has not been counted."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear a steward’s report",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The outside return point shut before the last act. Several people put their cups by that closed point and left. We brought them inside the next morning. I would count the late tray separately and check which of its cups still qualify for a deposit refund.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Why might guests have left cups unscanned?",
+          "options": [
+            "They could not find cups during the event",
+            "They reached a closed return point",
+            "The stage required deposits"
+          ],
+          "answer_index": 1,
+          "explanation": "A return point closed while people were still using cups."
+        },
+        {
+          "prompt": "What does the steward propose counting separately?",
+          "options": [
+            "All Friday cups",
+            "Cups in the late tray",
+            "The number of musicians"
+          ],
+          "answer_index": 1,
+          "explanation": "The next-morning recovery should be documented separately."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Answer the sponsor’s question",
+      "prompt_text": "The sponsor asks whether Saturday visitors became less willing to return cups.",
+      "instructions": "Explain what you know using one verified figure, then give one reason the two figures cannot settle willingness.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 30,
+      "model_answer": "We scanned back seventy percent of the Saturday cups, but the outside return point closed early. People left cups there that were recovered later, and that tray has not been counted. The scans tell us about recorded returns.",
+      "points": [
+        {
+          "label": "Give the verified rate",
+          "any": [
+            "seventy percent",
+            "70 percent",
+            "70%"
+          ]
+        },
+        {
+          "label": "Name the operational issue",
+          "any": [
+            "return point closed early",
+            "closed outside return point"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write a note for the next event",
+      "prompt_text": "The manager needs a plan for a better measure as well as an honest summary.",
+      "instructions": "Distinguish scanned and late returns. Propose one change to collection and one change to recording. Avoid treating returned cups and refunded deposits as equal.",
+      "goal": "Describe what the trial shows and avoid overclaiming from an incomplete count.",
+      "estimated_minutes": 13,
+      "min_words": 55,
+      "model_answer": "Friday recorded 180 of 200 cups returned by scan, compared with 210 of 300 on Saturday. Keep the uncounted Saturday tray separate until staff verify it. For the next event, keep the outside return point open through departure. Record on-time scans, late recoveries and deposit refunds in separate fields so we can explain any gap.",
+      "points": [
+        {
+          "label": "Report the Friday denominator",
+          "any": [
+            "180 of 200",
+            "180 out of 200"
+          ]
+        },
+        {
+          "label": "Report the Saturday denominator",
+          "any": [
+            "210 of 300",
+            "210 out of 300"
+          ]
+        },
+        {
+          "label": "Keep the Saturday tray separate",
+          "any": [
+            "uncounted saturday tray",
+            "late tray separate"
+          ]
+        },
+        {
+          "label": "Improve closing",
+          "any": [
+            "outside return point open",
+            "keep the return point open"
+          ]
+        },
+        {
+          "label": "Separate refunds",
+          "any": [
+            "deposit refunds in separate fields",
+            "recoveries and refunds separately"
+          ]
+        }
+      ]
+    }
+  ]
+}

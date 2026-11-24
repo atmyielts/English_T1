@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b1-a-board-for-sorting-screws",
+    "title": "A Board for Sorting Screws",
+    "level": "B1",
+    "summary": "A volunteer groups an untidy set of screws without using their colour.",
+    "content_markdown": "Used screws arrived at the Merton repair shop in a deep tin. Whenever a volunteer needed one, they poured the whole tin onto a piece of cloth. It was easy to find the longest screw. It was much harder to find two screws that could be used in the same place. Mari, who ran the shop on Thursdays, asked a volunteer group to find a better way of sorting them.\n\nThe volunteers started with four dishes. They put silver screws in two dishes and dark screws in the other two. Within each colour they sorted the screws into long and short. Mari showed them two screws from the same dark dish. Both were short, but one was wider than the other. Only the thinner one fitted the small hole in a cupboard hinge. They needed a way to see the width as well as the length.\n\nA carpenter volunteered to cut several holes of different sizes in a waste piece of wood. Next to each hole he made a mark where screws of a usual length could be laid flat. A volunteer could test which hole a screw fitted, then compare its length with the marks. He could also leave an unusual screw on the board until someone decided which dish it belonged in.\n\nThe board did not make sorting faster straight away. People still had to check which mark they were looking at. A month later a new volunteer tried it without the carpenter there. She found two screws that fitted the same hinge, although one was dark and one was silver. Mari called that the first useful proof that the board could work without the person who made it.",
+    "category": "Work",
+    "theme": "using a simple sorting board",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "workshop feature",
+      "word_count": 281
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does the workshop make a sorting board?",
+        "options": [
+          "So volunteers can tell who brought each screw",
+          "To assess dimensions useful for repairs instead of sorting mainly by appearance",
+          "To let screws of every size fit in the cupboard hinge",
+          "So that a new carpenter can replace the old one"
+        ],
+        "answer_index": 1,
+        "explanation": "The original colour dishes hid differences in width, whereas the board supports checks for both width and length."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why could the two short dark screws not be used in the same hinge?",
+        "options": [
+          "They were both too long.",
+          "Their heads had different colours.",
+          "One was too wide for the small hole.",
+          "Neither could be laid flat."
+        ],
+        "answer_index": 2,
+        "explanation": "The article says only the thinner of the two fits."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Mari value the new volunteer’s trial?",
+        "options": [
+          "The new volunteer could build another sorting board.",
+          "She found a screw that matched the board’s colour.",
+          "She sorted the entire tin before the shop opened.",
+          "She could use the board correctly without the carpenter’s help."
+        ],
+        "answer_index": 3,
+        "explanation": "The new volunteer reached a useful result while its maker was absent."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “laid flat” mean in paragraph 3?",
+        "options": [
+          "Placed with a side resting against the surface",
+          "Held up vertically by the carpenter",
+          "Put at the bottom of a closed tin",
+          "Made narrower by hitting it with a tool"
+        ],
+        "answer_index": 0,
+        "explanation": "Laying a screw along the wood keeps it still so its length can be compared with a mark."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "People originally used colour and length to sort the screws.",
+        "answer": "true",
+        "explanation": "The second paragraph divides the dishes by colour and then by long or short."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The board made sorting faster on the very first day.",
+        "answer": "false",
+        "explanation": "The last paragraph explicitly says it did not make sorting faster straight away."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage says what type of wood was used for the board.",
+        "answer": "not_given",
+        "explanation": "The carpenter uses a waste piece of wood, but the material is not identified further."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The used screws first arrived in a deep ___. The board uses different-sized ___ to check width.",
+        "answers": [
+          [
+            "tin"
+          ],
+          [
+            "holes"
+          ]
+        ],
+        "word_bank": [
+          "tin",
+          "holes",
+          "hinge",
+          "dishes"
+        ],
+        "explanation": "The opening names the container and paragraph 3 describes several holes in the wood."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Sorting by colour does not show a vital difference",
+          "Checking whether the board can be used independently",
+          "The original trouble with a mixed tin",
+          "Making a way to check width and length",
+          "Ordering new screws for customers"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "Each paragraph moves the work from the mixed tin through a poor sorting rule, a useful device and an independent trial."
+      }
+    ]
+  },
+  "children": []
+}

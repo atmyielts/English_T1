@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Recruiting for a Community Survey",
+    "description": "Evaluate who takes part in a fictional local survey about park hours. Distinguish who can be selected, who participates or drops out, and how the answers themselves are produced.",
+    "slug": "c1-recruiting-for-a-community-survey",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 410,
+    "topic": "survey participation"
+  },
+  "children": [
+    {
+      "word": "sampling frame",
+      "part_of_speech": "noun phrase",
+      "definition": "A list or other operational record of the units from which a sample is drawn.",
+      "example": "The team used the town’s household register as its sampling frame and randomly selected 300 households for the park-hours survey.",
+      "translation_ru": "основа выборки",
+      "translation_uz": "tanlanma tuzish uchun asos boʻladigan roʻyxat yoki reyestr",
+      "collocations": [
+        "compile a sampling frame",
+        "check the sampling frame for duplicates"
+      ]
+    },
+    {
+      "word": "unit nonresponse",
+      "part_of_speech": "noun",
+      "definition": "The failure to obtain a usable questionnaire from a person or household selected for a survey.",
+      "example": "The team recorded unit nonresponse when a selected household returned no questionnaire by the closing date.",
+      "translation_ru": "отсутствие пригодной для обработки анкеты от единицы выборки",
+      "translation_uz": "tanlanmaga kiritilgan shaxs yoki xonadondan foydalanishga yaroqli anketa olinmasligi",
+      "collocations": [
+        "measure unit nonresponse",
+        "adjust for unit nonresponse"
+      ]
+    },
+    {
+      "word": "respondent burden",
+      "part_of_speech": "noun phrase",
+      "definition": "The time, effort or inconvenience a person faces when providing the information a survey requests.",
+      "example": "To reduce respondent burden, the park survey asked residents which evenings they would use the park instead of asking them to reconstruct a month of visits.",
+      "translation_ru": "нагрузка на респондента",
+      "translation_uz": "soʻrovga javob berish uchun sarflanadigan vaqt va kuch hamda bu bilan bogʻliq noqulayliklar",
+      "collocations": [
+        "estimate respondent burden",
+        "reduce respondent burden"
+      ]
+    },
+    {
+      "word": "gatekeeper",
+      "part_of_speech": "noun",
+      "definition": "A person or organization that controls whether researchers can contact a group.",
+      "example": "The housing association acted as a gatekeeper because only it could send the survey invitation to residents on its mailing list.",
+      "translation_ru": "лицо или организация, от которых зависит доступ исследователей к группе людей",
+      "translation_uz": "tadqiqotchilarning muayyan guruh bilan bogʻlanishiga ruxsat beradigan shaxs yoki tashkilot",
+      "collocations": [
+        "seek permission from a gatekeeper",
+        "negotiate access with a gatekeeper"
+      ]
+    },
+    {
+      "word": "recruitment channel",
+      "part_of_speech": "noun phrase",
+      "definition": "A means of delivering an invitation to potential participants in a study or survey.",
+      "example": "The organisers used postal invitations as a recruitment channel for the park-hours survey, with a web link and a phone number for replying.",
+      "translation_ru": "канал привлечения участников",
+      "translation_uz": "ishtirokchilarni jalb qilish kanali",
+      "collocations": [
+        "use a recruitment channel",
+        "compare recruitment channels"
+      ]
+    },
+    {
+      "word": "underrepresentation",
+      "part_of_speech": "noun",
+      "definition": "A situation in which a group makes up a smaller share of the people surveyed than it does of the population the survey is intended to describe.",
+      "example": "To check for underrepresentation of adults aged 18 to 24, the team compared their share of park-hours survey respondents with their share of the district’s adult population.",
+      "translation_ru": "недостаточная представленность группы",
+      "translation_uz": "guruhning soʻrov ishtirokchilari orasidagi ulushi soʻrov qamrab olishi kerak boʻlgan aholi orasidagi ulushidan kichik boʻlishi",
+      "collocations": [
+        "check for underrepresentation",
+        "correct for underrepresentation"
+      ]
+    },
+    {
+      "word": "undercoverage",
+      "part_of_speech": "noun phrase",
+      "definition": "A gap in the group a survey can reach because some members of its target population are left out of the sampling frame.",
+      "example": "The team identified undercoverage when it found that newly converted flats were missing from its household register.",
+      "translation_ru": "неполный охват целевой совокупности",
+      "translation_uz": "tanlash uchun ishlatiladigan roʻyxat maqsadli aholining bir qismini qamrab olmasligi",
+      "collocations": [
+        "detect undercoverage",
+        "reduce undercoverage"
+      ]
+    },
+    {
+      "word": "reminder",
+      "part_of_speech": "noun",
+      "definition": "A message sent after an initial survey invitation to prompt the recipient to complete the questionnaire.",
+      "example": "A week after the initial park-hours invitation, the team sent a reminder to households that had yet to reply.",
+      "translation_ru": "напоминание о прохождении опроса",
+      "translation_uz": "soʻrovnomani toʻldirish haqidagi eslatma",
+      "collocations": [
+        "send a reminder",
+        "receive a reminder"
+      ]
+    },
+    {
+      "word": "self-report",
+      "part_of_speech": "noun",
+      "definition": "An account a participant gives of their own behaviour, circumstances or experiences.",
+      "example": "The survey used each resident’s self-report of their visits after 7 p.m. to estimate how often that resident had used the park in the evening.",
+      "translation_ru": "сведения участника о себе",
+      "translation_uz": "ishtirokchining oʻzi haqida bergan maʼlumoti",
+      "collocations": [
+        "rely on self-report",
+        "compare self-reports with visit logs"
+      ]
+    },
+    {
+      "word": "proxy respondent",
+      "part_of_speech": "noun phrase",
+      "definition": "A person who provides survey information on behalf of the individual selected to participate.",
+      "example": "With her father’s agreement, a daughter acted as his proxy respondent and reported how often he visited the park after dinner.",
+      "translation_ru": "респондент, который отвечает на вопросы опроса вместо отобранного участника и сообщает сведения о нём",
+      "translation_uz": "boshqa kishi nomidan javob beruvchi respondent",
+      "collocations": [
+        "interview a proxy respondent",
+        "accept answers from a proxy respondent"
+      ]
+    },
+    {
+      "word": "selection effect",
+      "part_of_speech": "noun phrase",
+      "definition": "A difference in survey results that arises because the way people enter the study favours people whose characteristics or views are relevant to what is being measured.",
+      "example": "The team considered a possible selection effect when people recruited at the park after 7 p.m. were more likely to favour later closing than people recruited through a household mailing.",
+      "translation_ru": "эффект отбора участников",
+      "translation_uz": "ishtirokchilarning tadqiqotga qanday jalb etilgani natijalarga koʻrsatadigan taʼsir",
+      "collocations": [
+        "identify a selection effect",
+        "test for a selection effect"
+      ]
+    },
+    {
+      "word": "systematic misreporting",
+      "part_of_speech": "noun phrase",
+      "definition": "A recurring tendency for participants’ answers to depart from what actually happened in a consistent way.",
+      "example": "If residents regularly counted walks past the park as visits, this systematic misreporting would inflate the survey’s estimate of park use.",
+      "translation_ru": "систематическое искажение сообщаемых данных",
+      "translation_uz": "maʼlumotni muntazam ravishda notoʻgʻri bildirish",
+      "collocations": [
+        "detect systematic misreporting",
+        "adjust for systematic misreporting"
+      ]
+    },
+    {
+      "word": "attrition",
+      "part_of_speech": "noun",
+      "definition": "The loss of participants between rounds of a study after they have already taken part.",
+      "example": "The team measured attrition by checking how many residents who completed the first park-hours questionnaire failed to take part in the second round.",
+      "translation_ru": "выбывание участников по ходу исследования",
+      "translation_uz": "tadqiqot davomida ishtirokchilarning chiqib ketishi",
+      "collocations": [
+        "monitor attrition",
+        "estimate the attrition rate"
+      ]
+    },
+    {
+      "word": "anonymized response",
+      "part_of_speech": "noun phrase",
+      "definition": "A survey answer processed so that the person who gave it can no longer reasonably be identified, either from the answer itself or by linking it to other information.",
+      "example": "The report quoted an anonymized response about earlier park opening after the team removed the resident’s identifying details and checked the remaining wording for clues to their identity.",
+      "translation_ru": "обезличенный ответ",
+      "translation_uz": "kim berganini aniqlab boʻlmaydigan shaklga keltirilgan javob",
+      "collocations": [
+        "quote an anonymized response",
+        "review anonymized responses"
+      ]
+    }
+  ]
+}

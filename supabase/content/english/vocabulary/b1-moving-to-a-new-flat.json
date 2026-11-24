@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Moving to a New Flat",
+    "description": "Learn words and phrases for packing up a household, moving furniture and boxes, and getting settled in a new flat.",
+    "slug": "b1-moving-to-a-new-flat",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 360,
+    "topic": "moving flats"
+  },
+  "children": [
+    {
+      "word": "carton",
+      "part_of_speech": "noun",
+      "definition": "A cardboard box used to hold or transport things.",
+      "example": "We put the towels in a large carton so we could find them on our first night in the new flat.",
+      "translation_ru": "картонная коробка",
+      "translation_uz": "karton quti",
+      "collocations": [
+        "a cardboard carton",
+        "pack things into cartons"
+      ]
+    },
+    {
+      "word": "bubble wrap",
+      "part_of_speech": "noun",
+      "definition": "A sheet of plastic with small pockets of air that keep objects from getting damaged.",
+      "example": "We covered each mirror with bubble wrap before putting it in the van.",
+      "translation_ru": "пузырчатая плёнка",
+      "translation_uz": "pufakchali plyonka",
+      "collocations": [
+        "a roll of bubble wrap",
+        "wrap a mirror in bubble wrap"
+      ]
+    },
+    {
+      "word": "packing tape",
+      "part_of_speech": "noun",
+      "definition": "A wide, strong strip of sticky material used to keep boxes closed.",
+      "example": "I used two strips of packing tape across the bottom of each carton before filling it.",
+      "translation_ru": "упаковочная клейкая лента",
+      "translation_uz": "qadoqlash uchun yopishqoq lenta",
+      "collocations": [
+        "a roll of packing tape",
+        "seal a carton with packing tape"
+      ]
+    },
+    {
+      "word": "seal",
+      "part_of_speech": "verb",
+      "definition": "To close a box or package securely with tape or another sticky material.",
+      "example": "Please seal the last carton with tape once the towels are inside.",
+      "translation_ru": "заклеивать",
+      "translation_uz": "yopishtirib berkitmoq",
+      "collocations": [
+        "seal a carton",
+        "seal a package with tape"
+      ]
+    },
+    {
+      "word": "dismantle",
+      "part_of_speech": "verb",
+      "definition": "To take something apart into separate pieces.",
+      "example": "We had to dismantle the wardrobe because it was too wide to go down the stairs.",
+      "translation_ru": "разбирать на части",
+      "translation_uz": "qismlarga ajratmoq",
+      "collocations": [
+        "dismantle a wardrobe",
+        "dismantle a bed frame"
+      ]
+    },
+    {
+      "word": "inventory",
+      "part_of_speech": "noun",
+      "definition": "A complete list of the things in a place or the things being moved.",
+      "example": "We made an inventory of the furniture and numbered cartons before the van left.",
+      "translation_ru": "опись имущества",
+      "translation_uz": "buyumlar roʻyxati",
+      "collocations": [
+        "make an inventory",
+        "check the inventory"
+      ]
+    },
+    {
+      "word": "moving van",
+      "part_of_speech": "noun",
+      "definition": "A vehicle used to take furniture and other belongings from one home to another.",
+      "example": "The moving van was big enough to take all our furniture in one trip.",
+      "translation_ru": "фургон для переезда",
+      "translation_uz": "koʻchish uchun yuk mashinasi",
+      "collocations": [
+        "hire a moving van",
+        "load a moving van"
+      ]
+    },
+    {
+      "word": "trolley",
+      "part_of_speech": "noun",
+      "definition": "A small piece of equipment with wheels that you push or pull to move heavy things.",
+      "example": "We used a trolley to move the heaviest cartons from the van to the lift.",
+      "translation_ru": "грузовая тележка",
+      "translation_uz": "yuk aravachasi",
+      "collocations": [
+        "push a trolley",
+        "load cartons onto a trolley"
+      ]
+    },
+    {
+      "word": "loading bay",
+      "part_of_speech": "noun",
+      "definition": "An area beside a building where vehicles stop so goods can be put in or taken out.",
+      "example": "The van stopped in the loading bay behind the new building, next to the service lift.",
+      "translation_ru": "зона погрузки и разгрузки",
+      "translation_uz": "yuk ortish va tushirish joyi",
+      "collocations": [
+        "park in the loading bay",
+        "keep the loading bay clear"
+      ]
+    },
+    {
+      "word": "unload",
+      "part_of_speech": "verb",
+      "definition": "To take goods or belongings out of a vehicle.",
+      "example": "We had twenty minutes to unload the van before the next household needed the space.",
+      "translation_ru": "разгружать",
+      "translation_uz": "yukni tushirmoq",
+      "collocations": [
+        "unload a van",
+        "unload a delivery truck"
+      ]
+    },
+    {
+      "word": "stack",
+      "part_of_speech": "verb",
+      "definition": "To put things one on top of another.",
+      "example": "Let's stack the cartons of towels by the wall so there is room to bring in the furniture.",
+      "translation_ru": "складывать друг на друга",
+      "translation_uz": "ustma-ust taxlamoq",
+      "collocations": [
+        "stack cartons",
+        "stack boxes three high"
+      ]
+    },
+    {
+      "word": "move in",
+      "part_of_speech": "phrasal verb",
+      "definition": "To start living in a new home.",
+      "example": "We can move in on Friday and spend our first night in the new flat that evening.",
+      "translation_ru": "въезжать в новое жильё",
+      "translation_uz": "yangi uyga koʻchib kirmoq",
+      "collocations": [
+        "move in on Friday",
+        "be ready to move in"
+      ]
+    },
+    {
+      "word": "reassemble",
+      "part_of_speech": "verb",
+      "definition": "To put something back together after it has been taken apart.",
+      "example": "We need to reassemble the bed frame before we can put the mattress on it.",
+      "translation_ru": "собирать заново",
+      "translation_uz": "qayta yigʻmoq",
+      "collocations": [
+        "reassemble a bed frame",
+        "reassemble a wardrobe"
+      ]
+    },
+    {
+      "word": "unpack",
+      "part_of_speech": "verb",
+      "definition": "To take things out of the bag or box they were packed in.",
+      "example": "Let's unpack the dishes first so we can eat at the table tonight.",
+      "translation_ru": "распаковывать",
+      "translation_uz": "buyumlarni quti yoki sumkadan olib chiqmoq",
+      "collocations": [
+        "unpack the dishes",
+        "unpack the last carton"
+      ]
+    }
+  ]
+}

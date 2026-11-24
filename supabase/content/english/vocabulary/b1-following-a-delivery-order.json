@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Following a Delivery Order",
+    "description": "Follow a lamp you ordered as it moves from the seller to your home or a parcel locker. Read delivery updates, arrange another way to receive the lamp, and describe the condition of the package.",
+    "slug": "b1-following-a-delivery-order",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 410,
+    "topic": "delivery orders"
+  },
+  "children": [
+    {
+      "word": "dispatch",
+      "part_of_speech": "verb",
+      "definition": "To send goods from a shop or warehouse so they can reach the person who bought them.",
+      "example": "The seller will dispatch my lamp on Monday, so it won't reach me this weekend.",
+      "translation_ru": "отправлять товар",
+      "translation_uz": "tovarni joʻnatmoq",
+      "collocations": [
+        "dispatch the goods",
+        "dispatch an item from the warehouse"
+      ]
+    },
+    {
+      "word": "shipment ID",
+      "part_of_speech": "noun phrase",
+      "definition": "A code that identifies a particular shipment. Some couriers let you use it to track the shipment.",
+      "example": "I entered the shipment ID on the courier's website to see how far my lamp had travelled.",
+      "translation_ru": "идентификатор отправления",
+      "translation_uz": "joʻnatma identifikatori",
+      "collocations": [
+        "enter the shipment ID",
+        "look up the shipment ID"
+      ]
+    },
+    {
+      "word": "in transit",
+      "part_of_speech": "prepositional phrase",
+      "definition": "On the way from the sender to the place where the goods will be delivered or picked up.",
+      "example": "My lamp is still in transit between two warehouses, so I don't expect it today.",
+      "translation_ru": "в пути",
+      "translation_uz": "yoʻlda",
+      "collocations": [
+        "still in transit",
+        "goods in transit"
+      ]
+    },
+    {
+      "word": "delivery estimate",
+      "part_of_speech": "noun phrase",
+      "definition": "The courier's best guess about the date or time when your goods will reach you.",
+      "example": "The delivery estimate for my lamp says Thursday, so I'll plan to be home that day.",
+      "translation_ru": "ориентировочный срок доставки",
+      "translation_uz": "yetkazib berishning taxminiy muddati",
+      "collocations": [
+        "check the delivery estimate",
+        "a revised delivery estimate"
+      ]
+    },
+    {
+      "word": "out for delivery",
+      "part_of_speech": "delivery status phrase",
+      "definition": "With the courier for the final delivery run.",
+      "example": "The lamp is out for delivery, so I'll keep my phone nearby in case the courier calls.",
+      "translation_ru": "у курьера на маршруте доставки",
+      "translation_uz": "kuryer joʻnatmani manzilga olib borish uchun yoʻlga chiqqan",
+      "collocations": [
+        "already out for delivery",
+        "mark a parcel as out for delivery"
+      ]
+    },
+    {
+      "word": "delivery attempt",
+      "part_of_speech": "noun phrase",
+      "definition": "An occasion when a courier tries to bring goods to the person or place they are meant for.",
+      "example": "The first delivery attempt failed because the courier couldn't get into my building.",
+      "translation_ru": "попытка доставки",
+      "translation_uz": "yetkazib berishga urinish",
+      "collocations": [
+        "the first delivery attempt",
+        "make another delivery attempt"
+      ]
+    },
+    {
+      "word": "redelivery",
+      "part_of_speech": "noun",
+      "definition": "Another visit by a courier to bring goods after an earlier visit was unsuccessful.",
+      "example": "I arranged redelivery for Friday because I'll be working from home that day.",
+      "translation_ru": "повторная доставка",
+      "translation_uz": "qayta yetkazib berish",
+      "collocations": [
+        "arrange redelivery",
+        "request redelivery for Friday"
+      ]
+    },
+    {
+      "word": "redirect",
+      "part_of_speech": "verb",
+      "definition": "To send goods to a different place from the one originally planned.",
+      "example": "Since I was away all week, I asked the courier to redirect my lamp to a parcel locker near my office.",
+      "translation_ru": "перенаправлять отправление",
+      "translation_uz": "joʻnatmani boshqa joyga yoʻnaltirmoq",
+      "collocations": [
+        "redirect a parcel",
+        "redirect a shipment to another location"
+      ]
+    },
+    {
+      "word": "parcel terminal",
+      "part_of_speech": "noun phrase",
+      "definition": "A machine with small locked spaces where a courier can leave goods for people to pick up.",
+      "example": "I went to the parcel terminal after work and took the lamp from the compartment that opened.",
+      "translation_ru": "постамат",
+      "translation_uz": "joʻnatmalarni olib ketish uchun qulflanadigan boʻlmalari bor avtomat",
+      "collocations": [
+        "use a parcel terminal",
+        "deliver to a parcel terminal"
+      ]
+    },
+    {
+      "word": "access PIN",
+      "part_of_speech": "noun phrase",
+      "definition": "A short code made up of digits that you enter to open the locker compartment holding your parcel.",
+      "example": "I typed the access PIN from the courier's text into the terminal to open the compartment holding my lamp.",
+      "translation_ru": "ПИН-код для открытия ячейки",
+      "translation_uz": "katakni ochish uchun PIN-kod",
+      "collocations": [
+        "enter the access PIN",
+        "receive the access PIN by text"
+      ]
+    },
+    {
+      "word": "proof of delivery",
+      "part_of_speech": "noun phrase",
+      "definition": "A record, such as a photo or signature, that shows goods reached the place or person they were meant for.",
+      "example": "I asked for proof of delivery when the courier's website said my lamp had been delivered but I couldn't find it.",
+      "translation_ru": "подтверждение доставки",
+      "translation_uz": "yetkazib berilganini tasdiqlovchi dalil",
+      "collocations": [
+        "request proof of delivery",
+        "use a photo as proof of delivery"
+      ]
+    },
+    {
+      "word": "delivery note",
+      "part_of_speech": "noun phrase",
+      "definition": "A document that comes with goods and lists what the sender has included.",
+      "example": "I checked the delivery note inside the package and saw that a spare bulb was included with the lamp.",
+      "translation_ru": "товарная накладная",
+      "translation_uz": "yetkazilgan tovarlar roʻyxati koʻrsatilgan hujjat",
+      "collocations": [
+        "check the delivery note",
+        "include a delivery note with the goods"
+      ]
+    },
+    {
+      "word": "damaged package",
+      "part_of_speech": "noun phrase",
+      "definition": "A parcel whose packaging is damaged, for example because it is torn or crushed.",
+      "example": "I took a photo of the damaged package because one corner was crushed and the cardboard was torn.",
+      "translation_ru": "посылка с повреждённой упаковкой",
+      "translation_uz": "oʻrami shikastlangan joʻnatma",
+      "collocations": [
+        "report a damaged package",
+        "photograph a damaged package"
+      ]
+    },
+    {
+      "word": "intact",
+      "part_of_speech": "adjective",
+      "definition": "Still whole, with no parts broken or missing.",
+      "example": "The lamp was intact when I took it out, even though the outer packaging was torn.",
+      "translation_ru": "целый и невредимый",
+      "translation_uz": "butun va shikastlanmagan",
+      "collocations": [
+        "arrive intact",
+        "remain intact during transport"
+      ]
+    }
+  ]
+}

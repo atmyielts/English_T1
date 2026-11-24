@@ -1,0 +1,67 @@
+{
+  "item": {
+    "slug": "c2-explain-access-and-rest-on-a-public-square",
+    "title": "Respond to a Plan for Removing Seats",
+    "level": "C2",
+    "prompt_text": "The team proposes removing most seats from a square because people sometimes leave queues that block the main entrance. Some residents use those seats while waiting for relatives. The team has recorded how long the queue lasts, but has not recorded how people use the seats. Write a response that takes the obstruction seriously, distinguishes what the record shows from what it leaves open, and proposes a reversible test.",
+    "genre": "public consultation response",
+    "audience": "the design team for a small public square",
+    "target_grammar": "Controlled concession and qualification, counterfactual reasoning, and a scoped recommendation.",
+    "target_structure": "Recognise the design failure, separate the available measures, propose a test, and define what would justify a permanent change.",
+    "target_vocabulary": [
+      "obstruction",
+      "access",
+      "resting place",
+      "reversible",
+      "displacement",
+      "observation"
+    ],
+    "expected_length_min": 223,
+    "expected_length_max": 320,
+    "checklist": [
+      {
+        "point": "Explain the obstruction without making a claim about every seated visitor.",
+        "keywords": [
+          "queue",
+          "entrance",
+          "obstruction",
+          "blocked"
+        ]
+      },
+      {
+        "point": "State the limit of the existing data.",
+        "keywords": [
+          "does not tell",
+          "records",
+          "seat use",
+          "cannot establish"
+        ]
+      },
+      {
+        "point": "Propose a reversible test that preserves a way to rest.",
+        "keywords": [
+          "trial",
+          "reversible",
+          "move",
+          "temporary",
+          "chairs"
+        ]
+      },
+      {
+        "point": "Specify what to observe before deciding.",
+        "keywords": [
+          "observe",
+          "compare",
+          "whether",
+          "count",
+          "wait elsewhere"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    },
+    "sort_order": 361
+  },
+  "children": []
+}

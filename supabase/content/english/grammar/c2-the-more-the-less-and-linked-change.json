@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Comparative correlatives and linked change",
+    "explanation_text": "Use a comparative correlative to show how one variable changes in relation to another. In “The fewer steps the process has, the less time it takes,” each clause begins with the followed by a comparative phrase. The rest of each clause usually follows ordinary subject–verb order in neutral prose. Put the variable you are using as a reference point in the first clause and the corresponding change in the second.\n\nThe directions can differ: a shorter transfer window may go with more missed connections. Use fewer with plural count nouns such as steps and less with noncount nouns such as time. You can also link one change to two outcomes, as in “The clearer the catalogue entries are, the fewer requests staff have to clarify and the less time they spend checking references.”\n\nIn a report, use “In the records reviewed” or a similar phrase to limit the claim to the evidence. The construction expresses a relationship between changes. A causal claim requires separate evidence.",
+    "contrast_text": "“In the dispatch logs, the later the feeder bus arrived, the more passengers missed the last train” reports a pattern. “The feeder bus’s late arrival caused passengers to miss the last train” attributes the missed connections to that delay. Choose fewer missed connections when counting events and less waiting time when measuring duration.",
+    "common_error_pattern": "Omitting the before the second comparative, using less with a plural count noun such as files, or importing question word order as in “the longer did the layover last”.",
+    "tags": [
+      "c2-the-more-the-less-and-linked-change",
+      "comparative-correlatives",
+      "linked-change",
+      "count-and-noncount",
+      "correlation-and-causation"
+    ],
+    "examples": [
+      {
+        "bad": "The more precise the shelf marks are, less time readers spend locating the folders.",
+        "good": "The more precise the shelf marks are, the less time readers spend locating the folders."
+      },
+      {
+        "bad": "The longer the gap between trains is, the less departures the schedule can accommodate.",
+        "good": "The longer the gap between trains is, the fewer departures the schedule can accommodate."
+      },
+      {
+        "bad": "The longer did the layover last, the more often dispatchers reassigned bays.",
+        "good": "The longer the layover lasted, the more often dispatchers reassigned bays."
+      },
+      {
+        "bad": "Evidence mismatch (the survey recorded co-variation only): Increasing the interval between trams caused platform queues to grow.",
+        "good": "In the survey, the longer the interval between trams was, the longer the platform queues were."
+      }
+    ],
+    "slug": "c2-the-more-the-less-and-linked-change",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 380,
+    "focus_area": "comparative-correlatives"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Count handling stages",
+      "instructions": "Complete the first clause with the two-word comparative marker for a decreasing number. Choose between “the fewer” and “the less.”",
+      "prompt_text": "___ handling stages the intake procedure involves, the sooner the accession team can release the collection for cataloguing.",
+      "accepted_answers": [
+        "The fewer"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Measure recovery time",
+      "instructions": "Complete the second clause with the two-word marker for a decreasing duration. Choose between “the fewer” and “the less.”",
+      "prompt_text": "The closer the incoming service gets to its scheduled departure time for the return trip, ___ recovery time the driver has at the terminus.",
+      "accepted_answers": [
+        "the less"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Describe a sharper scan",
+      "instructions": "Fill the gap with “the” and the one-word comparative of “sharp.”",
+      "prompt_text": "___ the scan is, the more readily the palaeographer can distinguish overwritten letters.",
+      "accepted_answers": [
+        "The sharper"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Link two archive outcomes",
+      "instructions": "Supply the conjunction that adds the second outcome and the comparative phrase “the less.” Use three words.",
+      "prompt_text": "The more clearly the finding aid describes access restrictions, the fewer requests staff have to redirect ___ correspondence they have to handle.",
+      "accepted_answers": [
+        "and the less"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Track service frequency",
+      "instructions": "Supply the three-word comparative phrase that means “with greater frequency” using “often.”",
+      "prompt_text": "The less evenly spaced the scheduled airport buses are, ___ supervisors receive reports of overcrowding.",
+      "accepted_answers": [
+        "the more often"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Restore the comparative marker",
+      "instructions": "Insert the missing word. Keep all existing words and punctuation.",
+      "prompt_text": "The earlier the crew clears the sidings, more flexibility the dispatcher has when assigning platforms.",
+      "accepted_answers": [
+        "The earlier the crew clears the sidings, the more flexibility the dispatcher has when assigning platforms."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the quantifiers",
+      "instructions": "Change only the two incorrect quantifiers. Keep the intended decreases in both quantities.",
+      "prompt_text": "The more consistently the archivist records variant spellings, the less duplicate authority records the team creates and the fewer time it spends merging them.",
+      "accepted_answers": [
+        "The more consistently the archivist records variant spellings, the fewer duplicate authority records the team creates and the less time it spends merging them."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Report the timetable pattern",
+      "instructions": "Combine the observations into one comparative correlative. Start with “In the logs, the later”. Keep both subjects and verbs, use “the more missed connections” in the second clause, and omit “on those same nights.”",
+      "prompt_text": "In the logs, the final feeder bus arrived later. On those same nights, station staff recorded more missed connections.",
+      "accepted_answers": [
+        "In the logs, the later the final feeder bus arrived, the more missed connections station staff recorded."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Coordinate two improvements",
+      "instructions": "Combine the three changes into one sentence starting with “The more complete”. Keep the original subject and verb of each sentence. Join the last two clauses with “and”, keeping their original order and giving each its own “the” plus comparative.",
+      "prompt_text": "The deposit inventories are more complete. Staff make fewer identification queries. They spend less time tracing unlabeled folders.",
+      "accepted_answers": [
+        "The more complete the deposit inventories are, the fewer identification queries staff make and the less time they spend tracing unlabeled folders."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Reframe a causal claim",
+      "instructions": "Rewrite the claim as an observed relationship. Start with “In the pilot, the shorter the turnaround was,” and end with “the less time drivers had for inspections.”",
+      "prompt_text": "The pilot showed that shortening the turnaround caused a reduction in the time available to drivers for inspections.",
+      "accepted_answers": [
+        "In the pilot, the shorter the turnaround was, the less time drivers had for inspections."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Locate restricted records",
+      "instructions": "Use every tile once. Start with “The more specific”. Put the filing-code clause before the retrieval clause.",
+      "prompt_text": "the archivist retrieves / the more quickly / The more specific / the restricted records. / the filing code is,",
+      "accepted_answers": [
+        "The more specific the filing code is, the more quickly the archivist retrieves the restricted records."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Connect two dispatch outcomes",
+      "instructions": "Use every tile once. Start with “The longer” and put the clause about buses before the clause about dispatchers.",
+      "prompt_text": "dispatchers have to reassign bays. / The longer / and the less room / buses queue at the entrance / the layover lasts, / the more often",
+      "accepted_answers": [
+        "The longer the layover lasts, the more often buses queue at the entrance and the less room dispatchers have to reassign bays."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.comparative-correlatives"
+    }
+  ]
+}

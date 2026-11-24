@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-hear-a-coach-change-a-race-plan",
+    "title": "Hear a coach change a race plan",
+    "level": "B1",
+    "summary": "A running coach separates route changes from the timing of a group practice.",
+    "transcript_text": "It's going to be hot during Saturday's practice. We'll meet at eight as planned, but turn left at the bridge instead of following the signs for the full course. The shortcut brings us past a public tap at the park. Fill your bottle there even if it is half full. Runners preparing for the ten-kilometre race can add a second loop from the park after everyone has had a drink. Keep to the path by the trees on the second loop. If you have not run with us before, do one loop and tell Jo at the end so we know you are back.",
+    "category": "Leisure",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 120,
+    "duration_seconds": 52,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "leisure",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What is the main reason for the route change?",
+        "options": [
+          "To reduce the length of the real race",
+          "To avoid an event at the bridge",
+          "To test an unfamiliar start time",
+          "To make water accessible on a hot day"
+        ],
+        "answer_index": 3,
+        "explanation": "The shortcut passes a public tap in hot conditions.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What part of the plan stays the same?",
+        "options": [
+          "The turn at the bridge",
+          "The route past the tap",
+          "The eight o’clock meeting",
+          "The number of loops for everyone"
+        ],
+        "answer_index": 2,
+        "explanation": "The speaker says the group will meet at eight as planned.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Who might add a second loop?",
+        "options": [
+          "Anyone on a first visit",
+          "Runners training for the ten-kilometre race",
+          "People who forget a bottle",
+          "Only the coach and Jo"
+        ],
+        "answer_index": 1,
+        "explanation": "The optional extra is for runners preparing for that distance.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Where should participants go after the first loop if they do the second?",
+        "options": [
+          "Along the path by the trees",
+          "Back towards the full-course signs",
+          "Across the bridge to the meeting point",
+          "Around the water tap"
+        ],
+        "answer_index": 0,
+        "explanation": "The second-loop instructions specifically name the path by the trees.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why should a new runner speak to Jo?",
+        "options": [
+          "To choose a longer race",
+          "To ask permission to drink water",
+          "To borrow a bottle for the next loop",
+          "So the group knows that runner has returned"
+        ],
+        "answer_index": 3,
+        "explanation": "The coach expressly asks newcomers to check in when they finish.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "turn left at the bridge",
+      "focus_phrase": "at the bridge",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "even if it is half full",
+      "focus_phrase": "is half full",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "tell Jo at the end",
+      "focus_phrase": "at the end",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

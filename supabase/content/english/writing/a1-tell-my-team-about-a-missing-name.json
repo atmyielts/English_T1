@@ -1,0 +1,48 @@
+{
+  "item": {
+    "slug": "a1-tell-my-team-about-a-missing-name",
+    "title": "Ask for a Name on the Poster",
+    "level": "A1",
+    "prompt_text": "Your group made a poster. Your name is not on it. You are Lina Park. Ask the group to add your name under the picture, next to Mia's name. The poster is going on the wall tomorrow.",
+    "genre": "team message",
+    "audience": "people making a school poster with you",
+    "target_grammar": "My name is and next to. Use can you for a request.",
+    "target_structure": "Explain what is missing, spell out your full name, and tell the team where to put it.",
+    "target_vocabulary": [
+      "name",
+      "poster",
+      "picture",
+      "under",
+      "next to"
+    ],
+    "expected_length_min": 28,
+    "expected_length_max": 57,
+    "checklist": [
+      {
+        "point": "Say that your name is missing.",
+        "keywords": [
+          "name is not",
+          "can't see my name"
+        ]
+      },
+      {
+        "point": "Give your full name.",
+        "keywords": [
+          "lina park"
+        ]
+      },
+      {
+        "point": "Ask for the correct place.",
+        "keywords": [
+          "under the picture",
+          "next to mia"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    },
+    "sort_order": 344
+  },
+  "children": []
+}

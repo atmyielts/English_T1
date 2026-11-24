@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b2-the-day-the-headphones-went-back",
+    "title": "The Day the Headphones Went Back",
+    "level": "B2",
+    "summary": "A returns desk separates a faulty item from a good item that does not fit its buyer’s routine.",
+    "content_markdown": "In her first week at Penbridge Audio, Sada learnt to ask each customer who returned a product to pick a reason. The first box said “not working”; the second said “changed my mind”. Her manager compared the two figures every month. When a man brought back a set of wireless headphones with their battery still charged, Sada assumed he would use the second box.\n\nThe customer said the headphones sounded good. He could connect them to his phone and use them at home. At work the shared computer in his classroom did not support the same connection. He wanted headphones that he could plug into that machine during a break. He had kept the receipt open on the page that described them as “suitable for classroom use”. Under the shop’s system, saying the headphones worked meant saying he had simply changed his mind.\n\nSada took the customer to the demonstration counter and asked which machine he needed. A colleague showed him a more suitable set with a short cable. It was cheaper than the wireless one. The customer chose it and said that spotting the cable had settled the matter. He would have picked the less expensive set from the start if he had realised which one needed a different kind of connection.\n\nAt the next stock meeting, Sada took the reason form with her. The manager worried that an extra category would let staff hide cases of equipment failure. They agreed to keep the first question: had the product worked as described at the counter? Then the staff would ask in what situation the customer had planned to use it. The figures would show both defects and mismatches. A model might work in the shop and still attract a number of returns from people who need a cable. That is evidence about what a label or a question at the counter should explain, not necessarily a reason to remove the model from the shelves.",
+    "category": "Everyday",
+    "theme": "diagnosing a product return",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "case study",
+      "word_count": 325
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What was missing from the original returns form?",
+        "options": [
+          "Space to distinguish a working product that did not suit its intended use",
+          "A way to record every price increase",
+          "A list of computers used by the staff",
+          "An option for damaged products"
+        ],
+        "answer_index": 0,
+        "explanation": "The two boxes treated all working products as changes of mind, even when the buyer had a specific need they did not meet."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did the customer need the headphones to connect to?",
+        "options": [
+          "A radio at the demonstration station",
+          "A shared computer in his classroom",
+          "A phone that he could not use at home",
+          "A speaker with an empty battery"
+        ],
+        "answer_index": 1,
+        "explanation": "The customer uses the wireless model with his phone. The missing connection is to the computer at work."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the manager initially worry about an extra category?",
+        "options": [
+          "It might force the shop to sell cable headphones only.",
+          "It would show that fewer people are buying headphones.",
+          "It might make staff less likely to report genuine failures.",
+          "It would prevent the shop from giving customers the file used at the counter."
+        ],
+        "answer_index": 2,
+        "explanation": "The manager fears that recording a mismatch could be used to conceal a defect. The trial keeps both questions."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “settled the matter” mean here?",
+        "options": [
+          "Made the headphones stop working",
+          "Changed what the shop charged for both models",
+          "Explained why the battery was still charged",
+          "Made the choice clear to the customer"
+        ],
+        "answer_index": 3,
+        "explanation": "Seeing a physical cable gave the customer the information he needed to make a decision."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The returned model worked with the customer’s phone.",
+        "answer": "true",
+        "explanation": "The customer says he used it with his phone at home."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The set the customer selected cost more than the one he returned.",
+        "answer": "false",
+        "explanation": "The passage explicitly says the wired model was cheaper."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The article gives the length of the cable in centimetres.",
+        "answer": "not_given",
+        "explanation": "It describes the cable as short without giving a measurement."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The first model was ___. The alternative set had a short ___.",
+        "answers": [
+          [
+            "wireless"
+          ],
+          [
+            "cable"
+          ]
+        ],
+        "word_bank": [
+          "shop",
+          "cable",
+          "wireless",
+          "receipt"
+        ],
+        "explanation": "The second paragraph details the return, and the third describes the replacement’s cable."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A problem hidden by the form",
+          "The choice once the requirement is clear",
+          "Two boxes and what they were assumed to mean",
+          "A record that distinguishes two reasons to return a product",
+          "The shop begins making its own cables"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The case study introduces the original categories, finds a mismatch, resolves the immediate return and redesigns the record."
+      }
+    ]
+  },
+  "children": []
+}

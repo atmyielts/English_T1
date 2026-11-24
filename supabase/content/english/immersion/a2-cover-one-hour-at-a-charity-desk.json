@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a2-cover-one-hour-at-a-charity-desk",
+    "title": "Cover one hour at a charity desk",
+    "level": "A2",
+    "mission_type": "workplace",
+    "context_text": "Two volunteers have a gap between their shifts. You can fill the gap but need to leave on time.",
+    "objective_text": "Agree on short cover and give the next volunteer the information they need.",
+    "target_vocabulary": [
+      "shift",
+      "desk",
+      "visitor",
+      "receipt",
+      "handover"
+    ],
+    "success_conditions": [
+      "Agree on short cover and give the next volunteer the information they need.",
+      "Identify the open book",
+      "Locate the spare",
+      "Explain the receipt rule",
+      "Identify Jo as backup"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the shift list",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Ali: 10–12. Bea: 1–3. Give every donor a receipt. Spare receipt books are in the desk drawer. Leave the desk only if another volunteer is there.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which hour has no volunteer?",
+          "options": [
+            "Eleven to noon",
+            "One to two",
+            "Noon to one"
+          ],
+          "answer_index": 2,
+          "explanation": "Ali leaves at noon and Bea starts at one."
+        },
+        {
+          "prompt": "What does each donor get?",
+          "options": [
+            "A desk key",
+            "A spare book",
+            "A receipt"
+          ],
+          "answer_index": 2,
+          "explanation": "The shift list requires a receipt for each donor."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear Bea’s travel message",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I can be there on time if the bus arrives. My phone is on. If I am more than five minutes late, call Jo at the next desk. I need to know which receipt book you opened.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Who should you call if Bea is late by more than five minutes?",
+          "options": [
+            "Jo",
+            "Ali",
+            "The bus station"
+          ],
+          "answer_index": 0,
+          "explanation": "Bea names Jo as the backup."
+        },
+        {
+          "prompt": "What does Bea need to know at handover?",
+          "options": [
+            "Which receipt book was opened",
+            "Which bus she should take",
+            "How many drawers there are"
+          ],
+          "answer_index": 0,
+          "explanation": "She specifically asks about the open receipt book."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Confirm your cover with Ali",
+      "prompt_text": "Ali asks if you can take over at noon.",
+      "instructions": "Say when you are available and ask Ali to show you where the extra supplies are.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Yes, I can cover from noon to one. Can you show me where the spare receipt books are before you go? I have not used this desk before.",
+      "points": [
+        {
+          "label": "Offer the right shift",
+          "any": [
+            "noon to one",
+            "twelve to one"
+          ]
+        },
+        {
+          "label": "Ask about receipt books",
+          "any": [
+            "spare receipt books",
+            "extra receipt books"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Leave a handover note",
+      "prompt_text": "You opened the blue receipt book and there is a spare white one. Bea has just arrived.",
+      "instructions": "Say what you used, where the spare is, and what each new donor needs. Give the backup contact if Bea has to step away.",
+      "goal": "Agree on short cover and give the next volunteer the information they need.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "Hi Bea, I used the receipt book with the blue cover. The white spare receipt book is in the desk drawer. Please give every donor a receipt. If you need to leave the desk, call Jo at the next desk and wait for Jo to take over.",
+      "points": [
+        {
+          "label": "Identify the open book",
+          "any": [
+            "receipt book with the blue cover",
+            "blue receipt book",
+            "blue book"
+          ]
+        },
+        {
+          "label": "Locate the spare",
+          "any": [
+            "desk drawer",
+            "in the drawer"
+          ]
+        },
+        {
+          "label": "Explain the receipt rule",
+          "any": [
+            "every donor a receipt"
+          ]
+        },
+        {
+          "label": "Identify Jo as backup",
+          "any": [
+            "call jo",
+            "ask jo"
+          ]
+        }
+      ]
+    }
+  ]
+}

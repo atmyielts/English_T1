@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c2-hear-a-debate-over-who-deserves-credit-for-an-improvement",
+    "title": "Hear a debate over who deserves credit for an improvement",
+    "level": "C2",
+    "summary": "A researcher reconsiders an apparent software success after tracing informal work.",
+    "transcript_text": "Student: The new scheduling tool reduced uncovered shifts. I want to lead with that.\nSupervisor: In weeks one and two, Mina spent an extra hour a day calling people who didn't respond. That work may be part of the intervention, even if the tool didn't assign it.\nStudent: We could drop those weeks and show the stable period.\nSupervisor: Stable for whom? By then staff expected Mina to call if they waited. Dropping the dates won't undo what they learned. Report the extra calls as implementation effort. Ask another department to try the tool with a planned and measurable level of support.\nStudent: So the outcome survives, but it currently concerns software plus a person following up.\nSupervisor: Exactly. Be precise about what another team would have to reproduce.",
+    "category": "Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 49,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "study",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Student",
+        "Supervisor"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What is the supervisor’s main concern?",
+        "options": [
+          "Uncovered shifts increased in both weeks",
+          "The result bundles software with unrecorded human effort",
+          "The wrong shifts were included",
+          "The scheduling tool cannot be tried elsewhere"
+        ],
+        "answer_index": 1,
+        "explanation": "The follow-up calls may have helped produce the effect.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why would omitting the early weeks be inadequate?",
+        "options": [
+          "Early support may continue to shape staff behaviour",
+          "Later weeks contain no entries",
+          "The calculation cannot be repeated",
+          "Mina stopped working there after week two"
+        ],
+        "answer_index": 0,
+        "explanation": "Workers' expectations can survive the omitted period.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What should be reported alongside the outcome?",
+        "options": [
+          "Only Mina’s view of her role",
+          "The full budget of the second department",
+          "The date on which the tool was bought",
+          "The extra work that helped implement the change"
+        ],
+        "answer_index": 3,
+        "explanation": "The supervisor calls the extra calls implementation effort.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What makes the second trial more informative?",
+        "options": [
+          "An unrecorded set of callbacks",
+          "Using only the most satisfied staff",
+          "A known amount of support",
+          "Comparing different definitions of uncovered"
+        ],
+        "answer_index": 2,
+        "explanation": "Defined support helps others interpret and reproduce the result.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Which conclusion is currently justified?",
+        "options": [
+          "The tool alone accounts for all the gains",
+          "The combined approach reduced uncovered shifts",
+          "Calling always works better than software",
+          "The gains are entirely an artefact of timing"
+        ],
+        "answer_index": 1,
+        "explanation": "The trial observed a package, without isolating its parts.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "that work may be part of the intervention",
+      "focus_phrase": "of the intervention",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "dropping the dates won't undo what they learned",
+      "focus_phrase": "what they learned",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "a planned and measurable level of support",
+      "focus_phrase": "level of support",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

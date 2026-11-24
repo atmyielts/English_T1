@@ -1,0 +1,154 @@
+{
+  "item": {
+    "slug": "a2-order-two-different-sandwiches-for-collection",
+    "title": "Order two different sandwiches for collection",
+    "level": "A2",
+    "mission_type": "service",
+    "context_text": "You need lunch for two coworkers. Their orders are easy to confuse and one ingredient is sold out.",
+    "objective_text": "Confirm a workable substitution and leave a receipt-style message.",
+    "target_vocabulary": [
+      "filling",
+      "order",
+      "pickup",
+      "substitution",
+      "receipt"
+    ],
+    "success_conditions": [
+      "Confirm a workable substitution and leave a receipt-style message.",
+      "Include the egg wrap",
+      "Include the chicken order",
+      "Get the drinks right",
+      "Direct payment to the right place"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the lunch orders",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Ana: egg sandwich on brown bread, no tomato. Tom: chicken sandwich on white bread, extra tomato. Both want still water.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Who wants extra tomato?",
+          "options": [
+            "Tom",
+            "Ana",
+            "Both"
+          ],
+          "answer_index": 0,
+          "explanation": "Tom’s order asks for extra tomato."
+        },
+        {
+          "prompt": "What drink suits both orders?",
+          "options": [
+            "Still water",
+            "Sparkling water",
+            "Orange juice"
+          ],
+          "answer_index": 0,
+          "explanation": "Both chose still water."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the café’s update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "We still have egg and chicken, but there is no brown bread today. We have white bread or wraps. Orders placed now are ready at twelve twenty. Pay at the pickup window, not at the till inside.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What has sold out?",
+          "options": [
+            "Brown bread",
+            "Chicken",
+            "Wraps"
+          ],
+          "answer_index": 0,
+          "explanation": "The café is out of brown bread."
+        },
+        {
+          "prompt": "Where should you pay?",
+          "options": [
+            "At the pickup window",
+            "At the till inside",
+            "At the main entrance"
+          ],
+          "answer_index": 0,
+          "explanation": "The update directs customers to the pickup window."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask for the right substitute",
+      "prompt_text": "You know Ana prefers a wrap to white bread. Check the order with the café.",
+      "instructions": "Give her revised order and repeat Tom’s unchanged order. Check the pickup time.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Could Ana have the egg in a wrap with no tomato? Tom still wants chicken on white bread with extra tomato. Are both ready at twelve twenty?",
+      "points": [
+        {
+          "label": "Get Ana’s substitution right",
+          "any": [
+            "egg in a wrap",
+            "egg wrap"
+          ]
+        },
+        {
+          "label": "Specify Tom’s extra ingredient",
+          "any": [
+            "extra tomato"
+          ]
+        },
+        {
+          "label": "Confirm the pickup time",
+          "any": [
+            "twelve twenty",
+            "12:20"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Text the coworker collecting lunch",
+      "prompt_text": "Your coworker has five minutes to collect lunch and pay.",
+      "instructions": "Write both revised orders in full, include the drinks and say where to pay. Make the two names easy to spot.",
+      "goal": "Confirm a workable substitution and leave a receipt-style message.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "Ana has an egg wrap with no tomato. Tom has chicken on white bread with extra tomato. There are two still waters. Please go to the pickup window at twelve twenty. You can collect and pay there, so do not wait at the till inside.",
+      "points": [
+        {
+          "label": "Include the egg wrap",
+          "any": [
+            "egg wrap",
+            "egg in a wrap"
+          ]
+        },
+        {
+          "label": "Include the chicken order",
+          "any": [
+            "chicken on white bread"
+          ]
+        },
+        {
+          "label": "Get the drinks right",
+          "any": [
+            "two still waters",
+            "two bottles of still water"
+          ]
+        },
+        {
+          "label": "Direct payment to the right place",
+          "any": [
+            "pickup window"
+          ]
+        }
+      ]
+    }
+  ]
+}

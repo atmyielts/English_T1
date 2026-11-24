@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "a2-the-two-scarves-in-the-show",
+    "title": "Tell About Two Scarves Switched Before a Show",
+    "level": "A2",
+    "prompt_text": "You helped with a small show. You put a striped scarf on one chair and a plain scarf on another, but the performers sat on the other chairs. Tell your friend what you did, how you noticed the mistake, and what you changed before the show began.",
+    "prompt_type": "storytelling",
+    "task_type": "story",
+    "target_duration_seconds": 46,
+    "target_grammar": "Past simple for actions and first and then for the order.",
+    "fluency_objective": "Plan three events. Tell them once, then listen for the moment the mistake became clear.",
+    "pronunciation_objective": "Stress striped and plain differently. Pause before the correction so your listener notices the change.",
+    "target_vocabulary": [
+      "striped",
+      "plain",
+      "costume",
+      "began",
+      "swapped"
+    ],
+    "cues": [
+      {
+        "text": "Explain what you did at first.",
+        "keywords": [
+          "first",
+          "striped scarf",
+          "plain scarf"
+        ]
+      },
+      {
+        "text": "Say how you noticed the problem.",
+        "keywords": [
+          "noticed",
+          "saw",
+          "wrong chair",
+          "sat down"
+        ]
+      },
+      {
+        "text": "Say what you changed before the show.",
+        "keywords": [
+          "swapped",
+          "changed places",
+          "switched",
+          "before the show"
+        ]
+      }
+    ],
+    "model_opening": "At first, I put the striped scarf on the chair by the window and the plain scarf by the door.",
+    "model_answer": "At first, I put the striped scarf on the chair by the window and the plain scarf by the door. I thought the performers would sit in their usual places. Then they came in and sat on different chairs. I noticed that each person had the wrong scarf when I checked the costume list. I swapped the scarves before the show began. They had time to put them on before anyone came in.",
+    "sort_order": 369
+  },
+  "children": []
+}

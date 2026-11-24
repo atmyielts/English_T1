@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "b1-compare-two-caption-treatments",
+    "title": "Write a Film Club Forum Post",
+    "level": "B1",
+    "prompt_text": "Your film club has a film whose subtitles can be small at the bottom of a big screen or larger in a panel just below the picture. You tried both arrangements during a short preview. Describe what you noticed, recommend one arrangement with a reason, and suggest a simple check before the club decides.",
+    "genre": "forum post",
+    "audience": "members of a film club",
+    "target_grammar": "Past simple for a trial, comparatives for effects, and would for recommendations.",
+    "target_structure": "Describe both trials, explain what each changed, and make a recommendation the club can test.",
+    "target_vocabulary": [
+      "preview",
+      "readable",
+      "panel",
+      "picture",
+      "distance"
+    ],
+    "expected_length_min": 94,
+    "expected_length_max": 151,
+    "checklist": [
+      {
+        "point": "Describe what you noticed about small subtitles.",
+        "keywords": [
+          "small subtitles",
+          "at the bottom",
+          "back row"
+        ]
+      },
+      {
+        "point": "Describe what changed with the larger subtitles.",
+        "keywords": [
+          "larger subtitles",
+          "below the picture",
+          "panel"
+        ]
+      },
+      {
+        "point": "Choose an arrangement and propose a practical check.",
+        "keywords": [
+          "i would use",
+          "we could test",
+          "ask two",
+          "try a longer scene"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    },
+    "sort_order": 349
+  },
+  "children": []
+}

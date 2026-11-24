@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c2-hear-whether-a-reviewer-should-accept-an-analogy",
+    "title": "Hear whether a reviewer should accept an analogy",
+    "level": "C2",
+    "summary": "A critic assesses a transport analogy for the operation of a library.",
+    "transcript_text": "Reviewer: Calling the loans desk a railway platform is appealing. Both have peaks, and there are places where people can jam. The analogy helps you ask where a queue should form.\nAuthor: Can I use it to organise the whole article?\nReviewer: A passenger usually knows where they’re going before reaching the platform. A library visitor can arrive with a question and discover a different task in conversation. At the reference desk, that exchange isn't necessarily a delay to remove.\nAuthor: Should I drop the queue figures?\nReviewer: Keep them for circulation. Let the reference desk show where the comparison stops working.\nAuthor: I can show how the same minute can be congestion in one place and the service itself in another.",
+    "category": "Media",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 46,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "media",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Reviewer",
+        "Author"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Where does the reviewer find the analogy useful?",
+        "options": [
+          "For every reason people enter a library",
+          "For selecting books on behalf of others",
+          "For movement through a process with a defined purpose",
+          "For training railway ticket staff"
+        ],
+        "answer_index": 2,
+        "explanation": "The analogy helps identify bottlenecks where movements are reasonably predictable.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What limits the analogy at the reference desk?",
+        "options": [
+          "Every conversation has a fixed endpoint",
+          "A visitor’s task can change during the interaction",
+          "Library staff refuse to measure time",
+          "The desk cannot attract a queue"
+        ],
+        "answer_index": 1,
+        "explanation": "The reference encounter may help the visitor discover what they need.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What should happen to queue figures?",
+        "options": [
+          "Keep them, but limit their role in the argument",
+          "Discard them because they never show anything useful",
+          "Use them as the only test of conversation quality",
+          "Replace them with railway ticket figures"
+        ],
+        "answer_index": 0,
+        "explanation": "The reviewer applies the measures where their interpretation holds.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What is the author’s proposed framing?",
+        "options": [
+          "All longer encounters improve service",
+          "Railway passengers always wait longer",
+          "The point of reference work is to shorten every interaction",
+          "The same time can be unproductive delay or a useful part of service"
+        ],
+        "answer_index": 3,
+        "explanation": "The last line distinguishes congestion from the work a service provides.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What wider reviewing principle is illustrated?",
+        "options": [
+          "Use a familiar comparison for every part of a subject",
+          "Reject analogies in any article with measurements",
+          "State what an analogy illuminates and where it ceases to help",
+          "Choose comparisons based solely on average time"
+        ],
+        "answer_index": 2,
+        "explanation": "The reviewer wants a limited analogy with its boundary made clear.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "where people can jam",
+      "focus_phrase": "people can jam",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "a delay to remove",
+      "focus_phrase": "delay to remove",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "where the comparison stops working",
+      "focus_phrase": "comparison stops working",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "item": {
+    "slug": "c2-the-teacup-with-the-staple",
+    "title": "The Teacup with the Staple",
+    "level": "C2",
+    "summary": "An inherited cup forces two siblings to reckon with what they preserve when they tidy a family story.",
+    "content_markdown": "My brother had already filled two boxes by the time I reached our aunt’s flat. One said KEEP in the small square letters he uses for addresses. The other said GIVE in letters so large that the word continued round a corner. On the draining board, separated from both categories, stood the blue cup with the metal staple in its side. I had planned to ask for it before either of us saw it. Now that he had set it apart without my asking, I was almost offended.\n\nOur aunt told two stories about the cup. In one, our father knocked it against a tap when he was learning to wash up. She took it to a man who mended plates because she could not bear to let our grandmother know. In the other, our grandmother broke it herself and paid for the repair out of the money she was putting aside for coal. Our aunt usually told the first story when our father was in the room. We had taken that as a small courtesy to him, though nobody had ever explained why letting him think he had broken a cup was kinder.\n\nMy brother said there was a way to settle it. He had found an entry in a household book: “cup. peg. 4d.” Between that and the bread bill was the date our grandmother had moved out of the old house. Our father had been away that week, he said. The staple was very likely what the book called a peg. I agreed about the peg. The amount was fourpence. But when I asked him to show me where the book said who had taken the cup to be mended, he ran a finger over the neat little line and then closed it. The entry dated a payment. Our aunt's second story had started to look stronger, but we still could not say whose hands had been wet at the sink.\n\nI said I wanted the cup because it reminded me of our aunt. My brother asked which version of her I meant. He was looking at the box marked GIVE while he said it, which was a mercy. I had thought of her as somebody who could make a borrowed story feel as if it had happened to her, and supposed that was something it was possible to remember without trying to certify either of her accounts. What I could not say was why I had been so sure the cup should come to me. I had listened more often. My brother had been the one who used it most.\n\nIn the end we wrapped it in a piece of clean newspaper and wrote down both stories, and the fourpence, on the back. I slipped the parcel into my brother's box. He made no objection until I asked if he would keep it where he could see it. “It leaks,” he said. I remembered then that he had always put a saucer under it, even in his own house. I had thought this was his way of letting our aunt have the last word about how one took tea. There are things we preserve by repeating them carefully, and things we preserve by remembering to put a saucer underneath.",
+    "category": "Fiction",
+    "theme": "a repaired teacup and the limits of inherited evidence",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short fiction",
+      "word_count": 543
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Which tension is central to the story?",
+        "options": [
+          "The narrator wants to keep a family object but has to reconsider what entitles someone to it.",
+          "The siblings use the household book to challenge a memory their father has repeatedly insisted on.",
+          "The narrator and brother disagree about whether they should take any items from the flat.",
+          "The brother wants to establish how an antique repair changed the cup’s financial value."
+        ],
+        "answer_index": 0,
+        "explanation": "The narrator supposes having listened often gives a claim to the cup, then acknowledges that the brother used and cared for it."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What can the household entry provide on its own?",
+        "options": [
+          "A reason for choosing a repair over replacement",
+          "A date and price for a payment",
+          "An account of the moment when the cup was damaged",
+          "An indication of which person took the cup for repair"
+        ],
+        "answer_index": 1,
+        "explanation": "The notebook provides a dated amount. It contains no account of how the damage occurred, who carried the cup to the repairer or why it was repaired."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What does the narrator’s account of the saucer reveal?",
+        "options": [
+          "The brother learned a family rule for serving tea and follows it without knowing why.",
+          "The brother used to conceal the leak from their aunt.",
+          "The narrator had mistaken a practical accommodation for deference to their aunt.",
+          "The narrator only now realises that the cup has ever been used outside the aunt’s flat."
+        ],
+        "answer_index": 2,
+        "explanation": "The brother remembers the leak and has long set the cup on a saucer. The narrator had read the habit as letting the aunt have the last word."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "In the fourth paragraph, what does ‘certify’ most nearly mean?",
+        "options": [
+          "Memorise the wording of",
+          "Assign formal ownership to",
+          "Explain the purpose of",
+          "Vouch for the accuracy of"
+        ],
+        "answer_index": 3,
+        "explanation": "The narrator can remember the aunt as a storyteller without confirming that either account is true."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The cup is already in the box marked GIVE when the narrator arrives.",
+        "answer": "false",
+        "explanation": "It stands on the draining board, explicitly separated from both categories."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.inference",
+        "prompt": "The household entry establishes who broke the cup.",
+        "answer": "false",
+        "explanation": "The entry connects a date and payment with the repair. It does not identify who caused the damage.",
+        "variant": "yes_no"
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The repairer received the fourpence on the same day the staple was put in.",
+        "answer": "not_given",
+        "explanation": "The payment is dated. The timing of the work relative to the payment is not stated."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The siblings wrapped the cup in clean ___. Even in his own house the brother put a ___ under it.",
+        "answers": [
+          [
+            "newspaper"
+          ],
+          [
+            "saucer"
+          ]
+        ],
+        "word_bank": [
+          "newspaper",
+          "receipt",
+          "saucer",
+          "cloth"
+        ],
+        "explanation": "In the last paragraph the narrator mentions the wrapping and recollects the brother’s habit."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "An offer to make an uncertain event clear",
+          "Care demonstrated through an ordinary habit",
+          "The impulse to claim an object before discussing it",
+          "Two accounts with a puzzling choice of audience",
+          "A disagreement about how much the object is worth"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The first paragraph introduces the claim, the second the aunt’s versions, the third the apparent evidence and the fifth the brother’s practical habit."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "On a small farm",
+    "description": "Visit a small farm and learn words for the animals, places, and things you see there.",
+    "slug": "a1-on-a-small-farm",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 370,
+    "topic": "farm visit"
+  },
+  "children": [
+    {
+      "word": "cow",
+      "part_of_speech": "noun",
+      "definition": "A large female farm animal that gives milk and whose young are called calves.",
+      "example": "We see a cow by the gate.",
+      "translation_ru": "корова",
+      "translation_uz": "sigir",
+      "collocations": [
+        "milk a cow",
+        "a brown cow"
+      ]
+    },
+    {
+      "word": "horse",
+      "part_of_speech": "noun",
+      "definition": "A large animal that people can ride.",
+      "example": "A horse is eating hay by the barn.",
+      "translation_ru": "лошадь",
+      "translation_uz": "ot",
+      "collocations": [
+        "ride a horse",
+        "a black horse"
+      ]
+    },
+    {
+      "word": "sheep",
+      "part_of_speech": "noun",
+      "definition": "A farm animal with a thick coat of wool.",
+      "example": "We see a sheep in the field.",
+      "translation_ru": "овца",
+      "translation_uz": "qoʻy",
+      "collocations": [
+        "a flock of sheep",
+        "a white sheep"
+      ]
+    },
+    {
+      "word": "goat",
+      "part_of_speech": "noun",
+      "definition": "A farm animal that often has horns and a small beard.",
+      "example": "A goat stands on a rock near the fence.",
+      "translation_ru": "коза",
+      "translation_uz": "echki",
+      "collocations": [
+        "a herd of goats",
+        "a young goat"
+      ]
+    },
+    {
+      "word": "pig",
+      "part_of_speech": "noun",
+      "definition": "A farm animal with a flat nose and a short, curly tail.",
+      "example": "A pig is asleep in the shade beside the barn.",
+      "translation_ru": "свинья",
+      "translation_uz": "choʻchqa",
+      "collocations": [
+        "a pink pig",
+        "feed a pig"
+      ]
+    },
+    {
+      "word": "hen",
+      "part_of_speech": "noun",
+      "definition": "A female chicken.",
+      "example": "We see a hen sitting on her eggs.",
+      "translation_ru": "курица",
+      "translation_uz": "tovuq",
+      "collocations": [
+        "a brown hen",
+        "a hen lays eggs"
+      ]
+    },
+    {
+      "word": "donkey",
+      "part_of_speech": "noun",
+      "definition": "An animal like a small horse with long ears.",
+      "example": "A donkey stands beside the farm cart.",
+      "translation_ru": "осёл",
+      "translation_uz": "eshak",
+      "collocations": [
+        "a gray donkey",
+        "a donkey ride"
+      ]
+    },
+    {
+      "word": "barn",
+      "part_of_speech": "noun",
+      "definition": "A large farm building where people keep animals or hay.",
+      "example": "The farmer keeps hay in the barn.",
+      "translation_ru": "фермерский сарай",
+      "translation_uz": "pichan saqlanadigan yoki mol boqiladigan katta xoʻjalik binosi",
+      "collocations": [
+        "a wooden barn",
+        "a barn full of hay"
+      ]
+    },
+    {
+      "word": "gate",
+      "part_of_speech": "noun",
+      "definition": "A part of a fence that you open to go through.",
+      "example": "Please shut the gate after you.",
+      "translation_ru": "ворота",
+      "translation_uz": "darvoza",
+      "collocations": [
+        "open the gate",
+        "a farm gate"
+      ]
+    },
+    {
+      "word": "fence",
+      "part_of_speech": "noun",
+      "definition": "A barrier around an area, for example to keep animals inside.",
+      "example": "We look at the pigs through the fence.",
+      "translation_ru": "забор",
+      "translation_uz": "toʻsiq",
+      "collocations": [
+        "a wooden fence",
+        "a wire fence"
+      ]
+    },
+    {
+      "word": "field",
+      "part_of_speech": "noun",
+      "definition": "An open area of land for farm animals or plants.",
+      "example": "The sheep are eating grass in the field.",
+      "translation_ru": "поле",
+      "translation_uz": "dala",
+      "collocations": [
+        "a grass field",
+        "a field of wheat"
+      ]
+    },
+    {
+      "word": "hay",
+      "part_of_speech": "noun",
+      "definition": "Grass that people cut and dry for animals to eat.",
+      "example": "The farmer gives hay to the donkey.",
+      "translation_ru": "сено",
+      "translation_uz": "pichan",
+      "collocations": [
+        "a bale of hay",
+        "eat hay"
+      ]
+    },
+    {
+      "word": "wool",
+      "part_of_speech": "noun",
+      "definition": "The soft hair that grows on a sheep.",
+      "example": "We touch some wool from the farm's sheep.",
+      "translation_ru": "овечья шерсть",
+      "translation_uz": "qoʻy juni",
+      "collocations": [
+        "soft wool",
+        "a bag of wool"
+      ]
+    },
+    {
+      "word": "tractor",
+      "part_of_speech": "noun",
+      "definition": "A farm vehicle with big wheels that can pull heavy things.",
+      "example": "The farmer drives a tractor across the field.",
+      "translation_ru": "трактор",
+      "translation_uz": "traktor",
+      "collocations": [
+        "drive a tractor",
+        "a farm tractor"
+      ]
+    }
+  ]
+}

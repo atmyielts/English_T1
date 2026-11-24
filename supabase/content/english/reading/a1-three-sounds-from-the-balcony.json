@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-three-sounds-from-the-balcony",
+    "title": "Three Sounds from the Balcony",
+    "level": "A1",
+    "summary": "A brother and sister listen from their balcony and try to find where three sounds come from.",
+    "content_markdown": "Dear Otabek,\n\nYesterday my sister and I played a game on our balcony. She wrote down the sounds we heard. I tried to say where each sound came from. First I heard a long, low sound. I thought it was a bus, but I saw a man close a heavy gate across the street.\n\nThen we heard a short bell. My sister thought our phone was ringing. A woman on a bicycle went past. She rang the bell again when she came to the corner. We put “bicycle” on our list.\n\nThe last sound was like paper moving. We looked up and down the street. Then a small bird came out from behind the dry leaves in a pot on the balcony. It was right beside us. We both laughed. My sister wrote “our balcony” at the end of the list.\n\nYour friend, Kamol",
+    "category": "Everyday",
+    "theme": "balcony sound guessing game",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "personal letter",
+      "word_count": 144
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does Kamol mainly describe?",
+        "options": [
+          "A plan to buy a bicycle",
+          "A game about finding where sounds come from",
+          "A walk to Otabek’s house",
+          "A phone call from his sister"
+        ],
+        "answer_index": 1,
+        "explanation": "They listen, make guesses and find the source of three sounds."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What made the first sound?",
+        "options": [
+          "A bus",
+          "A phone",
+          "A bird",
+          "A heavy gate"
+        ],
+        "answer_index": 3,
+        "explanation": "Kamol sees a man close the heavy gate after hearing the low sound."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did the sister first think the bell was?",
+        "options": [
+          "A bicycle",
+          "Their phone",
+          "A bell at school",
+          "A gate"
+        ],
+        "answer_index": 1,
+        "explanation": "The sister first thinks their phone is ringing."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the children laugh at the end?",
+        "options": [
+          "Their list had fallen into the street.",
+          "They found the wrong balcony.",
+          "They had looked away from a sound very close to them.",
+          "The woman lost her bell at the corner."
+        ],
+        "answer_index": 2,
+        "explanation": "They searched along the street, then found the bird right next to them on their own balcony."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The sound like paper came from beside the children.",
+        "answer": "true",
+        "explanation": "The bird moved through leaves in a pot on their balcony."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Kamol wrote down all the sounds himself.",
+        "answer": "false",
+        "explanation": "Kamol’s sister writes them down."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The text says what colour the bicycle was.",
+        "answer": "not_given",
+        "explanation": "Kamol describes the bell and the rider but does not give the bicycle’s colour."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The woman rings again at the ___. The bird comes out from behind some dry ___.",
+        "answers": [
+          [
+            "corner"
+          ],
+          [
+            "leaves"
+          ]
+        ],
+        "word_bank": [
+          "balcony",
+          "leaves",
+          "paper",
+          "corner"
+        ],
+        "explanation": "The bicycle reaches the corner. The bird was behind dry leaves in a pot."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A sound much closer to home",
+          "A low sound from across the street",
+          "A bell they hear twice",
+          "A map of the bicycle route"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The letter first identifies the gate, then the bicycle bell, and finally the nearby bird."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Whose is this? Finding owners after class",
+    "explanation_text": "Class is over at the community center. There is a bag on the table. Ask “Whose bag is this?” to find the owner. Use whose before the name of the thing: whose bag, whose pen, whose book. If everyone can see the bag you mean, you can point to it and ask “Whose is this?”\n\nIf the bag belongs to you, you can say “It’s my bag” or “It’s mine.” Use my, your, her, our and their before a noun. Use mine, yours, hers, ours and theirs when the noun is already clear. For example, if Eva says “It’s my bag,” you can say “It’s hers.” If you speak directly to Eva, say “It’s yours.” If the bag belongs to you and your friend, say “It’s ours.” If it belongs to two other people, say “It’s theirs.”",
+    "contrast_text": "Whose notebook is this? → Whose is this? | It’s my notebook. → It’s mine. | It’s your notebook. → It’s yours. | It’s her notebook. → It’s hers. | It’s our notebook. → It’s ours. | It’s their notebook. → It’s theirs.",
+    "common_error_pattern": "Using a possessive pronoun before a noun, as in “mine bag,” or ending a sentence with a form that needs a noun, as in “It’s my.”",
+    "tags": [
+      "A1",
+      "whose",
+      "possessive-pronouns",
+      "ownership"
+    ],
+    "examples": [
+      {
+        "bad": "Whose is this pencil belongs to?",
+        "good": "Whose pencil is this?"
+      },
+      {
+        "bad": "Whose this is?",
+        "good": "Whose is this?"
+      },
+      {
+        "bad": "That’s mine coat.",
+        "good": "That’s my coat."
+      },
+      {
+        "bad": "The lunch box is her.",
+        "good": "The lunch box is hers."
+      }
+    ],
+    "slug": "a1-whose-and-possessive-pronouns",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 380,
+    "focus_area": "whose-and-possessive-pronouns"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Claim a marker",
+      "instructions": "You tell the teacher, “This is my marker.” Finish your short answer with one word.",
+      "prompt_text": "It’s ___.",
+      "accepted_answers": [
+        "mine"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Hand back a scarf",
+      "instructions": "Mina tells you, “That’s my scarf.” Give it back to Mina and complete your reply with one word.",
+      "prompt_text": "Here’s ___ scarf, Mina.",
+      "accepted_answers": [
+        "your"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check the water bottle",
+      "instructions": "Lena says, “The blue bottle is mine.” She wants to know if the teacher found it. Use one possessive pronoun to complete the teacher’s answer.",
+      "prompt_text": "The blue bottle is ___.",
+      "accepted_answers": [
+        "hers"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Pick up a shared folder",
+      "instructions": "The folder belongs to you and your class partner. Speak for both of you and finish the reply with one word.",
+      "prompt_text": "Yes, that folder is ___.",
+      "accepted_answers": [
+        "ours"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Sort the brushes",
+      "instructions": "Two classmates say, “These are our brushes.” Tell the teacher about the brushes. Use one word.",
+      "prompt_text": "These are ___ brushes.",
+      "accepted_answers": [
+        "their"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix a label for a name badge",
+      "instructions": "The badge belongs to the person you are speaking to. Change one word and write the whole sentence.",
+      "prompt_text": "This is yours name badge.",
+      "accepted_answers": [
+        "This is your name badge."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the reply about a ruler",
+      "instructions": "Your classmate asks if the ruler is yours. It is. Change one word and write the whole sentence.",
+      "prompt_text": "Yes, it’s my.",
+      "accepted_answers": [
+        "Yes, it’s mine."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Point to a mystery item",
+      "instructions": "Everyone can see the key you are pointing to. Ask the same question without naming the item. Start with “Whose” and end with “this.”",
+      "prompt_text": "Whose key is this?",
+      "accepted_answers": [
+        "Whose is this?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Give a shorter answer about a basket",
+      "instructions": "The basket belongs to two classmates. Keep “The basket” at the start and replace “their basket” with one word.",
+      "prompt_text": "The basket is their basket.",
+      "accepted_answers": [
+        "The basket is theirs."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Name the item in your reply",
+      "instructions": "You are speaking to the owner of an umbrella. Start with “It’s” and end with “umbrella.” Keep the same owner.",
+      "prompt_text": "It’s yours.",
+      "accepted_answers": [
+        "It’s your umbrella."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Ask about a glove",
+      "instructions": "You find a glove after class. Use every tile once to ask who owns it. Start with “Whose glove” and end with “this.”",
+      "prompt_text": "this / glove / is / Whose",
+      "accepted_answers": [
+        "Whose glove is this?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Report who owns the cards",
+      "instructions": "Two classmates tell you the cards belong to them. Use every tile once to tell the teacher. Start with “These cards.”",
+      "prompt_text": "theirs / cards / These / are",
+      "accepted_answers": [
+        "These cards are theirs."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.whose-and-possessive-pronouns"
+    }
+  ]
+}

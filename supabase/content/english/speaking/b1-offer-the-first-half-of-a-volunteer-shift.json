@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "b1-offer-the-first-half-of-a-volunteer-shift",
+    "title": "Offer to Cover Part of a Shift",
+    "level": "B1",
+    "prompt_text": "A volunteer asks you to cover the welcome desk from 1 to 4. You can stay until 2:30. The job includes handing out badges and giving late visitors directions. Offer useful help, explain the limit and suggest what to tell the next volunteer.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 64,
+    "target_grammar": "Can and can’t for availability, and have to for a fixed commitment.",
+    "fluency_objective": "Give the offer before the limit. End by saying what the next volunteer needs to know.",
+    "pronunciation_objective": "Contrast one, two thirty and four. Give the handover information a slow final sentence.",
+    "target_vocabulary": [
+      "welcome desk",
+      "badge",
+      "shift",
+      "until",
+      "handover"
+    ],
+    "cues": [
+      {
+        "text": "State the time you can cover.",
+        "keywords": [
+          "from one",
+          "until two thirty",
+          "2:30"
+        ]
+      },
+      {
+        "text": "Describe how you can help during that time.",
+        "keywords": [
+          "badges",
+          "directions",
+          "show people"
+        ]
+      },
+      {
+        "text": "Suggest a useful handover.",
+        "keywords": [
+          "next volunteer",
+          "write down",
+          "who has arrived"
+        ]
+      }
+    ],
+    "model_opening": "I can cover the welcome desk from one until two thirty.",
+    "model_answer": "I can cover the welcome desk from one until two thirty. I have to leave then, so I can't stay until four. While I'm there, I can hand out the badges, mark who has arrived and tell late visitors where to go. Could the next volunteer come a few minutes before two thirty? I can show them the badge list and point out the two groups that meet in different rooms. If they can't get there early, I'll write down who has arrived and leave the list beside the badges. Then they can start without having to check all the names again.",
+    "sort_order": 374
+  },
+  "children": []
+}

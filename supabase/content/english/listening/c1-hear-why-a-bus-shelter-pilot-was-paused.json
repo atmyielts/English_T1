@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c1-hear-why-a-bus-shelter-pilot-was-paused",
+    "title": "Hear why a bus shelter pilot was paused",
+    "level": "C1",
+    "summary": "A planning interview separates a design decision from an incomplete evaluation.",
+    "transcript_text": "Host: The shelter pilot seems to have failed. Two stops have already gone back to their old layouts.\nPlanner: Those stops were chosen because they flood. Then a nearby road closure doubled the number of buses turning past them. Drivers had trouble seeing through the new side panel after dark.\nHost: Would a clear panel solve that?\nPlanner: It might. A clear panel produces glare under some streetlights. We have built a full-sized model so drivers and wheelchair users can try alternatives under controlled lighting. After that, we'll take the most promising version back to a stop. I also want to test it on a road that hasn't been affected by the closure.\nHost: So taking out the panels was one decision. The final design is still open.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 51,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "community",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Host",
+        "Planner"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What distinction does the planner make?",
+        "options": [
+          "An immediate removal differs from a final design decision",
+          "Only flooded sites should ever be tested",
+          "A mock-up can replace every field test",
+          "An interim solution always becomes permanent"
+        ],
+        "answer_index": 0,
+        "explanation": "The panels came out, but the planner is still investigating designs.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "How did the road closure complicate interpretation?",
+        "options": [
+          "It disconnected the shelter lights",
+          "It made the drivers avoid both routes",
+          "It flooded the trial sites directly",
+          "It changed the traffic going past the shelters"
+        ],
+        "answer_index": 3,
+        "explanation": "The closure increased turning traffic.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What risk comes with a transparent panel?",
+        "options": [
+          "Reduced visibility in all conditions",
+          "No driver can see through it at all",
+          "Light reflections in some conditions",
+          "It floods before the opaque version"
+        ],
+        "answer_index": 2,
+        "explanation": "The planner identifies glare as a conditional issue.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why use the full-sized model?",
+        "options": [
+          "It makes field sites unnecessary",
+          "Users can compare options under controlled lighting",
+          "It removes the need to ask drivers",
+          "It guarantees flood resistance"
+        ],
+        "answer_index": 1,
+        "explanation": "The model lets users test alternatives under deliberately set conditions.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why test beyond the affected road?",
+        "options": [
+          "To separate some traffic effects from layout effects",
+          "To avoid evaluating turning buses",
+          "To make the different panels impossible to compare",
+          "To prove changes always improve safety"
+        ],
+        "answer_index": 0,
+        "explanation": "A second site reduces the influence of the unusual diversion.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "doubled the number of buses turning past them",
+      "focus_phrase": "turning past them",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "produces glare under some streetlights",
+      "focus_phrase": "under some streetlights",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "under controlled lighting",
+      "focus_phrase": "under controlled lighting",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

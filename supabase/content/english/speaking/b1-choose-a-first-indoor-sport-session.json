@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "b1-choose-a-first-indoor-sport-session",
+    "title": "Recommend a First Session for a Beginner",
+    "level": "B1",
+    "prompt_text": "A friend wants to try an indoor sport but is worried about slowing other players down. The centre offers a 30-minute lesson with basic equipment included and a longer open session where players bring their own equipment. Recommend one option, explain who might prefer the other, and suggest a useful question for the friend to ask.",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 66,
+    "target_grammar": "Comparatives and conditionals. Use would recommend and could ask.",
+    "fluency_objective": "State your recommendation early. Give a different reason for the other session rather than repeating the first one.",
+    "pronunciation_objective": "Stress lesson and open session each time you switch between them.",
+    "target_vocabulary": [
+      "beginner",
+      "equipment",
+      "open session",
+      "practice",
+      "included"
+    ],
+    "cues": [
+      {
+        "text": "Choose a session and give a reason for a beginner.",
+        "keywords": [
+          "lesson",
+          "equipment included",
+          "beginner",
+          "start with"
+        ]
+      },
+      {
+        "text": "Explain who might prefer the other option.",
+        "keywords": [
+          "open session",
+          "already knows",
+          "own equipment"
+        ]
+      },
+      {
+        "text": "Give one useful thing to ask the centre.",
+        "keywords": [
+          "ask whether",
+          "could ask",
+          "is there time",
+          "could i ask"
+        ]
+      }
+    ],
+    "model_opening": "I'd start with the thirty-minute lesson.",
+    "model_answer": "I'd start with the thirty-minute lesson. You can try the basic moves with an instructor, and the equipment is included. That gives you a little time to get used to the room before you play with people you don't know. The open session could suit someone who already knows the rules and owns the equipment. They might want more time to play without stopping after each move. Before you book, I would ask whether the instructor pairs beginners together for the first practice. If everybody is learning the same move, you are less likely to feel you are slowing someone else down.",
+    "sort_order": 376
+  },
+  "children": []
+}

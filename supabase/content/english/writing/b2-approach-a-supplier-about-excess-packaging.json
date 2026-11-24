@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "b2-approach-a-supplier-about-excess-packaging",
+    "title": "Ask a Supplier to Test Less Packaging",
+    "level": "B2",
+    "prompt_text": "Your group receives 20 small parts each month. They arrive intact but each has a separate outer box. Your group wants to try six parts in one larger box with dividers. Write to the supplier. Explain what should stay the same, propose the limited trial, and say how to check whether it works.",
+    "genre": "business email",
+    "audience": "a supplier who sends parts to a makers' group",
+    "target_grammar": "Polite requests, conditionals and comparisons. Use passive forms to describe packaging.",
+    "target_structure": "Start with the benefit of current packing, specify the trial and checks, then ask for a decision.",
+    "target_vocabulary": [
+      "divider",
+      "outer box",
+      "intact",
+      "trial shipment",
+      "packing",
+      "check"
+    ],
+    "expected_length_min": 146,
+    "expected_length_max": 216,
+    "checklist": [
+      {
+        "point": "Explain what works well in the present packing.",
+        "keywords": [
+          "arrive intact",
+          "protected",
+          "current",
+          "no damage"
+        ]
+      },
+      {
+        "point": "Specify the size and method for the trial.",
+        "keywords": [
+          "six parts",
+          "larger box",
+          "dividers"
+        ]
+      },
+      {
+        "point": "Explain what you would check on arrival.",
+        "keywords": [
+          "check",
+          "damage",
+          "shifted",
+          "before opening"
+        ]
+      },
+      {
+        "point": "Ask how the supplier would agree or change the proposal.",
+        "keywords": [
+          "could you",
+          "let us know",
+          "what changes",
+          "next shipment"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    },
+    "sort_order": 396
+  },
+  "children": []
+}

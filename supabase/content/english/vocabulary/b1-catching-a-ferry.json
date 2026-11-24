@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Catching a Ferry",
+    "description": "Read ferry announcements and signs to find out when the ferry leaves, where to wait, and how to get on and off.",
+    "slug": "b1-catching-a-ferry",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 370,
+    "topic": "ferry journeys"
+  },
+  "children": [
+    {
+      "word": "ferry terminal",
+      "part_of_speech": "noun",
+      "definition": "The whole place on land where people start or finish a trip by ferry, including the buildings and waiting areas.",
+      "example": "The north ferry terminal has a separate entrance for cars.",
+      "translation_ru": "паромный терминал",
+      "translation_uz": "parom terminali",
+      "collocations": [
+        "the main ferry terminal",
+        "the ferry terminal entrance"
+      ]
+    },
+    {
+      "word": "crossing",
+      "part_of_speech": "noun",
+      "definition": "A trip by boat from one side of a river, lake or sea to the other.",
+      "example": "The crossing takes 35 minutes from the mainland to the island.",
+      "translation_ru": "переправа",
+      "translation_uz": "kema yoki qayiqda suvning bir tomonidan ikkinchi tomoniga borish safari",
+      "collocations": [
+        "a short crossing",
+        "a rough crossing"
+      ]
+    },
+    {
+      "word": "embark",
+      "part_of_speech": "verb",
+      "definition": "To get onto a ship at the start of a trip.",
+      "example": "Please have your ticket ready before you embark at Pier 2.",
+      "translation_ru": "садиться на судно",
+      "translation_uz": "kemaga chiqmoq",
+      "collocations": [
+        "embark at the port",
+        "embark in small groups"
+      ]
+    },
+    {
+      "word": "disembark",
+      "part_of_speech": "verb",
+      "definition": "To get off a ship after it stops.",
+      "example": "Please wait until the ferry has stopped completely before you disembark.",
+      "translation_ru": "сходить с судна",
+      "translation_uz": "kemadan tushmoq",
+      "collocations": [
+        "disembark at the next stop",
+        "disembark first"
+      ]
+    },
+    {
+      "word": "holding lane",
+      "part_of_speech": "noun",
+      "definition": "A marked lane where drivers line up and wait before driving onto a ferry.",
+      "example": "After the ticket check, pull into holding lane 3 and wait for a signal from the crew.",
+      "translation_ru": "полоса ожидания для автомобилей",
+      "translation_uz": "avtomobillar uchun kutish yoʻlagi",
+      "collocations": [
+        "enter the holding lane",
+        "wait in the holding lane"
+      ]
+    },
+    {
+      "word": "waiting hall",
+      "part_of_speech": "noun",
+      "definition": "A large indoor room where people can sit until it is time to get on a ferry.",
+      "example": "Please stay in the waiting hall until staff call passengers travelling without a car.",
+      "translation_ru": "зал ожидания",
+      "translation_uz": "kutish zali",
+      "collocations": [
+        "a crowded waiting hall",
+        "wait in the waiting hall"
+      ]
+    },
+    {
+      "word": "vehicle deck",
+      "part_of_speech": "noun",
+      "definition": "The deck of a ferry where cars, vans and trucks are parked during the trip.",
+      "example": "The crew will tell you when you can go down to the vehicle deck to collect your car.",
+      "translation_ru": "автомобильная палуба",
+      "translation_uz": "avtomobillar uchun paluba",
+      "collocations": [
+        "access to the vehicle deck",
+        "park on the vehicle deck"
+      ]
+    },
+    {
+      "word": "service notice",
+      "part_of_speech": "noun",
+      "definition": "A short written message from the ferry company about a change that affects passengers.",
+      "example": "A service notice on the terminal screen says the island ferry will leave 20 minutes late.",
+      "translation_ru": "уведомление об изменениях в движении паромов",
+      "translation_uz": "parom qatnovidagi oʻzgarishlar haqida xabarnoma",
+      "collocations": [
+        "post a service notice",
+        "read the latest service notice"
+      ]
+    },
+    {
+      "word": "cancelled",
+      "part_of_speech": "adjective",
+      "definition": "Used when a planned trip will no longer take place.",
+      "example": "The 10:30 ferry is cancelled, so please check the screen for the next departure.",
+      "translation_ru": "отменённый",
+      "translation_uz": "bekor qilingan",
+      "collocations": [
+        "a cancelled sailing",
+        "a cancelled ferry service"
+      ]
+    },
+    {
+      "word": "pier",
+      "part_of_speech": "noun",
+      "definition": "A fixed structure that extends from the shore over the water and has space for people to walk on it.",
+      "example": "Follow the signs to the end of the pier, where the island ferry picks up passengers.",
+      "translation_ru": "пирс",
+      "translation_uz": "qirgʻoqdan suv ustiga choʻzilgan, odamlar ustida yura oladigan inshoot",
+      "collocations": [
+        "walk along the pier",
+        "the end of the pier"
+      ]
+    },
+    {
+      "word": "berth",
+      "part_of_speech": "noun",
+      "definition": "The exact spot in a port where a ship stops and is tied in place.",
+      "example": "Keep waiting by the terminal doors until the ferry is tied up at berth 4.",
+      "translation_ru": "место швартовки",
+      "translation_uz": "kema bogʻlanadigan joy",
+      "collocations": [
+        "an empty berth",
+        "tie up at a berth"
+      ]
+    },
+    {
+      "word": "ramp",
+      "part_of_speech": "noun",
+      "definition": "A sloping surface that cars and trucks use to drive onto or off a ferry.",
+      "example": "Wait for the green light before driving down the ramp and onto the ferry.",
+      "translation_ru": "аппарель для въезда транспорта на паром и съезда с него",
+      "translation_uz": "transport vositalari paromga chiqib-tushadigan qiya yoʻlak",
+      "collocations": [
+        "lower the ramp",
+        "drive up the ramp"
+      ]
+    },
+    {
+      "word": "gangway",
+      "part_of_speech": "noun",
+      "definition": "A narrow walkway put in place so people can walk between the shore and a ship.",
+      "example": "When a crew member waves you forward, walk across the gangway and into the ferry.",
+      "translation_ru": "пассажирский трап",
+      "translation_uz": "yoʻlovchilar kemaga chiqib-tushadigan tor yoʻlak",
+      "collocations": [
+        "cross the gangway",
+        "step onto the gangway"
+      ]
+    },
+    {
+      "word": "last sailing",
+      "part_of_speech": "noun",
+      "definition": "The final ferry departure on a particular route that day.",
+      "example": "The last sailing to the mainland leaves at 9 p.m. tonight.",
+      "translation_ru": "последний рейс парома за день",
+      "translation_uz": "kunning soʻnggi parom qatnovi",
+      "collocations": [
+        "catch the last sailing",
+        "the last sailing of the day"
+      ]
+    }
+  ]
+}

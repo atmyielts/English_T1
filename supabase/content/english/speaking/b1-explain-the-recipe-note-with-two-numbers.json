@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "b1-explain-the-recipe-note-with-two-numbers",
+    "title": "Clear Up a Confusing Recipe Note",
+    "level": "B1",
+    "prompt_text": "You and a friend are making a shared shopping list. An old recipe note says '2 onions' at the top and '1 onion' near the end. You have made the dish before and remember using one onion for the filling and one for a side salad. Explain the two numbers and tell your friend how to write a clear shopping note.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 67,
+    "target_grammar": "Reported information, relative clauses and one for each purpose.",
+    "fluency_objective": "Start with what caused the confusion. Explain both uses, then say the buying instruction in one breath.",
+    "pronunciation_objective": "Stress one for the filling and one for the salad as two parts of a single total.",
+    "target_vocabulary": [
+      "recipe note",
+      "filling",
+      "side salad",
+      "two in all",
+      "shopping list"
+    ],
+    "cues": [
+      {
+        "text": "State the difference between the two numbers.",
+        "keywords": [
+          "two onions",
+          "one onion",
+          "old note"
+        ]
+      },
+      {
+        "text": "Say where each onion is used.",
+        "keywords": [
+          "filling",
+          "side salad"
+        ]
+      },
+      {
+        "text": "Suggest clearer shopping-list wording.",
+        "keywords": [
+          "write",
+          "two in all",
+          "two altogether",
+          "one for"
+        ]
+      }
+    ],
+    "model_opening": "The old note says two onions at the top because that is the total.",
+    "model_answer": "The old note says two onions at the top because that is the total. The line near the end is about the side salad. It means you need one onion for that part. The other one goes into the filling before you cook it. I made the dish last month and had the same question when I got to the end of the page. On the new shopping list, I'd write 'two onions in all, one for the filling and one for the side salad.' You can underline the total so you see how many to buy before you read the steps.",
+    "sort_order": 373
+  },
+  "children": []
+}

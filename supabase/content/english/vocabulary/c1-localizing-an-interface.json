@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Localizing an Interface",
+    "description": "Follow the team behind a fictional equipment reservation portal as they translate interface text, check regional formats, and test how the translations appear.",
+    "slug": "c1-localizing-an-interface",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 360,
+    "topic": "interface localization"
+  },
+  "children": [
+    {
+      "word": "string freeze",
+      "part_of_speech": "noun phrase",
+      "definition": "A point in the development schedule after which the original interface text is kept stable so translators can finish their work.",
+      "example": "The team scheduled a string freeze for Friday so translators could finish the portal’s interface text without having to redo translations after source edits.",
+      "translation_ru": "заморозка исходных строк интерфейса",
+      "translation_uz": "interfeysning asl matniga oʻzgartirish kiritish toʻxtatiladigan bosqich",
+      "collocations": [
+        "schedule a string freeze",
+        "postpone a string freeze"
+      ]
+    },
+    {
+      "word": "placeholder",
+      "part_of_speech": "noun",
+      "definition": "A marker embedded in a piece of interface text that the software substitutes with a value when it displays the text.",
+      "example": "In “Collect from {location}”, the translator moved the placeholder to the beginning because the pickup location needed to come first in the translated instruction.",
+      "translation_ru": "маркер подстановки",
+      "translation_uz": "oʻrniga qiymat qoʻyiladigan belgi",
+      "collocations": [
+        "preserve a placeholder",
+        "reposition a placeholder"
+      ]
+    },
+    {
+      "word": "locale",
+      "part_of_speech": "noun",
+      "definition": "A software setting that identifies a language and, where relevant, a region, so the interface can apply the appropriate linguistic and formatting conventions.",
+      "example": "The tester switched the portal to the UK English locale and checked that the collection date appeared with the day before the month.",
+      "translation_ru": "языковые и региональные настройки",
+      "translation_uz": "til va hudud sozlamasi",
+      "collocations": [
+        "select a locale",
+        "detect the user's locale"
+      ]
+    },
+    {
+      "word": "fallback translation",
+      "part_of_speech": "noun phrase",
+      "definition": "Text from another language or regional variant that the software displays when the requested version is missing.",
+      "example": "When a help string is missing in Canadian French, the portal displays the French (France) version as a fallback translation.",
+      "translation_ru": "резервный вариант перевода",
+      "translation_uz": "zaxira tarjima",
+      "collocations": [
+        "display a fallback translation",
+        "use a fallback translation"
+      ]
+    },
+    {
+      "word": "text expansion",
+      "part_of_speech": "noun phrase",
+      "definition": "The increase in length that occurs when a translation needs more space than the original wording.",
+      "example": "The designer allowed for text expansion in the reservation buttons because the German action phrases were longer than the English ones.",
+      "translation_ru": "увеличение длины текста при переводе",
+      "translation_uz": "tarjimada matnning uzayishi",
+      "collocations": [
+        "allow for text expansion",
+        "measure text expansion"
+      ]
+    },
+    {
+      "word": "glossary term",
+      "part_of_speech": "noun phrase",
+      "definition": "A word or expression recorded in a project’s vocabulary list with its intended meaning or preferred translation.",
+      "example": "The linguist added ‘collection point’ as a glossary term and specified that it meant the counter where users pick up reserved equipment.",
+      "translation_ru": "термин в глоссарии",
+      "translation_uz": "lugʻatga kiritilgan atama",
+      "collocations": [
+        "approve a glossary term",
+        "look up a glossary term"
+      ]
+    },
+    {
+      "word": "translator note",
+      "part_of_speech": "noun phrase",
+      "definition": "An instruction or explanation attached to a piece of interface text to help the person rendering it in another language.",
+      "example": "The writer added a translator note explaining that ‘Hold’ was an action that temporarily reserved equipment.",
+      "translation_ru": "примечание для переводчика",
+      "translation_uz": "tarjimon uchun izoh",
+      "collocations": [
+        "add a translator note",
+        "consult a translator note"
+      ]
+    },
+    {
+      "word": "in-context preview",
+      "part_of_speech": "noun phrase",
+      "definition": "A view that shows translated wording in its intended position within the interface before users see it.",
+      "example": "The in-context preview showed that ‘Reserve’ appeared on a button beneath the equipment details, so the linguist chose a verb in the translation.",
+      "translation_ru": "предварительный просмотр перевода в интерфейсе",
+      "translation_uz": "tarjimaning interfeysda qanday koʻrinishini oldindan koʻrish",
+      "collocations": [
+        "generate an in-context preview",
+        "inspect an in-context preview"
+      ]
+    },
+    {
+      "word": "plural rule",
+      "part_of_speech": "noun phrase",
+      "definition": "A language-specific convention that determines which grammatical form a phrase takes for a given quantity.",
+      "example": "The Polish plural rule made the portal display ‘2 urządzenia’ for two devices and ‘5 urządzeń’ for five.",
+      "translation_ru": "правило выбора грамматической формы в зависимости от количества",
+      "translation_uz": "songa qarab grammatik shaklni tanlash qoidasi",
+      "collocations": [
+        "apply a plural rule",
+        "test a plural rule"
+      ]
+    },
+    {
+      "word": "terminology consistency",
+      "part_of_speech": "noun phrase",
+      "definition": "The practice of using the same agreed expression for a given concept wherever it occurs in a product.",
+      "example": "To maintain terminology consistency, the linguist used the same translation of ‘reservation’ in the confirmation and on the cancellation button.",
+      "translation_ru": "единообразие терминологии",
+      "translation_uz": "atamalarning bir xil qoʻllanishi",
+      "collocations": [
+        "maintain terminology consistency",
+        "check terminology consistency"
+      ]
+    },
+    {
+      "word": "truncation",
+      "part_of_speech": "noun",
+      "definition": "The loss of part of the displayed text when the interface cuts it off to fit the space provided.",
+      "example": "On the narrow layout, truncation hid the word ‘tomorrow’ at the end of the translated pickup reminder.",
+      "translation_ru": "обрезка текста",
+      "translation_uz": "matnning kesilib qolishi",
+      "collocations": [
+        "prevent truncation",
+        "check for truncation"
+      ]
+    },
+    {
+      "word": "date format",
+      "part_of_speech": "noun phrase",
+      "definition": "A convention for presenting a calendar day, including the sequence of its components and how they are written or separated.",
+      "example": "To check the UK date format, the tester entered 6 April and confirmed that the portal displayed it as 06/04, with the day before the month.",
+      "translation_ru": "формат даты",
+      "translation_uz": "sana formati",
+      "collocations": [
+        "specify a date format",
+        "use a numeric date format"
+      ]
+    },
+    {
+      "word": "locale-specific",
+      "part_of_speech": "adjective",
+      "definition": "Adapted to the conventions associated with a particular language or regional variant.",
+      "example": "The portal uses locale-specific number formatting to display the deposit as 25.50 in UK English and 25,50 in French.",
+      "translation_ru": "учитывающий языковые и региональные нормы",
+      "translation_uz": "muayyan til yoki hudud meʼyorlariga mos",
+      "collocations": [
+        "locale-specific number formatting",
+        "locale-specific punctuation"
+      ]
+    },
+    {
+      "word": "neutral wording",
+      "part_of_speech": "noun phrase",
+      "definition": "Language that presents a situation without assigning blame or expressing judgement.",
+      "example": "The linguist chose neutral wording for the failed extension and wrote ‘This reservation could not be extended’ in the portal.",
+      "translation_ru": "нейтральная формулировка",
+      "translation_uz": "xolis ifoda",
+      "collocations": [
+        "choose neutral wording",
+        "use neutral wording in an error prompt"
+      ]
+    }
+  ]
+}

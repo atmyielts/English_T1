@@ -1,27 +1,29 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-hub-practice-wave-two",
+  "releaseId": "english-hub-long-course",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
-  "migrations": ["20261124154000_english_hub_practice_wave2.sql"],
+  "migrations": [
+    "20261124165000_english_hub_long_course.sql"
+  ],
   "edgeFunctions": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261124154000_english_hub_practice_wave2.sql",
-    "content:private-authored-writing-models-wave-two",
-    "verify:english-hub-catalogue"
+    "migration:20261124165000_english_hub_long_course.sql",
+    "content:private-authored-writing-models-long-course",
+    "verify:english-hub-long-course"
   ],
   "manualFollowUps": [
-    "Dry-run supabase db push --linked with only the English Hub release migration pending. Apply the migration and the checksum-verified private Writing model cache seed. This release reuses the existing learner apps and Writing model route."
+    "Dry-run supabase db push --linked and apply only the English Hub content migration with the checksum-verified private cache seed for the 36 new Writing model responses."
   ],
   "verification": [
-    "Verify that the learner catalogues contain 48 new activities across all seven skills and all six CEFR levels.",
-    "Verify that the six new Writing prompts have private model records and the existing model route requires a first submission.",
-    "Verify that the new English Hub Listening activities use existing browser playback."
+    "Verify the learner catalogues include all 251 new activities across all 42 skill-and-level combinations.",
+    "Measure the loaded catalogue at every level and verify at least 1,000 native estimated minutes per level.",
+    "Open activities from all seven skills using an authenticated learner, verify browser-voice Listening, and verify Writing models require a submitted response."
   ],
   "rollback": {
-    "content": "Archive the release-specific activities through English Content Studio and retain saved attempts and corresponding Writing models."
+    "content": "Archive the activities identified by this migration in English Content Studio while retaining learner progress and Writing models."
   }
 }

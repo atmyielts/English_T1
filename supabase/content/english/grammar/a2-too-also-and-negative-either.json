@@ -1,0 +1,174 @@
+{
+  "item": {
+    "title": "Too, also and negative either in shared lunch plans",
+    "explanation_text": "When friends plan a lunch together, they often have the same idea or add another job to the list. Use too at the end of a positive sentence to show that something is true for another person or that someone plans to do one more thing. For example, “I can bring bread.” “I can bring bread too.” Here, too means “as well.” In “The soup is too hot,” too has a different meaning. This lesson is about adding information.\n\nIn a simple affirmative sentence with an ordinary main verb, put also before that verb: “We also need cups.” With can, put also after can: “We can also bring cups.” With am, is or are as the main verb, put also after it, as in “The small table is also free.” To agree with a negative statement or add another negative point, use either at the end. For example, “I don’t need a fork.” “I don’t need one either.” The second sentence still needs a negative word such as don’t.",
+    "contrast_text": "“I want soup too” and “I also want soup” add a positive point. “I don’t want soup either” adds a negative point. “The soup is too salty” means it has more salt than you want.",
+    "common_error_pattern": "In these basic patterns, learners may put also before am, is or are, use too to agree with a negative statement, or use either without keeping the second statement negative.",
+    "tags": [
+      "A2",
+      "addition",
+      "adverb-position",
+      "negative-agreement",
+      "shared-lunch"
+    ],
+    "examples": [
+      {
+        "bad": "I want a slice of too bread.",
+        "good": "I want a slice of bread too."
+      },
+      {
+        "bad": "We need to bring a serving also spoon.",
+        "good": "We also need to bring a serving spoon."
+      },
+      {
+        "bad": "The back room is free. The front also room is free.",
+        "good": "The back room is free. The front room is also free."
+      },
+      {
+        "bad": "Context: Both people want to skip dessert. “I don’t want dessert.” “I want dessert too.”",
+        "good": "“I don’t want dessert.” “I don’t want dessert either.”"
+      }
+    ],
+    "slug": "a2-too-also-and-negative-either",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 400,
+    "focus_area": "addition-too-also-either"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Join the bread plan",
+      "instructions": "Finish the positive reply with too.",
+      "prompt_text": "Amir: “I’m bringing bread.” Jo: “I’m bringing bread ___.”",
+      "accepted_answers": [
+        "too"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Add something to the shopping list",
+      "instructions": "Use also before the main verb to add a second item.",
+      "prompt_text": "We need carrots for the soup. We ___ need onions.",
+      "accepted_answers": [
+        "also"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Name a second place to sit",
+      "instructions": "Complete the pattern is + also + adjective.",
+      "prompt_text": "The bench is free. The table by the window is ___ free.",
+      "accepted_answers": [
+        "also"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Agree about the drink order",
+      "instructions": "Finish the negative reply with either.",
+      "prompt_text": "Mina: “I don’t want cola with lunch.” Ben: “I don’t want cola ___.”",
+      "accepted_answers": [
+        "either"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the note about the oven",
+      "instructions": "Fill in the negative form of need. You can use the full form or the contraction. The note says that both dishes are ready to serve cold.",
+      "prompt_text": "The pasta salad doesn’t need heating. The bean salad ___ heating either.",
+      "accepted_answers": [
+        "does not need",
+        "doesn't need"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the note about setting the table",
+      "instructions": "Move also before the main verb. Keep all the words and write only the corrected sentence.",
+      "prompt_text": "We put out plates. We put also out napkins.",
+      "accepted_answers": [
+        "We also put out napkins."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the reply about getting to lunch",
+      "instructions": "Both people are walking. Replace one word in the reply so it adds a negative point. Write only the corrected reply.",
+      "prompt_text": "Eva: “I’m not taking the bus.” Dan: “I’m not taking the bus too.”",
+      "accepted_answers": [
+        "I’m not taking the bus either."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Add your name to the fruit plan",
+      "instructions": "Say you have the same plan. Start with “I plan to”, use “bring apples” and end with too.",
+      "prompt_text": "Nora plans to bring apples.",
+      "accepted_answers": [
+        "I plan to bring apples too."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "List a second dish for vegetarians",
+      "instructions": "Begin with “The rice salad is”. Put also immediately after is and use vegetarian as the adjective.",
+      "prompt_text": "Pasta salad: vegetarian. Rice salad: vegetarian.",
+      "accepted_answers": [
+        "The rice salad is also vegetarian."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Add a second reason to eat indoors",
+      "instructions": "Rewrite the note about the garden. Start with “The garden”, use “is not” or “isn't” before dry, and end with either.",
+      "prompt_text": "The ground on the terrace isn’t dry. Garden note: wet ground.",
+      "accepted_answers": [
+        "The garden is not dry either.",
+        "The garden isn't dry either."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Offer to help with the dishes",
+      "instructions": "Someone has offered to wash the bowls. Put the tiles in order to make the same offer. Start with “I can” and put too at the end.",
+      "prompt_text": "wash / too / I / the bowls / can",
+      "accepted_answers": [
+        "I can wash the bowls too."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Check the room before lunch",
+      "instructions": "The kitchen is closed. Use all the tiles to say the lunch room is closed as well. Start with “The lunch room” and end with either.",
+      "prompt_text": "open / either / The lunch room / isn't",
+      "accepted_answers": [
+        "The lunch room isn't open either."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.addition-too-also-either"
+    }
+  ]
+}

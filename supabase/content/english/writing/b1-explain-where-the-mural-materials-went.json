@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "b1-explain-where-the-mural-materials-went",
+    "title": "Write an Update for Mural Volunteers",
+    "level": "B1",
+    "prompt_text": "Your team stored all the mural supplies in one cupboard last week. The brushes are now in the small box at the front desk. The sealed paint is still in the cupboard and a group leader must collect it. Write an update explaining the change, what people should bring themselves, and what to do if they arrive before the leader.",
+    "genre": "project update",
+    "audience": "volunteers arriving for a mural session",
+    "target_grammar": "Present simple for current locations, past simple for the change, and if for early arrivals.",
+    "target_structure": "Distinguish the two supplies, specify what to bring, and give early arrivals a useful task.",
+    "target_vocabulary": [
+      "brushes",
+      "front desk",
+      "cupboard",
+      "leader",
+      "sketch"
+    ],
+    "expected_length_min": 97,
+    "expected_length_max": 146,
+    "checklist": [
+      {
+        "point": "Say where the brushes and paint are now.",
+        "keywords": [
+          "front desk",
+          "brushes",
+          "paint",
+          "cupboard"
+        ]
+      },
+      {
+        "point": "Say what volunteers should bring.",
+        "keywords": [
+          "bring",
+          "sketch",
+          "apron"
+        ]
+      },
+      {
+        "point": "Give a permitted step for someone arriving before the leader.",
+        "keywords": [
+          "arrive early",
+          "wait for",
+          "before the leader",
+          "label the brushes"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    },
+    "sort_order": 352
+  },
+  "children": []
+}

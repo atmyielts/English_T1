@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a2-the-game-with-no-winner",
+    "title": "The Game with No Winner",
+    "level": "A2",
+    "summary": "A games club changes the rules so that players have to help one another.",
+    "content_markdown": "In River Words, the players help a paper boat move across a table. Draw six circles in a row and put the boat on the first one. Write the names of six things you can find in a kitchen on cards. Put the cards in a bag, so that nobody can see the words.\n\nOn your turn, take out a card and describe the thing without saying its name. If your card says “spoon”, you can say, “I use it to eat soup.” The other players have thirty seconds to guess. A correct guess moves the boat one circle. If the time ends before anyone guesses, put the card under the bag and leave the boat where it is. The next person takes a new card.\n\nYou all finish when the boat reaches the last circle. If there are no cards left and the boat is still in the middle, read out the words that nobody guessed. Together, think of one better clue for each. Then put those cards back in the bag and try again.",
+    "category": "Community",
+    "theme": "cooperative guessing game",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "club rules",
+      "word_count": 176
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is unusual about this game?",
+        "options": [
+          "A player can stop the game by hiding the boat.",
+          "The group tries to finish together rather than beat another player.",
+          "Players have to carry bowls across a room.",
+          "The last person to take a card is the winner."
+        ],
+        "answer_index": 1,
+        "explanation": "Everyone works to move the same boat, and the group thinks of better clues together."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "When does the boat move?",
+        "options": [
+          "When a player takes a card",
+          "When a player reads a word aloud",
+          "When someone guesses the word correctly",
+          "When thirty seconds are over"
+        ],
+        "answer_index": 2,
+        "explanation": "A correct guess moves the boat one circle."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What should happen if nobody guesses “cup” in thirty seconds?",
+        "options": [
+          "Move the boat one circle back.",
+          "Show all the cards to the group.",
+          "Ask the same player for another clue.",
+          "Put the card under the bag and keep the boat in place."
+        ],
+        "answer_index": 3,
+        "explanation": "The second paragraph says to leave the boat where it is and set aside the unguessed card."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “a better clue” mean in the last paragraph?",
+        "options": [
+          "A more helpful description",
+          "A faster way to move a card",
+          "A new name for the boat",
+          "An easier word to write down"
+        ],
+        "answer_index": 0,
+        "explanation": "They try to describe the unguessed thing in a way that makes it easier to recognise."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Players can give the name of the thing as part of their description.",
+        "answer": "false",
+        "explanation": "They describe the thing without saying its name."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The same cards can be used again after the group thinks of better clues.",
+        "answer": "true",
+        "explanation": "The last paragraph tells them to return the unguessed cards and try again."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The instructions give a maximum number of players.",
+        "answer": "not_given",
+        "explanation": "They describe turns and materials, but no limit on the size of the group."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Write the kitchen names on ___. A correct guess moves the boat one ___.",
+        "answers": [
+          [
+            "cards"
+          ],
+          [
+            "circle"
+          ]
+        ],
+        "word_bank": [
+          "table",
+          "circle",
+          "cards",
+          "bag"
+        ],
+        "explanation": "Kitchen names go on cards, and each correct guess advances the boat one circle."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "What to do when the first attempt finishes",
+          "Setting up the boat and words",
+          "How to take a turn",
+          "Choosing the fastest player"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The three paragraphs describe the setup, rules for a turn and what to do at the end."
+      }
+    ]
+  },
+  "children": []
+}

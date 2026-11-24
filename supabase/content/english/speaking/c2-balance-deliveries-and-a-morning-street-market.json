@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "c2-balance-deliveries-and-a-morning-street-market",
+    "title": "Mediate a Street Delivery Dispute",
+    "level": "C2",
+    "prompt_text": "A morning street market brings regular customers to a short road. Shops on the road say a new delivery window will be too early for suppliers. Market volunteers say later vans interrupt setup. Give a summary that represents both points fairly, identifies what can be tested, and proposes a temporary arrangement with a clear end condition.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 115,
+    "target_grammar": "Subtle attribution and conditional reasoning. Separate a proposal from a resolved agreement.",
+    "fluency_objective": "State both timetables before suggesting changes. Close with the result that would require another decision.",
+    "pronunciation_objective": "Use parallel phrasing for the two groups. Slow down when stating the temporary arrangement and its limits.",
+    "target_vocabulary": [
+      "delivery window",
+      "supplier",
+      "setup",
+      "trial",
+      "record",
+      "constraint"
+    ],
+    "cues": [
+      {
+        "text": "Represent both claims and explain why timing matters.",
+        "keywords": [
+          "suppliers",
+          "setup",
+          "later vans",
+          "delivery window"
+        ]
+      },
+      {
+        "text": "Separate what is known from what needs a test.",
+        "keywords": [
+          "we know",
+          "haven't confirmed",
+          "record",
+          "actual times"
+        ]
+      },
+      {
+        "text": "Propose a bounded trial with a route for exceptions.",
+        "keywords": [
+          "trial",
+          "two saturdays",
+          "exception",
+          "outside",
+          "agree"
+        ]
+      },
+      {
+        "text": "Explain how to decide when to end or revise the trial.",
+        "keywords": [
+          "end the trial",
+          "review",
+          "waiting time",
+          "if either",
+          "cancel"
+        ]
+      }
+    ],
+    "model_opening": "The shops need a delivery window their suppliers can actually meet.",
+    "model_answer": "The shops need a delivery window their suppliers can actually meet. The market volunteers need enough time to put out tables without moving them again when a van arrives. Those are separate problems. We know where the main conflict occurs, at the narrow section beside the first two stalls. We haven't confirmed that all deliveries need to come through there at the same time.\n\nFor two Saturdays, I would give vans a short window at the near end of the road before the first two tables are put out. The rest of the market could begin setting up away from that stretch. A shop with a delivery that cannot be moved should tell the coordinator by Friday. The coordinator could agree a different unloading point while keeping the original window visible to everyone else. I would publish the arrangement as a trial with those exact dates.\n\nRecord delivery arrival times and when the first two stalls are ready. Ask suppliers who could not make the window whether the problem is their whole route or only that stop. If the trial merely moves long delays from the stalls to the shops, end the trial and review the waiting area together. A permanent arrangement should require evidence that both activities can start reliably.",
+    "sort_order": 385
+  },
+  "children": []
+}

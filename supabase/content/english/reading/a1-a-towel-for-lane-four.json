@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-a-towel-for-lane-four",
+    "title": "A Towel for Lane Four",
+    "level": "A1",
+    "summary": "A swimming class notice shows what to bring and where to wait.",
+    "content_markdown": "Our Saturday swimming class starts at ten. Please come to the pool at a quarter to ten. Bring a towel and a bottle of water. You do not need to bring a ball. The teacher has three yellow balls in a bag.\n\nPut your shoes in a box by the main door. Keep your towel on the bench beside lane four. The other benches are for people in the earlier class. Their class finishes just before ours.\n\nPlease wait on the bench until the teacher calls your name. If you come after ten, ask at the front desk before you go to the pool. The teacher will tell you when you can join the group. When the lesson ends, you can use the shower by the big window. The shower by the door is closed today.",
+    "category": "Sport",
+    "theme": "beginner swimming lesson",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "arrival notice",
+      "word_count": 136
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What information does the notice give?",
+        "options": [
+          "What to do at a swimming class",
+          "How to buy a pool ticket online",
+          "How to ask for a new teacher",
+          "Where to watch an evening race"
+        ],
+        "answer_index": 0,
+        "explanation": "It lists what to bring, where to wait and what to do around the lesson."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "When does the class start?",
+        "options": [
+          "At nine",
+          "At a quarter to ten",
+          "At ten",
+          "At a quarter past ten"
+        ],
+        "answer_index": 2,
+        "explanation": "The opening sentence gives ten as the start."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Where should students leave their shoes?",
+        "options": [
+          "On the bench beside lane four",
+          "By the big window",
+          "At the front desk",
+          "In a box by the main door"
+        ],
+        "answer_index": 3,
+        "explanation": "The second paragraph puts shoes in a box by the main door."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What should a student who comes at ten past ten do first?",
+        "options": [
+          "Take a ball from the bag",
+          "Ask at the front desk",
+          "Go straight to the teacher",
+          "Wait by the shower"
+        ],
+        "answer_index": 1,
+        "explanation": "Anyone who comes after ten should ask at the front desk before going to the pool."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Students need to bring their own ball.",
+        "answer": "false",
+        "explanation": "The teacher already has three balls."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The bench beside lane four is for this class.",
+        "answer": "true",
+        "explanation": "The notice tells these students to put towels there."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The lesson is forty minutes long.",
+        "answer": "not_given",
+        "explanation": "The notice gives the start time but no length or finish time."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Keep your towel on the ___ beside lane four. After the lesson, use the shower by the big ___.",
+        "answers": [
+          [
+            "bench"
+          ],
+          [
+            "window"
+          ]
+        ],
+        "word_bank": [
+          "door",
+          "bench",
+          "bag",
+          "window"
+        ],
+        "explanation": "The second paragraph gives the towel place; the last gives the open shower."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "What to do beside and after the lesson",
+          "What to bring and when to come",
+          "Where to leave shoes and towels",
+          "What the tickets cost"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The paragraphs give arrival details, storage places and the rules beside the pool."
+      }
+    ]
+  },
+  "children": []
+}

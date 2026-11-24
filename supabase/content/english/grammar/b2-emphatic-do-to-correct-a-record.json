@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Emphatic do to correct a record",
+    "explanation_text": "Use do, does or did in an affirmative statement when you want to insist that a claim is true or correct someone’s assumption. If a teammate thinks you skipped the opening scene, you can say, “We did rehearse the opening scene.” In speech, stress did. The stress lets the listener hear that you are pushing back against the idea that the rehearsal did not happen.\n\nKeep the original subject and tense. In the present simple, use does with he, she, it or a singular name, and do with I, you, we or they. In the past simple, use did with any subject. Put the base form of the main verb after the auxiliary: “Mina does check” and “Mina did check.” In a yes/no question, the auxiliary comes before the subject: “Did Mina check the list?” An emphatic statement keeps the subject first: “Mina did check the list.”",
+    "contrast_text": "“They checked the props” states what happened. “They did check the props” stresses that it happened, for example when the activity log says the check was skipped. “Did they check the props?” asks whether it happened.",
+    "common_error_pattern": "Putting a past ending or third-person -s on the main verb after did or does. The auxiliary carries the tense and any subject agreement, so the main verb stays in its base form.",
+    "tags": [
+      "emphatic-do",
+      "affirmative-statements",
+      "correcting-assumptions",
+      "sentence-stress"
+    ],
+    "examples": [
+      {
+        "bad": "We did rehearsed the final scene.",
+        "good": "We did rehearse the final scene."
+      },
+      {
+        "bad": "Hana does checks the prop list before each rehearsal.",
+        "good": "Hana does check the prop list before each rehearsal."
+      },
+      {
+        "bad": "The dancers does warm up before practice.",
+        "good": "The dancers do warm up before practice."
+      },
+      {
+        "bad": "Did the crew test the lights? (A question when you mean to correct the claim that they skipped the test.)",
+        "good": "The crew did test the lights."
+      }
+    ],
+    "slug": "b2-emphatic-do-to-correct-a-record",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 400,
+    "focus_area": "emphatic-do"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Confirm the weekly upload",
+      "instructions": "Complete the reply in the present simple. Use emphatic do or does and the base form of upload. Write only the two missing words.",
+      "prompt_text": "A teammate says the team never uploads attendance. You reply, “We ___ the attendance sheet every Friday.”",
+      "accepted_answers": [
+        "do upload"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Correct the checklist note",
+      "instructions": "Add the emphatic auxiliary for the present simple. Enter only the missing word.",
+      "prompt_text": "The checklist says Leo never labels the spare cables. Correct the note: Leo ___ label the spare cables after every session.",
+      "accepted_answers": [
+        "does"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Back up a witness",
+      "instructions": "Complete the affirmative statement with emphatic do, does or did and the base form of count. Enter only the two missing words.",
+      "prompt_text": "Someone doubts that you counted the chairs before yesterday’s workshop. You reply, “I ___ the chairs before the workshop.”",
+      "accepted_answers": [
+        "did count"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Confirm the archive practice",
+      "instructions": "Keep the emphatic auxiliary and complete the statement with the correct form of store. Enter only the missing word.",
+      "prompt_text": "The coordinator assumes the volunteers throw away old sign-in sheets. A volunteer replies, “They do ___ the old sign-in sheets in the archive.”",
+      "accepted_answers": [
+        "store"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Confirm the regular handoff",
+      "instructions": "Add the emphatic auxiliary for the present simple. Enter only the missing word.",
+      "prompt_text": "Your partner thinks you never leave the studio key at reception. Set the record straight: I ___ leave the studio key at reception after each session.",
+      "accepted_answers": [
+        "do"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair the rehearsal recap",
+      "instructions": "The recap says the cast skipped the transition. Correct the verb form after did. Keep did and all other words.",
+      "prompt_text": "The cast did practised the transition on Monday.",
+      "accepted_answers": [
+        "The cast did practise the transition on Monday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix a reply to the stage manager",
+      "instructions": "The stage manager thinks Eva never brings the folder. Change both do and brings to the correct forms for an emphatic present-simple statement. Keep all other words.",
+      "prompt_text": "Eva do brings the prompt book to every rehearsal.",
+      "accepted_answers": [
+        "Eva does bring the prompt book to every rehearsal."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Correct a missing log entry",
+      "instructions": "The activity log says yesterday’s sound check was skipped. Rewrite the statement with emphatic did. Start with “Sam” and keep the time phrase at the end.",
+      "prompt_text": "Sam ran the sound check yesterday.",
+      "accepted_answers": [
+        "Sam did run the sound check yesterday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Defend a regular check",
+      "instructions": "A teammate says the crew never checks the batteries. Rewrite the statement with emphatic do. Start with “The technicians” and keep the rest of the wording in the same order.",
+      "prompt_text": "The technicians test the microphone batteries before each rehearsal.",
+      "accepted_answers": [
+        "The technicians do test the microphone batteries before each rehearsal."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a question into a correction",
+      "instructions": "A teammate assumes Nuri never marks the exits. Turn the question into an affirmative correction using emphatic does. Start with “Nuri” and keep all the other words.",
+      "prompt_text": "Does Nuri mark the exits on the floor plan?",
+      "accepted_answers": [
+        "Nuri does mark the exits on the floor plan."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Confirm the revised running order",
+      "instructions": "A performer thinks nobody received the revised running order. Use every tile once to make an emphatic affirmative statement. Start with “We” and end with “this morning”.",
+      "prompt_text": "the revised running order / this morning / did / We / share",
+      "accepted_answers": [
+        "We did share the revised running order this morning."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Correct the storage record",
+      "instructions": "The storage record says nobody returns the stands on Fridays. Use every tile once to make an emphatic affirmative statement. Start with “The assistant” and end with “on Fridays”.",
+      "prompt_text": "return / on Fridays / The assistant / the stands / does",
+      "accepted_answers": [
+        "The assistant does return the stands on Fridays."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.emphatic-do"
+    }
+  ]
+}

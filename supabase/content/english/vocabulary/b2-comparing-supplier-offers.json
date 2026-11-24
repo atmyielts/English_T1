@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Comparing Supplier Offers",
+    "description": "Compare two suppliers’ offers for clamps, sanding discs, and other supplies for a small furniture workshop.",
+    "slug": "b2-comparing-supplier-offers",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 390,
+    "topic": "supplier offers"
+  },
+  "children": [
+    {
+      "word": "itemized quote",
+      "part_of_speech": "noun phrase",
+      "definition": "A written price offer from a supplier that lists each product or service and its price separately.",
+      "example": "Maya asked for an itemized quote so she could compare what each supplier would charge for clamps, sanding discs, and delivery.",
+      "translation_ru": "коммерческое предложение с разбивкой по позициям",
+      "translation_uz": "har bir bandning narxi alohida koʻrsatilgan tijorat taklifi",
+      "collocations": [
+        "request an itemized quote",
+        "send an itemized quote"
+      ]
+    },
+    {
+      "word": "lead time",
+      "part_of_speech": "noun phrase",
+      "definition": "Here, the expected time between placing an order and receiving the goods.",
+      "example": "Birch Supply quoted a lead time of five working days for the clamps, which meant they could arrive before the workshop’s next production run.",
+      "translation_ru": "срок поставки с момента заказа",
+      "translation_uz": "buyurtma berishdan tovar yetib kelguncha oʻtadigan muddat",
+      "collocations": [
+        "a short lead time",
+        "confirm the lead time"
+      ]
+    },
+    {
+      "word": "minimum quantity",
+      "part_of_speech": "noun phrase",
+      "definition": "The smallest number of units a seller will let a buyer purchase at one time.",
+      "example": "Oak Supply had a minimum quantity of 50 sanding discs per purchase, but the workshop only needed 30.",
+      "translation_ru": "минимальное количество для заказа",
+      "translation_uz": "buyurtma uchun eng kam miqdor",
+      "collocations": [
+        "require a minimum quantity",
+        "meet the minimum quantity"
+      ]
+    },
+    {
+      "word": "delivery fee",
+      "part_of_speech": "noun phrase",
+      "definition": "An amount a supplier asks the buyer to pay for bringing goods to a specified location.",
+      "example": "Oak Supply added a delivery fee of £12 to bring the clamps and discs to the workshop.",
+      "translation_ru": "плата за доставку",
+      "translation_uz": "yetkazib berish haqi",
+      "collocations": [
+        "include a delivery fee",
+        "waive the delivery fee"
+      ]
+    },
+    {
+      "word": "per-unit cost",
+      "part_of_speech": "noun phrase",
+      "definition": "The amount the buyer pays for one piece of the goods being compared.",
+      "example": "Maya calculated the per-unit cost of the sanding discs because one supplier sold them in packs of ten and the other in packs of twenty.",
+      "translation_ru": "стоимость одной единицы товара",
+      "translation_uz": "bir dona tovarning narxi",
+      "collocations": [
+        "calculate the per-unit cost",
+        "a lower per-unit cost"
+      ]
+    },
+    {
+      "word": "warranty terms",
+      "part_of_speech": "plural noun phrase",
+      "definition": "The details of a promise to deal with certain product faults, including which problems are covered and for how long.",
+      "example": "Maya checked the warranty terms to see whether a clamp with a faulty spring could be repaired free of charge during its first year of use.",
+      "translation_ru": "условия гарантии",
+      "translation_uz": "kafolat shartlari",
+      "collocations": [
+        "check the warranty terms",
+        "standard warranty terms"
+      ]
+    },
+    {
+      "word": "specification",
+      "part_of_speech": "noun",
+      "definition": "A written description of the exact features a product must have, such as its dimensions or material.",
+      "example": "The workshop’s specification called for 125 mm sanding discs with eight holes to fit its existing sander.",
+      "translation_ru": "технические требования к изделию",
+      "translation_uz": "mahsulotga qoʻyiladigan texnik talablar",
+      "collocations": [
+        "meet the specification",
+        "a detailed specification"
+      ]
+    },
+    {
+      "word": "exchange policy",
+      "part_of_speech": "noun phrase",
+      "definition": "A seller’s rules about when and how a buyer can send back an item and get another one in its place.",
+      "example": "Oak Supply’s exchange policy allowed the workshop to send back unopened packs of the wrong grit and get packs of the correct grit within 14 days of receipt.",
+      "translation_ru": "правила обмена товара",
+      "translation_uz": "tovarni almashtirish qoidalari",
+      "collocations": [
+        "read the exchange policy",
+        "a 30-day exchange policy"
+      ]
+    },
+    {
+      "word": "stock status",
+      "part_of_speech": "noun phrase",
+      "definition": "Information showing whether a product is currently on hand and ready to sell.",
+      "example": "Maya checked the stock status of the clamps before comparing the quotes, and Oak Supply marked them as out of stock.",
+      "translation_ru": "наличие товара на складе",
+      "translation_uz": "tovarning omborda bor-yoʻqligi",
+      "collocations": [
+        "check the stock status",
+        "current stock status"
+      ]
+    },
+    {
+      "word": "volume pricing",
+      "part_of_speech": "noun phrase",
+      "definition": "A system in which the amount paid for each piece falls when the buyer purchases larger quantities.",
+      "example": "Birch Supply used volume pricing for sanding discs, so each disc cost less if the workshop bought 100 or more.",
+      "translation_ru": "цены в зависимости от объёма закупки",
+      "translation_uz": "xarid miqdoriga qarab narx belgilash",
+      "collocations": [
+        "offer volume pricing",
+        "qualify for volume pricing"
+      ]
+    },
+    {
+      "word": "firm offer",
+      "part_of_speech": "noun phrase",
+      "definition": "An offer that the supplier commits to honoring if the buyer accepts while the offer is valid.",
+      "example": "Birch Supply made a firm offer of £96 for twelve clamps, including delivery, and committed to that price if Maya accepted by Friday.",
+      "translation_ru": "твёрдое коммерческое предложение",
+      "translation_uz": "xaridor oʻz vaqtida qabul qilsa, yetkazib beruvchi koʻrsatilgan shartlarga amal qilish majburiyatini oladigan taklif",
+      "collocations": [
+        "make a firm offer",
+        "accept a firm offer"
+      ]
+    },
+    {
+      "word": "quote expiry",
+      "part_of_speech": "noun phrase",
+      "definition": "The point after which a supplier’s stated prices and other details no longer apply.",
+      "example": "Maya noted the quote expiry in the workshop’s comparison sheet because Birch Supply would hold its prices only until Friday afternoon.",
+      "translation_ru": "окончание срока действия коммерческого предложения",
+      "translation_uz": "tijorat taklifining amal qilish muddati tugashi",
+      "collocations": [
+        "check the quote expiry",
+        "quote expiry date"
+      ]
+    },
+    {
+      "word": "substitute item",
+      "part_of_speech": "noun phrase",
+      "definition": "A different product that can serve the same purpose as the one originally requested.",
+      "example": "When Oak Supply ran out of the requested discs, it offered a substitute item with the same diameter, grit, and hole pattern.",
+      "translation_ru": "товар на замену",
+      "translation_uz": "oʻrnini bosuvchi mahsulot",
+      "collocations": [
+        "offer a substitute item",
+        "approve a substitute item"
+      ]
+    },
+    {
+      "word": "settlement terms",
+      "part_of_speech": "plural noun phrase",
+      "definition": "The arrangements that specify when and how the buyer must pay the supplier.",
+      "example": "The settlement terms gave the workshop ten days from the invoice date to pay Birch Supply by bank transfer.",
+      "translation_ru": "условия расчётов",
+      "translation_uz": "toʻlov shartlari",
+      "collocations": [
+        "agree on settlement terms",
+        "state the settlement terms"
+      ]
+    }
+  ]
+}

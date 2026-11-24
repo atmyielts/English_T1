@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "c1-respond-to-a-review-of-an-exhibit-map",
+    "title": "Respond to Feedback on an Exhibit Map",
+    "level": "C1",
+    "prompt_text": "A colleague says your proposed museum map would be clearer if every room used the same symbol. You agree that several icons are confusing, but visitors need to tell rooms with seats from rooms without seats. Write a response that acknowledges the criticism, revises the proposal, and explains how feedback from someone seeing the map for the first time would influence what you keep.",
+    "genre": "response memo",
+    "audience": "a colleague who reviewed a museum orientation map",
+    "target_grammar": "Concession, conditional revisions and parallel language for comparing symbols.",
+    "target_structure": "Identify the useful part of the feedback, offer a revised system, and give a clear threshold for changing it again.",
+    "target_vocabulary": [
+      "symbol",
+      "legend",
+      "room label",
+      "seating",
+      "consistency",
+      "first-time visitor"
+    ],
+    "expected_length_min": 185,
+    "expected_length_max": 266,
+    "checklist": [
+      {
+        "point": "Acknowledge the concrete problem with the existing icons.",
+        "keywords": [
+          "confusing",
+          "too many",
+          "icons",
+          "i agree"
+        ]
+      },
+      {
+        "point": "Explain why one distinction is still needed.",
+        "keywords": [
+          "seats",
+          "seating",
+          "room label",
+          "rest"
+        ]
+      },
+      {
+        "point": "Describe how the new map would make the distinction.",
+        "keywords": [
+          "same symbol",
+          "one icon",
+          "chair",
+          "legend"
+        ]
+      },
+      {
+        "point": "State how the result of a first-time test would affect the design.",
+        "keywords": [
+          "first-time",
+          "if several",
+          "test",
+          "change the",
+          "visitors identify"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    },
+    "sort_order": 360
+  },
+  "children": []
+}

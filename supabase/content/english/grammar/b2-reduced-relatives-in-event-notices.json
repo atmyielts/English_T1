@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Reduced defining relatives in event notices",
+    "explanation_text": "A defining relative clause identifies which people or things a notice refers to. When the noun is doing something that is in progress at the relevant time, you can often replace who or that plus a progressive verb with an -ing form. In a live queue update, “people who are waiting outside” becomes “people waiting outside.” If the noun receives the action, use the past participle and keep details that identify the group. “Prints that were selected yesterday” becomes “prints selected yesterday.”\n\nCheck the noun’s role before you shorten the clause. In “the curator whom we invited,” we did the inviting. “The curator inviting us” reverses the roles, so keep the full relative clause if the notice needs to state who issued the invitation.\n\nA reduced defining relative sits after the noun it identifies. A clause such as “Leaving the hall, visitors picked up a programme” gives the circumstances of the main action. It tells us when visitors picked up a programme.",
+    "contrast_text": "“Visitors leaving the hall can collect a programme” identifies which visitors can collect one. “Leaving the hall, visitors picked up a programme” tells us when the visitors picked one up.",
+    "common_error_pattern": "Using -ing for a noun that receives the action, or dropping the subject of an object relative and changing who performs the action.",
+    "tags": [
+      "reduced-defining-relatives",
+      "active-ing-relatives",
+      "passive-participle-relatives",
+      "object-relatives",
+      "event-notices"
+    ],
+    "examples": [
+      {
+        "bad": "At the live check-in, guests are queuing at the side door should have their passes ready.",
+        "good": "At the live check-in, guests queuing at the side door should have their passes ready."
+      },
+      {
+        "bad": "The photographs choose by the panel will appear in the foyer.",
+        "good": "The photographs chosen by the panel will appear in the foyer."
+      },
+      {
+        "bad": "Intended meaning: the hosts thanked the donor. The donor thanking the hosts will open the reception.",
+        "good": "The donor whom the hosts thanked will open the reception."
+      },
+      {
+        "bad": "Intended meaning: only spectators currently using the east exit should follow the blue arrows. Using the east exit, spectators should follow the blue arrows.",
+        "good": "Spectators using the east exit should follow the blue arrows."
+      }
+    ],
+    "slug": "b2-reduced-relatives-in-event-notices",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 410,
+    "focus_area": "reduced-relative-clauses"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Identify the group at the information desk",
+      "instructions": "The group is there now. Complete the reduced relative with the -ing form of wait.",
+      "prompt_text": "Anyone ___ beside the information desk can collect a headset now.",
+      "accepted_answers": [
+        "waiting"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Label the competition entries",
+      "instructions": "Shorten “that were submitted online.” Use the past participle of submit and keep online.",
+      "prompt_text": "Entries ___ will be judged in a separate category.",
+      "accepted_answers": [
+        "submitted online"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Direct the live camera crew",
+      "instructions": "The crews are filming right now. Shorten “who are filming the demo” using the -ing form of film. Keep the object.",
+      "prompt_text": "Camera crews ___ must stay behind the tape.",
+      "accepted_answers": [
+        "filming the demo"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Specify which bookings qualify",
+      "instructions": "Shorten “that were made before noon.” Use the past participle of make and keep the time phrase.",
+      "prompt_text": "Bookings ___ qualify for the early rate.",
+      "accepted_answers": [
+        "made before noon"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Identify the guest of honour",
+      "instructions": "The committee nominated the guest. Complete the formal object relative with whom, the committee, and the past simple of nominate, in that order.",
+      "prompt_text": "The guest ___ will present the final award.",
+      "accepted_answers": [
+        "whom the committee nominated"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the pickup notice",
+      "instructions": "Replace the incorrect form of leave with its past participle. Keep the rest of the sentence.",
+      "prompt_text": "Coats leaving in the cloakroom overnight can be collected at reception.",
+      "accepted_answers": [
+        "Coats left in the cloakroom overnight can be collected at reception."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Limit a request to one group",
+      "instructions": "Only delegates currently speaking in the webcast need to wear a headset. Move the opening phrase directly after Delegates to make it a defining modifier, and remove the comma. Keep the rest of the wording.",
+      "prompt_text": "Speaking in the webcast, delegates should wear a headset.",
+      "accepted_answers": [
+        "Delegates speaking in the webcast should wear a headset."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Shorten a live rehearsal update",
+      "instructions": "Replace the defining relative with an -ing phrase. The soundcheck is in progress. Keep the rest of the sentence.",
+      "prompt_text": "Musicians who are tuning their instruments on stage should finish the soundcheck before the doors open.",
+      "accepted_answers": [
+        "Musicians tuning their instruments on stage should finish the soundcheck before the doors open."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Condense a stockroom instruction",
+      "instructions": "Reduce the passive relative to a past participle phrase. Keep the storage location and the rest of the sentence.",
+      "prompt_text": "Display stands that were stored in the loading bay are ready for collection.",
+      "accepted_answers": [
+        "Display stands stored in the loading bay are ready for collection."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Restore the organiser’s role",
+      "instructions": "The organiser contacted the interpreter. Replace the -ing modifier with a formal defining object relative using whom, the organiser, and contacted. Keep the rest of the sentence.",
+      "prompt_text": "The interpreter contacting the organiser will join the panel.",
+      "accepted_answers": [
+        "The interpreter whom the organiser contacted will join the panel."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Announce a shuttle stop",
+      "instructions": "Use each tile once. Start with Passengers and place transferring to the airport shuttle immediately after it. The transfer is happening now.",
+      "prompt_text": "should board / to the airport shuttle / Passengers / at bay four. / transferring",
+      "accepted_answers": [
+        "Passengers transferring to the airport shuttle should board at bay four."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Mark the seats held for a group",
+      "instructions": "Use each tile once. Start with Seats and put reserved for workshop leaders immediately after it to identify the seats.",
+      "prompt_text": "will be released / for workshop leaders / Seats / at the start of the talk. / reserved",
+      "accepted_answers": [
+        "Seats reserved for workshop leaders will be released at the start of the talk."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reduced-relative-clauses"
+    }
+  ]
+}

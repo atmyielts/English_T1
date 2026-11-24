@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Reflexive arguments and emphasis",
+    "explanation_text": "A reflexive can occupy an object slot and refer back to the subject of its own clause. In “Nora blamed herself,” herself is the direct object and identifies the person Nora blamed. In “The trustees granted themselves a waiver,” themselves is the indirect object and identifies the recipients. If Nora says that the trustees blamed themselves, the reflexive refers to the trustees, the subject of the embedded clause.\n\nAn intensifying reflexive adds emphasis and can be removed without leaving an object slot empty. “Rina herself signed” singles out Rina when a deputy was expected to sign. “Rina signed it herself” stresses that she performed the act personally, as when someone asks whether she delegated the signing. These two readings can overlap.\n\n“Rina signed by herself” can mean that she signed while alone or that she signed without assistance. If everyone had left the room, the context supports the first reading. If a witness stayed but offered no help, the context supports the second.",
+    "contrast_text": "In “Leila assigned herself a locker,” herself is the recipient. In “Leila herself assigned the lockers,” herself singles out Leila as the person who assigned them. In “Leila assigned the lockers herself,” herself emphasizes that Leila did the assigning personally. In “Leila assigned the lockers by herself,” by herself adds that she was alone or worked without help, depending on the context.",
+    "common_error_pattern": "Using an ordinary object pronoun for a direct or indirect object that refers back to the subject of the same clause, or choosing the reflexive to match the subject of a higher clause. A separate error is assuming that a bare intensifier guarantees solitude or lack of assistance.",
+    "tags": [
+      "reflexive-arguments",
+      "direct-and-indirect-objects",
+      "intensifying-reflexives",
+      "by-oneself"
+    ],
+    "examples": [
+      {
+        "bad": "Mina blamed her for the mix-up. (Intended meaning: Mina blamed Mina.)",
+        "good": "Mina blamed herself for the mix-up."
+      },
+      {
+        "bad": "The panelists allotted them ten extra minutes. (Intended meaning: The panelists allotted the time to the panelists.)",
+        "good": "The panelists allotted themselves ten extra minutes."
+      },
+      {
+        "bad": "The director reported that the conservators had photographed herself for the staff archive.",
+        "good": "The director reported that the conservators had photographed themselves for the staff archive."
+      },
+      {
+        "bad": "Rina signed it herself. (Contextual mismatch: The audit field asks whether anyone else was in the room.)",
+        "good": "Rina signed by herself in the empty room."
+      }
+    ],
+    "slug": "c2-reflexive-arguments-and-emphasis",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 370,
+    "focus_area": "reflexive-arguments-and-emphasis"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Identify the injured person",
+      "instructions": "Insert one reflexive pronoun. Ivo is the person who cut his own finger.",
+      "prompt_text": "While trimming the mount, Ivo cut ___ on the exposed edge.",
+      "accepted_answers": [
+        "himself"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Name the recipients",
+      "instructions": "Insert one reflexive pronoun. The two volunteer coordinators reserved the booth for their own use.",
+      "prompt_text": "The two volunteer coordinators reserved ___ a booth near the entrance.",
+      "accepted_answers": [
+        "themselves"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check the local subject",
+      "instructions": "Insert one reflexive pronoun. You and your co-editor are the two people whose names appear in the credits.",
+      "prompt_text": "The producer noticed that you and your co-editor had listed ___ as joint translators.",
+      "accepted_answers": [
+        "yourselves"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Single out the unexpected speaker",
+      "instructions": "Insert one intensifying reflexive. The chairwoman had been expected to send a spokesperson.",
+      "prompt_text": "The chairwoman ___ read the retraction aloud.",
+      "accepted_answers": [
+        "herself"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Specify that no help was given",
+      "instructions": "Complete the sentence with by plus a reflexive pronoun. The two technicians received no help, although an assessor watched.",
+      "prompt_text": "The two technicians calibrated the sensors ___ while the assessor watched.",
+      "accepted_answers": [
+        "by themselves"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the recipient in a note",
+      "instructions": "Replace only the pronoun them. The two curators were the recipients of the copies.",
+      "prompt_text": "The two curators sent them a copy each before the packet went to press.",
+      "accepted_answers": [
+        "The two curators sent themselves a copy each before the packet went to press."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the subject emphasis",
+      "instructions": "Replace only the word himself. The two inspectors personally witnessed the test.",
+      "prompt_text": "The two inspectors himself witnessed the pressure test.",
+      "accepted_answers": [
+        "The two inspectors themselves witnessed the pressure test."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Contrast Rina with her deputy",
+      "instructions": "Turn the fragment into one sentence. Use only the two supplied words and the intensifier herself. Begin with Rina and put herself immediately after the subject.",
+      "prompt_text": "Rina signed",
+      "accepted_answers": [
+        "Rina herself signed."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Confirm who did the signing",
+      "instructions": "A colleague asks whether Rina delegated the signing. Replace personally with herself and keep every other word in place.",
+      "prompt_text": "Rina signed it personally.",
+      "accepted_answers": [
+        "Rina signed it herself."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Record that Rina was alone",
+      "instructions": "Replace alone with by herself. Keep every other word in place. The security footage shows that nobody else was in the room.",
+      "prompt_text": "Rina signed alone.",
+      "accepted_answers": [
+        "Rina signed by herself."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Reconstruct a photo caption",
+      "instructions": "Arrange the tiles into one sentence. Begin with the two climbers and finish with before the ascent. The climbers are the people in their own photograph.",
+      "prompt_text": "photographed / before the ascent / themselves / the two climbers",
+      "accepted_answers": [
+        "The two climbers photographed themselves before the ascent."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Reconstruct a rehearsal log",
+      "instructions": "Arrange the tiles into one sentence. Begin with Mateo and end with by himself. The log records that he had the studio to himself.",
+      "prompt_text": "by / rehearsed / Mateo / himself / the closing speech",
+      "accepted_answers": [
+        "Mateo rehearsed the closing speech by himself."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reflexive-arguments-and-emphasis"
+    }
+  ]
+}

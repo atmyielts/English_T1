@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "b2-clarify-reuse-permission-for-a-class-recording",
+    "title": "Clarify reuse permission for a class recording",
+    "level": "B2",
+    "mission_type": "study",
+    "context_text": "You are producing a first-person audio piece about moving to a new town. One speaker agreed to classroom playback, and the school now wants to share an excerpt on its website.",
+    "objective_text": "Ask clearly for a separate decision about public use and offer an option that honours the classroom agreement.",
+    "target_vocabulary": [
+      "consent",
+      "excerpt",
+      "audience",
+      "withdraw",
+      "caption"
+    ],
+    "success_conditions": [
+      "Ask clearly for a separate decision about public use and offer an option that honours the classroom agreement.",
+      "Name the proposed audience",
+      "Give a real choice",
+      "Preserve classroom conditions"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the permissions sheet",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Speaker permits playback to enrolled learners during class. The form leaves public web sharing blank. Classroom captions are allowed. The recording includes a relative’s first name, which the speaker asked you to omit from anything public.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What use has the speaker agreed to?",
+          "options": [
+            "Playback in class",
+            "Public web sharing",
+            "Publication of the whole transcript"
+          ],
+          "answer_index": 0,
+          "explanation": "Only enrolled learners in class are specified."
+        },
+        {
+          "prompt": "What should be omitted from anything public?",
+          "options": [
+            "A relative’s first name",
+            "Any captions",
+            "The audio itself in every case"
+          ],
+          "answer_index": 0,
+          "explanation": "The speaker has asked that the name stay out of public versions."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the school producer’s request",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I’d like to use fifteen seconds on the website, with captions. The best clip contains the relative’s name. There’s another clip about the bus route that works without identifying anyone. We can put the web audio together later if the speaker wants time to decide.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which clip avoids identifying the relative?",
+          "options": [
+            "The best clip mentioned first",
+            "The clip about the bus route",
+            "Any fifteen seconds from the talk"
+          ],
+          "answer_index": 1,
+          "explanation": "The producer says the alternative about the bus route identifies no one."
+        },
+        {
+          "prompt": "What does the producer offer if the speaker needs time?",
+          "options": [
+            "Share the first clip today",
+            "Put the web clip together later",
+            "Drop classroom captions"
+          ],
+          "answer_index": 1,
+          "explanation": "The website edit can wait."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain the limit to a producer",
+      "prompt_text": "A colleague thinks classroom consent can cover a short public excerpt.",
+      "instructions": "State the difference in audience. Put forward a usable alternative and identify its prerequisite.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 30,
+      "model_answer": "The form covers classroom playback, and the website has a wider audience. Let's use the bus route clip only if the speaker makes a separate choice about public sharing. We can wait for a decision.",
+      "points": [
+        {
+          "label": "Separate the two audiences",
+          "any": [
+            "classroom playback",
+            "wider audience"
+          ]
+        },
+        {
+          "label": "Keep a separate choice",
+          "any": [
+            "separate choice",
+            "separate permission"
+          ]
+        },
+        {
+          "label": "Name the safer excerpt",
+          "any": [
+            "bus route clip",
+            "clip about the bus"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write to the contributor",
+      "prompt_text": "Ask about a specific fifteen-second clip and give the speaker a genuine way to decline or delay.",
+      "instructions": "Describe the clip and where it would appear. Address captions. State what will happen to the classroom version if they say no.",
+      "goal": "Ask clearly for a separate decision about public use and offer an option that honours the classroom agreement.",
+      "estimated_minutes": 13,
+      "min_words": 55,
+      "model_answer": "Would you be happy for us to share the fifteen-second section about the bus route on the school website with captions? It does not name your relative, and I can send the exact clip first. You can say no or take time to think. Classroom playback will stay as agreed whether or not we publish the excerpt.",
+      "points": [
+        {
+          "label": "Name the proposed audience",
+          "any": [
+            "school website",
+            "website with captions"
+          ]
+        },
+        {
+          "label": "Give a real choice",
+          "any": [
+            "say no",
+            "decline",
+            "take time"
+          ]
+        },
+        {
+          "label": "Preserve classroom conditions",
+          "any": [
+            "classroom playback will stay",
+            "classroom playback stays"
+          ]
+        }
+      ]
+    }
+  ]
+}

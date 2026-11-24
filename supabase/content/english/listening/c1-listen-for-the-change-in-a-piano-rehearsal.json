@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c1-listen-for-the-change-in-a-piano-rehearsal",
+    "title": "Listen for the change in a piano rehearsal",
+    "level": "C1",
+    "summary": "A pianist describes a rehearsal that changes what performers listen for.",
+    "transcript_text": "Everyone watched my left hand in the last movement because it played the repeating rhythm. It sounded neat from my seat. Then the singer asked why the phrase seemed to stop just before every important word. From the back of the hall I could hear what she meant. We were treating each beat as a small arrival. I asked the players to keep the time but listen to the end of the sung line and aim across the bar. It felt less secure at first. We recorded both versions and invited someone who hadn't been at rehearsal to listen without the score. She could tell us where the sentence turned in the second version. That was enough to keep trying it. It didn't settle how fast we should play.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 53,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "culture",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What was wrong with the first version?",
+        "options": [
+          "The coordination of beats disrupted the shape of the sung phrase",
+          "The singer did not know the words",
+          "The left hand could not keep the rhythm",
+          "The players ended in different places"
+        ],
+        "answer_index": 0,
+        "explanation": "The beats sounded neat but obscured the longer phrase.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why does the pianist mention moving in the hall?",
+        "options": [
+          "The pianist had changed instruments",
+          "The singer needed a different stage position",
+          "The score could only be read in the audience",
+          "The issue was easier to hear from a different position"
+        ],
+        "answer_index": 3,
+        "explanation": "Moving back made the singer’s observation audible.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What did the musicians keep while making the change?",
+        "options": [
+          "The habit of watching the pianist",
+          "The speed as a settled decision",
+          "The timing of the beats",
+          "The same target inside each bar"
+        ],
+        "answer_index": 2,
+        "explanation": "The players keep the time while aiming across the bar.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What made the outside listener’s observation useful?",
+        "options": [
+          "She knew which version was supposed to work",
+          "She followed a turn in meaning without seeing the written structure",
+          "She compared marks on the score",
+          "She had played in the first version"
+        ],
+        "answer_index": 1,
+        "explanation": "The listener could locate the turn using only the sound.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What choice remained open?",
+        "options": [
+          "The tempo",
+          "Whether to hear the singer",
+          "Whether to record two versions",
+          "Whether to play the last movement"
+        ],
+        "answer_index": 0,
+        "explanation": "The pianist says the trial did not settle speed.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "watched my left hand",
+      "focus_phrase": "my left hand",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "treating each beat as a small arrival",
+      "focus_phrase": "a small arrival",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "without the score",
+      "focus_phrase": "without the score",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

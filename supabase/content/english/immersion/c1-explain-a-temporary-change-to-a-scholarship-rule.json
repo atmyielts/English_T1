@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c1-explain-a-temporary-change-to-a-scholarship-rule",
+    "title": "Explain a temporary change to a scholarship rule",
+    "level": "C1",
+    "mission_type": "study",
+    "context_text": "A small college fund usually asks for twelve weeks of residence. Scheduled building repairs moved some students out of their rooms for three weeks.",
+    "objective_text": "Communicate a narrowly defined adjustment and make an appeal route clear.",
+    "target_vocabulary": [
+      "eligibility",
+      "cohort",
+      "fairness",
+      "exception",
+      "review"
+    ],
+    "success_conditions": [
+      "Communicate a narrowly defined adjustment and make an appeal route clear.",
+      "Retain the threshold",
+      "Clarify the official relocation",
+      "Offer an individual review",
+      "Ask for dates and explanation"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the current guidance",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "To qualify, an applicant must usually have occupied a college room for twelve consecutive weeks. The relocation notice covers students whom Housing moved at its request. Utilities records can show when a room was occupied but do not state why someone moved out.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What does the record fail to prove on its own?",
+          "options": [
+            "Whether utilities were used",
+            "Why a student was away",
+            "Whether an application was filed"
+          ],
+          "answer_index": 1,
+          "explanation": "The utility record can show occupation without identifying the reason for a gap."
+        },
+        {
+          "prompt": "Who is covered by the relocation notice?",
+          "options": [
+            "Everyone who moved out privately",
+            "Students moved at Housing’s request",
+            "All international students"
+          ],
+          "answer_index": 1,
+          "explanation": "The notice applies specifically to the Housing-directed relocations."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the committee chair’s decision",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Count the official relocation period as continuous residence for those moved by Housing. Keep the twelve-week figure. Applicants with other interruptions can ask for an individual review. We must avoid promising them the same outcome before we see their evidence.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What changes for the official relocation cohort?",
+          "options": [
+            "The requirement drops to nine weeks",
+            "Their assigned time away counts as if their occupation continued",
+            "All documentation becomes unnecessary"
+          ],
+          "answer_index": 1,
+          "explanation": "The adjustment affects how residence is counted, while the threshold stays."
+        },
+        {
+          "prompt": "What can people with other interruptions request?",
+          "options": [
+            "The exception automatically",
+            "An individual review",
+            "Replacement utilities records only"
+          ],
+          "answer_index": 1,
+          "explanation": "The chair opens a review route without guaranteeing the result."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Brief a colleague who answers applicants",
+      "prompt_text": "A colleague is about to announce that everyone’s requirement dropped to nine weeks.",
+      "instructions": "Explain the distinction between the threshold and the adjustment. Give the correct answer for people outside the official cohort.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 35,
+      "model_answer": "Keep the twelve-week requirement in the announcement. We count an official Housing relocation as part of that period. If an applicant had a different interruption, invite them to request an individual review without promising the same outcome.",
+      "points": [
+        {
+          "label": "Keep the threshold",
+          "any": [
+            "twelve-week requirement",
+            "twelve weeks"
+          ]
+        },
+        {
+          "label": "Name the cohort",
+          "any": [
+            "official housing relocation",
+            "moved by housing"
+          ]
+        },
+        {
+          "label": "Explain the review route",
+          "any": [
+            "individual review"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write an applicant-facing update",
+      "prompt_text": "An applicant was away for one week for another reason and asks whether they are automatically eligible.",
+      "instructions": "Give the official change, identify the available next step, and explain what information helps under individual review. Maintain a straightforward tone.",
+      "goal": "Communicate a narrowly defined adjustment and make an appeal route clear.",
+      "estimated_minutes": 14,
+      "min_words": 65,
+      "model_answer": "The fund still requires twelve weeks of residence. If Housing officially moved you for the repairs, that period counts towards your twelve weeks. An absence for another reason does not automatically qualify under this change. You can request an individual review and provide the dates, the reason you were away, and any information that confirms it. The committee will consider your circumstances before making a decision.",
+      "points": [
+        {
+          "label": "Retain the threshold",
+          "any": [
+            "twelve weeks of residence",
+            "requirement of twelve weeks"
+          ]
+        },
+        {
+          "label": "Clarify the official relocation",
+          "any": [
+            "Housing officially moved you",
+            "official relocation"
+          ]
+        },
+        {
+          "label": "Offer an individual review",
+          "any": [
+            "individual review"
+          ]
+        },
+        {
+          "label": "Ask for dates and explanation",
+          "any": [
+            "the dates, the reason",
+            "dates and reasons"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "a2-borrow-camping-equipment-for-one-weekend",
+    "title": "Borrow camping equipment for one weekend",
+    "level": "A2",
+    "mission_type": "service",
+    "context_text": "Your club lends camping gear. A friend can return the equipment but has never used the locker.",
+    "objective_text": "Choose suitable gear and leave a clear return plan.",
+    "target_vocabulary": [
+      "deposit",
+      "return",
+      "tent",
+      "wet",
+      "locker"
+    ],
+    "success_conditions": [
+      "Choose suitable gear and leave a clear return plan.",
+      "Name the side gate",
+      "State the locker limit",
+      "Give the wet-tent plan",
+      "Mention the dry-tent record"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the equipment page",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Two-person tent: six pounds for the weekend, ten-pound deposit. Three-person tent: nine pounds, fifteen-pound deposit. Wet tents go on the shelf beside the lockers. The hire desk closes at five on Sunday.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What is paid up front for a three-person tent?",
+          "options": [
+            "Fifteen pounds",
+            "Twenty-four pounds",
+            "Nine pounds"
+          ],
+          "answer_index": 1,
+          "explanation": "The hire fee and deposit together come to twenty-four pounds."
+        },
+        {
+          "prompt": "Where should a wet tent go?",
+          "options": [
+            "In the bottom locker",
+            "On the shelf beside the lockers",
+            "On the hire desk"
+          ],
+          "answer_index": 1,
+          "explanation": "The page asks borrowers to put wet tents on the shelf."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the club’s Sunday update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The road by the desk is being repaired. Come in through the side gate this Sunday. The locker area is open until six, even after the desk closes. If you leave a dry tent in a locker, put the locker number on your return form.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which way should a borrower enter on Sunday?",
+          "options": [
+            "On the main road",
+            "Through the tent shop",
+            "Through the side gate"
+          ],
+          "answer_index": 2,
+          "explanation": "The club changes the entrance for one day."
+        },
+        {
+          "prompt": "What number goes on the form for a dry tent?",
+          "options": [
+            "The tent size",
+            "The desk phone number",
+            "The locker number"
+          ],
+          "answer_index": 2,
+          "explanation": "A locker number identifies where the returned tent was left."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Confirm the hire",
+      "prompt_text": "There are three campers. The clerk asks which tent you need.",
+      "instructions": "Ask for the right size. Repeat the hire fee and deposit separately so the clerk can correct you if necessary.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "We need the three-person tent. Is the hire fee nine pounds and the deposit fifteen pounds? Could you show me the return form, please?",
+      "points": [
+        {
+          "label": "Choose the three-person tent",
+          "any": [
+            "three-person tent",
+            "tent for three"
+          ]
+        },
+        {
+          "label": "Check hire fee and deposit",
+          "any": [
+            "nine pounds and the deposit fifteen",
+            "nine pounds for hire and fifteen"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the return instructions",
+      "prompt_text": "Your friend will arrive at 5:30 on Sunday. They do not know if the tent will be wet.",
+      "instructions": "Give the entrance and deadline. Explain what to do for each condition. Avoid implying that the closed desk will be staffed.",
+      "goal": "Choose suitable gear and leave a clear return plan.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "On Sunday, use the side gate. The hire desk will be closed at half past five, but the lockers stay open until six. If the tent is wet, put it on the shelf beside the lockers. If it is dry, use a locker and write the locker number on the return form.",
+      "points": [
+        {
+          "label": "Name the side gate",
+          "any": [
+            "side gate"
+          ]
+        },
+        {
+          "label": "State the locker limit",
+          "any": [
+            "until six",
+            "until 6"
+          ]
+        },
+        {
+          "label": "Give the wet-tent plan",
+          "any": [
+            "shelf beside the lockers",
+            "shelf next to the lockers"
+          ]
+        },
+        {
+          "label": "Mention the dry-tent record",
+          "any": [
+            "locker number"
+          ]
+        }
+      ]
+    }
+  ]
+}

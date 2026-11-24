@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "At the playground",
+    "description": "Name playground equipment, say where it is, and talk about how children play and wait for their turn.",
+    "slug": "a1-at-the-playground",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 390,
+    "topic": "playground"
+  },
+  "children": [
+    {
+      "word": "slide",
+      "part_of_speech": "noun",
+      "definition": "A long, smooth piece of playground equipment that children sit on to go from high to low.",
+      "example": "Mila waits at the top of the slide until the child below moves away.",
+      "translation_ru": "горка",
+      "translation_uz": "sirpanchiq",
+      "collocations": [
+        "go down the slide",
+        "the top of the slide"
+      ]
+    },
+    {
+      "word": "swing",
+      "part_of_speech": "noun",
+      "definition": "A playground seat that hangs from above and moves forward and back.",
+      "example": "My child sits on the swing and asks me for a little push.",
+      "translation_ru": "качели",
+      "translation_uz": "argʻimchoq",
+      "collocations": [
+        "sit on the swing",
+        "push the swing"
+      ]
+    },
+    {
+      "word": "seesaw",
+      "part_of_speech": "noun",
+      "definition": "A long piece of playground equipment with a seat at each end. One end goes up when the other goes down.",
+      "example": "The two children sit at different ends of the seesaw.",
+      "translation_ru": "качели-балансир",
+      "translation_uz": "bir uchi koʻtarilganda ikkinchi uchi tushadigan argʻimchoq",
+      "collocations": [
+        "get on the seesaw",
+        "one end of the seesaw"
+      ]
+    },
+    {
+      "word": "play tower",
+      "part_of_speech": "noun",
+      "definition": "A tower in a playground that children can climb and play on.",
+      "example": "From the top of the play tower, Lina can see her dad below.",
+      "translation_ru": "игровая башенка",
+      "translation_uz": "bolalar oʻynaydigan minora",
+      "collocations": [
+        "a wooden play tower",
+        "the top of the play tower"
+      ]
+    },
+    {
+      "word": "roundabout",
+      "part_of_speech": "noun",
+      "definition": "A round platform that children sit or stand on while it turns in place.",
+      "example": "The children wait for the roundabout to stop before they get on.",
+      "translation_ru": "карусель",
+      "translation_uz": "karusel",
+      "collocations": [
+        "ride on the roundabout",
+        "get on the roundabout"
+      ]
+    },
+    {
+      "word": "step",
+      "part_of_speech": "noun",
+      "definition": "A flat part of a set of stairs or a ladder that you put your foot on.",
+      "example": "Her dad puts one foot on the bottom step of the play tower.",
+      "translation_ru": "ступенька",
+      "translation_uz": "pogʻona",
+      "collocations": [
+        "the bottom step",
+        "a wooden step"
+      ]
+    },
+    {
+      "word": "climb",
+      "part_of_speech": "verb",
+      "definition": "To go up something using your hands and feet.",
+      "example": "Ravi can climb the rope to reach the play tower.",
+      "translation_ru": "взбираться",
+      "translation_uz": "tirmashib chiqmoq",
+      "collocations": [
+        "climb a rope",
+        "climb up to the top"
+      ]
+    },
+    {
+      "word": "push",
+      "part_of_speech": "verb",
+      "definition": "To use your hands to make something move away from you.",
+      "example": "Can you push the swing a little more slowly?",
+      "translation_ru": "толкать",
+      "translation_uz": "itarmoq",
+      "collocations": [
+        "push the swing",
+        "push it gently"
+      ]
+    },
+    {
+      "word": "pull",
+      "part_of_speech": "verb",
+      "definition": "To use your hands to make something come toward you.",
+      "example": "I pull the empty swing toward me so my child can sit down.",
+      "translation_ru": "тянуть",
+      "translation_uz": "tortmoq",
+      "collocations": [
+        "pull the swing toward you",
+        "pull the rope"
+      ]
+    },
+    {
+      "word": "take turns",
+      "part_of_speech": "verb phrase",
+      "definition": "To do something one person at a time so each person can do it.",
+      "example": "The children take turns on the swing. Leo goes first and Aya goes next.",
+      "translation_ru": "делать что-либо по очереди",
+      "translation_uz": "navbat bilan qilmoq",
+      "collocations": [
+        "take turns on the slide",
+        "take turns pushing the swing"
+      ]
+    },
+    {
+      "word": "line up",
+      "part_of_speech": "phrasal verb",
+      "definition": "To stand one behind another, usually while waiting.",
+      "example": "The children line up at the steps to the slide.",
+      "translation_ru": "выстраиваться в очередь",
+      "translation_uz": "navbatga turmoq",
+      "collocations": [
+        "line up for the slide",
+        "line up behind me"
+      ]
+    },
+    {
+      "word": "next to",
+      "part_of_speech": "preposition",
+      "definition": "Right beside someone or something.",
+      "example": "I stand next to the slide so I can help my child at the bottom.",
+      "translation_ru": "рядом с",
+      "translation_uz": "yonida",
+      "collocations": [
+        "next to the slide",
+        "next to the play tower"
+      ]
+    },
+    {
+      "word": "tunnel",
+      "part_of_speech": "noun",
+      "definition": "A tube in a playground that is open at both ends so children can go through it.",
+      "example": "I wait at the other end of the tunnel while my child crawls through.",
+      "translation_ru": "туннель",
+      "translation_uz": "tunnel",
+      "collocations": [
+        "crawl through the tunnel",
+        "the end of the tunnel"
+      ]
+    },
+    {
+      "word": "crawl",
+      "part_of_speech": "verb",
+      "definition": "To move on your hands and knees.",
+      "example": "We have to crawl through the low tunnel to get to the other side.",
+      "translation_ru": "ползти на четвереньках",
+      "translation_uz": "emaklamoq",
+      "collocations": [
+        "crawl through the tunnel",
+        "crawl under the play tower"
+      ]
+    }
+  ]
+}

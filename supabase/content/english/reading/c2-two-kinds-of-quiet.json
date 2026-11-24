@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c2-two-kinds-of-quiet",
+    "title": "Two Kinds of Quiet",
+    "level": "C2",
+    "summary": "A study of salt-marsh sound tests whether silence belongs to a place or to the equipment listening to it.",
+    "content_markdown": "At the inner edge of a salt marsh, a strip of old fence lets the water pass between heavy posts. An ecology team fitted a microphone to one post and another to a floating support several metres away. Its members intended to compare the noise made by fish moving beneath the incoming tide. After the first afternoon, an automated system had already marked long sections of the post recording as silence. Across the water, the floating recorder had heard something at nearly every one of those times.\n\nThe discrepancy appeared to have a straightforward cause. Some kinds of sound might be louder farther from the bank. If the two devices were accurately calibrated, the team could compare their logs for signs of where the fish were active. It turned out, however, that at a narrow range of low frequencies the post itself had been sounding. Its sustained vibrations were not especially loud to a human ear listening to the recording. The automatic system used those vibrations to estimate a background level against which other sounds were judged. Some short bursts were prominent enough to hear when played back, but not sufficiently prominent to register above the estimated background.\n\nOne team member proposed stripping the post vibration from the recording before running it through the software again. That would give the comparison a fairer chance of detecting the brief sounds they had come to find. It would also conceal evidence of something they had not intended to study: just when, and by how much, the incoming water set a part of this structure in motion. A future study of sounds transmitted through wooden supports might need a recording in which that persistent tone was treated as a signal, and the fish movements were the distraction.\n\nThe team has kept both versions, and released the rule that distinguishes a detectable burst from the background. It also separated the question of activity from the question of location. The published maps show where the recordings were made. They do not place symbols for fish events at those points, because sounds can travel from other parts of the marsh. It would take several recordings of the same burst, with accurately synchronised times, to begin narrowing down where it came from.\n\nWhat emerged was a distinction between two senses of silence. There are intervals with no event that a certain set of rules would admit, and there are intervals in which nothing of interest is happening. The first can be read off a list once the equipment, rules and purpose are specified. The second is a large claim about the world. In a setting where a low vibration can hide the movement of a fish and can itself be the subject of a study, an apparently empty line in a log may tell a person as much about the question asked of it as about the marsh.",
+    "category": "Science",
+    "theme": "marsh sound spectra and classification by microphone placement",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "science commentary",
+      "word_count": 481
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main point of the account?",
+        "options": [
+          "Fish sounds would become reliable evidence of location if researchers removed all sustained vibrations.",
+          "Readings from floating equipment should generally take precedence over recordings fixed to a structure.",
+          "An automated record of silence depends on what a study decides to detect and how that decision is implemented.",
+          "The unexpected vibrations are of greater scientific importance than the fish movements that prompted the study."
+        ],
+        "answer_index": 2,
+        "explanation": "Post vibrations and detection rules affect which events appear. The persistent tone can count as irrelevant background for one purpose and target evidence for another."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How did the vibrating post affect the initial classification?",
+        "options": [
+          "It caused the devices to report different recording times even when exposed to the same burst.",
+          "It drowned out the bursts so completely that listening back could not recover their sound.",
+          "It made the device interpret steady tones as separate fish movements.",
+          "It influenced the reference level the software used when deciding whether a burst counted."
+        ],
+        "answer_index": 3,
+        "explanation": "The vibration entered the estimated background level. Some bursts people could hear on playback still fell below the program’s threshold."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why would a study of wooden supports keep the persistent tone?",
+        "options": [
+          "It could be evidence of the process the next study wants to understand.",
+          "It would isolate precisely where fish were moving during the first study.",
+          "It offers a detector standard that applies across any recording site.",
+          "It establishes whether the floating microphone recorded the same event."
+        ],
+        "answer_index": 0,
+        "explanation": "For that study the vibration could show when the water sets a structure in motion. What was background becomes relevant evidence."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does ‘admit’ mean in the last paragraph?",
+        "options": [
+          "Reluctantly acknowledge the existence of",
+          "Recognise and include under stated conditions",
+          "Permit a piece of equipment to approach",
+          "Identify the origin of a recorded event"
+        ],
+        "answer_index": 1,
+        "explanation": "The rules admit events when they meet the specified classification conditions; classification need not locate them or measure their full relevance."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Some short bursts can be heard when a person listens to the post recording, even though the program does not classify them as detections.",
+        "answer": "true",
+        "explanation": "Paragraph two explicitly distinguishes play-back audibility from threshold-based classification."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The published maps treat each microphone position as the site where the sound was produced.",
+        "answer": "false",
+        "explanation": "The points mark recording positions. The team deliberately avoided placing fish events there."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The team borrowed the second microphone for a single day.",
+        "answer": "not_given",
+        "explanation": "The account describes the first afternoon and both microphones. It does not say who owned them or how long they were available."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The automated system uses sustained vibrations in the estimate of the ___. Better location estimates would require accurately ___ times.",
+        "answers": [
+          [
+            "background"
+          ],
+          [
+            "synchronised"
+          ]
+        ],
+        "word_bank": [
+          "background",
+          "synchronised",
+          "floating",
+          "persistent"
+        ],
+        "explanation": "Paragraph two mentions the background level, and paragraph four specifies synchronised times across recordings of the same burst."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A proposed fix would erase a different kind of evidence",
+          "An apparent silence differs between two recorders",
+          "A decision is made to keep evidence without claiming a location",
+          "The equipment’s support changes the detection rule in practice",
+          "A comparison establishes that one recorder was defective"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The paragraphs move from discrepancy to mechanism, competing research purposes and the evidence the team releases."
+      }
+    ]
+  },
+  "children": []
+}

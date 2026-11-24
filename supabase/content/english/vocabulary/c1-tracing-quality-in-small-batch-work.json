@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Tracing Quality in Small-Batch Work",
+    "description": "Follow a small stationery workshop as it checks bookmark widths, investigates a recurring fault and decides what to do with the affected pieces.",
+    "slug": "c1-tracing-quality-in-small-batch-work",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 390,
+    "topic": "manufacturing traceability"
+  },
+  "children": [
+    {
+      "word": "lot code",
+      "part_of_speech": "noun",
+      "definition": "An identifier assigned to a group of items produced together so that the group can be distinguished from others.",
+      "example": "The packing assistant copied the lot code onto each sleeve so the workshop could link a complaint to the right group of bookmarks.",
+      "translation_ru": "код партии",
+      "translation_uz": "partiya kodi",
+      "collocations": [
+        "assign a lot code",
+        "check the lot code"
+      ]
+    },
+    {
+      "word": "traceability",
+      "part_of_speech": "noun",
+      "definition": "The ability to establish an item's origin and reconstruct its production and handling history from linked records.",
+      "example": "The coordinator restored traceability by using the packing sheet to link each sleeve’s lot code to the bookmarks’ production and inspection records.",
+      "translation_ru": "прослеживаемость",
+      "translation_uz": "mahsulotning kelib chiqishi, qanday ishlab chiqarilgani va keyingi bosqichlarda u bilan nima qilinganini qaydlar orqali aniqlash imkoniyati",
+      "collocations": [
+        "maintain traceability",
+        "ensure traceability"
+      ]
+    },
+    {
+      "word": "batch record",
+      "part_of_speech": "noun",
+      "definition": "A document that captures the work performed, checks made and decisions taken for a particular group of items produced together.",
+      "example": "The supervisor consulted the batch record to see which trays had already been checked for width.",
+      "translation_ru": "производственный журнал партии",
+      "translation_uz": "partiyani ishlab chiqarish va tekshirish natijalari qayd etiladigan hujjat",
+      "collocations": [
+        "complete a batch record",
+        "review the batch record"
+      ]
+    },
+    {
+      "word": "defect",
+      "part_of_speech": "noun",
+      "definition": "A fault in an individual item that causes it to fall short of a specified requirement.",
+      "example": "The inspector noted a defect on one bookmark where a torn edge caught on the sleeve.",
+      "translation_ru": "дефект",
+      "translation_uz": "nuqson",
+      "collocations": [
+        "detect a defect",
+        "document a defect"
+      ]
+    },
+    {
+      "word": "inspection plan",
+      "part_of_speech": "noun",
+      "definition": "A set of instructions specifying which items to examine, what to check and how to carry out the checks.",
+      "example": "The inspection plan called for checking width and edge condition on pieces from every tray, including those packed last.",
+      "translation_ru": "план проверок изделий",
+      "translation_uz": "mahsulotni tekshirish rejasi",
+      "collocations": [
+        "draw up an inspection plan",
+        "follow the inspection plan"
+      ]
+    },
+    {
+      "word": "acceptance threshold",
+      "part_of_speech": "noun",
+      "definition": "A numerical limit used to decide whether the overall result of a quality check is sufficient for a group of items to pass.",
+      "example": "The quality lead applied the acceptance threshold and held the lot because too many of the bookmarks inspected were outside the permitted width range.",
+      "translation_ru": "порог приёмки",
+      "translation_uz": "qabul qilish chegarasi",
+      "collocations": [
+        "set an acceptance threshold",
+        "apply the acceptance threshold"
+      ]
+    },
+    {
+      "word": "measurement consistency",
+      "part_of_speech": "noun",
+      "definition": "The extent to which readings agree when the same characteristic is checked more than once under comparable conditions.",
+      "example": "To check measurement consistency, the inspector measured the same bookmark three times, lifting it and placing it back against the ruler each time.",
+      "translation_ru": "согласованность результатов измерений",
+      "translation_uz": "oʻlchov natijalarining oʻzaro mosligi",
+      "collocations": [
+        "check measurement consistency",
+        "improve measurement consistency"
+      ]
+    },
+    {
+      "word": "rework",
+      "part_of_speech": "noun",
+      "definition": "Additional work on an existing item to bring it into line with the original requirements.",
+      "example": "The workshop lead approved rework for the bookmarks that were too wide because those pieces could still be brought within the permitted range.",
+      "translation_ru": "доработка",
+      "translation_uz": "talabga moslab qayta ishlash",
+      "collocations": [
+        "require rework",
+        "send items for rework"
+      ]
+    },
+    {
+      "word": "segregation",
+      "part_of_speech": "noun",
+      "definition": "The physical separation of items with different quality statuses to prevent them from being mixed.",
+      "example": "The packing assistant maintained segregation by moving the tray of questionable bookmarks away from the trays cleared for packing.",
+      "translation_ru": "раздельное размещение изделий с разным статусом по результатам контроля",
+      "translation_uz": "buyumlarni tekshiruvdagi maqomiga qarab alohida joylashtirish",
+      "collocations": [
+        "maintain physical segregation",
+        "segregation of suspect items"
+      ]
+    },
+    {
+      "word": "process drift",
+      "part_of_speech": "noun",
+      "definition": "A gradual movement of production results away from their intended value over successive observations.",
+      "example": "A steady increase in bookmark width from the first tray to the last suggested process drift, even though the early pieces were still within limits.",
+      "translation_ru": "постепенное отклонение результатов процесса от целевого значения",
+      "translation_uz": "jarayon natijalarining moʻljaldagi qiymatdan asta-sekin ogʻishi",
+      "collocations": [
+        "detect process drift",
+        "monitor for process drift"
+      ]
+    },
+    {
+      "word": "tolerance",
+      "part_of_speech": "noun",
+      "definition": "The permitted deviation from the specified value of a measurable characteristic.",
+      "example": "The inspector used the width tolerance to decide whether an individual bookmark was close enough to the specified width.",
+      "translation_ru": "допуск",
+      "translation_uz": "ruxsat etilgan ogʻish",
+      "collocations": [
+        "width tolerance",
+        "within tolerance"
+      ]
+    },
+    {
+      "word": "root cause",
+      "part_of_speech": "noun",
+      "definition": "The underlying reason a problem occurred, whose removal would help prevent it from recurring.",
+      "example": "The technician identified the root cause of the widening bookmarks after finding that a loose guide moved slightly between trays.",
+      "translation_ru": "первопричина",
+      "translation_uz": "tub sabab",
+      "collocations": [
+        "identify the root cause",
+        "eliminate the root cause"
+      ]
+    },
+    {
+      "word": "recurrence prevention",
+      "part_of_speech": "noun",
+      "definition": "Measures aimed at stopping an identified problem from happening again by addressing why it occurred.",
+      "example": "The supervisor assigned responsibility for recurrence prevention to the workshop lead, who added a guide check to the start of each run.",
+      "translation_ru": "предотвращение повторного возникновения проблемы",
+      "translation_uz": "muammoning takrorlanishining oldini olish",
+      "collocations": [
+        "recurrence prevention measures",
+        "a plan for recurrence prevention"
+      ]
+    },
+    {
+      "word": "disposition",
+      "part_of_speech": "noun",
+      "definition": "The formal decision about what to do with items held for a quality issue, such as authorizing further work or removal from stock.",
+      "example": "The quality lead recorded the disposition for the held bookmarks, authorizing further work on the wide pieces and removing the torn ones from stock.",
+      "translation_ru": "официальное решение о дальнейших действиях с изделиями, задержанными из-за проблем с качеством",
+      "translation_uz": "sifat muammosi tufayli ajratib qoʻyilgan buyumlar boʻyicha qanday chora koʻrish toʻgʻrisidagi rasmiy qaror",
+      "collocations": [
+        "approve the disposition",
+        "document the disposition"
+      ]
+    }
+  ]
+}

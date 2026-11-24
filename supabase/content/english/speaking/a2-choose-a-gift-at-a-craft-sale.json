@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "a2-choose-a-gift-at-a-craft-sale",
+    "title": "Choose Between Two Gifts",
+    "level": "A2",
+    "prompt_text": "A craft stall sells a small bowl with blue stripes and a taller bowl with green dots. The bowls cost the same. Your friend needs something small that will fit on a narrow shelf. Tell the seller which one you want, why you chose it and how you would like it packed.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 46,
+    "target_grammar": "Comparatives for size and can you for a request.",
+    "fluency_objective": "State the choice first. Give the reason before asking the seller to pack the bowl.",
+    "pronunciation_objective": "Stress blue stripes and narrow shelf so it is clear which bowl you mean and why.",
+    "target_vocabulary": [
+      "bowl",
+      "stripes",
+      "shelf",
+      "smaller",
+      "wrap"
+    ],
+    "cues": [
+      {
+        "text": "Identify the bowl you want.",
+        "keywords": [
+          "blue stripes",
+          "blue bowl",
+          "smaller one"
+        ]
+      },
+      {
+        "text": "Explain why it fits your friend's needs.",
+        "keywords": [
+          "narrow shelf",
+          "smaller",
+          "fits on"
+        ]
+      },
+      {
+        "text": "Make a packing request.",
+        "keywords": [
+          "wrap",
+          "put it in",
+          "pack it"
+        ]
+      }
+    ],
+    "model_opening": "I'd like the bowl with blue stripes, please.",
+    "model_answer": "I'd like the bowl with blue stripes, please. I like both bowls, but this one is smaller. My friend has a narrow shelf beside her desk, and the green bowl might be too tall. The blue one can go beside a little plant. Can you wrap it in paper and put it in a small bag? I need to carry it home on the bus.",
+    "sort_order": 403
+  },
+  "children": []
+}

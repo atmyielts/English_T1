@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Adjectives in spare-room notices",
+    "explanation_text": "An adjective describes a person or thing. In a note about a spare room, you can use an adjective to show which thing you mean: the blue key, the small table, or the clean blanket. Put the adjective before the noun. In a phrase with a or an, put a or an first: a small table, an empty box. The next sound helps you choose: small starts with a consonant sound, and empty starts with a vowel sound.\n\nYou can also use an adjective after am, is, or are to describe the subject. Write “The key is blue” or “The towels are clean.” In a reply, you might write “I am ready.” The adjective has the same form with one thing or more than one thing: a clean towel, clean towels, the towel is clean, the towels are clean.",
+    "contrast_text": "The green key is on the hook. Here, green comes before key and helps you find the right key. The key is green. Here, green comes after is and tells you the color of the key.",
+    "common_error_pattern": "Putting the adjective after the noun inside a noun phrase, leaving out am, is, or are before a describing adjective, or adding -s to an adjective with a plural noun.",
+    "tags": [
+      "a1",
+      "adjective-position",
+      "adjectives-before-nouns",
+      "adjectives-after-be"
+    ],
+    "examples": [
+      {
+        "bad": "The key blue is for the spare room.",
+        "good": "The blue key is for the spare room."
+      },
+      {
+        "bad": "The mattress thin.",
+        "good": "The mattress is thin."
+      },
+      {
+        "bad": "The curtains are greens.",
+        "good": "The curtains are green."
+      },
+      {
+        "bad": "I have an bag empty.",
+        "good": "I have an empty bag."
+      }
+    ],
+    "slug": "a1-adjectives-before-nouns-and-after-be",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 390,
+    "focus_area": "adjective-position"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Find the right room",
+      "instructions": "Finish the sign for the yellow door. Put yellow directly before door. Write the missing word only.",
+      "prompt_text": "The ___ door is for guests.",
+      "accepted_answers": [
+        "yellow"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Report on the bed",
+      "instructions": "Say the bed is dry. Put dry directly after is. Write the missing word only.",
+      "prompt_text": "The bed is ___.",
+      "accepted_answers": [
+        "dry"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Offer a box",
+      "instructions": "Offer a box with nothing in it. Use an and empty, in that order, before box. Write the missing words only.",
+      "prompt_text": "I have ___ box for your things.",
+      "accepted_answers": [
+        "an empty"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Mark the cups",
+      "instructions": "Label the cups that guests can use. Put white directly before cups and keep its usual form. Write the missing word only.",
+      "prompt_text": "The ___ cups are for guests.",
+      "accepted_answers": [
+        "white"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Reply about the key",
+      "instructions": "The host is waiting to give you the key. Complete your reply with the full form of be and the word ready. Write the missing words only.",
+      "prompt_text": "I ___ for the key.",
+      "accepted_answers": [
+        "am ready"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the shelf label",
+      "instructions": "Rewrite the whole label. Move small directly before shelf. Keep all the other words.",
+      "prompt_text": "The shelf small is for bags.",
+      "accepted_answers": [
+        "The small shelf is for bags."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the towel update",
+      "instructions": "Rewrite the whole update. Correct the form of clean and keep it after are. Keep all the other words.",
+      "prompt_text": "The towels are cleans.",
+      "accepted_answers": [
+        "The towels are clean."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Describe the rug",
+      "instructions": "Turn the note into a full sentence. Start with The rug and put red after is.",
+      "prompt_text": "the red rug",
+      "accepted_answers": [
+        "The rug is red."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Write a short lamp label",
+      "instructions": "Make a label of exactly three words. Start with a or an and put old directly before lamp. Choose the article that fits the sound at the start of old.",
+      "prompt_text": "The lamp is old.",
+      "accepted_answers": [
+        "An old lamp"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Report on both windows",
+      "instructions": "Rewrite the note so it describes both windows. Start with The windows and put open after the correct form of be.",
+      "prompt_text": "The window is open.",
+      "accepted_answers": [
+        "The windows are open."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Say which chair is free",
+      "instructions": "Use each tile once to tell a guest which chair is free. Start with The. Put big before chair and free after is. Add a period.",
+      "prompt_text": "free / chair / The / is / big",
+      "accepted_answers": [
+        "The big chair is free."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Say which sheets are ready",
+      "instructions": "Use each tile once to tell a guest which sheets are ready. Start with The. Put blue before sheets and ready after are. Add a period.",
+      "prompt_text": "ready / are / sheets / blue / The",
+      "accepted_answers": [
+        "The blue sheets are ready."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.adjective-position"
+    }
+  ]
+}

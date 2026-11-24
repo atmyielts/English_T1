@@ -1,0 +1,50 @@
+{
+  "item": {
+    "slug": "a1-ask-for-a-paper-signup-form",
+    "title": "Ask for a Paper Form",
+    "level": "A1",
+    "prompt_text": "You want to sign up for an exercise class. The desk has a square code to scan, but you do not have your phone. Ask for a paper form and ask where to bring it when you finish.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 25,
+    "target_grammar": "Can I for a request and where for a destination.",
+    "fluency_objective": "Say the problem in one short sentence, then ask two separate questions. Listen back and check the two requests.",
+    "pronunciation_objective": "Stress paper form and where. Let each question finish before starting the next one.",
+    "target_vocabulary": [
+      "paper form",
+      "phone",
+      "sign up",
+      "bring",
+      "finish"
+    ],
+    "cues": [
+      {
+        "text": "Say why you need paper.",
+        "keywords": [
+          "don't have my phone",
+          "no phone",
+          "can't scan"
+        ]
+      },
+      {
+        "text": "Ask for a paper version.",
+        "keywords": [
+          "paper form",
+          "form on paper"
+        ]
+      },
+      {
+        "text": "Ask where to return it.",
+        "keywords": [
+          "where should i bring",
+          "where do i bring",
+          "bring it back here"
+        ]
+      }
+    ],
+    "model_opening": "Hello.",
+    "model_answer": "Hello. I'd like to sign up for the class. I don't have my phone with me. Can I have a paper form, please? Where should I bring it when I finish?",
+    "sort_order": 401
+  },
+  "children": []
+}

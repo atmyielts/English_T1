@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c2-follow-an-editors-distinction-between-silence-and-refusal",
+    "title": "Follow an editor’s distinction between silence and refusal",
+    "level": "C2",
+    "summary": "Two editors discuss how to report an unanswered invitation without ascribing intent.",
+    "transcript_text": "Editor: You write that the former director declined to comment. Our log shows two messages to the public office and an unverified phone number.\nReporter: Nobody got back to me, and they had a full week.\nEditor: A week tells us the time allowed. It doesn't tell us who saw the request or whether they deliberately withheld an answer. Say we hadn't received a reply by publication. Put the offer of a follow-up beside that line.\nReporter: Won't it weaken the account of the original decision?\nEditor: The signed minutes establish the decision. The gap is the director's account of why it happened. If the minutes are inconsistent, that's a separate finding.\nReporter: Then I'll put the unanswered question beside what the minutes can establish.",
+    "category": "Media",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 48,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "media",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Editor",
+        "Reporter"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why object to declined?",
+        "options": [
+          "It rules out a later reply",
+          "It implies a deliberate decision that has not been established",
+          "It reveals a private number",
+          "It contradicts an explicit refusal in the log"
+        ],
+        "answer_index": 1,
+        "explanation": "An unanswered request does not establish that the recipient chose not to answer.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What does the full week establish?",
+        "options": [
+          "The amount of time allowed",
+          "Confirmed receipt on the first day",
+          "Enough time regardless of the circumstances",
+          "That a follow-up would be pointless"
+        ],
+        "answer_index": 0,
+        "explanation": "The wait is documented, while receipt and intent are unresolved.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What remains well supported if the line changes?",
+        "options": [
+          "Why the director personally favoured the decision",
+          "That no one in the office received the request",
+          "That the minutes contain contradictions",
+          "That the recorded decision was taken"
+        ],
+        "answer_index": 3,
+        "explanation": "Signed minutes support occurrence, independent of personal explanation.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why include the offer of follow-up?",
+        "options": [
+          "To promise the story will be removed later",
+          "To replace the original contact effort",
+          "To show the account can still be supplemented",
+          "To discredit the signed minutes"
+        ],
+        "answer_index": 2,
+        "explanation": "The editor wants to avoid implying the question is closed.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How will the reporter revise the structure?",
+        "options": [
+          "Move the uncertainty away from the decision",
+          "Put the open question next to the documentary finding it qualifies",
+          "Replace the minutes with a description of the contact log",
+          "Make silence the lead finding"
+        ],
+        "answer_index": 1,
+        "explanation": "The last line places the unanswered question beside the evidence’s scope.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "an unverified phone number",
+      "focus_phrase": "unverified phone number",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "a week tells us the time allowed",
+      "focus_phrase": "the time allowed",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "that's a separate finding",
+      "focus_phrase": "a separate finding",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

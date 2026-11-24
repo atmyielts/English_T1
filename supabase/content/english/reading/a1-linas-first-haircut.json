@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-linas-first-haircut",
+    "title": "Lina’s First Haircut",
+    "level": "A1",
+    "summary": "A child and a hairdresser find a quiet way to finish her first visit.",
+    "content_markdown": "Lina goes to the hairdresser with her dad. She sees a big chair in front of a mirror. There is an empty chair for her dad by the window. Lina sits in the big chair, but she does not want the man to turn on the loud machine.\n\nThe man puts the machine down. He takes a pair of scissors and cuts a little hair at the front. Lina counts to ten while he works. When she gets to ten, she looks in the mirror. She can see both eyes. “Good,” she says. “Now do the back.”\n\nLina’s dad gives her a small mirror when the man finishes. She holds it so she can see the back of her head. The man asks if she wants a picture. “No, thank you,” Lina says. “I want to show my brother when I get home.”",
+    "category": "Fiction",
+    "theme": "a first visit to the hairdresser",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 143
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is this story about?",
+        "options": [
+          "How Lina gets her hair cut without the loud machine",
+          "How Lina teaches someone to count",
+          "How Lina buys a small mirror for her father",
+          "How her brother helps at the hairdresser"
+        ],
+        "answer_index": 0,
+        "explanation": "Lina dislikes the machine, so the man uses scissors and lets her look at the result."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Where is the empty chair for Lina’s dad?",
+        "options": [
+          "By the window",
+          "In front of the big mirror",
+          "Behind the hairdresser",
+          "By the door"
+        ],
+        "answer_index": 0,
+        "explanation": "The first paragraph puts the empty chair by the window."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Lina ask the man to do the back after counting?",
+        "options": [
+          "Her dad tells her to stop the visit.",
+          "She finds that the machine is not loud.",
+          "She has seen the first result and wants him to continue.",
+          "She wants him to stop cutting at the front and take a photo."
+        ],
+        "answer_index": 2,
+        "explanation": "After the first cut Lina sees both eyes, says “Good” and asks him to continue."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “turn on” mean here?",
+        "options": [
+          "Give to somebody",
+          "Put inside a drawer",
+          "Point towards a mirror",
+          "Start the machine"
+        ],
+        "answer_index": 3,
+        "explanation": "Lina does not want the machine to make its loud sound."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The man uses scissors to cut the front of Lina’s hair.",
+        "answer": "true",
+        "explanation": "He puts the machine down and takes scissors."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Lina asks the man to take a picture at the end.",
+        "answer": "false",
+        "explanation": "The man offers a picture, but Lina says no."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The text says how old Lina is.",
+        "answer": "not_given",
+        "explanation": "It follows her first visit without giving her age."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Lina counts to ___. Her dad gives her a small ___ at the end.",
+        "answers": [
+          [
+            "ten"
+          ],
+          [
+            "mirror"
+          ]
+        ],
+        "word_bank": [
+          "mirror",
+          "six",
+          "ten",
+          "scissors"
+        ],
+        "explanation": "She counts to ten, and her dad gives her the small mirror after the cut."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Seeing the finished haircut",
+          "A worry about a machine",
+          "Trying a quieter start",
+          "Buying a mirror for her brother"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "Lina arrives worried, tries the scissors, and finally sees the back of her hair."
+      }
+    ]
+  },
+  "children": []
+}

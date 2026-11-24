@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a2-a-night-in-the-insect-garden",
+    "title": "A Night in the Insect Garden",
+    "level": "A2",
+    "summary": "Two sisters learn why it helps to wait before drawing what they see at night.",
+    "content_markdown": "We arrived at the insect garden just before dark. The guide met us beside a low gate. She gave me a sheet with a map on one side and three empty boxes on the other. She asked us to wait on the path and draw three things we could see. I drew a leaf with nothing on it in my first box. Nuri, my sister, wanted to wait until something came out.\n\nA bright light shone from the shop window behind us. After the shop closed, the light went out. We stayed quite still for a short time. Then Nuri pointed to the end of a leaf. A little insect was moving there. I had not seen it at first because I was looking towards the window. We drew the insect in a second box, leaving the first picture as it was.\n\nBefore we went home the guide looked at both boxes. I expected her to tell me to cross out the first drawing. Instead she wrote the time next to each one. She said that both pictures were useful. They showed what I noticed before and after I had waited in the dark.",
+    "category": "Nature",
+    "theme": "watching insects from a path",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "observation diary",
+      "word_count": 194
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why are both drawings useful to the guide?",
+        "options": [
+          "They show two different routes through the garden.",
+          "They prove that the insect came from the shop.",
+          "They show what the writer noticed at different times.",
+          "They help the guide decide how to repair the gate."
+        ],
+        "answer_index": 2,
+        "explanation": "The guide keeps the drawings as records of observations made before and after waiting."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What was on one side of the sheet?",
+        "options": [
+          "A photo of an insect",
+          "A list of garden rules",
+          "The name of the shop",
+          "A map"
+        ],
+        "answer_index": 3,
+        "explanation": "The guide’s sheet has a map on one side and boxes on the other."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why might Nuri get a different picture in her first box?",
+        "options": [
+          "She chooses to wait before drawing.",
+          "She receives a different map.",
+          "She is allowed to leave the path.",
+          "She sits closest to the bright shop window."
+        ],
+        "answer_index": 0,
+        "explanation": "Nuri waits for something to appear while her sister draws the leaf straight away."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “cross out” mean here?",
+        "options": [
+          "Draw a second map",
+          "Mark a drawing so it will no longer count",
+          "Move a picture to the other side",
+          "Write on the back of the paper"
+        ],
+        "answer_index": 1,
+        "explanation": "The writer expects the guide to mark the first picture as a mistake, but the guide gives it a time."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The shop light went out before Nuri pointed out the insect.",
+        "answer": "true",
+        "explanation": "The shop light goes out, the observers wait, and then Nuri points to the insect."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The guide told the writer to get rid of the first picture.",
+        "answer": "false",
+        "explanation": "She kept it and wrote the time next to it."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage says what kind of insect was on the leaf.",
+        "answer": "not_given",
+        "explanation": "The passage calls it “a little insect”, without naming its kind."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The guide told everyone to stay on the ___. She wrote the ___ next to each drawing.",
+        "answers": [
+          [
+            "path"
+          ],
+          [
+            "time"
+          ]
+        ],
+        "word_bank": [
+          "gate",
+          "time",
+          "box",
+          "path"
+        ],
+        "explanation": "The opening paragraph identifies the path. The end records the time for each drawing."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A change after the light goes out",
+          "Looking at two pictures together",
+          "Getting ready to watch and draw",
+          "Removing the insects from the garden"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The paragraphs give the instructions, describe a later observation and explain why the guide keeps both records."
+      }
+    ]
+  },
+  "children": []
+}

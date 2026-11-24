@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "b1-applaud-at-the-end-of-the-recital",
+    "title": "Tell About a Misread Concert Cue",
+    "level": "B1",
+    "prompt_text": "At a student recital, you thought a short pause meant the tune had finished. You began to clap, then realised the player still had a final section to play. Tell someone who was not there what led to the mistake, what you noticed next, and how you now recognise the end of a piece.",
+    "prompt_type": "storytelling",
+    "task_type": "story",
+    "target_duration_seconds": 67,
+    "target_grammar": "Past simple and past continuous, then and when for sequence, and present simple for a habit.",
+    "fluency_objective": "Make the pause a clear turning point. Add one direct observation before the reflection.",
+    "pronunciation_objective": "Slow down briefly around the pause to make the story clear. Avoid copying the sound of the performance.",
+    "target_vocabulary": [
+      "recital",
+      "pause",
+      "applaud",
+      "final section",
+      "bow"
+    ],
+    "cues": [
+      {
+        "text": "Describe what made the pause look like the end.",
+        "keywords": [
+          "pause",
+          "stopped",
+          "hands stayed",
+          "went quiet"
+        ]
+      },
+      {
+        "text": "Describe what happened after you clapped.",
+        "keywords": [
+          "clap",
+          "still playing",
+          "started again",
+          "final section"
+        ]
+      },
+      {
+        "text": "Say what you look for now.",
+        "keywords": [
+          "now",
+          "look at the player",
+          "bow",
+          "wait"
+        ]
+      }
+    ],
+    "model_opening": "I went to a student recital last spring.",
+    "model_answer": "I went to a student recital last spring. One player stopped after a loud part, and the room went quiet. I thought the tune was finished and began to clap. Then I saw that the player's hands were still in place. She looked at the music and started again. There was one short section left, and I felt a bit silly because I had stopped listening at the very moment it became quiet. Now, if I'm not sure a piece has ended, I wait and look at the player. A pause on its own doesn't tell me as much as what the player does next.",
+    "sort_order": 375
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Building a Conference Program",
+    "description": "Plan a small conference, resolve scheduling conflicts, and communicate program changes to speakers and participants.",
+    "slug": "b2-building-a-conference-program",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 360,
+    "topic": "conference programme"
+  },
+  "children": [
+    {
+      "word": "plenary",
+      "part_of_speech": "noun",
+      "definition": "A conference session intended for everyone at the event.",
+      "example": "The opening plenary is the only session that needs seating for all 80 participants.",
+      "translation_ru": "пленарное заседание",
+      "translation_uz": "yalpi majlis",
+      "collocations": [
+        "opening plenary",
+        "morning plenary"
+      ]
+    },
+    {
+      "word": "breakout session",
+      "part_of_speech": "noun phrase",
+      "definition": "A meeting in which a smaller group works or talks separately from the main conference group.",
+      "example": "Limit the breakout session on staff training to 16 people so everyone has a chance to speak.",
+      "translation_ru": "отдельная встреча или занятие в малой группе",
+      "translation_uz": "kichik guruhda alohida oʻtkaziladigan muhokama yoki mashgʻulot",
+      "collocations": [
+        "join a breakout session",
+        "facilitate a breakout session"
+      ]
+    },
+    {
+      "word": "moderator",
+      "part_of_speech": "noun",
+      "definition": "A person who guides a discussion and decides when each speaker can contribute.",
+      "example": "Ask the moderator to give both panelists a turn before inviting questions from the room.",
+      "translation_ru": "ведущий дискуссии",
+      "translation_uz": "muhokama boshlovchisi",
+      "collocations": [
+        "panel moderator",
+        "appoint a moderator"
+      ]
+    },
+    {
+      "word": "submission period",
+      "part_of_speech": "noun phrase",
+      "definition": "The period during which conference organizers accept proposals for talks or other sessions.",
+      "example": "We extended the submission period by a week because several speakers needed more time to prepare their proposals.",
+      "translation_ru": "период приёма заявок",
+      "translation_uz": "arizalarni qabul qilish davri",
+      "collocations": [
+        "extend the submission period",
+        "announce the submission period"
+      ]
+    },
+    {
+      "word": "session proposal",
+      "part_of_speech": "noun phrase",
+      "definition": "A written suggestion for a conference activity that explains its topic and how it will be organized.",
+      "example": "The session proposal asks for movable seating because participants will work in groups of four.",
+      "translation_ru": "предложение о проведении сессии",
+      "translation_uz": "sessiya oʻtkazish taklifi",
+      "collocations": [
+        "submit a session proposal",
+        "accept a session proposal"
+      ]
+    },
+    {
+      "word": "speaker lineup",
+      "part_of_speech": "noun phrase",
+      "definition": "The group of people scheduled to speak at an event.",
+      "example": "Please confirm the speaker lineup before we print the program with everyone’s name and job title.",
+      "translation_ru": "состав выступающих",
+      "translation_uz": "maʼruzachilar tarkibi",
+      "collocations": [
+        "confirm the speaker lineup",
+        "announce the speaker lineup"
+      ]
+    },
+    {
+      "word": "overlap",
+      "part_of_speech": "noun",
+      "definition": "A period when two scheduled activities are happening at the same time.",
+      "example": "There is a 15-minute overlap between the two sessions, and Lena is due to speak in both.",
+      "translation_ru": "совпадение по времени",
+      "translation_uz": "vaqt jihatidan ustma-ust kelish",
+      "collocations": [
+        "a 15-minute overlap",
+        "avoid an overlap"
+      ]
+    },
+    {
+      "word": "panel discussion",
+      "part_of_speech": "noun phrase",
+      "definition": "A discussion in front of an audience in which a group of invited speakers share their views on a topic.",
+      "example": "Move the panel discussion to the larger room so all four speakers can sit together at the front.",
+      "translation_ru": "панельная дискуссия",
+      "translation_uz": "panel muhokamasi",
+      "collocations": [
+        "host a panel discussion",
+        "take part in a panel discussion"
+      ]
+    },
+    {
+      "word": "check-in",
+      "part_of_speech": "noun",
+      "definition": "The process of confirming that someone has arrived at an event.",
+      "example": "To speed up check-in, we’ll use separate lists for speakers and other participants.",
+      "translation_ru": "регистрация по прибытии",
+      "translation_uz": "kelganda roʻyxatdan oʻtish",
+      "collocations": [
+        "conference check-in",
+        "speed up check-in"
+      ]
+    },
+    {
+      "word": "time allocation",
+      "part_of_speech": "noun phrase",
+      "definition": "The amount of time reserved for a particular activity.",
+      "example": "The time allocation gives each of the three speakers 12 minutes and leaves six minutes for questions.",
+      "translation_ru": "отведённое время",
+      "translation_uz": "ajratilgan vaqt",
+      "collocations": [
+        "a fixed time allocation",
+        "review the time allocation"
+      ]
+    },
+    {
+      "word": "discussant",
+      "part_of_speech": "noun",
+      "definition": "A person invited to comment on a presentation and raise points for discussion.",
+      "example": "Send the draft talks to the discussant on Monday so she can prepare her comments for Friday’s session.",
+      "translation_ru": "приглашённый комментатор доклада",
+      "translation_uz": "maʼruzaga fikr bildirish uchun taklif etilgan mutaxassis",
+      "collocations": [
+        "an invited discussant",
+        "serve as a discussant"
+      ]
+    },
+    {
+      "word": "wrap-up",
+      "part_of_speech": "noun",
+      "definition": "A short summary at the end of an event, or the closing part in which that summary is given.",
+      "example": "During the wrap-up, the organizer will summarize what each group agreed to do after the conference.",
+      "translation_ru": "подведение итогов",
+      "translation_uz": "qisqacha yakun yoki yakuniy qism",
+      "collocations": [
+        "a brief wrap-up",
+        "give a wrap-up"
+      ]
+    },
+    {
+      "word": "parallel track",
+      "part_of_speech": "noun phrase",
+      "definition": "A series of sessions on one theme that runs at the same time as another series.",
+      "example": "The parallel track on staff training will run in Room B while the finance sessions continue in Room A.",
+      "translation_ru": "параллельная серия тематических сессий",
+      "translation_uz": "boshqa turkum bilan bir vaqtda davom etadigan mavzuli sessiyalar turkumi",
+      "collocations": [
+        "run a parallel track",
+        "sessions in a parallel track"
+      ]
+    },
+    {
+      "word": "question period",
+      "part_of_speech": "noun phrase",
+      "definition": "An allotted time after a talk or panel when the audience can ask questions.",
+      "example": "The question period starts as soon as the final speaker sits down.",
+      "translation_ru": "время, отведённое на вопросы аудитории",
+      "translation_uz": "tinglovchilar savol berishi uchun ajratilgan vaqt",
+      "collocations": [
+        "a short question period",
+        "begin the question period"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c1-turn-an-onboarding-brief-into-task-cards",
+    "title": "Plan a Short Onboarding Brief and Task Cards",
+    "level": "C1",
+    "prompt_text": "A repair club has one printed welcome sheet that volunteers read before choosing a task. It covers the whole meeting but is hard to consult while working. Suggest which information should stay on the sheet, what should move onto task cards, and how you would check whether newcomers can find both kinds of information.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 109,
+    "target_grammar": "Parallel contrasts, relative clauses and conditional test criteria.",
+    "fluency_objective": "Explain how the two formats are used at different moments. Give one example of a piece of information for each.",
+    "pronunciation_objective": "Stress before choosing and during the task to make the two reading situations clear.",
+    "target_vocabulary": [
+      "brief",
+      "task card",
+      "reference",
+      "step",
+      "orientation",
+      "review"
+    ],
+    "cues": [
+      {
+        "text": "Name one thing that belongs on the overview and why.",
+        "keywords": [
+          "welcome sheet",
+          "who to ask",
+          "whole meeting",
+          "before choosing"
+        ]
+      },
+      {
+        "text": "Give a distinct example for a task card.",
+        "keywords": [
+          "task card",
+          "check",
+          "step",
+          "while working"
+        ]
+      },
+      {
+        "text": "Describe a realistic test for both places.",
+        "keywords": [
+          "ask",
+          "find",
+          "try",
+          "newcomer"
+        ]
+      },
+      {
+        "text": "State how one possible result would affect the design.",
+        "keywords": [
+          "if people",
+          "move",
+          "keep",
+          "change",
+          "first try"
+        ]
+      }
+    ],
+    "model_opening": "I would keep the welcome sheet for decisions a newcomer makes before choosing a task.",
+    "model_answer": "I would keep the welcome sheet for decisions a newcomer makes before choosing a task. It can show where people meet, who to ask for a demonstration and which jobs can be done without prior experience. That gives someone a view of the whole meeting before they walk over to a bench.\n\nA task card should answer the questions that come up after they begin. If someone is sorting donated parts, put a picture of each tray on the card and show where to place an item they cannot identify. They should be able to look at it quickly and get back to the item without rereading the opening schedule. Use the same name for the job on the card and on the welcome sheet, so people can connect them.\n\nFor a test, ask two new visitors to choose a job and find the person who can show it to them. Then give them one unfamiliar part and see whether they know where to put it. If they can choose a job but go back to the welcome sheet with the part, I would make the task card easier to find before adding more text.",
+    "sort_order": 410
+  },
+  "children": []
+}

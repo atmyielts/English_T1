@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b2-compare-two-shipping-trial-measures",
+    "title": "Compare two shipping trial measures",
+    "level": "B2",
+    "summary": "A warehouse planner and analyst discuss a faster dispatch trial with an unexpected side effect.",
+    "transcript_text": "Planner: The first scan is happening twenty minutes earlier, so on paper the new schedule works.\nAnalyst: That's the moment the box leaves packing, not the moment it moves onto a van. Units now reach the loading bay before the vans do. By the end of the shift, more boxes are being switched between routes at the bay.\nPlanner: Are you saying we should go back to the old timetable?\nAnalyst: Keep the early shift on Tuesday, when van arrival is predictable, and use the old schedule on other days as a comparison. Log the actual departures and re-routing, not just the first scan.\nPlanner: Good. If the benefit survives that test, we can talk about adding days.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 132,
+    "duration_seconds": 51,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "workplace",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Planner",
+        "Analyst"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What problem does the analyst identify?",
+        "options": [
+          "The early shift is costing twice as much",
+          "The improvement measures only an early stage",
+          "The vans now leave earlier than packing",
+          "The scan equipment is broken"
+        ],
+        "answer_index": 1,
+        "explanation": "The scan precedes loading and can miss a bottleneck at the bay.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What happens more often on the new schedule?",
+        "options": [
+          "Boxes change routes at the loading bay",
+          "Vans reach the warehouse late on Tuesday",
+          "Boxes return to the packing room",
+          "Workers skip all scans"
+        ],
+        "answer_index": 0,
+        "explanation": "The analyst notes an increase in switching boxes between routes.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why keep the early shift on Tuesday?",
+        "options": [
+          "Tuesday is the only day with working scanners",
+          "Boxes need no labels then",
+          "A new van arrives every Tuesday",
+          "Van arrivals are predictable that day"
+        ],
+        "answer_index": 3,
+        "explanation": "Predictable van arrivals make it a useful condition for the trial.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What data would make the second trial more informative?",
+        "options": [
+          "Truck fuel prices and packing wages",
+          "Only the first scan for each route",
+          "Actual departures and re-routing as well as scan times",
+          "The number of van drivers at lunch"
+        ],
+        "answer_index": 2,
+        "explanation": "The proposed metrics cover later steps and complications.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What would justify expanding the trial?",
+        "options": [
+          "Completing Tuesday without rerouting any box",
+          "A benefit that persists after fuller measurement",
+          "The first scan staying exactly twenty minutes early",
+          "A permanently identical arrival time on every day"
+        ],
+        "answer_index": 1,
+        "explanation": "The planner says expansion depends on the measured improvement surviving.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "on paper the new schedule works",
+      "focus_phrase": "new schedule works",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "units now reach the loading bay",
+      "focus_phrase": "the loading bay",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "we can talk about adding days",
+      "focus_phrase": "about adding days",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

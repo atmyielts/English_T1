@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Reading Unreliable Narration",
+    "description": "Compare what a fictional narrator claims about a family’s decision to sell their house with what readers can infer from shifts in viewpoint, gaps in the story, and details the narrator overlooks.",
+    "slug": "c2-reading-unreliable-narration",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 370,
+    "topic": "literary narration"
+  },
+  "children": [
+    {
+      "word": "fallible narrator",
+      "part_of_speech": "noun phrase",
+      "definition": "A teller whose sincere version of events proves inaccurate because of limits in memory, knowledge, or judgment.",
+      "example": "Elena is a fallible narrator who sincerely remembers her sister voting for the sale, although the minutes record that her sister was absent.",
+      "translation_ru": "рассказчик, который невольно искажает события",
+      "translation_uz": "xotirasi, bilimi yoki mulohazasidagi xatolar sabab voqealarni beixtiyor notoʻgʻri bayon qiladigan hikoyachi",
+      "collocations": [
+        "a genuinely fallible narrator",
+        "the testimony of a fallible narrator"
+      ]
+    },
+    {
+      "word": "focalization",
+      "part_of_speech": "noun",
+      "definition": "The filtering of fictional events through a particular viewpoint, which determines whose perceptions and knowledge are available to the reader.",
+      "example": "The chapter’s focalization through Elena’s sister lets readers see the buyer’s signature before Elena enters the room.",
+      "translation_ru": "фокализация",
+      "translation_uz": "fokalizatsiya",
+      "collocations": [
+        "internal focalization",
+        "a shift in focalization"
+      ]
+    },
+    {
+      "word": "retrospective narration",
+      "part_of_speech": "noun phrase",
+      "definition": "The telling of events from a point in time after they occurred.",
+      "example": "Through retrospective narration, Elena calls the dinner a farewell, although at the time she thought the family was simply gathering to discuss repairs.",
+      "translation_ru": "ретроспективное повествование",
+      "translation_uz": "retrospektiv hikoyalash",
+      "collocations": [
+        "use retrospective narration",
+        "a novel told through retrospective narration"
+      ]
+    },
+    {
+      "word": "free indirect discourse",
+      "part_of_speech": "noun phrase",
+      "definition": "A technique in which third-person prose takes on a figure’s idiom or judgments without quoting their words or explicitly reporting their thoughts.",
+      "example": "The prose slips into free indirect discourse after Elena's sister asks for more time: Another week to think it over? Her sister would be asking the house for its consent next.",
+      "translation_ru": "несобственно-прямая речь",
+      "translation_uz": "erkin bilvosita nutq, yaʼni qahramonning fikri yoki ohangi hikoya bayoniga singgan nutq",
+      "collocations": [
+        "a passage in free indirect discourse",
+        "a shift into free indirect discourse"
+      ]
+    },
+    {
+      "word": "diegetic",
+      "part_of_speech": "adjective",
+      "definition": "Existing within the fictional world and therefore potentially accessible to the people who inhabit it.",
+      "example": "The ticking Elena mistakes for footsteps is diegetic, coming from the hall clock her sister winds before the buyer arrives.",
+      "translation_ru": "внутримировой, существующий в мире произведения",
+      "translation_uz": "asar voqealari olamiga mansub",
+      "collocations": [
+        "diegetic sound",
+        "diegetic music"
+      ]
+    },
+    {
+      "word": "analepsis",
+      "part_of_speech": "noun",
+      "definition": "A departure from the current point in a story to present an episode that occurred earlier in its chronology.",
+      "example": "The sale dinner is interrupted by an analepsis in which Elena promises her mother that she will never sell the house without her sister’s consent.",
+      "translation_ru": "аналепсис, возврат к более раннему эпизоду повествования",
+      "translation_uz": "analepsis, hikoyada avvalgi voqeaga qaytish",
+      "collocations": [
+        "a brief analepsis",
+        "an extended analepsis"
+      ]
+    },
+    {
+      "word": "narrative distance",
+      "part_of_speech": "noun phrase",
+      "definition": "The degree of psychological closeness that the manner of telling creates between the reader and a person whose experience is depicted.",
+      "example": "The narrative distance narrows during the signing as the prose moves from describing Elena’s steady hand to registering her fear that the pen will slip.",
+      "translation_ru": "повествовательная дистанция",
+      "translation_uz": "bayonda oʻquvchining qahramon kechinmalariga qanchalik yaqinlashtirilishi",
+      "collocations": [
+        "reduce narrative distance",
+        "vary the narrative distance"
+      ]
+    },
+    {
+      "word": "self-exculpation",
+      "part_of_speech": "noun",
+      "definition": "An attempt to clear oneself of blame by presenting one’s actions, motives, or circumstances in a favourable light.",
+      "example": "Elena’s insistence that she ‘only passed the papers around’ reads as self-exculpation once her sister reveals who arranged the sale.",
+      "translation_ru": "самооправдание",
+      "translation_uz": "oʻzini oqlashga urinish",
+      "collocations": [
+        "an exercise in self-exculpation",
+        "a strategy of self-exculpation"
+      ]
+    },
+    {
+      "word": "lacuna",
+      "part_of_speech": "noun",
+      "definition": "A significant gap in a text or testimony where material the reader has reason to expect is missing.",
+      "example": "There is a lacuna in Elena’s version of the dinner where her sister’s reply should be, immediately before Elena declares that everyone agreed.",
+      "translation_ru": "лакуна, существенный пробел в повествовании",
+      "translation_uz": "bayondagi muhim boʻshliq",
+      "collocations": [
+        "identify a lacuna",
+        "fill a lacuna"
+      ]
+    },
+    {
+      "word": "readerly foreknowledge",
+      "part_of_speech": "noun phrase",
+      "definition": "Advance awareness given to readers of an outcome that the people depicted have yet to discover.",
+      "example": "The opening chapter depicts the buyer taking possession of the house. That piece of readerly foreknowledge changes how we interpret the sisters' later dispute over whether to sell.",
+      "translation_ru": "заблаговременное знание читателя об исходе событий",
+      "translation_uz": "oʻquvchining voqealar yakunini oldindan bilishi",
+      "collocations": [
+        "create readerly foreknowledge",
+        "exploit readerly foreknowledge"
+      ]
+    },
+    {
+      "word": "paratext",
+      "part_of_speech": "noun",
+      "definition": "Material such as a title, preface, or epigraph that accompanies the main text and shapes how readers approach it.",
+      "example": "The novel’s paratext includes a dedication to ‘those whose consent was assumed’, casting doubt on Elena’s claim before she makes it.",
+      "translation_ru": "паратекст",
+      "translation_uz": "paratekst",
+      "collocations": [
+        "the novel’s paratext",
+        "read the paratext"
+      ]
+    },
+    {
+      "word": "perspectival incongruity",
+      "part_of_speech": "noun phrase",
+      "definition": "A clash between the meanings or values that different viewpoints attach to the same event.",
+      "example": "The perspectival incongruity is clearest at the signing, which Elena calls a gesture of solidarity and her sister regards as an act of betrayal.",
+      "translation_ru": "расхождение в трактовках или оценках одного и того же события с разных точек зрения",
+      "translation_uz": "bir voqeani turlicha talqin qilish yoki unga turlicha baho berishdan kelib chiqadigan ziddiyat",
+      "collocations": [
+        "create perspectival incongruity",
+        "a moment of perspectival incongruity"
+      ]
+    },
+    {
+      "word": "embedded narrator",
+      "part_of_speech": "noun phrase",
+      "definition": "A person within one level of a story who takes over the telling of a further story contained within it.",
+      "example": "The buyer becomes an embedded narrator when he tells Elena’s niece how he negotiated the sale privately with Elena.",
+      "translation_ru": "рассказчик во вставной истории",
+      "translation_uz": "asosiy hikoya ichida alohida hikoyani aytib beruvchi shaxs",
+      "collocations": [
+        "the voice of an embedded narrator",
+        "introduce an embedded narrator"
+      ]
+    },
+    {
+      "word": "outer narrative",
+      "part_of_speech": "noun phrase",
+      "definition": "The enclosing storyline that establishes the circumstances in which one or more inner stories are told or encountered.",
+      "example": "In the outer narrative, Elena’s niece finds the family’s recording years after the sale and plays it to find out why the sisters stopped speaking.",
+      "translation_ru": "обрамляющее повествование",
+      "translation_uz": "ichki hikoya qaysi vaziyatda aytilishi yoki unga qanday duch kelinishini koʻrsatuvchi asosiy hikoya",
+      "collocations": [
+        "establish the outer narrative",
+        "return to the outer narrative"
+      ]
+    }
+  ]
+}

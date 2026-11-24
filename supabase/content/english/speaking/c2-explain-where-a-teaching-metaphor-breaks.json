@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "c2-explain-where-a-teaching-metaphor-breaks",
+    "title": "Explain Where a Teaching Metaphor Breaks",
+    "level": "C2",
+    "prompt_text": "An instructor tells new volunteers that their team's scheduling board is like a traffic signal. The metaphor helps people see when a job is ready or blocked. Some volunteers now assume that a green tag means everyone should start immediately, although the tag only says the materials are ready. Explain how you would keep the helpful idea, mark the limit, and show a newcomer what to do in a borderline case.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 117,
+    "target_grammar": "Explicitly bounded analogies, contrastive focus and conditional reasoning.",
+    "fluency_objective": "Use one case where the metaphor works and one where it fails. End with a question a newcomer can answer aloud.",
+    "pronunciation_objective": "Contrast materials are ready with you should start. Give the two statements distinct rhythm.",
+    "target_vocabulary": [
+      "analogy",
+      "signal",
+      "materials",
+      "available",
+      "blocked",
+      "permission"
+    ],
+    "cues": [
+      {
+        "text": "Show what the traffic signal analogy helps people understand.",
+        "keywords": [
+          "blocked",
+          "ready",
+          "traffic signal",
+          "colours"
+        ]
+      },
+      {
+        "text": "Explain the wrong inference from a green tag.",
+        "keywords": [
+          "green",
+          "materials are ready",
+          "start immediately",
+          "doesn't mean"
+        ]
+      },
+      {
+        "text": "Set a clear additional condition for starting.",
+        "keywords": [
+          "assigned",
+          "second check",
+          "name",
+          "coordinator"
+        ]
+      },
+      {
+        "text": "Use a borderline example that tests the distinction.",
+        "keywords": [
+          "if the tag",
+          "borderline",
+          "for example",
+          "what would you do"
+        ]
+      }
+    ],
+    "model_opening": "I would keep the traffic signal as an image for the status of the job.",
+    "model_answer": "I would keep the traffic signal as an image for the status of the job. It helps someone see that red means a job is blocked and there is no point gathering people for it yet. Green should carry a similarly narrow message: the materials are ready. At a crossing, green can invite everyone who is waiting to move. That second part of the image does not transfer to our board.\n\nI would put the status and the assignment on separate lines. A green tag can still tell you when you could begin, and a name below it can tell you who has been asked to do so. If nobody is named, check with the coordinator before opening the materials. Someone may need them for a demonstration, or a person already working on the task may be about to return.\n\nTo teach the rule, give a newcomer a borderline case. The tag is green, the space is free and they know how to do the job, but the name on the board is somebody else's. Ask them what would you do and listen for which part of the board they use first. They should be able to explain why being able to start is different from being the person expected to start.",
+    "sort_order": 411
+  },
+  "children": []
+}

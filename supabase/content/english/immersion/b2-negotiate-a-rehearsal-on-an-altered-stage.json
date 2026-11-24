@@ -1,0 +1,143 @@
+{
+  "item": {
+    "slug": "b2-negotiate-a-rehearsal-on-an-altered-stage",
+    "title": "Negotiate a rehearsal on an altered stage",
+    "level": "B2",
+    "mission_type": "problem_solving",
+    "context_text": "A theatre group has lost the larger rehearsal hall and must change its movement plan before a preview.",
+    "objective_text": "Retain an accessible route while keeping a crucial stage movement readable.",
+    "target_vocabulary": [
+      "sightline",
+      "access",
+      "blocking",
+      "aisle",
+      "cue"
+    ],
+    "success_conditions": [
+      "Retain an accessible route while keeping a crucial stage movement readable.",
+      "Keep the access rule",
+      "Preserve the scene’s meaning",
+      "Clear the platform on time"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the venue’s marked floor plan",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "The new stage has a narrow entrance at the back. The left aisle has a step-free route to the first row. Nothing can be placed in that aisle. Performers may use the side platform before the show, but it must be clear once the doors open.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which route cannot be narrowed by equipment?",
+          "options": [
+            "The left aisle",
+            "The back of the stage",
+            "The closed rehearsal hall"
+          ],
+          "answer_index": 0,
+          "explanation": "The left aisle provides the step-free route."
+        },
+        {
+          "prompt": "When must the side platform be cleared?",
+          "options": [
+            "Before the audience comes in",
+            "After the show",
+            "Only during rehearsal"
+          ],
+          "answer_index": 0,
+          "explanation": "It must be clear once the doors open."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the director’s note",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The silent entrance matters because the audience needs to see the letter pass between the two characters. The old plan comes down the left aisle. Try the back entrance instead, then have the first actor pause in the centre to make the exchange visible.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Why does the entrance matter to the story?",
+          "options": [
+            "The audience has to see a letter change hands",
+            "The characters read a letter aloud",
+            "Two actors need somewhere to wait"
+          ],
+          "answer_index": 0,
+          "explanation": "The movement reveals an exchange without speech."
+        },
+        {
+          "prompt": "What adjustment would make a route from the back readable?",
+          "options": [
+            "Pause at centre stage",
+            "Leave the side platform occupied",
+            "Walk faster through the left aisle"
+          ],
+          "answer_index": 0,
+          "explanation": "The pause gives the audience time to see the exchange."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Discuss the rehearsal plan",
+      "prompt_text": "A cast member suggests keeping the old aisle route just for rehearsal.",
+      "instructions": "Explain why rehearsing the replacement matters. Offer a practical way to test the audience’s view.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 30,
+      "model_answer": "Let's rehearse from the back entrance now rather than practise a route we can't use. Can someone watch from the first row and check whether the centre pause makes the letter exchange clear?",
+      "points": [
+        {
+          "label": "Rehearse the back entrance",
+          "any": [
+            "back entrance",
+            "enter from the back"
+          ]
+        },
+        {
+          "label": "Check a sightline",
+          "any": [
+            "watch from the first row",
+            "sightline",
+            "first row view"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the new blocking note",
+      "prompt_text": "The cast has tried the movement. It works when the first actor stops just before speaking.",
+      "instructions": "Record the replacement route, check the scene’s purpose, and remind crew when the side platform has to clear.",
+      "goal": "Retain an accessible route while keeping a crucial stage movement readable.",
+      "estimated_minutes": 13,
+      "min_words": 55,
+      "model_answer": "Use the back entrance for the silent arrival instead of the left aisle. Pause in the centre before the first line so the audience can see the letter exchange. The left aisle remains clear for step-free access. Move any rehearsal props from the side platform before the doors open and check the first-row sightline once more.",
+      "points": [
+        {
+          "label": "Keep the access rule",
+          "any": [
+            "left aisle remains clear",
+            "keep the left aisle clear"
+          ]
+        },
+        {
+          "label": "Preserve the scene’s meaning",
+          "any": [
+            "see the letter exchange",
+            "see the letter change hands"
+          ]
+        },
+        {
+          "label": "Clear the platform on time",
+          "any": [
+            "before the doors open",
+            "before opening the doors"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Critiquing Dance and Movement",
+    "description": "An imagined review of the contemporary dance piece The Narrow Room examines how the performers distribute weight, shape time, and move through space.",
+    "slug": "c2-critiquing-dance-and-movement",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 360,
+    "topic": "movement criticism"
+  },
+  "children": [
+    {
+      "word": "kinesthetic",
+      "part_of_speech": "adjective",
+      "definition": "Relating to the internally felt sense of bodily movement and position.",
+      "example": "When the soloist presses her palms outward against empty space, the gesture has a kinesthetic effect: I can almost feel the resistance in my own shoulders.",
+      "translation_ru": "кинестетический",
+      "translation_uz": "kinestetik",
+      "collocations": [
+        "kinesthetic sensation",
+        "kinesthetic response"
+      ]
+    },
+    {
+      "word": "weight transfer",
+      "part_of_speech": "noun phrase",
+      "definition": "The passage of the body's load from one point of contact to another.",
+      "example": "The opening step makes the weight transfer visible: her right foot takes her full weight before the left toes lift.",
+      "translation_ru": "перенос веса тела",
+      "translation_uz": "tana ogʻirligini bir tayanchdan boshqasiga oʻtkazish",
+      "collocations": [
+        "gradual weight transfer",
+        "complete a weight transfer"
+      ]
+    },
+    {
+      "word": "counterbalance",
+      "part_of_speech": "noun",
+      "definition": "An arrangement in which opposing pulls or distributions of body weight offset each other and maintain equilibrium.",
+      "example": "The duet finds a striking counterbalance when the partners clasp wrists and lean away from each other, keeping both sets of heels planted.",
+      "translation_ru": "положение, в котором партнёры уравновешивают друг друга",
+      "translation_uz": "sheriklar bir-birini muvozanatda ushlab turadigan holat",
+      "collocations": [
+        "partnered counterbalance",
+        "maintain a counterbalance"
+      ]
+    },
+    {
+      "word": "low-level movement",
+      "part_of_speech": "noun phrase",
+      "definition": "Choreographed action predominantly performed with the body close to the ground.",
+      "example": "The middle section commits to low-level movement: the dancers crawl on their forearms and slide on one hip, with their shoulders barely rising above their knees.",
+      "translation_ru": "движение на нижнем уровне, близко к полу",
+      "translation_uz": "polga yaqin sathdagi harakat",
+      "collocations": [
+        "a sequence of low-level movement",
+        "transition into low-level movement"
+      ]
+    },
+    {
+      "word": "articulation",
+      "part_of_speech": "noun",
+      "definition": "The clarity with which the actions of individual joints or body segments are differentiated within a gesture.",
+      "example": "The articulation of the closing gesture is unusually clear: the elbow opens first, the wrist bends next, and the fingers unfold one by one.",
+      "translation_ru": "чёткая работа отдельных суставов и частей тела",
+      "translation_uz": "boʻgʻimlar va tana qismlari harakatining aniq ajratilishi",
+      "collocations": [
+        "precise articulation",
+        "articulation of the spine"
+      ]
+    },
+    {
+      "word": "sustained phrasing",
+      "part_of_speech": "noun phrase",
+      "definition": "The shaping of a movement sequence so that its flow and expressive quality continue across successive actions.",
+      "example": "The soloist's sustained phrasing links a turn, a lunge and a rise into one continuous action, with the same measured intensity right through to the fingertips.",
+      "translation_ru": "непрерывное ведение двигательной фразы",
+      "translation_uz": "harakatlar ketma-ketligining ravonligi va ifodasini saqlagan holda ijro etish",
+      "collocations": [
+        "a passage of sustained phrasing",
+        "use sustained phrasing"
+      ]
+    },
+    {
+      "word": "syncopation",
+      "part_of_speech": "noun",
+      "definition": "Rhythmic emphasis on a normally weak beat or subdivision within an established metre.",
+      "example": "The trio's syncopation is clearest in the heel strikes: the dancers accent the second half of beat two and soften the landing on beat three.",
+      "translation_ru": "синкопирование",
+      "translation_uz": "sinkopalash",
+      "collocations": [
+        "rhythmic syncopation",
+        "use syncopation in the footwork"
+      ]
+    },
+    {
+      "word": "off-axis",
+      "part_of_speech": "adjective",
+      "definition": "Performed with the body's main line deliberately tilted away from its usual vertical alignment over the base of support.",
+      "example": "In the off-axis turn, the soloist keeps her torso pitched beyond the toes of her supporting foot and comes upright only as she steps out of the rotation.",
+      "translation_ru": "выполняемый с наклоном оси тела относительно вертикали над опорой",
+      "translation_uz": "tana oʻqi tayanch ustidagi tik holatdan ogʻgan holda bajariladigan",
+      "collocations": [
+        "off-axis turn",
+        "off-axis tilt"
+      ]
+    },
+    {
+      "word": "suspension",
+      "part_of_speech": "noun",
+      "definition": "A momentary impression that an upward or outward action is held at its fullest extent before the dancer yields to gravity.",
+      "example": "A moment of suspension at the top of the rise makes the soloist seem to hover on the balls of her feet before her heels sink.",
+      "translation_ru": "эффект зависания в верхней точке движения",
+      "translation_uz": "harakat choʻqqisida muallaq qolgandek taassurot",
+      "collocations": [
+        "a moment of suspension",
+        "create a sense of suspension"
+      ]
+    },
+    {
+      "word": "unison",
+      "part_of_speech": "noun",
+      "definition": "The performance of the same movement by two or more dancers at the same time.",
+      "example": "The quartet folds in unison, with every knee bending and every chin dropping at exactly the same instant.",
+      "translation_ru": "унисон движений",
+      "translation_uz": "ayni harakatning bir vaqtda ijro etilishi",
+      "collocations": [
+        "dance in unison",
+        "move in close unison"
+      ]
+    },
+    {
+      "word": "canon",
+      "part_of_speech": "noun",
+      "definition": "A choreographic structure in which dancers begin the same movement sequence at staggered times.",
+      "example": "The canon travels down the line as each dancer begins the same three-gesture sequence one beat after the person beside them.",
+      "translation_ru": "хореографический канон",
+      "translation_uz": "xoreografik kanon",
+      "collocations": [
+        "a movement canon",
+        "perform a sequence in canon"
+      ]
+    },
+    {
+      "word": "trajectory",
+      "part_of_speech": "noun",
+      "definition": "The line traced through space by a dancer or a moving body part.",
+      "example": "The lead dancer's trajectory forms a broad arc across the rear of the stage before curling inward toward the centre.",
+      "translation_ru": "траектория движения",
+      "translation_uz": "harakat trayektoriyasi",
+      "collocations": [
+        "curved trajectory",
+        "trace a diagonal trajectory"
+      ]
+    },
+    {
+      "word": "stillness",
+      "part_of_speech": "noun",
+      "definition": "A deliberate absence of visible motion used as part of a performance.",
+      "example": "The quartet maintains complete stillness after the last heel strike, with hands at their sides and gazes fixed until the stage goes dark.",
+      "translation_ru": "неподвижность",
+      "translation_uz": "harakatsizlik",
+      "collocations": [
+        "hold a moment of stillness",
+        "maintain complete stillness"
+      ]
+    },
+    {
+      "word": "tension",
+      "part_of_speech": "noun",
+      "definition": "Muscular tightness that can be seen or felt in a dancer’s posture or movement.",
+      "example": "The tension in the soloist's forearms remains visible even as her wrists circle freely, giving the gesture a tightly controlled quality.",
+      "translation_ru": "мышечное напряжение",
+      "translation_uz": "mushak tarangligi",
+      "collocations": [
+        "sustain muscular tension",
+        "release tension in the shoulders"
+      ]
+    }
+  ]
+}

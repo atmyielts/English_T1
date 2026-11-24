@@ -1,0 +1,52 @@
+{
+  "item": {
+    "slug": "a2-compare-two-bench-photos",
+    "title": "Compare an Old Photo and a New One",
+    "level": "A2",
+    "prompt_text": "A friend shows you an old photo of a small square. It had two benches and one tree. Your new photo shows four benches, three small trees and a path between them. Tell your friend what has changed and say where you would sit now.",
+    "prompt_type": "guided_response",
+    "task_type": "describe",
+    "target_duration_seconds": 45,
+    "target_grammar": "There was and there were for the past, and there is or are for the present.",
+    "fluency_objective": "Give the old view before the new one. Listen back and check the change in numbers.",
+    "pronunciation_objective": "Stress two and four so the before and after details are clear.",
+    "target_vocabulary": [
+      "bench",
+      "path",
+      "square",
+      "before",
+      "now"
+    ],
+    "cues": [
+      {
+        "text": "Describe the old square.",
+        "keywords": [
+          "two benches",
+          "one tree",
+          "there were"
+        ]
+      },
+      {
+        "text": "Describe at least two changes in the new photo.",
+        "keywords": [
+          "four benches",
+          "three small trees",
+          "path between"
+        ]
+      },
+      {
+        "text": "Choose a place to sit with a reason.",
+        "keywords": [
+          "i would sit",
+          "next to the path",
+          "away from",
+          "can see"
+        ]
+      }
+    ],
+    "model_opening": "In the old photo, there were two benches and one tree.",
+    "model_answer": "In the old photo, there were two benches and one tree. All the seats were close to the road. Now there are four benches and three small trees. There is also a path between them. I would sit on the bench next to the path because I could see people coming into the square. I could sit there with a friend without listening to the cars all the time.",
+    "sort_order": 370
+  },
+  "children": []
+}

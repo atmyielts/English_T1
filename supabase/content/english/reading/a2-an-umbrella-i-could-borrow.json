@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a2-an-umbrella-i-could-borrow",
+    "title": "An Umbrella I Could Borrow",
+    "level": "A2",
+    "summary": "A train station trial shows why a safe place to return a borrowed umbrella matters.",
+    "content_markdown": "Last year, workers at Wren Station put a box of umbrellas near the exit. Passengers leaving the station could take one if it was raining. The label asked them to bring it back to the same box. Each umbrella had a green mark on its handle so it could be recognised easily.\n\nAfter two weeks only three umbrellas were left. Zoe, who worked at the station, asked a few passengers why they did not return them. One man said he came to Wren in the morning but went home from North Road Station in the evening. He still had his umbrella at home, because travelling back to Wren to return it would take half an hour.\n\nThe workers tried putting return boxes at both stations. They changed the labels to tell people that either box was fine. Zoe also put a sign above each box. A few passengers had carried the umbrellas past the new box because it looked like a bin. In the first week after the signs went up, more umbrellas arrived at North Road than at Wren. Staff could now move them between the stations when one box was getting empty.",
+    "category": "Travel",
+    "theme": "returning a borrowed umbrella",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "everyday report",
+      "word_count": 194
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why did the workers add a return box at North Road?",
+        "options": [
+          "Umbrellas could only be used inside that station.",
+          "Some people returned home by a different route.",
+          "Wren stopped selling umbrellas.",
+          "The workers wanted a place to store their own bags."
+        ],
+        "answer_index": 1,
+        "explanation": "The passenger used two different stations and would otherwise make a separate trip just to return the umbrella."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What showed that an umbrella belonged to the project?",
+        "options": [
+          "A name on its label",
+          "A blue handle",
+          "A green mark on its handle",
+          "A picture of the two stations"
+        ],
+        "answer_index": 2,
+        "explanation": "The first paragraph describes the green mark on each handle."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the extra sign above the return box help?",
+        "options": [
+          "It told people it had stopped raining.",
+          "It showed the fastest way to Wren.",
+          "It asked people to take the bin outside.",
+          "People could tell that the box was for returning umbrellas."
+        ],
+        "answer_index": 3,
+        "explanation": "Some passengers overlooked it because they mistook it for a bin."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “either box was fine” mean?",
+        "options": [
+          "People could use the return box at either station.",
+          "Both boxes were expensive to make.",
+          "A passenger had to use both boxes.",
+          "Staff had to repair the box at North Road."
+        ],
+        "answer_index": 0,
+        "explanation": "The new label says riders can return an umbrella to Wren or to North Road."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The first label asked people to use the same box to return an umbrella.",
+        "answer": "true",
+        "explanation": "The first paragraph gives the original request."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Staff refused to carry umbrellas from one station to the other.",
+        "answer": "false",
+        "explanation": "The last sentence explains that staff can move umbrellas between stations."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage gives the number of umbrellas that the workers started with.",
+        "answer": "not_given",
+        "explanation": "It gives the number remaining after two weeks, but no starting count."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The first box was near the ___. A new return box looked like a ___.",
+        "answers": [
+          [
+            "exit"
+          ],
+          [
+            "bin"
+          ]
+        ],
+        "word_bank": [
+          "bin",
+          "handle",
+          "exit",
+          "train"
+        ],
+        "explanation": "The first box is near the exit, and a passenger could mistake the new box for a bin."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Finding a difficulty with returning things",
+          "How the two-box system works",
+          "The original lending box",
+          "Buying replacement umbrellas"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The article introduces lending, investigates why returns were hard, and describes the change."
+      }
+    ]
+  },
+  "children": []
+}

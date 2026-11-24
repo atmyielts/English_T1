@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Like and as at the maker festival",
+    "explanation_text": "Use like before a noun phrase to show that two people or things are similar in some way. In a note to volunteers, “The paper lantern opens like an umbrella” compares the way the two objects open. Use as before a noun phrase to name someone’s actual role or explain what something is used for. In “I’m here as a guide,” guide is your role. In “We use a toolbox lid as a tray,” the lid has the function of a tray during the activity.\n\nUse as before a clause to show how to do something. “Set up the stand as the diagram shows” tells volunteers to follow the diagram. In “Do as shown,” as shown is a shorter form of as it is shown. In informal conversation, you may also hear like before a clause, as in “Set it up like I showed you.” For the written festival instructions in this lesson, choose as before a clause that tells someone how to do a task.",
+    "contrast_text": "“She works as a guide” names her actual job. “She speaks like a guide” compares the way she speaks with the way a guide speaks. “She speaks as the trainer showed her” says she follows the trainer’s example.",
+    "common_error_pattern": "Using like to name an assigned role or function, or using as before a noun phrase when the intended meaning is a simple comparison.",
+    "tags": [
+      "like-and-as",
+      "similarity",
+      "roles-and-functions",
+      "manner",
+      "maker-festival"
+    ],
+    "examples": [
+      {
+        "bad": "I’m on duty like a safety checker. (My assigned role is safety checker.)",
+        "good": "I’m on duty as a safety checker."
+      },
+      {
+        "bad": "The thin metal strip bends as a spring. (The strip bends in a similar way to a spring.)",
+        "good": "The thin metal strip bends like a spring."
+      },
+      {
+        "bad": "This wooden crate serves like a seat. (The crate is the seat at this station.)",
+        "good": "This wooden crate serves as a seat."
+      },
+      {
+        "bad": "Join the two parts as the label show.",
+        "good": "Join the two parts as the label shows."
+      }
+    ],
+    "slug": "b1-like-and-as-for-roles-and-similarity",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 410,
+    "focus_area": "like-and-as-for-similarity-and-role"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Write a volunteer badge",
+      "instructions": "Choose exactly one word, like or as. The badge states Nina’s assigned role. Write only the missing word.",
+      "prompt_text": "I’m here ___ a model judge.",
+      "accepted_answers": [
+        "as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Describe a test sound",
+      "instructions": "Choose exactly one word, like or as. The note compares the sound of the motor to the sound of an insect. Write only the missing word.",
+      "prompt_text": "The tiny motor buzzes ___ a bee.",
+      "accepted_answers": [
+        "like"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Label a paint station",
+      "instructions": "Choose exactly one word, like or as. The bottle cap holds paint at the station. Write only the missing word.",
+      "prompt_text": "At this station, the bottle cap serves ___ a paint cup.",
+      "accepted_answers": [
+        "as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete a cutting guide",
+      "instructions": "Choose exactly one word, like or as. Follow the written instruction pattern “Do as the video shows.” Write only the missing word.",
+      "prompt_text": "Cut the corners ___ the template shows.",
+      "accepted_answers": [
+        "as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Describe the prize draw",
+      "instructions": "Choose exactly one word, like or as. The note compares the shape of the tickets to the shape of leaves. Write only the missing word.",
+      "prompt_text": "The prize tickets are shaped ___ oak leaves.",
+      "accepted_answers": [
+        "like"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the shift roster",
+      "instructions": "Omar’s assigned job is ticket collector. Replace one word to make the sentence state his role. Keep all the other words and write the full sentence.",
+      "prompt_text": "Omar is working like a ticket collector on the afternoon shift.",
+      "accepted_answers": [
+        "Omar is working as a ticket collector on the afternoon shift."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Edit a robot demo caption",
+      "instructions": "The toy robot’s movement is similar to a penguin’s. Replace one word to make the comparison clear. Keep all the other words and write the full sentence.",
+      "prompt_text": "The toy robot walks as a penguin.",
+      "accepted_answers": [
+        "The toy robot walks like a penguin."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite a note about sound",
+      "instructions": "Start with “The pump sounds” and end with “a drum.” Join those parts with the word like. Write one sentence.",
+      "prompt_text": "The pump makes a sound similar to a drum.",
+      "accepted_answers": [
+        "The pump sounds like a drum."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Record what a spare box is for",
+      "instructions": "Start with “We used the spare box,” add as, and finish with “a footrest.” Write one sentence.",
+      "prompt_text": "We put our feet on the spare box to rest them.",
+      "accepted_answers": [
+        "We used the spare box as a footrest."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Combine two sticker instructions",
+      "instructions": "Start with “Place the stickers.” Add as followed by “the sample shows.” Write one sentence.",
+      "prompt_text": "Place the stickers. Follow the sample.",
+      "accepted_answers": [
+        "Place the stickers as the sample shows."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble a handover note",
+      "instructions": "Put the tiles in order to report a role at the tool desk. Start with “This morning,” and use each tile once.",
+      "prompt_text": "at the tool desk. / as / This morning, / the shift leader / Hana worked",
+      "accepted_answers": [
+        "This morning, Hana worked as the shift leader at the tool desk."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Arrange a wire-clip instruction",
+      "instructions": "Put the tiles in order to tell a volunteer how to attach a clip. Start with “Attach the wire clip” and use each tile once.",
+      "prompt_text": "shown / Attach the wire clip / on the instruction card. / as",
+      "accepted_answers": [
+        "Attach the wire clip as shown on the instruction card."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.like-and-as-for-similarity-and-role"
+    }
+  ]
+}

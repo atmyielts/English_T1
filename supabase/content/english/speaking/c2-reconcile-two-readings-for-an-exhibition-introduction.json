@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c2-reconcile-two-readings-for-an-exhibition-introduction",
+    "title": "Represent Two Readings in an Exhibition Introduction",
+    "level": "C2",
+    "prompt_text": "An exhibition includes a short recording of a busy crossing followed by an extended silence. Some listeners hear relief in the silence. Others hear an uneasy absence. A sponsor asks for an introduction explaining the intended reaction. Give an introduction that helps listeners notice the same detail, respects different reactions, and distinguishes the artist's decision from what the audience may conclude.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 116,
+    "target_grammar": "Careful attribution and parallel interpretation. Use conditionals to avoid presenting a reaction as inevitable.",
+    "fluency_objective": "Give a neutral listening cue before naming either reaction. Carry the same sound detail through both readings.",
+    "pronunciation_objective": "Stress what changes in the recording before what it might mean. Leave a pause before introducing each interpretation.",
+    "target_vocabulary": [
+      "silence",
+      "crossing",
+      "intention",
+      "listener",
+      "absence",
+      "transition"
+    ],
+    "cues": [
+      {
+        "text": "Give a neutral cue to hear the transition.",
+        "keywords": [
+          "when the traffic",
+          "listen for",
+          "crossing",
+          "transition"
+        ]
+      },
+      {
+        "text": "Give space to both plausible reactions.",
+        "keywords": [
+          "relief",
+          "uneasy",
+          "absence",
+          "quiet"
+        ]
+      },
+      {
+        "text": "Distinguish what the artist chose from what listeners infer.",
+        "keywords": [
+          "chose",
+          "artist",
+          "reaction",
+          "might hear",
+          "does not tell"
+        ]
+      },
+      {
+        "text": "Offer a way for listeners to test their response against a detail.",
+        "keywords": [
+          "compare",
+          "notice",
+          "what changed",
+          "listen again"
+        ]
+      }
+    ],
+    "model_opening": "Listen for what happens just after the last sound from the crossing.",
+    "model_answer": "Listen for what happens just after the last sound from the crossing. The recording moves into a silence that lasts longer than the gap between sounds in the first part. The artist chose where the traffic stops and how long the pause continues. Those decisions are part of the piece. They leave the listener some room to decide what the pause does.\n\nYou may hear relief. Without the traffic, the next moment can feel as though something demanding has been taken away. Another listener might keep expecting a sound to return and hear that same gap as an uneasy absence. Both reactions can depend on how the recording prepares us to expect another sound. We can point to that preparation without telling anyone which feeling should follow it.\n\nAfter you hear the piece, compare the first few seconds of the silence with the final few. Notice whether your reaction stays the same when the sound still has not returned. The artist structured the passage from noise to silence. Your response can tell you which part of that passage mattered most. If you listen again, try attending to the duration of the pause before looking for a single meaning.",
+    "sort_order": 412
+  },
+  "children": []
+}

@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b2-introduce-two-performances-without-spoilers",
+    "title": "Write a Programme Note for Two Short Performances",
+    "level": "B2",
+    "prompt_text": "Two short performances share a programme. One uses movement and a single metal chair to tell a story without spoken words. The other uses a live reader and recorded street sounds. Write a programme note that helps visitors attend to each piece without giving away its ending, gives one connection between them, and tells audiences when to stay seated.",
+    "genre": "programme note",
+    "audience": "first-time visitors to a local performance night",
+    "target_grammar": "Relative clauses, contrast and precise future forms for programme instructions.",
+    "target_structure": "Introduce each piece, give an observation to listen or look for, then state the practical instruction.",
+    "target_vocabulary": [
+      "movement",
+      "reader",
+      "street sounds",
+      "interval",
+      "sequence",
+      "performance"
+    ],
+    "expected_length_min": 144,
+    "expected_length_max": 218,
+    "checklist": [
+      {
+        "point": "Give spectators a cue for the movement piece.",
+        "keywords": [
+          "metal chair",
+          "movement",
+          "changes position",
+          "watch"
+        ]
+      },
+      {
+        "point": "Give a separate cue for the sound piece.",
+        "keywords": [
+          "reader",
+          "recorded street",
+          "listen",
+          "background"
+        ]
+      },
+      {
+        "point": "Name a specific link between the two.",
+        "keywords": [
+          "both pieces",
+          "in both",
+          "share",
+          "attention"
+        ]
+      },
+      {
+        "point": "Explain when the audience should stay seated.",
+        "keywords": [
+          "remain seated",
+          "stay seated",
+          "short pause",
+          "until the lights"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    },
+    "sort_order": 395
+  },
+  "children": []
+}

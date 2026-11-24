@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-hear-a-market-stall-briefing",
+    "title": "Hear a market stall briefing",
+    "level": "A2",
+    "summary": "A market helper explains how to set up and close a stall.",
+    "transcript_text": "Welcome, helpers. Before you open a box of food, check the number on the table. Bread is table five, and cakes are table six. Put the price cards in front so visitors can read them. At noon, bring back any full boxes. Do not pack the food we are still selling. After we close at one, wipe the table and leave the cash box with Ella in the main tent.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 38,
+    "audio_url": null,
+    "focus_skill": "sequence",
+    "tags": [
+      "workplace",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What does the briefing cover?",
+        "options": [
+          "Preparing and closing stalls",
+          "Making bread for the market",
+          "Picking a table as a visitor",
+          "Getting change at a bank"
+        ],
+        "answer_index": 0,
+        "explanation": "Helpers receive setup, stock and close-down instructions.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What should helpers check first?",
+        "options": [
+          "The box price",
+          "The clock",
+          "The amount of cash",
+          "The table number"
+        ],
+        "answer_index": 3,
+        "explanation": "The first instruction is to find the assigned table.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Where should price cards go?",
+        "options": [
+          "In the main tent",
+          "Under the food boxes",
+          "At the front of the table",
+          "At the back"
+        ],
+        "answer_index": 2,
+        "explanation": "Cards go where customers can read them.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What comes back at noon?",
+        "options": [
+          "All the food",
+          "Full boxes only",
+          "Cash boxes",
+          "Price cards"
+        ],
+        "answer_index": 1,
+        "explanation": "The speaker distinguishes full boxes from items still on sale.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Who takes the cash box at the end?",
+        "options": [
+          "Ella",
+          "The first customer",
+          "The cake seller",
+          "The driver"
+        ],
+        "answer_index": 0,
+        "explanation": "The cash box goes to Ella.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "check the number on the table",
+      "focus_phrase": "on the table",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "bring back any full boxes",
+      "focus_phrase": "any full boxes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "with Ella in the main tent",
+      "focus_phrase": "the main tent",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

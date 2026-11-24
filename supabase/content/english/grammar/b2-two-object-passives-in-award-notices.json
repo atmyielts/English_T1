@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Two-object passives in award notices",
+    "explanation_text": "With give, offer, award and send, an active clause can name the recipient before the thing: “The panel awarded Noor a commendation.” A passive can start with either object. “Noor was awarded a commendation” starts with the recipient and keeps the thing after the verb. “A commendation was awarded to Noor” starts with the thing and introduces the recipient with to.\n\nChoose the subject that fits the notice. A recipient passive works well in a list organised by name. A thing passive fits a notice that announces one distinction at a time. In formal notices, use to when you name the recipient after a thing passive with these verbs. You can leave out the whole to phrase if the recipient is already clear.\n\nExplain follows a different pattern: “The chair explained the criteria to Noor.” In standard English, the criteria can become the passive subject: “The criteria were explained to Noor.” A passive with Noor as the subject does not work with explain.",
+    "contrast_text": "Recipient first: “The finalists were sent an acknowledgement.” Thing first: “An acknowledgement was sent to the finalists.” With explain, use “The procedure was explained to the finalists.” The procedure is the passive subject, and the finalists stay in the to phrase.",
+    "common_error_pattern": "In these formal notices, use to before the named recipient if the thing is the passive subject. If the recipient is the subject of a passive with give, offer, award or send, put the thing directly after the participle. With explain, keep the thing as the passive subject and introduce the recipient with to.",
+    "tags": [
+      "b2",
+      "two-object-passives",
+      "verb-patterns",
+      "award-notices"
+    ],
+    "examples": [
+      {
+        "bad": "The jury citation was awarded at the archive team.",
+        "good": "The jury citation was awarded to the archive team."
+      },
+      {
+        "bad": "Imani was offered to an honorary title.",
+        "good": "Imani was offered an honorary title."
+      },
+      {
+        "bad": "The regional delegates were explained the selection criteria.",
+        "good": "The selection criteria were explained to the regional delegates."
+      },
+      {
+        "bad": "An acknowledgement was sent at the shortlisted teams.",
+        "good": "An acknowledgement was sent to the shortlisted teams."
+      }
+    ],
+    "slug": "b2-two-object-passives-in-award-notices",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 370,
+    "focus_area": "two-object-passives"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Connect a distinction to its recipient",
+      "instructions": "Complete the programme entry with the one preposition that introduces the recipient.",
+      "prompt_text": "The special mention was awarded ___ the oral history group.",
+      "accepted_answers": [
+        "to"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Record an offer",
+      "instructions": "Complete the register entry with the past participle of offer. Keep Dr Karim as the subject.",
+      "prompt_text": "Dr Karim was ___ the honorary role of symposium chair.",
+      "accepted_answers": [
+        "offered"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Confirm a dispatch",
+      "instructions": "Use send to complete the archive log in the past simple passive. Supply the auxiliary and participle.",
+      "prompt_text": "The certificates ___ to the regional coordinators after the ceremony.",
+      "accepted_answers": [
+        "were sent"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Close a handbook briefing",
+      "instructions": "Complete the briefing record with the past participle of explain followed by the required preposition.",
+      "prompt_text": "The nomination procedure was ___ the new panel members at induction.",
+      "accepted_answers": [
+        "explained to"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete an inscription",
+      "instructions": "Use the exact noun phrase “a commemorative plaque” to complete the museum record. Keep the recipient as the subject.",
+      "prompt_text": "The founding volunteers were given ___ in recognition of their service.",
+      "accepted_answers": [
+        "a commemorative plaque"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair a citation entry",
+      "instructions": "Correct the entry by replacing one word. Keep the subject, the verb and the named recipient.",
+      "prompt_text": "The editor’s citation was given at the youngest contributor.",
+      "accepted_answers": [
+        "The editor’s citation was given to the youngest contributor."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair a stipend handbook note",
+      "instructions": "Correct the recipient passive with explain. Begin with “The review procedure” and keep the verb in the past simple passive.",
+      "prompt_text": "The stipend applicants were explained the review procedure.",
+      "accepted_answers": [
+        "The review procedure was explained to the stipend applicants."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Lead with the honouree",
+      "instructions": "Rewrite this notice in the past simple passive. Start with “Professor Silva” and end with “the academy’s annual translation medal”.",
+      "prompt_text": "The academy awarded Professor Silva its annual translation medal.",
+      "accepted_answers": [
+        "Professor Silva was awarded the academy’s annual translation medal."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Lead with the role",
+      "instructions": "Rewrite this society notice in the past simple passive. Begin with “An honorary fellowship,” name the recipient and omit the agent.",
+      "prompt_text": "The society offered the outgoing president an honorary fellowship.",
+      "accepted_answers": [
+        "An honorary fellowship was offered to the outgoing president."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Refocus the correspondence record",
+      "instructions": "Rewrite the entry so the letters are the subject. Keep the past simple passive and include the recipient at the end.",
+      "prompt_text": "The nominees were sent letters confirming their inclusion in the exhibition catalogue.",
+      "accepted_answers": [
+        "Letters confirming their inclusion in the exhibition catalogue were sent to the nominees."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble a register entry",
+      "instructions": "Arrange the tiles to form a recipient-first entry in an honours register. Start with “The student archivists” and put “at the closing session” last.",
+      "prompt_text": "a certificate of service / at the closing session / were given / The student archivists",
+      "accepted_answers": [
+        "The student archivists were given a certificate of service at the closing session"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble an induction record",
+      "instructions": "Arrange the tiles to record what happened at the induction for award assessors. Start with “At the induction” and put the recipient phrase last.",
+      "prompt_text": "to / the scoring rules / were explained / At the induction / the new assessors",
+      "accepted_answers": [
+        "At the induction the scoring rules were explained to the new assessors"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.two-object-passives"
+    }
+  ]
+}

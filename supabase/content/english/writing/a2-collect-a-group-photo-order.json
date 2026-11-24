@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "a2-collect-a-group-photo-order",
+    "title": "Check a Group Photo Order",
+    "level": "A2",
+    "prompt_text": "Your group ordered six photos. The envelope says five, but you have not opened it. Ask the photographer whether the label is wrong or one photo is missing. Say when you can bring the envelope back and what you can show to identify the order.",
+    "genre": "message",
+    "audience": "the photographer at your community centre",
+    "target_grammar": "Past simple for the order, but for the difference, and could for a polite question.",
+    "target_structure": "State the two numbers, ask for a check, and give a time and proof of the order.",
+    "target_vocabulary": [
+      "envelope",
+      "label",
+      "ordered",
+      "missing",
+      "receipt"
+    ],
+    "expected_length_min": 54,
+    "expected_length_max": 94,
+    "checklist": [
+      {
+        "point": "State how many you ordered and what the label says.",
+        "keywords": [
+          "six photos",
+          "label says five",
+          "envelope says five"
+        ]
+      },
+      {
+        "point": "Ask the photographer to check both possibilities.",
+        "keywords": [
+          "label is wrong",
+          "photo is missing",
+          "check whether",
+          "could you check"
+        ]
+      },
+      {
+        "point": "Offer a return time and a way to identify the order.",
+        "keywords": [
+          "receipt",
+          "order number",
+          "tomorrow morning",
+          "saturday"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    },
+    "sort_order": 348
+  },
+  "children": []
+}

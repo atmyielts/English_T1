@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "At a dental visit",
+    "description": "Practise booking a dental visit and talking about your teeth. Learn terms you may hear during a check-up.",
+    "slug": "a2-at-a-dental-visit",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 380,
+    "topic": "dental visit"
+  },
+  "children": [
+    {
+      "word": "dental clinic",
+      "part_of_speech": "noun",
+      "definition": "A place where people go to have their teeth checked or fixed.",
+      "example": "I called the dental clinic to ask if they had any appointments available on Friday.",
+      "translation_ru": "стоматологическая клиника",
+      "translation_uz": "stomatologiya klinikasi",
+      "collocations": [
+        "call the dental clinic",
+        "a local dental clinic"
+      ]
+    },
+    {
+      "word": "reschedule",
+      "part_of_speech": "verb",
+      "definition": "To move a planned visit or event to a different day or time.",
+      "example": "I need to reschedule my dental visit because I’m working on Tuesday.",
+      "translation_ru": "перенести на другой день или на другое время",
+      "translation_uz": "boshqa kun yoki vaqtga koʻchirmoq",
+      "collocations": [
+        "reschedule a visit",
+        "reschedule for Friday"
+      ]
+    },
+    {
+      "word": "waiting room",
+      "part_of_speech": "noun",
+      "definition": "A place at a clinic where people sit until someone calls them in.",
+      "example": "The receptionist asked me to take a seat in the waiting room.",
+      "translation_ru": "зал ожидания",
+      "translation_uz": "kutish xonasi",
+      "collocations": [
+        "sit in the waiting room",
+        "a small waiting room"
+      ]
+    },
+    {
+      "word": "dentist",
+      "part_of_speech": "noun",
+      "definition": "A person whose job is to check and fix people’s teeth.",
+      "example": "My dentist asked if anything had changed since my last visit.",
+      "translation_ru": "стоматолог",
+      "translation_uz": "tish shifokori",
+      "collocations": [
+        "see a dentist",
+        "talk to your dentist"
+      ]
+    },
+    {
+      "word": "check-up",
+      "part_of_speech": "noun",
+      "definition": "A visit to see if your teeth and the soft parts around them are healthy.",
+      "example": "I asked for a check-up before I go away next month.",
+      "translation_ru": "профилактический осмотр у стоматолога",
+      "translation_uz": "tish shifokorining profilaktik koʻrigi",
+      "collocations": [
+        "a routine check-up",
+        "go for a check-up"
+      ]
+    },
+    {
+      "word": "bib",
+      "part_of_speech": "noun",
+      "definition": "A piece of paper or cloth that keeps your clothes clean and dry during a dental visit.",
+      "example": "The dental assistant clipped a bib around my neck.",
+      "translation_ru": "стоматологический нагрудник",
+      "translation_uz": "kiyimni himoya qilish uchun stomatolog qabulida boʻyinga taqiladigan salfetka",
+      "collocations": [
+        "put on a bib",
+        "a paper bib"
+      ]
+    },
+    {
+      "word": "dental mirror",
+      "part_of_speech": "noun",
+      "definition": "A small mirror on a handle that a dentist uses to see parts of the mouth that are hard to see directly.",
+      "example": "The dentist used a dental mirror to look behind my top teeth.",
+      "translation_ru": "стоматологическое зеркало",
+      "translation_uz": "stomatologik koʻzgu",
+      "collocations": [
+        "use a dental mirror",
+        "a small dental mirror"
+      ]
+    },
+    {
+      "word": "gums",
+      "part_of_speech": "plural noun",
+      "definition": "The soft tissue that surrounds the teeth where they meet the upper and lower jaw.",
+      "example": "During my visit, I told the dentist that my gums sometimes bleed when I brush.",
+      "translation_ru": "дёсны",
+      "translation_uz": "tish milklari",
+      "collocations": [
+        "healthy gums",
+        "bleeding gums"
+      ]
+    },
+    {
+      "word": "jaw",
+      "part_of_speech": "noun",
+      "definition": "One of the two bones that hold your teeth. The lower one moves when you open your mouth.",
+      "example": "The dentist asked me to relax my jaw during the exam.",
+      "translation_ru": "челюсть",
+      "translation_uz": "jagʻ",
+      "collocations": [
+        "lower jaw",
+        "upper jaw"
+      ]
+    },
+    {
+      "word": "x-ray",
+      "part_of_speech": "noun",
+      "definition": "A picture made using X-rays that can show details of your teeth and the bone around them.",
+      "example": "The dentist showed me an x-ray of my back teeth on the screen.",
+      "translation_ru": "рентгеновский снимок зубов",
+      "translation_uz": "tishlarning rentgen surati",
+      "collocations": [
+        "take an x-ray",
+        "look at an x-ray"
+      ]
+    },
+    {
+      "word": "cavity",
+      "part_of_speech": "noun",
+      "definition": "A hole in a tooth caused by tooth decay.",
+      "example": "The dentist showed me where the small cavity was in my back tooth.",
+      "translation_ru": "кариозная полость",
+      "translation_uz": "tishdagi kariyes kovagi",
+      "collocations": [
+        "a small cavity",
+        "find a cavity"
+      ]
+    },
+    {
+      "word": "filling",
+      "part_of_speech": "noun",
+      "definition": "A repair that a dentist makes by putting material into a hole in a tooth.",
+      "example": "The dentist looked at an old filling in one of my back teeth.",
+      "translation_ru": "зубная пломба",
+      "translation_uz": "tish plombasi",
+      "collocations": [
+        "an old filling",
+        "a loose filling"
+      ]
+    },
+    {
+      "word": "floss",
+      "part_of_speech": "noun",
+      "definition": "Thin thread used to clean the spaces between teeth.",
+      "example": "The dentist gave me a small pack of floss at the end of my visit.",
+      "translation_ru": "зубная нить",
+      "translation_uz": "tish ipi",
+      "collocations": [
+        "use floss",
+        "a piece of floss"
+      ]
+    },
+    {
+      "word": "rinse",
+      "part_of_speech": "verb",
+      "definition": "To wash the inside of your mouth by moving water or another liquid around in it and then spitting it out.",
+      "example": "The dental assistant gave me a cup of water so I could rinse.",
+      "translation_ru": "прополоскать рот",
+      "translation_uz": "ogʻizni chaymoq",
+      "collocations": [
+        "rinse your mouth",
+        "rinse with water"
+      ]
+    }
+  ]
+}

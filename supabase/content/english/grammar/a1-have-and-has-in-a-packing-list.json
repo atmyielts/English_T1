@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Have and has in a packing list",
+    "explanation_text": "Use have and has to say what someone has for a game or a trip. You can write a short sentence for each person on a packing list. Use have with I, you, we, and they: “We have a ball.” Use have with two or more names too: “Mia and Leo have a ball.” Use has with he, she, it, or one name: “Mia has a towel.” When you choose the verb, look at who has the things. One name still takes has when the person has two things: “Leo has two towels.”\n\nTo say that a thing is missing, use don't have with I, you, we, they, or a group of people: “We don't have a spare bag.” Use doesn't have with he, she, it, or one name: “Mia doesn't have a spare bag.” In these sentences about what people have, use have after don't or doesn't.",
+    "contrast_text": "Mia and Leo have a ball. → Mia has a ball. | Mia and Leo don't have a ball. → Mia doesn't have a ball.",
+    "common_error_pattern": "Use has in a yes sentence with he, she, it, or one name. Use have with two names joined by and. In the negative patterns don't have and doesn't have, the main verb stays have.",
+    "tags": [
+      "A1",
+      "possessive have",
+      "have and has",
+      "packing list"
+    ],
+    "examples": [
+      {
+        "bad": "Lina have a small sports bag.",
+        "good": "Lina has a small sports bag."
+      },
+      {
+        "bad": "Omar and Lina has a ball.",
+        "good": "Omar and Lina have a ball."
+      },
+      {
+        "bad": "We doesn't have a spare shirt.",
+        "good": "We don't have a spare shirt."
+      },
+      {
+        "bad": "He doesn't has a towel.",
+        "good": "He doesn't have a towel."
+      }
+    ],
+    "slug": "a1-have-and-has-in-a-packing-list",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 360,
+    "focus_area": "have-and-has"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "My bag",
+      "instructions": "You are making your own packing list. Fill the gap with have or has.",
+      "prompt_text": "I ___ a small sports bag.",
+      "accepted_answers": [
+        "have"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Two things, one person",
+      "instructions": "Ben is ready for the game. Fill the gap with have or has.",
+      "prompt_text": "Ben ___ two clean shirts.",
+      "accepted_answers": [
+        "has"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A ball for two players",
+      "instructions": "Read the note about two players. Fill the gap with have or has.",
+      "prompt_text": "Nina and Sam ___ a ball.",
+      "accepted_answers": [
+        "have"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "fill",
+      "title": "No towel",
+      "instructions": "Ella's towel is at home. Fill the gap with don't have or doesn't have.",
+      "prompt_text": "She ___ a towel for the game.",
+      "accepted_answers": [
+        "doesn't have"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "fill",
+      "title": "No water bottles",
+      "instructions": "You and your friend came without water bottles. Fill the gap with don't or doesn't.",
+      "prompt_text": "We ___ have water bottles.",
+      "accepted_answers": [
+        "don't"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Check the coach's list",
+      "instructions": "Replace the wrong verb with have or has. Keep the other words.",
+      "prompt_text": "The coach have a whistle.",
+      "accepted_answers": [
+        "The coach has a whistle."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the note about socks",
+      "instructions": "Fix the one wrong word after doesn't. Keep the other words.",
+      "prompt_text": "Arun doesn't has clean socks.",
+      "accepted_answers": [
+        "Arun doesn't have clean socks."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Write about one player",
+      "instructions": "Write the sentence about Mei alone. Start with Mei and keep the same item.",
+      "prompt_text": "Mei and Dan have a spare bag.",
+      "accepted_answers": [
+        "Mei has a spare bag."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Add a player to the note",
+      "instructions": "Replace Ivan with “Ivan and Rosa”. Change the form of have to match. Keep all other words in the same order.",
+      "prompt_text": "Ivan has a pump.",
+      "accepted_answers": [
+        "Ivan and Rosa have a pump."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Change the list after a check",
+      "instructions": "The players have no snacks. Rewrite the sentence with don't have or doesn't have. Keep the same subject and item words.",
+      "prompt_text": "The players have snacks.",
+      "accepted_answers": [
+        "The players don't have snacks."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Tell a teammate",
+      "instructions": "Tell your teammate what they have for the game. Start with You. Use each tile once.",
+      "prompt_text": "a cap / have / You",
+      "accepted_answers": [
+        "You have a cap."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Report a missing item",
+      "instructions": "Say that Jay is missing an item today. Start with Jay and put today last. Use each tile once.",
+      "prompt_text": "have / today / Jay / a jacket / doesn't",
+      "accepted_answers": [
+        "Jay doesn't have a jacket today."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.have-and-has"
+    }
+  ]
+}

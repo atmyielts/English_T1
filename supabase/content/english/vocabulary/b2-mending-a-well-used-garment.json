@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Mending a Well-Used Garment",
+    "description": "Learn to describe damage, choose fabric for a repair, and keep a favourite coat or shirt in use for longer.",
+    "slug": "b2-mending-a-well-used-garment",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 410,
+    "topic": "garment mending"
+  },
+  "children": [
+    {
+      "word": "seam",
+      "part_of_speech": "noun",
+      "definition": "A line where two pieces of fabric are sewn together.",
+      "example": "When I turned my old coat inside out, I saw that the side seam had split while the fabric on either side was still sound.",
+      "translation_ru": "шов",
+      "translation_uz": "chok",
+      "collocations": [
+        "a side seam",
+        "a split seam"
+      ]
+    },
+    {
+      "word": "patch",
+      "part_of_speech": "noun",
+      "definition": "A piece of fabric attached to a damaged area to cover it.",
+      "example": "I covered the hole at the elbow of my coat with a denim patch from an old pair of jeans.",
+      "translation_ru": "заплатка",
+      "translation_uz": "yamoq",
+      "collocations": [
+        "a denim patch",
+        "sew on a patch"
+      ]
+    },
+    {
+      "word": "stitch",
+      "part_of_speech": "noun",
+      "definition": "A single loop or length of thread made by passing a needle through fabric.",
+      "example": "One stitch came loose at the corner of the patch on my coat, so I secured that corner again.",
+      "translation_ru": "стежок",
+      "translation_uz": "qaviq",
+      "collocations": [
+        "a loose stitch",
+        "a small stitch"
+      ]
+    },
+    {
+      "word": "darning",
+      "part_of_speech": "noun",
+      "definition": "The process of filling a hole in fabric by weaving new thread across it.",
+      "example": "Darning the small hole in my coat meant laying threads across the gap and weaving more thread through them.",
+      "translation_ru": "штопка",
+      "translation_uz": "teshikni ip bilan toʻqib yamash",
+      "collocations": [
+        "visible darning",
+        "careful darning"
+      ]
+    },
+    {
+      "word": "hem",
+      "part_of_speech": "noun",
+      "definition": "The finished edge at the bottom of a garment or sleeve, made by turning the fabric under and sewing it in place.",
+      "example": "The hem of my coat had come undone, and the folded fabric hung below the bottom edge.",
+      "translation_ru": "подгибка по краю изделия",
+      "translation_uz": "kiyimning bukib tikilgan cheti",
+      "collocations": [
+        "a folded hem",
+        "let down a hem"
+      ]
+    },
+    {
+      "word": "tear",
+      "part_of_speech": "noun",
+      "definition": "A split in fabric caused by pulling it or catching it on something.",
+      "example": "My coat caught on a gate, leaving a short tear across the sleeve.",
+      "translation_ru": "разрыв ткани",
+      "translation_uz": "mato yirtigʻi",
+      "collocations": [
+        "a small tear",
+        "mend a tear"
+      ]
+    },
+    {
+      "word": "unravel",
+      "part_of_speech": "verb",
+      "definition": "To come apart as loops of yarn or sewing come undone in sequence.",
+      "example": "The knitted cuff on my coat began to unravel after a loop caught on the zip.",
+      "translation_ru": "распускаться",
+      "translation_uz": "soʻtilmoq",
+      "collocations": [
+        "begin to unravel",
+        "a knitted edge starts to unravel"
+      ]
+    },
+    {
+      "word": "reinforce",
+      "part_of_speech": "verb",
+      "definition": "To make an area of a garment stronger so it can withstand repeated use.",
+      "example": "I used a strip of cotton to reinforce the pocket opening on my coat before the thin fabric gave way.",
+      "translation_ru": "укреплять",
+      "translation_uz": "mustahkamlamoq",
+      "collocations": [
+        "reinforce a pocket opening",
+        "reinforce a weak area"
+      ]
+    },
+    {
+      "word": "alteration",
+      "part_of_speech": "noun",
+      "definition": "A change to a garment's size or shape so that it fits better.",
+      "example": "My second-hand coat needed one alteration before winter because the sleeves covered my hands.",
+      "translation_ru": "подгонка одежды по фигуре",
+      "translation_uz": "kiyimning oʻlchami yoki bichimini moslab oʻzgartirish",
+      "collocations": [
+        "a minor alteration",
+        "make an alteration"
+      ]
+    },
+    {
+      "word": "seam allowance",
+      "part_of_speech": "noun",
+      "definition": "The strip of fabric between the line of sewing and the cut edge of the fabric.",
+      "example": "There was enough seam allowance inside my old coat to make it a little wider at the waist.",
+      "translation_ru": "припуск на шов",
+      "translation_uz": "chok haqi",
+      "collocations": [
+        "a narrow seam allowance",
+        "leave enough seam allowance"
+      ]
+    },
+    {
+      "word": "offcut",
+      "part_of_speech": "noun",
+      "definition": "A piece of material left after a larger piece has been cut to size.",
+      "example": "I saved a cotton offcut from a curtain I had shortened and later used it to mend my coat pocket.",
+      "translation_ru": "обрезок ткани",
+      "translation_uz": "mato qiyqimi",
+      "collocations": [
+        "a fabric offcut",
+        "save an offcut"
+      ]
+    },
+    {
+      "word": "lining",
+      "part_of_speech": "noun",
+      "definition": "A separate layer of fabric sewn inside a garment to cover its inner surface.",
+      "example": "The outer fabric of my coat was still in good shape, but the lining had split near the shoulder.",
+      "translation_ru": "подкладка",
+      "translation_uz": "astar",
+      "collocations": [
+        "a coat lining",
+        "a torn lining"
+      ]
+    },
+    {
+      "word": "fray",
+      "part_of_speech": "verb",
+      "definition": "To develop a ragged edge as individual threads in woven fabric come loose.",
+      "example": "The fabric at the edge of my coat pocket began to fray where my keys rubbed against it.",
+      "translation_ru": "осыпаться по краю",
+      "translation_uz": "chetlaridan titilmoq",
+      "collocations": [
+        "fray at the edges",
+        "fray with use"
+      ]
+    },
+    {
+      "word": "mend",
+      "part_of_speech": "verb",
+      "definition": "To restore damaged fabric or a damaged garment to a usable state.",
+      "example": "I decided to mend my winter coat after a tear appeared near the pocket.",
+      "translation_ru": "чинить одежду",
+      "translation_uz": "kiyimni tuzatmoq",
+      "collocations": [
+        "mend a torn sleeve",
+        "mend a hole"
+      ]
+    }
+  ]
+}

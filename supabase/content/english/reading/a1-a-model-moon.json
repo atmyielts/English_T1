@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-a-model-moon",
+    "title": "A Model Moon",
+    "level": "A1",
+    "summary": "A pupil explains how she made a model for a classroom display.",
+    "content_markdown": "I made this moon for our classroom table. The ball is made of paper. My mother gave me an old newspaper. I put the paper into a small bag and made it into a ball with tape. Then I covered the ball with white paper.\n\nThe round marks on the moon are grey. I made the small marks with the end of a pen. For the big marks I used the bottom of a cup. I did not put any paint on the table. There was a large piece of paper under my work.\n\nI brought my moon to school in a shoe box. The box had a towel inside to stop the moon moving. You can pick up the moon with both hands. Put it back on the blue plate when you finish. Please do not hold it by the paper marks.",
+    "category": "School",
+    "theme": "making a model of the moon",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "project note",
+      "word_count": 143
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why did the writer leave this note?",
+        "options": [
+          "To ask a class to bring in newspapers",
+          "To tell people about the model and how to handle it",
+          "To sell a cup and a pen",
+          "To ask the teacher to change the classroom table"
+        ],
+        "answer_index": 1,
+        "explanation": "The writer describes making the moon, bringing it to school and where it goes after someone holds it."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What makes the outside of the moon white?",
+        "options": [
+          "A white towel",
+          "White tape",
+          "A white plate",
+          "White paper"
+        ],
+        "answer_index": 3,
+        "explanation": "The paper ball is covered with white paper."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What was used to make the big round marks?",
+        "options": [
+          "The bottom of a cup",
+          "The end of a pen",
+          "The top of a bag",
+          "The side of the box"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer says she used the bottom of a cup for the big marks."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why was there a towel in the shoe box?",
+        "options": [
+          "The writer wanted to dry the paint.",
+          "It showed which side of the moon was grey.",
+          "It kept the model from moving in the box.",
+          "The class needed it for the table."
+        ],
+        "answer_index": 2,
+        "explanation": "The final paragraph explains that the towel kept the model from moving."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The marks on the model are grey.",
+        "answer": "true",
+        "explanation": "The note says the round marks are grey."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The writer asks people to hold the paper marks.",
+        "answer": "false",
+        "explanation": "The final instruction says not to hold the moon by the paper marks."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The note says what size shoes the box once held.",
+        "answer": "not_given",
+        "explanation": "It mentions a shoe box, but there is no shoe size."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "There was a large piece of ___ under the work. The moon belongs on the blue ___.",
+        "answers": [
+          [
+            "paper"
+          ],
+          [
+            "plate"
+          ]
+        ],
+        "word_bank": [
+          "towel",
+          "paper",
+          "plate",
+          "cup"
+        ],
+        "explanation": "The middle describes paper under the work, and the end gives the blue plate as the place for the moon."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Making the round marks",
+          "Building a paper ball",
+          "Bringing the model and picking it up",
+          "Looking at the moon outside at night"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The paragraphs explain the ball, the marks, and handling the model in class."
+      }
+    ]
+  },
+  "children": []
+}

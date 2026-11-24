@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c1-say-what-counts-as-a-useful-peer-comment",
+    "title": "Respond to Two Ways of Giving Peer Feedback",
+    "level": "C1",
+    "prompt_text": "A class tests two methods of giving peer feedback on short explanations. One reviewer tells the writer what they would change. Another tries to follow the explanation and reports where they got stuck. Recommend when to use each method and propose a rule that preserves the writer's choice.",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 112,
+    "target_grammar": "Concession, if clauses, and emphasis through what-clauses.",
+    "fluency_objective": "Use one example in which a suggestion helps and one in which an observation should come first.",
+    "pronunciation_objective": "Stress what happened and what to change so the two reviewer roles sound distinct.",
+    "target_vocabulary": [
+      "feedback",
+      "suggestion",
+      "observation",
+      "follow",
+      "revision",
+      "writer's decision"
+    ],
+    "cues": [
+      {
+        "text": "Explain a situation for a direct change suggestion.",
+        "keywords": [
+          "suggestion",
+          "specific change",
+          "add",
+          "change the wording"
+        ]
+      },
+      {
+        "text": "Explain the benefit of showing where the reader got stuck.",
+        "keywords": [
+          "got stuck",
+          "failed to",
+          "report",
+          "at which step",
+          "what happened"
+        ]
+      },
+      {
+        "text": "Give a realistic example that compares them.",
+        "keywords": [
+          "for example",
+          "instructions",
+          "screen",
+          "step"
+        ]
+      },
+      {
+        "text": "State a rule preserving the writer's choice.",
+        "keywords": [
+          "writer decides",
+          "ask first",
+          "can choose",
+          "leave the decision"
+        ]
+      }
+    ],
+    "model_opening": "I would begin with a report of what happened when the reader tried the explanation.",
+    "model_answer": "I would begin with a report of what happened when the reader tried the explanation. Imagine a short guide that tells someone to open the settings screen and choose a name. If the reader reaches two screens that both look like settings, saying where they got stuck gives the writer something to investigate. A suggestion to change the wording might solve it, but it could also skip over the fact that there are two routes into the same menu.\n\nA direct suggestion is useful once the writer understands the difficulty and does not know what to try. The reviewer might say, 'I got to general settings first. Could you add the name of the tab where the name actually appears?' Then the writer can see how the proposed change relates to what happened. They might decide to use a picture instead of adding words.\n\nMy rule would be to report the reader's experience before making a suggestion, and to ask first if the writer wants another option. Give a reason for each suggested change. The writer decides which revision fits the whole explanation, because the reader only sees the part they have tried.",
+    "sort_order": 384
+  },
+  "children": []
+}

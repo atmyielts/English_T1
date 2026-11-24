@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b2-three-ways-to-repair-a-watering-can",
+    "title": "Three Ways to Repair a Watering Can",
+    "level": "B2",
+    "summary": "A volunteer workshop learns that two people may ask for a repair with very different outcomes in mind.",
+    "content_markdown": "At the Salt Lane repair table, the word “repair” appeared on the top of every form. Below it there were two boxes: one for the name of the customer and one for the thing they had brought. A volunteer could describe how a repair had been carried out, but there was nowhere to write what the owner expected. That detail finally mattered when three people brought watering cans to the table on the same afternoon.\n\nThe first can leaked around its base. Its owner used it to water seedlings in a school yard, and asked that it hold water for the time it took to walk from the tap to the beds. The second also leaked, but its owner wanted to hang it in the window of a shop. The handle mattered; the base did not. An older customer brought the third can after a grandchild had bent its spout. She said it still held water. She wanted the little spray head to fit again, so she could use it on pots that were easily disturbed by a heavy stream.\n\nThe volunteers agreed that a standard repair could have achieved too little for the third owner and more work than the second would value. They had the means to close a small hole in the second can, but it would not stop its damaged handle from moving. They began asking each owner how they would know the job had been done. The answer could be observed: carry a full can to the beds, hang it safely, or fit the spray head and pour.\n\nThe new form has space for a sentence after the name of the object. It does not prescribe a repair method, and different volunteers can still offer a different route to the same result. It makes it easier to notice a case in which the team is about to spend an afternoon making an object look more complete without making it more useful to its owner. One customer may want to preserve old marks in the metal. Another may want the safest way to carry water. Neither gives the volunteer a licence to guess what the word “repaired” should mean.",
+    "category": "Work",
+    "theme": "agreeing what a repair should achieve",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "service feature",
+      "word_count": 363
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main lesson about repair work?",
+        "options": [
+          "Ask what an owner wants to be able to do before selecting the fix.",
+          "Use the same repair on objects with the same visible damage.",
+          "Measure whether a repair looks new rather than asking how it will be used.",
+          "Refuse objects if repairing them requires an unfamiliar method."
+        ],
+        "answer_index": 0,
+        "explanation": "The volunteers learn to turn each owner’s idea of success into an outcome they can observe."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What was wrong with the second can for its intended use?",
+        "options": [
+          "The spray head did not fit.",
+          "The handle needed attention before it could be hung.",
+          "It did not hold water between the tap and the bed.",
+          "Its owner wanted the paint removed."
+        ],
+        "answer_index": 1,
+        "explanation": "This owner planned to hang the can in a window, making the handle more important than the leak."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What does the added sentence on the form change?",
+        "options": [
+          "It rules out more than one possible technique.",
+          "It requires the owner to understand how a repair will be done.",
+          "It lets volunteers agree on the result even if they might fix it in different ways.",
+          "It shows that only the owner should carry out the last test."
+        ],
+        "answer_index": 2,
+        "explanation": "The form records how success should look without specifying which method a volunteer must follow."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “a licence to guess” mean here?",
+        "options": [
+          "A document that allows the owner to sell the repaired item",
+          "A rule that gives volunteers a discount on tools",
+          "A promise to use a safe method",
+          "Permission to assume they know what the owner wants"
+        ],
+        "answer_index": 3,
+        "explanation": "The writer says that the range of possible purposes should not be treated as permission to choose one without asking."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The first owner needed the can to hold water while walking to the beds.",
+        "answer": "true",
+        "explanation": "That is the practical test he or she proposes."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The third can stopped holding water after its spout was bent.",
+        "answer": "false",
+        "explanation": "The third owner says it holds water; the spray head no longer fits."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage says how much the workshop charges for a repair.",
+        "answer": "not_given",
+        "explanation": "It explains the form and the work, but does not mention prices."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The shop owner wanted the ___ to be sound. The third owner wanted to fit a small spray ___.",
+        "answers": [
+          [
+            "handle"
+          ],
+          [
+            "head"
+          ]
+        ],
+        "word_bank": [
+          "head",
+          "handle",
+          "hole",
+          "tap"
+        ],
+        "explanation": "The second owner needs the handle for hanging, and the third needs the spray head."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A concrete test for each proposed repair",
+          "A new form leaves the method open",
+          "What the original form left out",
+          "Three similar objects with different intended uses",
+          "Replacing all the cans"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The paragraphs set up the missing question, compare the three requests, agree on observable tests, and explain what the new form changes."
+      }
+    ]
+  },
+  "children": []
+}

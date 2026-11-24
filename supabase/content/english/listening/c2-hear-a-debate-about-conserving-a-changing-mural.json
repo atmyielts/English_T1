@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c2-hear-a-debate-about-conserving-a-changing-mural",
+    "title": "Hear a debate about conserving a changing mural",
+    "level": "C2",
+    "summary": "A conservator and organiser weigh authenticity when a wall painting has multiple states.",
+    "transcript_text": "Organiser: The artist has sent an opening-day photo and asked us to repaint to match.\nConservator: The photo is useful, but it selects one day in a long public life. The artist invited residents to add marks in the second season. Some now sit under another coat.\nOrganiser: Then do we keep the latest version because it's newest?\nConservator: Newness isn't the test. Imagine removing a layer as damage, then finding out it was part of the project. Record what's there, check which additions were invited, and decide with the artist and community how much change is justified. A digital reconstruction could show the first version without sacrificing the current one.\nOrganiser: So the photo illustrates one state. It doesn't direct us to remove the others.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 48,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "culture",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Organiser",
+        "Conservator"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What is inadequate about using only the photo to restore the wall?",
+        "options": [
+          "It shows an unrelated wall",
+          "It was taken after the additions appeared",
+          "It privileges a moment over changes that may belong to the work",
+          "It does not show any original colours"
+        ],
+        "answer_index": 2,
+        "explanation": "A single moment does not settle the status of later intentional changes.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why mention the residents’ marks?",
+        "options": [
+          "They prove the newest coat is the only authentic one",
+          "They make the boundary between part of the work and later damage less clear",
+          "They establish that the photo was faked",
+          "They explain why consultation is unnecessary"
+        ],
+        "answer_index": 1,
+        "explanation": "Invited changes may be integral to how the project was conceived.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How does the conservator view the newest layer?",
+        "options": [
+          "Its age alone does not decide whether to keep it",
+          "It must be removed before documentation",
+          "It should always be kept",
+          "It is valuable only if it matches the first day"
+        ],
+        "answer_index": 0,
+        "explanation": "The conservator explicitly rejects newness as a decisive test.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What could the reconstruction offer?",
+        "options": [
+          "A repainting guaranteed to match the first day",
+          "Proof that later marks were unauthorised",
+          "A decision about which layer should be removed",
+          "A view of the earlier state without physically undoing the current one"
+        ],
+        "answer_index": 3,
+        "explanation": "A digital version can coexist with the present surface.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How does the organiser ultimately use the photo?",
+        "options": [
+          "As proof the current surface has no value",
+          "As a new mural design",
+          "As documentary evidence instead of a conservation instruction",
+          "As an image too unreliable to cite"
+        ],
+        "answer_index": 2,
+        "explanation": "The concluding turn distinguishes recording a state from ordering a treatment.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "one day in a long public life",
+      "focus_phrase": "long public life",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "which additions were invited",
+      "focus_phrase": "additions were invited",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "without sacrificing the current one",
+      "focus_phrase": "the current one",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

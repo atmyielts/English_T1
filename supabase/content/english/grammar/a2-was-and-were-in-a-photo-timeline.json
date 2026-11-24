@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Was and were in a photo timeline",
+    "explanation_text": "Mia and her family sort their photos of the park. Some show the park before the storm. Others show it after the storm. The family uses was and were to say what the park was like at those past times. Use was with I, he, she, it, and one person or thing. Use were with you, we, they, and more than one person or thing. For example, the path was dry before the storm. The paths were wet after it.\n\nTo make a negative sentence, add not after was or were. The short forms are wasn't and weren't. To ask about a place, put was or were after where: Where was Dad? Where were the children? To ask about a scene, use Was there before a singular noun and Were there before a plural noun. Ask “Was there a dog by the gate?” or “Were there any people in the park?”",
+    "contrast_text": "The gate was open before the storm. The gates were closed after the storm. The gate wasn't open after the storm. The gates weren't closed before the storm.",
+    "common_error_pattern": "Use was with I, he, she, it and singular nouns. Use were with you, we, they and plural nouns. In where and yes-or-no questions with a named subject, put was or were before that subject.",
+    "tags": [
+      "A2",
+      "past-simple-be",
+      "was-were",
+      "negatives",
+      "questions"
+    ],
+    "examples": [
+      {
+        "bad": "I were at the park before the storm.",
+        "good": "I was at the park before the storm."
+      },
+      {
+        "bad": "You wasn't in the first photo.",
+        "good": "You weren't in the first photo."
+      },
+      {
+        "bad": "Where Grandma was after the storm?",
+        "good": "Where was Grandma after the storm?"
+      },
+      {
+        "bad": "Was there any people by the gate?",
+        "good": "Were there any people by the gate?"
+      }
+    ],
+    "slug": "a2-was-and-were-in-a-photo-timeline",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 360,
+    "focus_area": "past-be-was-were"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Label the first photo",
+      "instructions": "Complete the label with was or were.",
+      "prompt_text": "The park ___ quiet before the storm.",
+      "accepted_answers": [
+        "was"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Describe two benches",
+      "instructions": "Complete the note with was or were.",
+      "prompt_text": "Both benches ___ wet after the storm.",
+      "accepted_answers": [
+        "were"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Correct a guess about Mia",
+      "instructions": "Mia was at home. Complete the reply with wasn't or weren't.",
+      "prompt_text": "My sister ___ at the park when Dad took the first photo.",
+      "accepted_answers": [
+        "wasn't"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Explain why two people are missing",
+      "instructions": "You and Dad were behind the camera. Complete the note with wasn't or weren't.",
+      "prompt_text": "We ___ in the last photo.",
+      "accepted_answers": [
+        "weren't"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask Grandma about her visit",
+      "instructions": "Complete the question with was or were.",
+      "prompt_text": "Grandma, where ___ you when Dad took this photo?",
+      "accepted_answers": [
+        "were"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix Dad's note",
+      "instructions": "Change only the incorrect word. Write the full sentence.",
+      "prompt_text": "I were by the gate before the storm.",
+      "accepted_answers": [
+        "I was by the gate before the storm."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix a question about the paths",
+      "instructions": "Change only the incorrect word. Write the full question.",
+      "prompt_text": "Was the paths wet after the storm?",
+      "accepted_answers": [
+        "Were the paths wet after the storm?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Write the opposite caption",
+      "instructions": "Make the sentence negative. Replace was with wasn't and keep all the other words in the same order.",
+      "prompt_text": "The grass was dry after the storm.",
+      "accepted_answers": [
+        "The grass wasn't dry after the storm."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Ask where the bike was",
+      "instructions": "Replace by the tree with Where at the start. Put was right after Where. Keep before the storm at the end.",
+      "prompt_text": "The bike was by the tree before the storm.",
+      "accepted_answers": [
+        "Where was the bike before the storm?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Check for people in the park",
+      "instructions": "Turn this note into a yes-or-no question starting with Were there. Change some to any and keep the other words in their original order.",
+      "prompt_text": "There were some people in the park after the storm.",
+      "accepted_answers": [
+        "Were there any people in the park after the storm?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the time first",
+      "instructions": "Use every tile once to write a sentence about the first photo. Start with Before the storm and put a comma after it.",
+      "prompt_text": "open / the gate / Before the storm / was",
+      "accepted_answers": [
+        "Before the storm, the gate was open."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Ask about the lights",
+      "instructions": "Use every tile once to ask about the park lights in the last photo. Start with Were the lights and end with after the storm.",
+      "prompt_text": "after the storm / on / the lights / Were",
+      "accepted_answers": [
+        "Were the lights on after the storm?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.past-be-was-were"
+    }
+  ]
+}

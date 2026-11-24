@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "c1-revise-an-instructions-video-by-purpose",
+    "title": "Recommend a Change to an Instructions Video",
+    "level": "C1",
+    "prompt_text": "A team made a three-minute video explaining how to set up an exhibition display. Viewers praise the close-up shots but confuse two similar clips because they cannot tell which clip is from the back. Respond to the editor. Recommend one change that preserves the useful footage, and explain how you would test whether it solves the stated problem.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 107,
+    "target_grammar": "Concession, conditional reasoning, and precise direction language.",
+    "fluency_objective": "Separate what viewers already understand from the part of the video they confuse. Name one test action.",
+    "pronunciation_objective": "Stress front and back, then speak the suggested on-screen label slowly enough to be written down.",
+    "target_vocabulary": [
+      "close-up",
+      "orientation",
+      "front",
+      "reverse",
+      "label",
+      "test"
+    ],
+    "cues": [
+      {
+        "text": "Name the benefit of the current close-up footage.",
+        "keywords": [
+          "close-up",
+          "small details",
+          "see the",
+          "useful footage"
+        ]
+      },
+      {
+        "text": "Explain the specific orientation problem.",
+        "keywords": [
+          "from the back",
+          "reverse",
+          "which side",
+          "front"
+        ]
+      },
+      {
+        "text": "Suggest a concrete change.",
+        "keywords": [
+          "wide shot",
+          "add a label",
+          "label",
+          "arrow"
+        ]
+      },
+      {
+        "text": "Propose an observable test.",
+        "keywords": [
+          "watch the revised",
+          "ask viewers",
+          "point to",
+          "orient the"
+        ]
+      }
+    ],
+    "model_opening": "I would keep the close-up shots.",
+    "model_answer": "I would keep the close-up shots. They let you see which edge of each piece sits inside the frame. Viewers are getting that information. The problem is that we cut from a shot taken from the front to one taken from the back without showing the change in position. That is when two clips with useful detail start to look interchangeable.\n\nMy first change would be to put a short wide shot immediately before the second close-up. It could show the person walking around the frame, with a label that says 'view from the back.' I would keep the label on screen for the first few seconds of the close-up. The viewer could then connect the change in position to the detail they need to look at.\n\nAsk a small group to watch the revised section, then put a spare component on a table and ask them to point to the side shown in each clip. If people can name the right side without playing the clip again, we have some evidence the change works. If they still have trouble, ask where they thought the camera was rather than simply adding another instruction.",
+    "sort_order": 382
+  },
+  "children": []
+}

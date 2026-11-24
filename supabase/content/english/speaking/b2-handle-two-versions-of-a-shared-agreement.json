@@ -1,0 +1,55 @@
+{
+  "item": {
+    "slug": "b2-handle-two-versions-of-a-shared-agreement",
+    "title": "Clarify Two Versions of a Shared Agreement",
+    "level": "B2",
+    "prompt_text": "Your committee agreed to end a community event at 8, but one person remembers a later plan that would allow until 8:30. The printed notice says 8 and several visitors have already seen it. You are leading the next meeting. Explain the two records fairly, propose what to tell visitors now, and suggest how to confirm any change later.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 86,
+    "target_grammar": "Reported speech, modals for proposals, and past tense for the versions.",
+    "fluency_objective": "Name the two times separately. End with the action you want the committee to approve today.",
+    "pronunciation_objective": "Give eight and eight thirty distinct stress, and pause before quoting the wording for visitors.",
+    "target_vocabulary": [
+      "printed notice",
+      "remember",
+      "agreed",
+      "confirm",
+      "current plan",
+      "update"
+    ],
+    "cues": [
+      {
+        "text": "Describe both possible end times and their sources.",
+        "keywords": [
+          "printed notice",
+          "eight thirty",
+          "someone remembers",
+          "later plan"
+        ]
+      },
+      {
+        "text": "Say what you would tell visitors now.",
+        "keywords": [
+          "tell visitors",
+          "current plan",
+          "eight for now",
+          "say eight"
+        ]
+      },
+      {
+        "text": "Give the committee a way to confirm and share a change.",
+        "keywords": [
+          "check the",
+          "ask the",
+          "confirm",
+          "update the notice"
+        ]
+      }
+    ],
+    "model_opening": "The printed notice says we finish at eight.",
+    "model_answer": "The printed notice says we finish at eight. Luka remembers a later conversation about finishing at eight thirty, and I don't think we should dismiss that. We do need to distinguish a proposal from a change that the whole committee approved. A few visitors have already made plans based on the notice. For now, I would tell visitors the event ends at eight and say that we will let them know if that changes.\n\nCan we ask the person who took the minutes to check what was actually agreed? We should also ask the venue whether a later finish is possible. If both checks support the new time and the committee agrees, update the notice at the entrance and send the same wording to anyone who booked a place. I would put one person in charge of replacing both messages. That gives visitors a consistent time whichever way they hear about it.",
+    "sort_order": 378
+  },
+  "children": []
+}

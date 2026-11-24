@@ -1,0 +1,123 @@
+{
+  "item": {
+    "slug": "a2-before-the-radio-announcement",
+    "title": "Before the Radio Announcement",
+    "level": "A2",
+    "summary": "A young presenter discovers why the first line of a short announcement matters.",
+    "content_markdown": "**Mira:** What did you have to read on the local radio?\n\n**Taj:** A short message about the Saturday boat race. My first draft started with the name of the club and the year it opened. Then I said that the event would use the north gate. That was the part people needed to hear. The usual gate was closed while someone fixed its steps.\n\n**Mira:** Why did you change the first line?\n\n**Taj:** The producer asked me to listen to my draft once without looking at the page. I could remember the year, but missed the gate. She helped me start with “Use the north gate for Saturday’s boat race.” Then I added why the gate had changed and where to find the signs. We left out the date the club opened.\n\n**Mira:** Did you read the message more than once?\n\n**Taj:** Yes. At the end we read the whole thing again, more slowly. If people missed the first line, they had another chance to get the information. The new message was shorter than the old one, even when we read it twice.",
+    "category": "Media",
+    "theme": "writing for local radio",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "interview",
+      "word_count": 183
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What did Taj learn?",
+        "options": [
+          "Put the information listeners need first.",
+          "Read the history of a club at the fastest speed.",
+          "Give a new speaker the longest message.",
+          "Avoid saying where a race takes place."
+        ],
+        "answer_index": 0,
+        "explanation": "The revised opening gives the new entrance before any background facts."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why was the usual gate closed?",
+        "options": [
+          "There were boats in front of it.",
+          "Its steps needed repair.",
+          "The race began too early.",
+          "The signs had already gone inside."
+        ],
+        "answer_index": 1,
+        "explanation": "Taj says someone was fixing the usual gate’s steps."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the producer ask Taj to listen without the page?",
+        "options": [
+          "To give Taj time to plan a different race",
+          "To check that the paper draft had no spelling mistakes",
+          "To hear which information someone might remember without reading it",
+          "To decide which club first used the gate"
+        ],
+        "answer_index": 2,
+        "explanation": "Taj remembers the year but misses the gate when listening. This helps him notice what the draft made easy or hard to remember."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “left out” mean in Taj’s answer?",
+        "options": [
+          "Spoke more slowly about",
+          "Moved to the end of",
+          "Put in a note about",
+          "Did not include"
+        ],
+        "answer_index": 3,
+        "explanation": "The new version contains the gate information without the date the club opened."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The announcement tells people to use the north gate.",
+        "answer": "true",
+        "explanation": "The revised first line names the north gate."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The second reading of the announcement was quicker than the first.",
+        "answer": "false",
+        "explanation": "Taj says they read it more slowly."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Taj says how many boats will take part in the race.",
+        "answer": "not_given",
+        "explanation": "The interview gives the entrance details but no number of boats."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The new version starts by telling listeners to use the ___ gate. It explains where to find the ___.",
+        "answers": [
+          [
+            "north"
+          ],
+          [
+            "signs"
+          ]
+        ],
+        "word_bank": [
+          "north",
+          "steps",
+          "signs",
+          "club"
+        ],
+        "explanation": "Taj gives “north gate” first and then tells the reader that the announcement describes where the signs are."
+      }
+    ]
+  },
+  "children": []
+}

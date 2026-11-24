@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c1-rotate-visible-and-invisible-open-day-jobs",
+    "title": "Design a Fair Volunteer Rotation",
+    "level": "C1",
+    "prompt_text": "People often volunteer to welcome visitors but rarely choose the work of setting up chairs and checking signs before opening. Returning volunteers say the same people get the less visible jobs. Propose a rotation that lets newcomers learn, preserves reliable opening, and gives experienced volunteers a fair way to change roles.",
+    "genre": "staff proposal",
+    "audience": "organisers of a community open day",
+    "target_grammar": "Conditionals, concessive phrasing and distinctions between a rule and an exception.",
+    "target_structure": "Describe the problem without blame, outline a rotation, then show how the exception and review would work.",
+    "target_vocabulary": [
+      "setup",
+      "rotation",
+      "visibility",
+      "experienced",
+      "handover",
+      "pairing"
+    ],
+    "expected_length_min": 186,
+    "expected_length_max": 263,
+    "checklist": [
+      {
+        "point": "Describe why the usual allocation feels uneven.",
+        "keywords": [
+          "same people",
+          "less visible",
+          "setup",
+          "welcome"
+        ]
+      },
+      {
+        "point": "Propose a rotation with a way for newcomers to learn.",
+        "keywords": [
+          "pair",
+          "first session",
+          "rotation",
+          "alongside"
+        ]
+      },
+      {
+        "point": "Explain how people could ask for a change.",
+        "keywords": [
+          "request",
+          "swap",
+          "change roles",
+          "speak to"
+        ]
+      },
+      {
+        "point": "Protect opening reliability with a concrete check.",
+        "keywords": [
+          "opening checklist",
+          "before opening",
+          "check",
+          "ready"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    },
+    "sort_order": 397
+  },
+  "children": []
+}

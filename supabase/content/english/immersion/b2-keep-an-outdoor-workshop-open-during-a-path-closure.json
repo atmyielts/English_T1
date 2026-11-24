@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b2-keep-an-outdoor-workshop-open-during-a-path-closure",
+    "title": "Keep an outdoor workshop open during a path closure",
+    "level": "B2",
+    "mission_type": "travel",
+    "context_text": "You coordinate a nature-sketching workshop. A bridge closure creates a longer route, and some participants have limited walking time.",
+    "objective_text": "Communicate a viable detour and offer a fallback without blaming participants for access needs.",
+    "target_vocabulary": [
+      "detour",
+      "crossing",
+      "checkpoint",
+      "access",
+      "contingency"
+    ],
+    "success_conditions": [
+      "Communicate a viable detour and offer a fallback without blaming participants for access needs.",
+      "Confirm the opening extension",
+      "Keep the start clear",
+      "Give the place to join",
+      "Flag the stepped route"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the site bulletin",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Bridge lane is closed. The river detour adds twenty minutes and has uneven steps. The garden gate connects to the workshop on a flat path, but that gate is staffed only from 9:45 to 10:10. The workshop begins at 10:00.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which onward route has steps?",
+          "options": [
+            "The path from the garden gate",
+            "The river detour",
+            "Both routes"
+          ],
+          "answer_index": 1,
+          "explanation": "The bulletin identifies uneven steps only on the river detour."
+        },
+        {
+          "prompt": "What can make the flatter path unavailable?",
+          "options": [
+            "Booking a seat at ten",
+            "Arrival after the garden gate staffing window",
+            "Walking from the main road"
+          ],
+          "answer_index": 1,
+          "explanation": "The gate is staffed only until 10:10."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the tutor’s suggestion",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "We can start with a fifteen-minute indoor demonstration and keep a helper at the garden gate until ten twenty if the site manager agrees. Late arrivals could join at the sketch boards. We should tell everyone that the extension is still a proposal.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What part of the extension is unresolved?",
+          "options": [
+            "Whether the sketch boards exist",
+            "Whether the site manager will approve it",
+            "Whether the workshop starts at ten"
+          ],
+          "answer_index": 1,
+          "explanation": "The tutor proposes a later gate time conditional on approval."
+        },
+        {
+          "prompt": "Where could late arrivals join?",
+          "options": [
+            "At the closed bridge lane",
+            "At the sketch boards",
+            "On the uneven steps"
+          ],
+          "answer_index": 1,
+          "explanation": "They can miss the demonstration and join at the boards."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Brief a helper on the confirmed plan",
+      "prompt_text": "The helper wants to tell visitors the gate will run until 10:20.",
+      "instructions": "Give the presently confirmed window, distinguish the proposal and describe what visitors can do if they might miss it.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 30,
+      "model_answer": "The only confirmed time is a staffed garden gate until ten ten. We have asked for ten twenty but the site manager has not agreed yet. Please ask people to contact us if they may be late.",
+      "points": [
+        {
+          "label": "Give confirmed gate cutoff",
+          "any": [
+            "ten ten",
+            "10:10"
+          ]
+        },
+        {
+          "label": "Recognise the extension is unconfirmed",
+          "any": [
+            "has not agreed yet",
+            "not yet confirmed"
+          ]
+        },
+        {
+          "label": "Invite contact",
+          "any": [
+            "contact us",
+            "get in touch"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a final message after approval",
+      "prompt_text": "The manager approves staffing until 10:20. The start time remains the same.",
+      "instructions": "Give both timing facts, explain the late handover, and avoid recommending the stepped detour to someone who needs a flat route.",
+      "goal": "Communicate a viable detour and offer a fallback without blaming participants for access needs.",
+      "estimated_minutes": 13,
+      "min_words": 55,
+      "model_answer": "Use the garden gate for a flat path to the workshop. It will be staffed until ten twenty. We start the indoor demonstration at ten, and late arrivals can join the group at the sketch boards afterwards. The bridge lane remains closed and the river detour has uneven steps. Contact us if neither route works for you.",
+      "points": [
+        {
+          "label": "Confirm the opening extension",
+          "any": [
+            "until ten twenty",
+            "until 10:20"
+          ]
+        },
+        {
+          "label": "Keep the start clear",
+          "any": [
+            "at ten",
+            "at 10:00"
+          ]
+        },
+        {
+          "label": "Give the place to join",
+          "any": [
+            "sketch boards"
+          ]
+        },
+        {
+          "label": "Flag the stepped route",
+          "any": [
+            "uneven steps"
+          ]
+        }
+      ]
+    }
+  ]
+}

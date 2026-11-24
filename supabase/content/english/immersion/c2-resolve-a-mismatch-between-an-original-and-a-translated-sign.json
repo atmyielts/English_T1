@@ -1,0 +1,160 @@
+{
+  "item": {
+    "slug": "c2-resolve-a-mismatch-between-an-original-and-a-translated-sign",
+    "title": "Resolve a mismatch between an original and a translated sign",
+    "level": "C2",
+    "mission_type": "problem_solving",
+    "context_text": "A bilingual notice at a research library was meant to allow visits arriving shortly before closing only with staff approval. The translation sounds like an absolute refusal.",
+    "objective_text": "Draft a clear notice that preserves the discretionary exception without disguising the last admission time.",
+    "target_vocabulary": [
+      "register",
+      "implication",
+      "provisional",
+      "entry",
+      "exception"
+    ],
+    "success_conditions": [
+      "Draft a clear notice that preserves the discretionary exception without disguising the last admission time.",
+      "State the entry cutoff",
+      "State when the library closes",
+      "Locate authority",
+      "Bound the exception",
+      "Explain the modal"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the published notice",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Original instruction for staff: At 5:30 stop routine entry. A duty supervisor may allow a brief visit if it can be completed by 6:00. Printed translation: No visitors will be admitted after 5:30. Posted closing time: 6:00.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What does the translation lose?",
+          "options": [
+            "The routine cutoff itself",
+            "The building's afternoon closing time",
+            "The possibility of a supervisor-approved brief visit"
+          ],
+          "answer_index": 2,
+          "explanation": "The staff instruction contains a limited exception missing from the notice."
+        },
+        {
+          "prompt": "Who can decide whether a late visit is possible?",
+          "options": [
+            "Anyone arriving before six",
+            "The first employee to see a visitor",
+            "The duty supervisor"
+          ],
+          "answer_index": 2,
+          "explanation": "Only the duty supervisor can authorise the exception."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear a desk worker explain what happens",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "When someone sees ‘ask us after half past five’, they often take it as a promise of service until six. We can answer a quick question during that time, but a reader who needs a long request should come earlier. Put the routine cutoff first. Then say a brief visit may be possible if the supervisor confirms it.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What is the problem with the desk worker’s example wording?",
+          "options": [
+            "It can imply an entitlement to a full visit",
+            "It fails to say when staff answer calls",
+            "It wrongly forbids routine admission"
+          ],
+          "answer_index": 0,
+          "explanation": "A general invitation can sound like a guarantee."
+        },
+        {
+          "prompt": "Why must the length of a visit matter?",
+          "options": [
+            "It still has to finish by closing time",
+            "All visitors have equal scheduled time",
+            "The supervisor is only available at noon"
+          ],
+          "answer_index": 0,
+          "explanation": "Only visits that finish by six can qualify."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain your editing choice",
+      "prompt_text": "Someone proposes removing all mention of the exception because the translated sentence is shorter.",
+      "instructions": "Explain whose decision is obscured by the current text and how to keep the exception from sounding guaranteed.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 40,
+      "model_answer": "The existing sign hides the discretion of the duty supervisor. We can state the routine cutoff first, then say a brief visit may be possible with approval. That wording lets a visitor ask without suggesting that everyone has a right to enter until six.",
+      "points": [
+        {
+          "label": "Name the decision-maker",
+          "any": [
+            "duty supervisor"
+          ]
+        },
+        {
+          "label": "State the cutoff first",
+          "any": [
+            "routine cutoff first"
+          ]
+        },
+        {
+          "label": "Use conditional phrasing",
+          "any": [
+            "may be possible",
+            "with approval"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Provide final public wording and a translator’s note",
+      "prompt_text": "Write a two-sentence sign and a short note explaining the modal choice.",
+      "instructions": "Give the routine cutoff and building closing time, identify the practical test for the exception, and explain how the wording handles different visitor expectations.",
+      "goal": "Draft a clear notice that preserves the discretionary exception without disguising the last admission time.",
+      "estimated_minutes": 15,
+      "min_words": 70,
+      "model_answer": "Sign: Routine admission ends at 5:30. After that, the duty supervisor may admit you for a brief visit that can finish before the library closes at 6:00. Translator’s note: The word may keeps the late option visible without promising entry. The cutoff remains the first information a reader encounters, and the requirement to finish before closing explains why a short enquiry might be possible when a longer visit cannot be accommodated.",
+      "points": [
+        {
+          "label": "State the entry cutoff",
+          "any": [
+            "routine admission ends at 5:30"
+          ]
+        },
+        {
+          "label": "State when the library closes",
+          "any": [
+            "closes at 6:00"
+          ]
+        },
+        {
+          "label": "Locate authority",
+          "any": [
+            "duty supervisor"
+          ]
+        },
+        {
+          "label": "Bound the exception",
+          "any": [
+            "brief visit that can finish",
+            "finish before the library closes"
+          ]
+        },
+        {
+          "label": "Explain the modal",
+          "any": [
+            "word may",
+            "without promising entry"
+          ]
+        }
+      ]
+    }
+  ]
+}

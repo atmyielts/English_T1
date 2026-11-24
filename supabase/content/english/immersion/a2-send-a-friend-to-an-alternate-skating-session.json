@@ -1,0 +1,142 @@
+{
+  "item": {
+    "slug": "a2-send-a-friend-to-an-alternate-skating-session",
+    "title": "Send a friend to an alternate skating session",
+    "level": "A2",
+    "mission_type": "social",
+    "context_text": "A skating rink has cancelled your chosen session. Your friend has rented skates and has a bus home at six.",
+    "objective_text": "Choose an alternative with enough time to skate and return the equipment.",
+    "target_vocabulary": [
+      "entry",
+      "skates",
+      "refund",
+      "rink",
+      "register"
+    ],
+    "success_conditions": [
+      "Choose an alternative with enough time to skate and return the equipment.",
+      "Include the registration time",
+      "Mention the rental return",
+      "Name the finish time"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the new timetable",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Saturday’s three o’clock session has been cancelled. Your ticket works at four or at half past five. Each session lasts one hour. Rental skates must be returned by six.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which session can finish before six?",
+          "options": [
+            "Half past five",
+            "Both",
+            "Four o’clock"
+          ],
+          "answer_index": 2,
+          "explanation": "The four o’clock session ends at five, and the later one ends at half past six."
+        },
+        {
+          "prompt": "How long is each session?",
+          "options": [
+            "Half an hour",
+            "Two hours",
+            "One hour"
+          ],
+          "answer_index": 2,
+          "explanation": "The timetable gives an hour."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the attendant’s instructions",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "If you change to four, register at the desk fifteen minutes before. You can keep your rental receipt. If you can’t come at either time, bring your unused ticket to the desk for a refund.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When should a four o’clock skater register?",
+          "options": [
+            "3:45",
+            "4:15",
+            "5:00"
+          ],
+          "answer_index": 0,
+          "explanation": "Fifteen minutes before four is a quarter to four."
+        },
+        {
+          "prompt": "What do people bring if they need a refund?",
+          "options": [
+            "The unused ticket",
+            "The rental receipt only",
+            "A new ticket"
+          ],
+          "answer_index": 0,
+          "explanation": "The attendant asks for the unused ticket."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Confirm a replacement ticket",
+      "prompt_text": "The attendant is waiting to hear which session you want.",
+      "instructions": "Ask to transfer to four o’clock. Check that your current rental receipt can be used.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Could we change our tickets to the four o’clock session? We have already rented skates. Can we keep the same rental receipt for the new time?",
+      "points": [
+        {
+          "label": "Ask for the earlier replacement",
+          "any": [
+            "four o’clock",
+            "four o'clock",
+            "4 p.m."
+          ]
+        },
+        {
+          "label": "Mention the rental receipt",
+          "any": [
+            "rental receipt"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write the plan to your friend",
+      "prompt_text": "Your friend has not yet heard about the cancellation.",
+      "instructions": "Include the meeting deadline and why the four o’clock slot works. Give your friend time to return the skates before the bus.",
+      "goal": "Choose an alternative with enough time to skate and return the equipment.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "The three o’clock slot was cancelled. Let’s meet at the rink desk at 3:45 and register for four. That session finishes at five, so we can return our rental skates before your six o’clock bus. Keep your rental receipt for the desk.",
+      "points": [
+        {
+          "label": "Include the registration time",
+          "any": [
+            "3:45",
+            "quarter to four"
+          ]
+        },
+        {
+          "label": "Mention the rental return",
+          "any": [
+            "return our rental skates",
+            "return the skates"
+          ]
+        },
+        {
+          "label": "Name the finish time",
+          "any": [
+            "finishes at five",
+            "ends at five"
+          ]
+        }
+      ]
+    }
+  ]
+}

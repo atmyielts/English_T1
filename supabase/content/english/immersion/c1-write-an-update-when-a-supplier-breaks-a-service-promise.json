@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "c1-write-an-update-when-a-supplier-breaks-a-service-promise",
+    "title": "Write an update when a supplier breaks a service promise",
+    "level": "C1",
+    "mission_type": "workplace",
+    "context_text": "A company promised that local news subscribers would get a print insert with their delivery. A supplier can print half the copies in time.",
+    "objective_text": "Offer feasible choices without giving some subscribers an unsupported guarantee.",
+    "target_vocabulary": [
+      "commitment",
+      "substitute",
+      "delay",
+      "refund",
+      "confirmation"
+    ],
+    "success_conditions": [
+      "Offer feasible choices without giving some subscribers an unsupported guarantee.",
+      "Acknowledge what was missing",
+      "Offer a postal copy",
+      "Offer a credit",
+      "Keep the PDF optional"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the delivery agreement",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Print inserts are included with the Saturday delivery. If the promised insert is unavailable, a subscriber can choose a paper copy by post when ready or request a delivery credit. A PDF can be offered in addition to either choice.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What alternatives does the agreement leave open?",
+          "options": [
+            "Only a PDF or nothing",
+            "A posted paper copy or a delivery credit",
+            "An automatic yearly subscription refund"
+          ],
+          "answer_index": 1,
+          "explanation": "The two options apply when the insert is unavailable."
+        },
+        {
+          "prompt": "Can a PDF replace a subscriber’s choice automatically?",
+          "options": [
+            "Yes, it is always the required remedy",
+            "No, it can be offered in addition",
+            "Yes, but only if no more than half are missing"
+          ],
+          "answer_index": 1,
+          "explanation": "The agreement allows an optional digital copy alongside either choice."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the printer’s update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "We can deliver one short run tonight, but I can't promise which routes it will cover until dispatch has sorted the packs. The rest of the run cannot start until Monday. We will know by nine tomorrow which addresses missed the insert.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "When can individual deliveries be identified?",
+          "options": [
+            "Tonight as soon as printing begins",
+            "On Monday only",
+            "By nine tomorrow"
+          ],
+          "answer_index": 2,
+          "explanation": "Dispatch can reconcile the addresses by nine."
+        },
+        {
+          "prompt": "What is known about the remaining copies?",
+          "options": [
+            "They will reach everyone on Monday",
+            "They cannot ever be sent",
+            "Printing them cannot start before Monday"
+          ],
+          "answer_index": 2,
+          "explanation": "The printer gives the earliest start, not a delivery promise."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Tell customer support what to say today",
+      "prompt_text": "Support wants to send personalised messages before dispatch reconciliation.",
+      "instructions": "Say what they can disclose now, when to confirm individual cases, and why they should avoid promising a postal arrival date.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 35,
+      "model_answer": "Tell subscribers that part of the print run is delayed. We'll confirm affected addresses by nine tomorrow. The printer cannot restart production until Monday, so we should avoid giving an arrival date for posted copies.",
+      "points": [
+        {
+          "label": "Use a confirmed update deadline",
+          "any": [
+            "by nine tomorrow",
+            "by 9 tomorrow"
+          ]
+        },
+        {
+          "label": "Do not assume a delivery date",
+          "any": [
+            "avoid giving an arrival date",
+            "cannot give an arrival date"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write to affected subscribers",
+      "prompt_text": "It is now after the dispatch check. Write to a subscriber whose delivery definitely lacks the insert.",
+      "instructions": "Acknowledge what was missed, give the subscriber two choices, and offer the PDF without taking either choice away.",
+      "goal": "Offer feasible choices without giving some subscribers an unsupported guarantee.",
+      "estimated_minutes": 14,
+      "min_words": 65,
+      "model_answer": "Your Saturday delivery went out without the print insert we promised. We can send a paper copy by post once the remaining copies are ready, or apply a delivery credit. Please reply with the option you prefer. The remaining print run cannot start before Monday, and we will confirm the postal date once it is available. We can also send a PDF whichever option you choose.",
+      "points": [
+        {
+          "label": "Acknowledge what was missing",
+          "any": [
+            "without the print insert",
+            "missing print insert"
+          ]
+        },
+        {
+          "label": "Offer a postal copy",
+          "any": [
+            "paper copy by post"
+          ]
+        },
+        {
+          "label": "Offer a credit",
+          "any": [
+            "delivery credit"
+          ]
+        },
+        {
+          "label": "Keep the PDF optional",
+          "any": [
+            "PDF whichever option",
+            "also send a PDF"
+          ]
+        }
+      ]
+    }
+  ]
+}

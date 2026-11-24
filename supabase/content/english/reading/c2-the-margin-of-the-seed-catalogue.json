@@ -1,0 +1,156 @@
+{
+  "item": {
+    "slug": "c2-the-margin-of-the-seed-catalogue",
+    "title": "The Margin of the Seed Catalogue",
+    "level": "C2",
+    "summary": "A study of historical garden records examines which writers become visible when their notes are made searchable.",
+    "content_markdown": "In 1932, the municipal gardeners of a northern port bought six hundred copies of a seed catalogue and offered them to tenants who worked the city’s allotments. The purpose was straightforward: a foreman wanted orders entered under the right variety names so that he could group purchases. Decades later, sixty-seven of the catalogues turned up in the loft above a parish office. Nearly a third carried notes in their margins. A recent local exhibition prints some of these notes next to photographs of people working the land.\n\nThe exhibition’s most arresting case brings together a photograph of a man inspecting a bean plant and a note that reads, “Tall ones no good at this end.” The curator says the phrase shows how experience could qualify a printed recommendation. The catalogue describes the bean as suitable for exposed plots. The note may have been written after a disappointing season, but it might equally have been advice remembered from a neighbouring tenant or a comment on some other variety. The man in the photograph cannot be identified. In the exhibition they are placed far enough apart for a careful visitor to see that one illustrates a practice and the other records a judgement. In the newspaper review they appear together under a caption that gives the anonymous man the line.\n\nA searchable edition of the catalogues faces a related problem, though it comes about by another route. The old catalogue lists three kinds of broad bean on the same page. A note opposite the last of the three may begin by naming no variety at all. In an early draft of the edition the editor assigned each note to whichever printed entry stood nearest it. A visitor could therefore search by variety and get an apparently precise set of results. The editor found a note that ran down towards the last entry as its writer’s pencil approached the binding. Its only named variety was the first entry on the page. A neat search required a proximity rule that the pencil itself ignored.\n\nThe latest version lets readers open a photograph of the whole page from any result. It also marks some attributions as tentative and places notes that give no reliable clue into a separate group. In tests the first arrangement made searches quick but exaggerated the support for two varieties. The new arrangement makes certain comparisons less convenient. It makes a different question possible, however: how often can we identify exactly what a gardener is talking about from these few surviving words?\n\nThe reviewer and the editor were both trying to make the collection intelligible. One put a sentence beside a face. The other linked it to a search term. Such moves are often how a reader finds an entry point into an unfamiliar collection. The risk is that without a visible sign of how those links were made, a person can mistake somebody’s decision to place two records together for a connection between them in the past. The success of this edition lies partly in giving up the promise that every note has a single, recoverable address.",
+    "category": "History",
+    "theme": "marginal notes and anonymous historical evidence",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "historical interpretation",
+      "word_count": 518
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What argument does the author make about presenting the garden notes?",
+        "options": [
+          "Printed exhibits communicate anonymous evidence more reliably than searchable editions.",
+          "Connections used to guide readers should reveal how they were supplied and how certain they are.",
+          "Photographs that cannot be linked to an identifiable person should be omitted from historical collections.",
+          "Searchable editions can determine most likely links once all the images are digitised."
+        ],
+        "answer_index": 1,
+        "explanation": "Both the photo caption and proximity rule create useful-looking links. The author argues that readers need to see the basis and limits of such links."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What flaw does the note near the binding expose?",
+        "options": [
+          "Editors gave too much weight to variety names written in the printed descriptions.",
+          "Notes made in pencil can become illegible close to the binding.",
+          "A handwritten note’s position on the page can be a poor guide to its subject.",
+          "The photographs cropped out which printed variety was first."
+        ],
+        "answer_index": 2,
+        "explanation": "The note slants towards the last printed entry but names the first variety, so the two clues point in different directions."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "How does the author regard the latest searchable version?",
+        "options": [
+          "Its handling of unsupported links requires replacing the printed exhibition’s display.",
+          "It improved both the speed and certainty of variety comparisons at once.",
+          "It avoids interpretation by showing only photographs of the pages.",
+          "Its inconvenience in some searches helps readers confront a relevant uncertainty."
+        ],
+        "answer_index": 3,
+        "explanation": "The last version sacrifices convenient comparisons in places and makes it possible to ask how many notes can really be identified."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "In the last sentence, what does ‘recoverable address’ mean?",
+        "options": [
+          "A definite subject or reference that can be established for a note",
+          "The original physical location of the printed catalogue",
+          "The name and residence of the person pictured beside a line",
+          "A stable web link pointing to an image of the complete page"
+        ],
+        "answer_index": 0,
+        "explanation": "An address here is the printed variety or subject a note might be assigned to. The author says such a connection may not be recoverable."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The foreman originally distributed the catalogues in order to help group purchases.",
+        "answer": "true",
+        "explanation": "He wanted orders entered under the right variety names so that purchases could be grouped."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The editor’s final method still assigns every note to the nearest printed entry.",
+        "answer": "false",
+        "explanation": "It flags uncertainty and puts some notes into a separate group; the nearest-entry rule was used in an early draft."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.inference",
+        "prompt": "The tenant who wrote ‘Tall ones no good at this end’ had personally planted the kind of bean the catalogue recommends for exposed plots.",
+        "answer": "not_given",
+        "explanation": "The author considers experience, a neighbour’s advice and even another variety as possible sources of the note.",
+        "variant": "yes_no"
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "In the initial search arrangement the editor relied on a ___ rule. The newer edition lets readers open a photograph of the whole ___.",
+        "answers": [
+          [
+            "proximity"
+          ],
+          [
+            "page"
+          ]
+        ],
+        "word_bank": [
+          "proximity",
+          "variety",
+          "page",
+          "binding"
+        ],
+        "explanation": "Paragraph three identifies the rule and paragraph four states what every result can open."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A layout choice that hardens into a claim",
+          "An ordinary purchasing tool becomes a historical source",
+          "A link between position and topic proves unreliable",
+          "A less convenient system makes uncertainty visible",
+          "A record identifies the person pictured"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The first paragraph explains distribution and discovery. The second compares display with caption, the third tests proximity and the fourth describes the revision."
+      }
+    ]
+  },
+  "children": []
+}

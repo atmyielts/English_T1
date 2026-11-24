@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b1-understand-a-switch-to-a-daytime-shift",
+    "title": "Understand a switch to a daytime shift",
+    "level": "B1",
+    "summary": "A supervisor gives a worker two options for a one-week change.",
+    "transcript_text": "Manager: From Monday, the late shift ends at eight instead of nine because the building work starts each evening. If you need your usual hours, you can either start at three or add the missing hour to Friday's morning shift.\nWorker: I'm in class until half past three on Mondays and Wednesdays.\nManager: Then three won't work on those days. You could add one hour to Friday and one to Saturday. Check with Lynn before you do that. She keeps the weekend list.\nWorker: Can I leave at nine again when the builders finish?\nManager: Yes. This change is only for next week. I'll put the normal hours back on the board the week after.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 120,
+    "duration_seconds": 55,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "workplace",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Manager",
+        "Worker"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What prompted the temporary change?",
+        "options": [
+          "A permanent fall in business",
+          "A class starting at the workplace",
+          "Evening building work",
+          "A shorter weekend schedule"
+        ],
+        "answer_index": 2,
+        "explanation": "The workers leave earlier because of the work on the building.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Which days cause the worker a problem with a three o’clock start?",
+        "options": [
+          "Monday and Saturday",
+          "Monday and Wednesday",
+          "Friday and Saturday",
+          "Wednesday and Friday"
+        ],
+        "answer_index": 1,
+        "explanation": "Their class runs until 3:30 on Monday and Wednesday.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What option does the manager suggest for recovering both hours?",
+        "options": [
+          "Add one to Friday and one to Saturday",
+          "Work two extra hours on Monday",
+          "Stay until nine every evening",
+          "Add one to Wednesday and one to Friday"
+        ],
+        "answer_index": 0,
+        "explanation": "The manager offers Friday and Saturday as the two make-up days.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Who should be asked about that plan first?",
+        "options": [
+          "The teacher",
+          "The builders",
+          "Other late-shift workers",
+          "Lynn"
+        ],
+        "answer_index": 3,
+        "explanation": "Lynn keeps the weekend list.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "When should normal late shifts return?",
+        "options": [
+          "On Monday evening",
+          "At the end of each day",
+          "The week after the temporary change",
+          "After the next school term"
+        ],
+        "answer_index": 2,
+        "explanation": "The manager says the change is for one week.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "because the building work starts each evening",
+      "focus_phrase": "starts each evening",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "check with Lynn",
+      "focus_phrase": "check with Lynn",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "the week after",
+      "focus_phrase": "the week after",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

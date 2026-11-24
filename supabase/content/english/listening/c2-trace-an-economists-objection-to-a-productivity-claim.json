@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c2-trace-an-economists-objection-to-a-productivity-claim",
+    "title": "Trace an economist’s objection to a productivity claim",
+    "level": "C2",
+    "summary": "A guest questions whether an average captures the full cost of a service change.",
+    "transcript_text": "Host: The desk took three minutes less per request after introducing the portal. We included the slow cases as well.\nGuest: Every case in the average made it to the desk. What happened to people who found the portal confusing?\nHost: They can join the old phone queue. We counted both channels.\nGuest: You counted both among completed requests. If someone tries online, waits on the phone and gives up, they appear in neither. The shorter time might be useful for staffing, but it doesn't tell us what the change cost the public.\nHost: Should we throw out the number?\nGuest: Keep it and name its denominator. Sample abandoned attempts and measure elapsed time from the first try. If the results point in different directions, show the conflict.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 49,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "workplace",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Host",
+        "Guest"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What scope problem does the guest identify?",
+        "options": [
+          "The desk used the wrong unit of time",
+          "The same cases were necessarily counted twice",
+          "The average can exclude people who never complete the process",
+          "The old channel shut down"
+        ],
+        "answer_index": 2,
+        "explanation": "The existing figure uses completed cases, leaving dropouts outside the calculation.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why does counting both channels fail to resolve the concern?",
+        "options": [
+          "The phone queue has no bearing on staff workloads",
+          "People can be absent from completion counts in both channels",
+          "Every phone request must begin online",
+          "Both systems have exactly the same handling times"
+        ],
+        "answer_index": 1,
+        "explanation": "A failed journey can cover both channels without producing a completed request.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "When might the current average be useful?",
+        "options": [
+          "Estimating desk time for cases that reach staff",
+          "Measuring everybody’s total effort",
+          "Calculating how often attempts are abandoned",
+          "Identifying people who never try"
+        ],
+        "answer_index": 0,
+        "explanation": "The guest preserves the figure’s narrower operational use.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What additional evidence does the guest want?",
+        "options": [
+          "Only a longer time sample of completed requests",
+          "The ages of all portal accounts",
+          "The staffing costs before the portal",
+          "Time from first attempt, with abandoned attempts represented"
+        ],
+        "answer_index": 3,
+        "explanation": "The proposed measure includes time before reaching the desk and some unsuccessful journeys.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How should differing results be interpreted?",
+        "options": [
+          "One result automatically invalidates the other",
+          "Only the improved result should be published",
+          "They may expose a trade-off between distinct outcomes",
+          "Conflicting results prove the portal broke"
+        ],
+        "answer_index": 2,
+        "explanation": "The guest wants the difference reported because the measures address different questions.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "every case in the average made it to the desk",
+      "focus_phrase": "to the desk",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "you counted both among completed requests",
+      "focus_phrase": "among completed requests",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "name its denominator",
+      "focus_phrase": "name its denominator",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

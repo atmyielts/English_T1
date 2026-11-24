@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c1-explain-a-reconstructed-sign",
+    "title": "Write an Exhibition Note About a Reconstructed Sign",
+    "level": "C1",
+    "prompt_text": "A restored ticket booth has an original board with two missing letters. The restorer supplied those letters from a photograph of another booth, because no clear photograph of this booth was found. The reconstructed reading is plausible. Write an exhibition note that distinguishes what survives, what was inferred, and what future evidence could change the reconstruction.",
+    "genre": "exhibition label",
+    "audience": "visitors to a local transport museum",
+    "target_grammar": "Relative clauses, reporting verbs, and qualified statements with may and likely.",
+    "target_structure": "Describe the object, state the basis and limits of the reconstruction, and invite a specific kind of further evidence.",
+    "target_vocabulary": [
+      "surviving",
+      "reconstruction",
+      "inferred",
+      "lettering",
+      "reference",
+      "evidence"
+    ],
+    "expected_length_min": 184,
+    "expected_length_max": 260,
+    "checklist": [
+      {
+        "point": "Describe which part survives.",
+        "keywords": [
+          "original board",
+          "wooden board",
+          "surviving",
+          "two letters"
+        ]
+      },
+      {
+        "point": "Explain the basis for supplying the missing letters.",
+        "keywords": [
+          "photograph of another",
+          "photograph of a second",
+          "restorer used",
+          "inferred"
+        ]
+      },
+      {
+        "point": "Say why the source supports a plausible reading with some uncertainty.",
+        "keywords": [
+          "plausible",
+          "cannot confirm",
+          "may have been",
+          "could have differed"
+        ]
+      },
+      {
+        "point": "Identify a useful piece of future evidence.",
+        "keywords": [
+          "dated photograph",
+          "a photograph of this",
+          "confirmed",
+          "would help"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    },
+    "sort_order": 357
+  },
+  "children": []
+}

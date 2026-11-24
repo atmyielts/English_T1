@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "a1-help-with-a-balcony-herb-box",
+    "title": "Label a Herb Box for a Friend",
+    "level": "A1",
+    "prompt_text": "The box has mint on the left and basil on the right. Ask your friend to water both on Monday and Thursday. The watering can is under the shelf. Write a card to leave next to the box.",
+    "genre": "instruction card",
+    "audience": "your friend who will look after a balcony box",
+    "target_grammar": "On the left and on the right. Use please before a command.",
+    "target_structure": "Label the two sides, give the days, and say where the can is.",
+    "target_vocabulary": [
+      "mint",
+      "basil",
+      "left",
+      "right",
+      "water"
+    ],
+    "expected_length_min": 28,
+    "expected_length_max": 57,
+    "checklist": [
+      {
+        "point": "Say where both herbs are.",
+        "keywords": [
+          "mint on the left",
+          "basil on the right",
+          "mint is on the left"
+        ]
+      },
+      {
+        "point": "Remember both days.",
+        "keywords": [
+          "monday and thursday",
+          "on monday",
+          "on thursday"
+        ]
+      },
+      {
+        "point": "Tell the friend where to find the watering can.",
+        "keywords": [
+          "under the shelf",
+          "watering can"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    },
+    "sort_order": 390
+  },
+  "children": []
+}

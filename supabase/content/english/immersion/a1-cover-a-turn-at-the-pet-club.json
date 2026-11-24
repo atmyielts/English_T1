@@ -1,0 +1,140 @@
+{
+  "item": {
+    "slug": "a1-cover-a-turn-at-the-pet-club",
+    "title": "Cover a turn at the pet club",
+    "level": "A1",
+    "mission_type": "social",
+    "context_text": "You and a friend take turns feeding two rabbits at a school pet club. You cannot come at the usual time.",
+    "objective_text": "Explain the short job and find someone who can cover it.",
+    "target_vocabulary": [
+      "rabbit",
+      "turn",
+      "feed",
+      "vegetables",
+      "list"
+    ],
+    "success_conditions": [
+      "Explain the short job and find someone who can cover it.",
+      "Name the replacement and time",
+      "State the water task",
+      "Confirm the written check"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the feeding card",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "The rabbits need fresh water and one small bowl of greens each at four. No bread. Mark both tasks on the list when you finish.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "How many bowls of greens do the rabbits get together?",
+          "options": [
+            "Two",
+            "One",
+            "Four"
+          ],
+          "answer_index": 0,
+          "explanation": "There are two rabbits and each gets one small bowl."
+        },
+        {
+          "prompt": "Where do you record the jobs?",
+          "options": [
+            "On the list",
+            "On the water bowl",
+            "On the classroom door"
+          ],
+          "answer_index": 0,
+          "explanation": "The card asks for a mark on the list."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear your classmate’s message",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I can be there at four. I know where the greens are. Is the water in the bottle fresh? I can't stay after half past four.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What does your classmate know already?",
+          "options": [
+            "Where the greens are",
+            "Where the list is",
+            "Whether the water is fresh"
+          ],
+          "answer_index": 0,
+          "explanation": "They say they know where to find the greens."
+        },
+        {
+          "prompt": "What time must your classmate leave?",
+          "options": [
+            "By 4:30",
+            "By 4:00",
+            "By 5:30"
+          ],
+          "answer_index": 0,
+          "explanation": "They cannot stay after half past four."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask for short cover",
+      "prompt_text": "Your classmate can cover your turn. Thank them and explain the water job.",
+      "instructions": "Ask them to replace the water and tell them the feeding time.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Thanks for coming at four. Please put fresh water in the bottle for the rabbits. Give each rabbit one bowl of greens.",
+      "points": [
+        {
+          "label": "Ask for clean water",
+          "any": [
+            "fresh water"
+          ]
+        },
+        {
+          "label": "Give the food rule",
+          "any": [
+            "each rabbit one bowl",
+            "one bowl of greens"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the club a record",
+      "prompt_text": "Another learner checks who is feeding the rabbits today.",
+      "instructions": "Name the replacement, the two tasks and how they will confirm that everything is done. The classmate’s name is Lili.",
+      "goal": "Explain the short job and find someone who can cover it.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Lili will feed the rabbits at four today. She will give them fresh water and one bowl of greens each. Please do not give the rabbits any bread. Lili will mark both jobs on the list before she leaves.",
+      "points": [
+        {
+          "label": "Name the replacement and time",
+          "any": [
+            "Lili will feed the rabbits at four",
+            "Lili at four"
+          ]
+        },
+        {
+          "label": "State the water task",
+          "any": [
+            "fresh water"
+          ]
+        },
+        {
+          "label": "Confirm the written check",
+          "any": [
+            "mark both jobs on the list",
+            "mark the list"
+          ]
+        }
+      ]
+    }
+  ]
+}

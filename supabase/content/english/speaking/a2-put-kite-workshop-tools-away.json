@@ -1,0 +1,52 @@
+{
+  "item": {
+    "slug": "a2-put-kite-workshop-tools-away",
+    "title": "Explain How to Clear a Kite Table",
+    "level": "A2",
+    "prompt_text": "Two friends are finishing a kite workshop. The scissors belong in the long tray, the rolls of string go in the round tin and any finished kite goes against the wall. Explain where things go and give a different instruction for a kite that is not finished.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 46,
+    "target_grammar": "Put, leave and move for instructions. Use if for an unfinished kite.",
+    "fluency_objective": "Name the containers in the same order as the objects. End with the exception and listen for a clear difference.",
+    "pronunciation_objective": "Stress long tray and round tin. Pause before the if clause.",
+    "target_vocabulary": [
+      "scissors",
+      "tray",
+      "string",
+      "tin",
+      "finished",
+      "wall"
+    ],
+    "cues": [
+      {
+        "text": "Say where the tools and string go.",
+        "keywords": [
+          "scissors",
+          "long tray",
+          "round tin"
+        ]
+      },
+      {
+        "text": "Describe where to place a finished kite.",
+        "keywords": [
+          "against the wall",
+          "finished kite"
+        ]
+      },
+      {
+        "text": "Explain what to do with an unfinished kite.",
+        "keywords": [
+          "not finished",
+          "unfinished kite",
+          "leave it flat",
+          "on the table"
+        ]
+      }
+    ],
+    "model_opening": "Put the scissors in the long tray, please.",
+    "model_answer": "Put the scissors in the long tray, please. The rolls of string go in the round tin. When a kite is finished, stand it against the wall with its name facing out. If a kite is not finished, leave it flat on the table and put the person's name beside it. That way we can find the right kite when we come back.",
+    "sort_order": 372
+  },
+  "children": []
+}

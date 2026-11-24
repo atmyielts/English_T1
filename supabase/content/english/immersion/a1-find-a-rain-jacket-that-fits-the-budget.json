@@ -1,0 +1,154 @@
+{
+  "item": {
+    "slug": "a1-find-a-rain-jacket-that-fits-the-budget",
+    "title": "Find a rain jacket that fits the budget",
+    "level": "A1",
+    "mission_type": "service",
+    "context_text": "You need a blue rain jacket for a class walk. You can spend no more than twenty pounds.",
+    "objective_text": "Confirm the best option and leave a message that someone else can use to buy it.",
+    "target_vocabulary": [
+      "size",
+      "price",
+      "jacket",
+      "colour",
+      "receipt"
+    ],
+    "success_conditions": [
+      "Confirm the best option and leave a message that someone else can use to buy it.",
+      "Specify the right jacket",
+      "Give the price",
+      "Give the reservation details",
+      "Ask for proof of purchase"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the three tags",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Blue size M: £18. Blue size L: £22. Green size M: £16. Ask at the desk if you need a different size.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which jacket is blue and under twenty pounds?",
+          "options": [
+            "Blue medium",
+            "Blue large",
+            "Green medium"
+          ],
+          "answer_index": 0,
+          "explanation": "The blue medium costs eighteen pounds."
+        },
+        {
+          "prompt": "What is the cheapest jacket?",
+          "options": [
+            "Green medium",
+            "Blue medium",
+            "Blue large"
+          ],
+          "answer_index": 0,
+          "explanation": "The green medium costs sixteen pounds."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the shop worker",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The blue medium is on the rail beside the desk. It is the last one in that size. We can hold it until four if you give me a name.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Where can you find the blue medium?",
+          "options": [
+            "In the window",
+            "On the rail by the desk",
+            "In a green box"
+          ],
+          "answer_index": 1,
+          "explanation": "The shop worker directs the buyer to a rail by the desk."
+        },
+        {
+          "prompt": "Until when can the shop hold it?",
+          "options": [
+            "Until five",
+            "Until four",
+            "Until tomorrow"
+          ],
+          "answer_index": 1,
+          "explanation": "The shop can hold the jacket until four today."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask the worker to hold it",
+      "prompt_text": "You cannot pay right now. Your name is Kay and your brother will collect the jacket.",
+      "instructions": "Give the worker the size, colour and name. Confirm the last time your brother can arrive.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Could you hold the blue medium jacket under the name Kay? Can my brother come at half past three? He can be here before four.",
+      "points": [
+        {
+          "label": "Specify the jacket",
+          "any": [
+            "blue medium"
+          ]
+        },
+        {
+          "label": "Give the reservation name",
+          "any": [
+            "name Kay"
+          ]
+        },
+        {
+          "label": "Check the deadline",
+          "any": [
+            "before four",
+            "until four"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Text your brother the exact purchase",
+      "prompt_text": "Your brother is going to the shop for you and can pay up to twenty pounds.",
+      "instructions": "State the desired item, correct price, reservation name and pickup deadline. Ask for the receipt.",
+      "goal": "Confirm the best option and leave a message that someone else can use to buy it.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Please buy the blue medium rain jacket for me. It costs eighteen pounds. It is on hold at the desk under the name Kay until four today. Please do not buy the blue large one. Keep the receipt for me.",
+      "points": [
+        {
+          "label": "Specify the right jacket",
+          "any": [
+            "blue medium"
+          ]
+        },
+        {
+          "label": "Give the price",
+          "any": [
+            "eighteen pounds",
+            "£18"
+          ]
+        },
+        {
+          "label": "Give the reservation details",
+          "any": [
+            "name Kay until four",
+            "Kay until four"
+          ]
+        },
+        {
+          "label": "Ask for proof of purchase",
+          "any": [
+            "keep the receipt",
+            "get the receipt"
+          ]
+        }
+      ]
+    }
+  ]
+}

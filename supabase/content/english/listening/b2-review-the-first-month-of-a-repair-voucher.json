@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b2-review-the-first-month-of-a-repair-voucher",
+    "title": "Review the first month of a repair voucher",
+    "level": "B2",
+    "summary": "Two council staff members disagree about what a drop in voucher claims tells them.",
+    "transcript_text": "Nadia: We handed out nearly all the repair vouchers, but fewer than half have been used. My first thought was that people changed their minds about repairing things.\nBen: The shops told us some customers arrived with items they couldn't fix. A shoe repair shop was listed as a general repair shop. Other customers were waiting for appointments beyond our deadline.\nNadia: So extending it might help, but it would not solve the shop list.\nBen: Right. I'd sort the claims by what people wanted to repair, call the shops about their capacity, and extend the deadline for people already on a waiting list.\nNadia: Let's hold off on printing another batch until we can see which change makes a difference.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 132,
+    "duration_seconds": 53,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "community",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Nadia",
+        "Ben"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What are Nadia and Ben trying to decide?",
+        "options": [
+          "Whether shoe repairs should cost more",
+          "How to respond to low voucher use",
+          "Where to open a public repair shop",
+          "How to choose a new printer"
+        ],
+        "answer_index": 1,
+        "explanation": "They discuss why many distributed vouchers remain unused and what to change.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why did some customers fail to use a voucher?",
+        "options": [
+          "The listed shops did not handle their repair",
+          "Shops refused to accept any vouchers",
+          "Most vouchers were already used",
+          "The council raised repair prices"
+        ],
+        "answer_index": 0,
+        "explanation": "A shoe repair shop was listed too broadly.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What does Nadia say an extension alone leaves unresolved?",
+        "options": [
+          "The total number of vouchers handed out",
+          "Whether the printer is available",
+          "How people learned about the scheme",
+          "Misleading information about shop services"
+        ],
+        "answer_index": 3,
+        "explanation": "Extra time cannot fix a list that points customers to the wrong specialist.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Whom would Ben give more time?",
+        "options": [
+          "Every shop employee",
+          "Only people needing shoe repairs",
+          "People already awaiting appointments",
+          "People applying for a new batch"
+        ],
+        "answer_index": 2,
+        "explanation": "Ben proposes an extension for customers on waiting lists.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What is the purpose of delaying more printing?",
+        "options": [
+          "To discontinue the scheme permanently",
+          "To learn which changes improve use first",
+          "To move the budget to advertising",
+          "To require a print-only registration"
+        ],
+        "answer_index": 1,
+        "explanation": "Nadia wants to distinguish the effects of the proposed fixes.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "people changed their minds about repairing things",
+      "focus_phrase": "about repairing things",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "appointments beyond our deadline",
+      "focus_phrase": "beyond our deadline",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "hold off on printing another batch",
+      "focus_phrase": "printing another batch",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

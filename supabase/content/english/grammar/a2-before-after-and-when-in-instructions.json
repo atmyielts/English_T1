@@ -1,0 +1,170 @@
+{
+  "item": {
+    "title": "Before, after and when in practice instructions",
+    "explanation_text": "Use before, after or when to join two parts of an instruction. In this pattern, put a subject and a verb after the time word. In “before you practise”, you is the subject and practise is the verb. Before tells you that the main action comes first. After tells you that the action in the time clause comes first. When tells you at what point to do the main action. Use the present simple in the time clause.\n\nStart with these two steps: “Write a title. Read the questions.” You can join them as “Write a title before you read the questions” or “After you write a title, read the questions.” The order of the actions stays the same in both sentences.\n\nA time clause can go at the beginning or the end. “When you reach the next page, stop” gives the same instruction as “Stop when you reach the next page.” Put a comma after a time clause at the beginning.",
+    "contrast_text": "Two short instructions can show the steps in the order you do them. When you join the steps, choose the time word that keeps that order. For the steps “Number the lines. Read the text,” you can say “Number the lines before you read the text” or “After you number the lines, read the text.” You can also move the same time clause without changing the order of the actions: “Before you read the text, number the lines.”",
+    "common_error_pattern": "Learners may leave out the subject or verb after before, after or when, or use will in the time clause. They may also switch before and after without checking which action comes first.",
+    "tags": [
+      "time-clauses",
+      "before-after-when",
+      "sequencing-instructions"
+    ],
+    "examples": [
+      {
+        "bad": "Set out the cards before you the game.",
+        "good": "Set out the cards before you start the game."
+      },
+      {
+        "bad": "After finish the puzzle, count your points.",
+        "good": "After you finish the puzzle, count your points."
+      },
+      {
+        "bad": "When the music will stop, turn over your paper.",
+        "good": "When the music stops, turn over your paper."
+      },
+      {
+        "bad": "Required order: choose a partner first, then move the chairs. “Move the chairs before you choose a partner” gives the opposite order.",
+        "good": "Move the chairs after you choose a partner."
+      }
+    ],
+    "slug": "a2-before-after-and-when-in-instructions",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 390,
+    "focus_area": "before-after-when-clauses"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "A space for your score",
+      "instructions": "Make it clear that you draw the box first. Choose before or after.",
+      "prompt_text": "Draw a box for your score ___ you try the quiz.",
+      "accepted_answers": [
+        "before"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A model for the table",
+      "instructions": "Make it clear that the whole table must be ready first. Choose before or after.",
+      "prompt_text": "Add a model answer ___ you finish drawing the table.",
+      "accepted_answers": [
+        "after"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A pause in the recording",
+      "instructions": "Use hear in the present simple. The bell is the signal to pause.",
+      "prompt_text": "When you ___ the bell, pause the recording.",
+      "accepted_answers": [
+        "hear"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Two words for the list",
+      "instructions": "Complete the time clause with you and select. Use the present simple.",
+      "prompt_text": "After ___ two new words, write them on the board.",
+      "accepted_answers": [
+        "you select"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A test print",
+      "instructions": "Use the present simple form of come out.",
+      "prompt_text": "When the test page ___, look at the size of the letters.",
+      "accepted_answers": [
+        "comes out"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Cover the answers",
+      "instructions": "Add you to the time clause. Keep the other words and their order.",
+      "prompt_text": "Cover the answers before test yourself.",
+      "accepted_answers": [
+        "Cover the answers before you test yourself."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "The door signal",
+      "instructions": "Change will knock to the present simple. Keep the rest of the sentence.",
+      "prompt_text": "When your partner will knock on the door, show the first picture.",
+      "accepted_answers": [
+        "When your partner knocks on the door, show the first picture."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Prepare the matching game",
+      "instructions": "Begin with “Before you”. Use “the word cards” in the before clause and “them” in the main clause. Keep the original order of actions.",
+      "prompt_text": "Mix the word cards. Put them on the desk.",
+      "accepted_answers": [
+        "Before you put the word cards on the desk, mix them."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Hide the question list",
+      "instructions": "Join the steps in one sentence. Start with “Turn the sheet over after you” and keep the original order of the actions.",
+      "prompt_text": "Copy the questions. Turn the sheet over.",
+      "accepted_answers": [
+        "Turn the sheet over after you copy the questions."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Start the speaking task",
+      "instructions": "Move the when clause to the beginning. Keep all the original words.",
+      "prompt_text": "Say the first sentence when the green light comes on.",
+      "accepted_answers": [
+        "When the green light comes on, say the first sentence."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Mark the map",
+      "instructions": "Use each tile once. Start with “After you”. Then add a comma after the time clause. Make it clear that you look at the map first.",
+      "prompt_text": "draw an arrow / you / look at the map / after",
+      "accepted_answers": [
+        "After you look at the map, draw an arrow."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Set the model aside",
+      "instructions": "Use each tile once. Start with “Put the model aside”.",
+      "prompt_text": "you / put the model aside / build your own / before",
+      "accepted_answers": [
+        "Put the model aside before you build your own."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.before-after-when-clauses"
+    }
+  ]
+}

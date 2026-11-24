@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c2-interpret-how-an-archive-treats-a-missing-letter",
+    "title": "Interpret how an archive treats a missing letter",
+    "level": "C2",
+    "summary": "An archivist explains why a blank in a record can have several meanings.",
+    "transcript_text": "Listener: The tenant's letter isn't in the file. Does that mean it never reached the office?\nArchivist: It might never have been sent. It might have been answered without being filed. Or it might be elsewhere, with records of the person who received it. The archive preserves an administrative route through the story.\nListener: Then why show the absence at all?\nArchivist: Otherwise, it's easy to take the landlord's account for the only one anyone gave. We have a copy of a reply that refers to a complaint. It doesn't repeat the complaint's words. Showing that copy makes it possible to say exactly what is supported and what remains open, without claiming to recover a lost voice.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 45,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "culture",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Listener",
+        "Archivist"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What overly strong inference does the archivist reject?",
+        "options": [
+          "The surviving accounts reflect unequal preservation",
+          "The letter never arrived because it is absent here",
+          "Records can be filed in different places",
+          "Some absences matter enough to label"
+        ],
+        "answer_index": 1,
+        "explanation": "Several plausible filing and communication paths could explain the absence.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What does an administrative route suggest?",
+        "options": [
+          "Record-keeping captures particular processes and viewpoints",
+          "A floor plan of the office survives",
+          "Tenants had a separate physical entrance",
+          "The archives document only staff shifts"
+        ],
+        "answer_index": 0,
+        "explanation": "The surviving arrangement cannot stand for everyone involved.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What does the copy of the reply support?",
+        "options": [
+          "The tenant certainly wrote the reply",
+          "The original letter has been located",
+          "The landlord never gave an account",
+          "A complaint is referred to, but its precise wording is unavailable"
+        ],
+        "answer_index": 3,
+        "explanation": "The reply points to a complaint without preserving its words.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why mark the absence?",
+        "options": [
+          "To accuse the office of deliberately removing a file",
+          "To explain the name of the archivist",
+          "Otherwise readers may assume no competing account existed",
+          "To persuade the landlord to send another note"
+        ],
+        "answer_index": 2,
+        "explanation": "An unmarked gap can make surviving material seem more complete than it is.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Which method does the archivist advocate?",
+        "options": [
+          "Write a likely complaint in the tenant’s voice",
+          "Display the trace along with its limits",
+          "Treat every possibility as equally evidenced",
+          "Remove the reply for fairness"
+        ],
+        "answer_index": 1,
+        "explanation": "The reply supplies evidence whose reach can be stated carefully.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "answered without being filed",
+      "focus_phrase": "without being filed",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "an administrative route through the story",
+      "focus_phrase": "through the story",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "repeat the complaint's words",
+      "focus_phrase": "the complaint's words",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

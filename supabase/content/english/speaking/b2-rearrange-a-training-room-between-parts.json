@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b2-rearrange-a-training-room-between-parts",
+    "title": "Plan a Training Room With Two Layouts",
+    "level": "B2",
+    "prompt_text": "A training course has a short demonstration followed by paired practice. The room has six small tables. If every table faces the front, people can see the trainer but cannot easily face a partner. If people sit in pairs from the start, some have to turn a long way to watch. Explain a workable setup and how the switch would happen.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 83,
+    "target_grammar": "Conditionals for the two phases. Use relative clauses to specify tables and seats.",
+    "fluency_objective": "Use one description for the demonstration and a second for paired practice. Include a clear instruction at the switch.",
+    "pronunciation_objective": "Stress toward the front and turn your chair to make the movement easy to follow.",
+    "target_vocabulary": [
+      "layout",
+      "demonstration",
+      "paired practice",
+      "aisle",
+      "turn",
+      "rearrange"
+    ],
+    "cues": [
+      {
+        "text": "Briefly explain the problem with the two extremes.",
+        "keywords": [
+          "face the front",
+          "have to turn",
+          "either layout",
+          "from the start"
+        ]
+      },
+      {
+        "text": "Recommend a concrete layout for the first phase.",
+        "keywords": [
+          "six tables",
+          "two rows",
+          "front",
+          "aisle"
+        ]
+      },
+      {
+        "text": "Explain how participants will switch to pairs.",
+        "keywords": [
+          "turn a chair",
+          "turn your chair",
+          "switch",
+          "after the demonstration",
+          "turn their chairs"
+        ]
+      },
+      {
+        "text": "Name one thing to check in the space.",
+        "keywords": [
+          "aisle",
+          "check",
+          "space behind",
+          "bags"
+        ]
+      }
+    ],
+    "model_opening": "I'd set the six tables in two short rows, with a clear aisle in the middle.",
+    "model_answer": "I'd set the six tables in two short rows, with a clear aisle in the middle. At the start, everyone should have a chair that faces the front. I would leave room behind each table so one person can turn without moving the whole table. That gives us a clear view of the trainer during the demonstration.\n\nAfter the trainer finishes, ask both partners to turn their chairs slightly towards each other. Put the practice materials in the centre of the table before people turn, so nobody has to pass sheets around after they have started. I would show the movement with one pair before asking everyone else to do it. Before the class, check that the aisle stays open when chairs are turned and ask everyone to put bags under the tables. The same set of tables can then serve both parts of the session.",
+    "sort_order": 377
+  },
+  "children": []
+}

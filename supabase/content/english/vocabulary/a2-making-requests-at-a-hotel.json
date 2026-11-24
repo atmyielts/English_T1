@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Making requests at a hotel",
+    "description": "Ask for things you need at a small guesthouse and get help with simple room problems.",
+    "slug": "a2-making-requests-at-a-hotel",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 370,
+    "topic": "hotel room requests"
+  },
+  "children": [
+    {
+      "word": "reception",
+      "part_of_speech": "noun",
+      "definition": "The place where people staying in a guesthouse go to ask for help or information.",
+      "example": "Could I pay for my room at reception this evening?",
+      "translation_ru": "стойка регистрации",
+      "translation_uz": "mehmonxona qabulxonasi",
+      "collocations": [
+        "ask at reception",
+        "call reception"
+      ]
+    },
+    {
+      "word": "spare blanket",
+      "part_of_speech": "noun phrase",
+      "definition": "An extra blanket you can use if you need one.",
+      "example": "Could you bring me a spare blanket? It gets chilly in my room at night.",
+      "translation_ru": "запасное одеяло",
+      "translation_uz": "zaxira adyol",
+      "collocations": [
+        "ask for a spare blanket",
+        "bring a spare blanket"
+      ]
+    },
+    {
+      "word": "extra pillow",
+      "part_of_speech": "noun phrase",
+      "definition": "One more soft cushion to put under your head when you sleep.",
+      "example": "Could I have an extra pillow? One is too low for me.",
+      "translation_ru": "дополнительная подушка",
+      "translation_uz": "qoʻshimcha yostiq",
+      "collocations": [
+        "request an extra pillow",
+        "bring up an extra pillow"
+      ]
+    },
+    {
+      "word": "cot",
+      "part_of_speech": "noun",
+      "definition": "A small bed with high sides for a baby to sleep in.",
+      "example": "Could you put a cot in our room before our baby goes to sleep?",
+      "translation_ru": "детская кроватка",
+      "translation_uz": "chaqaloq karavoti",
+      "collocations": [
+        "ask for a cot",
+        "set up a cot"
+      ]
+    },
+    {
+      "word": "housekeeping",
+      "part_of_speech": "noun",
+      "definition": "The service that cleans guest rooms and puts clean sheets and towels in them.",
+      "example": "Could you ask housekeeping to clean our room while we’re out this afternoon?",
+      "translation_ru": "служба уборки номеров",
+      "translation_uz": "xonalarni tozalash xizmati",
+      "collocations": [
+        "call housekeeping",
+        "ask housekeeping to come later"
+      ]
+    },
+    {
+      "word": "lift",
+      "part_of_speech": "noun",
+      "definition": "A small room that moves up and down and takes people to different floors.",
+      "example": "The lift isn’t working. Could you help me take my suitcase upstairs?",
+      "translation_ru": "лифт",
+      "translation_uz": "lift",
+      "collocations": [
+        "take the lift",
+        "wait for the lift"
+      ]
+    },
+    {
+      "word": "thermostat",
+      "part_of_speech": "noun",
+      "definition": "A device that keeps a room near the temperature you choose.",
+      "example": "Could you show me how to use the thermostat? The room feels too warm.",
+      "translation_ru": "термостат",
+      "translation_uz": "termostat",
+      "collocations": [
+        "turn down the thermostat",
+        "set the thermostat to 20 degrees"
+      ]
+    },
+    {
+      "word": "door code",
+      "part_of_speech": "noun phrase",
+      "definition": "A set of numbers you enter to unlock a room or get into a building.",
+      "example": "Could you write down the door code so I can get into the guesthouse this evening?",
+      "translation_ru": "код для входа",
+      "translation_uz": "eshik kodi",
+      "collocations": [
+        "enter the door code",
+        "ask for the door code"
+      ]
+    },
+    {
+      "word": "room safe",
+      "part_of_speech": "noun phrase",
+      "definition": "A strong box with a lock in a guest room where you can keep money or other important things.",
+      "example": "Could you show me how to lock the room safe? I’d like to leave my passport in it.",
+      "translation_ru": "сейф в номере",
+      "translation_uz": "xonadagi seyf",
+      "collocations": [
+        "unlock the room safe",
+        "put something in the room safe"
+      ]
+    },
+    {
+      "word": "shower drain",
+      "part_of_speech": "noun phrase",
+      "definition": "The hole that water goes down when you take a shower.",
+      "example": "Could someone look at the shower drain? The water stays on the floor.",
+      "translation_ru": "слив в душе",
+      "translation_uz": "dushdagi suv oqib ketadigan teshik",
+      "collocations": [
+        "a blocked shower drain",
+        "clear the shower drain"
+      ]
+    },
+    {
+      "word": "leak",
+      "part_of_speech": "noun",
+      "definition": "An opening or other problem that lets water escape from a pipe or container.",
+      "example": "There’s a leak under the sink in my room. Could someone come and look at it?",
+      "translation_ru": "протечка",
+      "translation_uz": "suv sizib chiqishi",
+      "collocations": [
+        "find a leak",
+        "fix a leak"
+      ]
+    },
+    {
+      "word": "hairdryer",
+      "part_of_speech": "noun",
+      "definition": "A small machine that blows warm air to make wet hair dry.",
+      "example": "Could I use a hairdryer? There isn’t one in my room.",
+      "translation_ru": "фен",
+      "translation_uz": "soch quritgich",
+      "collocations": [
+        "ask for a hairdryer",
+        "use a hairdryer"
+      ]
+    },
+    {
+      "word": "late checkout",
+      "part_of_speech": "noun phrase",
+      "definition": "An arrangement to leave your room after the usual time on your last day.",
+      "example": "Could we have a late checkout tomorrow? Our train doesn’t leave until four.",
+      "translation_ru": "поздний выезд",
+      "translation_uz": "xonani belgilangan vaqtdan kechroq boʻshatish",
+      "collocations": [
+        "ask for a late checkout",
+        "arrange a late checkout"
+      ]
+    },
+    {
+      "word": "room move",
+      "part_of_speech": "noun phrase",
+      "definition": "A change from one guest room to another during the same stay.",
+      "example": "Could you arrange a room move? We can hear traffic all night in this room.",
+      "translation_ru": "переселение в другой номер",
+      "translation_uz": "boshqa xonaga koʻchish",
+      "collocations": [
+        "request a room move",
+        "arrange a room move"
+      ]
+    }
+  ]
+}

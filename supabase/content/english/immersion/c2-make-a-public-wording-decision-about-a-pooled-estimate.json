@@ -1,0 +1,157 @@
+{
+  "item": {
+    "slug": "c2-make-a-public-wording-decision-about-a-pooled-estimate",
+    "title": "Make a public wording decision about a pooled estimate",
+    "level": "C2",
+    "mission_type": "study",
+    "context_text": "A research group combines results from three studies for a public briefing. One large study dominates the overall estimate.",
+    "objective_text": "Report the aggregate result along with the limits on what it says about each setting.",
+    "target_vocabulary": [
+      "heterogeneity",
+      "pooled estimate",
+      "qualification",
+      "uncertainty",
+      "summary"
+    ],
+    "success_conditions": [
+      "Report the aggregate result along with the limits on what it says about each setting.",
+      "Report the pooled direction",
+      "Identify the dominant site",
+      "Do not overstate the declines",
+      "Do not claim scheduling caused differences"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the synthesis note",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Study A followed 900 users at one site and found higher completion after the change. Studies B and C followed 55 and 65 users at other sites and estimated small drops, with wide uncertainty. The pooled estimate weights the large study most heavily. The studies scheduled visits differently.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What drives most of the pooled estimate?",
+          "options": [
+            "The average of only the two smaller studies",
+            "A measure of how visits were scheduled",
+            "The large site in Study A"
+          ],
+          "answer_index": 2,
+          "explanation": "The note says the largest study receives most of the aggregate weight."
+        },
+        {
+          "prompt": "What else varies beyond sample size?",
+          "options": [
+            "Whether all sites measured completion",
+            "Which studies happened last",
+            "How the sites scheduled visits"
+          ],
+          "answer_index": 2,
+          "explanation": "The note names a difference in visit scheduling."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear a briefing rehearsal",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Communications wants to write, ‘The change improves completion.’ The researchers agree the combined estimate points up, but an improvement at every site is a separate claim. The small studies do not establish damage. Their size leaves a range of possibilities open. We can show the site results alongside the overall estimate.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What claim does the evidence support most directly?",
+          "options": [
+            "The weighted estimate points to higher completion overall",
+            "Every site improved",
+            "Both small sites definitely declined"
+          ],
+          "answer_index": 0,
+          "explanation": "The central result concerns the combined estimate."
+        },
+        {
+          "prompt": "What does wide uncertainty mean here?",
+          "options": [
+            "The apparent small declines fail to settle the sites’ effects",
+            "Both sites definitely experienced no effect",
+            "Their data were intentionally excluded"
+          ],
+          "answer_index": 0,
+          "explanation": "Wide uncertainty leaves their effects unsettled rather than proving harm or no effect."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Respond to a request for a shorter headline",
+      "prompt_text": "Your collaborator wants to say ‘worked everywhere on average’.",
+      "instructions": "Explain why averaging and everywhere cannot support the same inference here. Offer a plain headline.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 40,
+      "model_answer": "The aggregate estimate suggests higher completion overall. The largest site drives most of that estimate, so it cannot tell us whether the improvement occurred everywhere. A better headline would be ‘Overall estimate suggests higher completion, with results varying by site’.",
+      "points": [
+        {
+          "label": "Keep the overall estimate",
+          "any": [
+            "aggregate estimate",
+            "overall estimate"
+          ]
+        },
+        {
+          "label": "Explain the dominant site",
+          "any": [
+            "largest site drives",
+            "largest site carries"
+          ]
+        },
+        {
+          "label": "Limit the scope",
+          "any": [
+            "whether the improvement occurred everywhere",
+            "results varying by site"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write the briefing paragraph",
+      "prompt_text": "The briefing can carry four or five sentences alongside a small results table.",
+      "instructions": "State what is observed, identify the dominant study, and qualify both the wide intervals and possible scheduling differences without asserting a cause.",
+      "goal": "Report the aggregate result along with the limits on what it says about each setting.",
+      "estimated_minutes": 15,
+      "min_words": 70,
+      "model_answer": "The pooled results point to higher completion after the change, and the largest site accounts for most of the estimate’s weight. The two smaller sites reported small declines, with considerable uncertainty, so their results neither confirm harm nor show what would happen in another setting. Visit schedules differed across sites and could help explain the variation, but the studies do not isolate that factor. The accompanying table shows the site estimates as well as the overall figure.",
+      "points": [
+        {
+          "label": "Report the pooled direction",
+          "any": [
+            "pooled results point to higher completion",
+            "overall improvement"
+          ]
+        },
+        {
+          "label": "Identify the dominant site",
+          "any": [
+            "largest site accounts",
+            "largest study contributes"
+          ]
+        },
+        {
+          "label": "Do not overstate the declines",
+          "any": [
+            "considerable uncertainty",
+            "wide uncertainty"
+          ]
+        },
+        {
+          "label": "Do not claim scheduling caused differences",
+          "any": [
+            "do not isolate",
+            "cannot identify scheduling"
+          ]
+        }
+      ]
+    }
+  ]
+}

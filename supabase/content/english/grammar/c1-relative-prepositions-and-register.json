@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Preposition placement in relative clauses",
+    "explanation_text": "In formal English, a preposition can come immediately before a relative pronoun. Use whom for a person and which for a thing. In “the adviser to whom we sent the draft,” whom is the object of to, and we is the subject of the relative clause. In “the annex in which we store the originals,” which completes in. The phrase “the channel via which we received the alert” works the same way. A fronted preposition requires its relative pronoun and cannot be followed by that.\n\nIn conversational English, the preposition often stays in its usual position within the clause. This is called stranding. A defining relative clause identifies the person or thing meant, and you can omit the relative pronoun if it is an object, as in “the adviser we sent the draft to.” A subject relative pronoun is required, as in “the adviser who sent the draft.” In a nondefining relative clause, use commas and retain the pronoun even if you strand the preposition.",
+    "contrast_text": "A formal notice might say “the channel via which we received the alert.” In a team message, “the channel we received the alert via” identifies the same channel with the preposition stranded and the object pronoun omitted.",
+    "common_error_pattern": "After moving a preposition before the relative pronoun, writers sometimes leave a second copy in its original position, use that after the preposition, or omit the pronoun altogether.",
+    "tags": [
+      "c1",
+      "relative-clauses",
+      "preposition-placement",
+      "register"
+    ],
+    "examples": [
+      {
+        "bad": "The archivist to who we addressed the request has replied.",
+        "good": "The archivist to whom we addressed the request has replied."
+      },
+      {
+        "bad": "The cabinet in that we found the ledger is locked.",
+        "good": "The cabinet in which we found the ledger is locked."
+      },
+      {
+        "bad": "The relay via which the station received the signal via has failed.",
+        "good": "The relay via which the station received the signal has failed."
+      },
+      {
+        "bad": "I called the technician repaired the scanner.",
+        "good": "I called the technician who repaired the scanner."
+      }
+    ],
+    "slug": "c1-relative-prepositions-and-register",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 400,
+    "focus_area": "relative-prepositions-and-register"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Name the recipient",
+      "instructions": "Complete the formal sentence with the one-word object form of who after to. The liaison received the transcript.",
+      "prompt_text": "The liaison to ___ we sent the transcript has confirmed receipt.",
+      "accepted_answers": [
+        "whom"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Identify the filing location",
+      "instructions": "Supply only the relative pronoun. The compliance team filed the waivers in the folder.",
+      "prompt_text": "The folder in ___ the compliance team filed the waivers is read-only.",
+      "accepted_answers": [
+        "which"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Specify the transmission route",
+      "instructions": "Supply the formal two-word relative phrase. Use via and refer back to the gateway.",
+      "prompt_text": "The gateway ___ the sensors transmit their readings encrypts all traffic.",
+      "accepted_answers": [
+        "via which"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete a casual note",
+      "instructions": "Supply only the missing preposition. Keep the object relative pronoun omitted. The crew borrowed the projector from the workshop.",
+      "prompt_text": "The workshop we borrowed the projector ___ is closed today.",
+      "accepted_answers": [
+        "from"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Identify who performed the action",
+      "instructions": "Complete the relative clause with the subject form of the pronoun who. The medic spoke to the family.",
+      "prompt_text": "The medic ___ spoke to the family has returned to the ward.",
+      "accepted_answers": [
+        "who"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Remove a repeated preposition",
+      "instructions": "Keep in which together in the formal inventory entry and delete the redundant word.",
+      "prompt_text": "The crate in which the conservator packed the fragments in was sealed.",
+      "accepted_answers": [
+        "The crate in which the conservator packed the fragments was sealed."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Restore a pronoun in an aside",
+      "instructions": "Use the objective form of who and keep to at the end of the relative clause. Treat the information about offering the post as supplementary and set it off with commas.",
+      "prompt_text": "Maya Patel we offered the post to has accepted.",
+      "accepted_answers": [
+        "Maya Patel, whom we offered the post to, has accepted."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Formalize a procurement note",
+      "instructions": "Rewrite the full sentence with to whom immediately after supplier. Keep all the other wording apart from moving to.",
+      "prompt_text": "The supplier we referred the query to has responded.",
+      "accepted_answers": [
+        "The supplier to whom we referred the query has responded."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Adapt a description for team chat",
+      "instructions": "Rewrite the full sentence by moving in to the end of the relative clause and omitting the relative pronoun. Keep the rest of the wording.",
+      "prompt_text": "The studio in which we recorded the interview has reopened.",
+      "accepted_answers": [
+        "The studio we recorded the interview in has reopened."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Use an explicit object pronoun",
+      "instructions": "Rewrite the defining relative clause with that immediately after account. Keep via and strand it at the end of the relative clause. Keep the rest of the wording.",
+      "prompt_text": "The account via which we submitted the appeal is still active.",
+      "accepted_answers": [
+        "The account that we submitted the appeal via is still active."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble a formal referral",
+      "instructions": "Use every tile once. Start with “The panel” and put “to whom” immediately after it. The review board referred the case to the panel.",
+      "prompt_text": "will issue a ruling. / the review board / The panel / the case / to whom / referred",
+      "accepted_answers": [
+        "The panel to whom the review board referred the case will issue a ruling."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble a spoken update",
+      "instructions": "Use every tile once. Start with “The platform” and put “via” immediately after “the files.” The speaker is identifying the transfer platform.",
+      "prompt_text": "via / no longer accepts uploads. / The platform / the files / we shared",
+      "accepted_answers": [
+        "The platform we shared the files via no longer accepts uploads."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-prepositions-and-register"
+    }
+  ]
+}

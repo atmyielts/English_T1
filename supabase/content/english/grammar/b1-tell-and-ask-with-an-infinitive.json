@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Reporting commands and requests with told and asked",
+    "explanation_text": "When you pass on an instruction, name the person who gave it and the person who received it. For a command, use told + person + to + base verb. For a polite request, use asked + person + to + base verb. For example, if Omar says to Nina, “Could you check the microphone, please?” you can report it as “Omar asked Nina to check the microphone.”\n\nFor a negative instruction, this lesson uses not to + base verb: “Omar told Nina not to move the microphone.” You can also use asked + person + not to for a polite request. Keep the receiver between told or asked and the infinitive. If you are Nina and you tell a teammate what Omar said to you, use me: “Omar told me not to move the microphone.” Me shows who received the instruction.",
+    "contrast_text": "In the studio, Kai says directly to Lena, “Lock the equipment cabinet.” Later, Lena messages Sam, their studio teammate: “Kai told me to lock the equipment cabinet.” In Lena’s message, me refers to Lena, who received the instruction.",
+    "common_error_pattern": "Keep the receiver after told or asked and before to or not to. Use an object form such as me or him. Follow to with the base verb.",
+    "tags": [
+      "reported-commands",
+      "reported-requests",
+      "to-infinitive",
+      "negative-infinitive"
+    ],
+    "examples": [
+      {
+        "bad": "The guide told us stay on the path.",
+        "good": "The guide told us to stay on the path."
+      },
+      {
+        "bad": "The receptionist asked we to sign the visitor book.",
+        "good": "The receptionist asked us to sign the visitor book."
+      },
+      {
+        "bad": "The instructor told the class not to touching the wet paint.",
+        "good": "The instructor told the class not to touch the wet paint."
+      },
+      {
+        "bad": "Priya asked Ben to copies the link.",
+        "good": "Priya asked Ben to copy the link."
+      }
+    ],
+    "slug": "b1-tell-and-ask-with-an-infinitive",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 380,
+    "focus_area": "reported-requests-and-instructions"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Set out the trays",
+      "instructions": "The chef gave Jo a command. Use the past form of tell.",
+      "prompt_text": "The chef ___ Jo to set out the trays.",
+      "accepted_answers": [
+        "told"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Lower the blind",
+      "instructions": "Use the past form of ask to report the librarian’s polite request to Theo.",
+      "prompt_text": "The librarian ___ Theo to lower the blind.",
+      "accepted_answers": [
+        "asked"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Keep the gate closed",
+      "instructions": "The keeper said to Imani, “Don’t open the gate.” Use two words to fill the gap. Put not immediately before to.",
+      "prompt_text": "The keeper told Imani ___ open the gate.",
+      "accepted_answers": [
+        "not to"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Identify the caller",
+      "instructions": "Mae said to Luca, “Please call the ticket office.” Luca uses he/him pronouns. Complete the report with the object pronoun for Luca.",
+      "prompt_text": "Mae asked ___ to call the ticket office.",
+      "accepted_answers": [
+        "him"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Send the seating plan",
+      "instructions": "The organizer said to Rosa, “Send the seating plan.” Complete the report with two words, using send as the action verb.",
+      "prompt_text": "The organizer told Rosa ___ the seating plan.",
+      "accepted_answers": [
+        "to send"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Check the batteries",
+      "instructions": "Add the one missing word to fix the report. Keep all the original words.",
+      "prompt_text": "The stage manager told Wes check the batteries.",
+      "accepted_answers": [
+        "The stage manager told Wes to check the batteries."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Protect the labels",
+      "instructions": "Replace don't with two words. Put not immediately before to and leave the other words in place.",
+      "prompt_text": "The lab assistant asked the visitors don't remove the labels.",
+      "accepted_answers": [
+        "The lab assistant asked the visitors not to remove the labels."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Message a studio teammate",
+      "instructions": "Write the report as Emi in a message to your studio teammate. Start with “Dario told me” and keep the action and time from the quote.",
+      "prompt_text": "Dario said to Emi, “Switch off the desk lamp after the shoot.”",
+      "accepted_answers": [
+        "Dario told me to switch off the desk lamp after the shoot."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Pass on a favor",
+      "instructions": "Report the request starting with “Nadia asked him.” Use him for Pavel and report the action and object using the words from the quote.",
+      "prompt_text": "Nadia said to Pavel, “Could you print the updated map, please?”",
+      "accepted_answers": [
+        "Nadia asked him to print the updated map."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Report a team reminder",
+      "instructions": "Start with “The coordinator asked us”. Use the words “not to leave any boxes” and keep the place from the quote.",
+      "prompt_text": "The coordinator said to the volunteers, “Please don’t leave any boxes in the hallway.”",
+      "accepted_answers": [
+        "The coordinator asked us not to leave any boxes in the hallway."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the delivery report in order",
+      "instructions": "Use every tile once to report the command. Start with “The driver” and put “by the side door” at the end.",
+      "prompt_text": "by the side door / told / to / the parcel / The driver / Alex / leave",
+      "accepted_answers": [
+        "The driver told Alex to leave the parcel by the side door."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the recording request in order",
+      "instructions": "Use every tile once to report the request. Start with “The host” and put “not” immediately before “to.”",
+      "prompt_text": "record / the guests / not / The host / the interview / to / asked",
+      "accepted_answers": [
+        "The host asked the guests not to record the interview."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.reported-requests-and-instructions"
+    }
+  ]
+}

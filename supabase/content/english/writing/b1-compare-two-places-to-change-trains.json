@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "b1-compare-two-places-to-change-trains",
+    "title": "Compare Two Places to Change Trains",
+    "level": "B1",
+    "prompt_text": "Your friend's first train stops at North End and Hill Street. Either station gives a connection to Cedar Town. The North End change is 12 minutes on the same platform. The Hill Street connection is 25 minutes, with a short walk between platforms. Compare the choices for a friend carrying a heavy bag and say what they should check on the day.",
+    "genre": "travel note",
+    "audience": "a friend planning a journey with one change",
+    "target_grammar": "Comparatives, while for contrast, and if for a conditional recommendation.",
+    "target_structure": "Give the facts for each option, recommend one for this traveller, then add a same-day check.",
+    "target_vocabulary": [
+      "connection",
+      "platform",
+      "change",
+      "heavy bag",
+      "delay"
+    ],
+    "expected_length_min": 98,
+    "expected_length_max": 149,
+    "checklist": [
+      {
+        "point": "Compare both connections accurately.",
+        "keywords": [
+          "twelve minutes",
+          "twenty-five",
+          "same platform",
+          "hill street"
+        ]
+      },
+      {
+        "point": "Make a recommendation that accounts for the bag.",
+        "keywords": [
+          "heavy bag",
+          "i would choose",
+          "less walking"
+        ]
+      },
+      {
+        "point": "Say what to check before deciding on the day.",
+        "keywords": [
+          "check the",
+          "delay",
+          "platform number",
+          "station display"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    },
+    "sort_order": 393
+  },
+  "children": []
+}

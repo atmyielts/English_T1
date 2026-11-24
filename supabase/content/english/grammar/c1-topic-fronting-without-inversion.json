@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Topic fronting without inversion",
+    "explanation_text": "Put an object or complement first when you want to make it the topic of a contrast. Move the whole phrase, including any words that identify it, and leave its usual position empty. Keep the subject before the verb or auxiliary: ‘The request for a second microphone we can accommodate.’ Here, ‘we’ still identifies who can act. You can also front a complement, as in ‘“Final” I would not call this draft.’ The negative stays with the verb, and ‘this draft’ stays in its usual position.\n\nTopic fronting often sounds emphatic in speech and is marked in formal prose. In short minutes, use it sparingly when the contrast matters: ‘The request for step-free access the board approved. The request for a later start the treasurer contested.’ A fronted negative adverbial follows a different pattern: ‘At no point did the treasurer withdraw her objection.’ In that sentence, the auxiliary ‘did’ comes before the subject.",
+    "contrast_text": "In ‘The revised estimate I cannot accept’, the fronted object names what is under discussion and ‘I’ precedes ‘cannot’. In ‘Under no circumstances can I accept the revised estimate’, the fronted negative adverbial triggers inversion, so ‘can’ precedes ‘I’.",
+    "common_error_pattern": "Learners sometimes add question-style inversion after a fronted object, repeat the object with ‘it’, or leave behind words that identify the intended topic. Move the complete object or complement and keep the original subject in front of its verb or auxiliary.",
+    "tags": [
+      "C1",
+      "topic-fronting",
+      "contrastive-topic",
+      "word-order",
+      "register"
+    ],
+    "examples": [
+      {
+        "bad": "The request for a larger room did the board approve, but the request for extra staffing the treasurer contested.",
+        "good": "The request for a larger room the board approved, but the request for extra staffing the treasurer contested."
+      },
+      {
+        "bad": "The revised caption I can publish it today, but the original needs a fact-check.",
+        "good": "The revised caption I can publish today, but the original needs a fact-check."
+      },
+      {
+        "bad": "‘Ready for release’ would I not call this version, but it is ready for internal review.",
+        "good": "‘Ready for release’ I would not call this version, but it is ready for internal review."
+      },
+      {
+        "bad": "At no point the surveyor did endorse the estimate.",
+        "good": "At no point did the surveyor endorse the estimate."
+      }
+    ],
+    "slug": "c1-topic-fronting-without-inversion",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 370,
+    "focus_area": "topic-fronting"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Name the decision maker",
+      "instructions": "Complete the minutes with the exact subject ‘the trustees’ followed by the verb ‘endorsed’.",
+      "prompt_text": "The proposal for a quiet study room ___, but the bursar challenged the proposal for weekend opening.",
+      "accepted_answers": [
+        "the trustees endorsed"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Supply the editorial topic",
+      "instructions": "Copy the full object ‘the short interview’ into the gap. Capitalize its first word.",
+      "prompt_text": "___ I can run in Friday’s edition, but the long profile will have to wait.",
+      "accepted_answers": [
+        "The short interview"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Keep the spoken denial",
+      "instructions": "Complete the reply with the subject ‘we’, then the uncontracted verb phrase ‘did not authorize’.",
+      "prompt_text": "The overnight closure ___, although we did authorize a temporary lane restriction.",
+      "accepted_answers": [
+        "we did not authorize"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Choose the review label",
+      "instructions": "Complete the reviewer's comment with the complement ‘fully independent’. Capitalize its first word.",
+      "prompt_text": "___ I would not call this audit, though the external reviewers worked without supervision.",
+      "accepted_answers": [
+        "Fully independent"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Distinguish the safety instruction",
+      "instructions": "Put the supplied words ‘the technician’, ‘must’ and ‘remove’ in order after the fronted negative adverbial. Use every supplied word.",
+      "prompt_text": "Under no circumstances ___ the guard while the machine is running.",
+      "accepted_answers": [
+        "must the technician remove"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Remove the repeated object",
+      "instructions": "Correct the archivist’s statement by removing the repeated object pronoun. Leave the fronted phrase and the rest of the wording in place.",
+      "prompt_text": "The signed agreement the archivist has already digitized it.",
+      "accepted_answers": [
+        "The signed agreement the archivist has already digitized."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair the interviewer's summary",
+      "instructions": "Correct the statement by removing the unnecessary ‘did’ and putting ‘reject’ in the simple past. Keep the same opening topic and subject.",
+      "prompt_text": "The claim about unpaid expenses did the director reject outright.",
+      "accepted_answers": [
+        "The claim about unpaid expenses the director rejected outright."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Contrast two requests in the minutes",
+      "instructions": "Front the full object in each sentence. Keep the two sentences in the same order and retain their subjects and verbs.",
+      "prompt_text": "The committee approved the request for live captions. The finance officer contested the request for a second camera.",
+      "accepted_answers": [
+        "The request for live captions the committee approved. The request for a second camera the finance officer contested."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Front the proposed verdict",
+      "instructions": "Begin with ‘Conclusive’. Keep all the original words and preserve the evaluator's judgment.",
+      "prompt_text": "I would hardly call that evidence conclusive.",
+      "accepted_answers": [
+        "Conclusive I would hardly call that evidence."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Switch the topic of a budget reply",
+      "instructions": "Begin with ‘The cost of replacing the lift’. Keep the same subject, modal and wording.",
+      "prompt_text": "The landlord can absorb the cost of replacing the lift.",
+      "accepted_answers": [
+        "The cost of replacing the lift the landlord can absorb."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Arrange a booking reply",
+      "instructions": "The coordinator is contrasting a morning booking with an afternoon booking. Start with ‘The afternoon booking’ and use each tile once.",
+      "prompt_text": "can / confirm. / The afternoon booking / we",
+      "accepted_answers": [
+        "The afternoon booking we can confirm."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Arrange a verdict on a route",
+      "instructions": "A planner is disputing whether a route is suitable for winter. Start with ‘Suitable for winter use’, put ‘would not’ directly before ‘consider’, and use every tile once.",
+      "prompt_text": "the engineers / this route. / consider / Suitable for winter use / would not",
+      "accepted_answers": [
+        "Suitable for winter use the engineers would not consider this route."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.topic-fronting"
+    }
+  ]
+}

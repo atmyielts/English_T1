@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-hear-how-to-join-a-pottery-studio",
+    "title": "Hear how to join a pottery studio",
+    "level": "A2",
+    "summary": "A manager separates beginner classes from open practice.",
+    "transcript_text": "New members often ask whether they can come to open studio right away. Please take one beginner class first, even if you have worked with clay at home. We need to show you how to clean the tools here. The class is on Tuesday from seven to eight. The studio provides clay and tools, but please bring an old shirt. After the class you can book a table for open studio online.",
+    "category": "Leisure",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 39,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "leisure",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "Who is the speaker addressing?",
+        "options": [
+          "New studio members",
+          "Visitors buying pots",
+          "People selling clay",
+          "Teachers looking for work"
+        ],
+        "answer_index": 0,
+        "explanation": "The first sentence identifies new members.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What comes before open studio?",
+        "options": [
+          "An online test",
+          "Three months of practice",
+          "Buying tools",
+          "One beginner class"
+        ],
+        "answer_index": 3,
+        "explanation": "One class is the required first step.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why teach people with some experience?",
+        "options": [
+          "To sell them clay",
+          "To check their speed",
+          "To teach the studio’s way of cleaning tools",
+          "To choose exhibition pieces"
+        ],
+        "answer_index": 2,
+        "explanation": "The speaker names learning to clean tools.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What should learners bring?",
+        "options": [
+          "Clay",
+          "An old shirt",
+          "A set of tools",
+          "A table cover"
+        ],
+        "answer_index": 1,
+        "explanation": "The studio supplies clay and tools.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How can a learner arrange open studio afterward?",
+        "options": [
+          "Book a table online",
+          "Phone the teacher during class",
+          "Wait for a letter",
+          "Pay for another beginner class"
+        ],
+        "answer_index": 0,
+        "explanation": "The final sentence explains online booking.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "take one beginner class first",
+      "focus_phrase": "beginner class first",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "show you how to clean the tools",
+      "focus_phrase": "clean the tools",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "bring an old shirt",
+      "focus_phrase": "an old shirt",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

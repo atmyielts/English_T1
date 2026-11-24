@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Covering a volunteer shift",
+    "description": "Arrange for someone to cover a shift and help run the activity desk at a public event.",
+    "slug": "b1-covering-a-volunteer-shift",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 390,
+    "topic": "volunteer shifts"
+  },
+  "children": [
+    {
+      "word": "sign up",
+      "part_of_speech": "phrasal verb",
+      "definition": "To put your name on a list to show that you want to do something.",
+      "example": "You can sign up for the morning shift at the activity desk when the list goes online on Monday.",
+      "translation_ru": "записаться",
+      "translation_uz": "roʻyxatdan oʻtmoq",
+      "collocations": [
+        "sign up for a shift",
+        "sign up online"
+      ]
+    },
+    {
+      "word": "fill in for",
+      "part_of_speech": "phrasal verb",
+      "definition": "To do someone else's duties for a short time when they cannot do them.",
+      "example": "Could you fill in for me at the activity desk from two to four while I'm at the dentist?",
+      "translation_ru": "подменить кого-либо",
+      "translation_uz": "birovning oʻrniga vaqtincha ishlamoq",
+      "collocations": [
+        "fill in for a volunteer",
+        "fill in for someone at short notice"
+      ]
+    },
+    {
+      "word": "turn up",
+      "part_of_speech": "phrasal verb",
+      "definition": "To arrive at a place or event.",
+      "example": "Please turn up ten minutes before your shift so I can show you where we keep the activity leaflets.",
+      "translation_ru": "прийти",
+      "translation_uz": "kelmoq",
+      "collocations": [
+        "turn up on time",
+        "turn up for a shift"
+      ]
+    },
+    {
+      "word": "duty roster",
+      "part_of_speech": "noun",
+      "definition": "A list that shows who is supposed to work at different times.",
+      "example": "The duty roster shows that Nargiza is at the activity desk until noon and Pavel is there after lunch.",
+      "translation_ru": "график дежурств",
+      "translation_uz": "navbatchilik jadvali",
+      "collocations": [
+        "check the duty roster",
+        "update the duty roster"
+      ]
+    },
+    {
+      "word": "sign-in sheet",
+      "part_of_speech": "noun",
+      "definition": "A piece of paper where people write their names to show that they have come.",
+      "example": "Put your name on the sign-in sheet when you get to the activity desk so the organiser knows you're here.",
+      "translation_ru": "лист регистрации присутствующих",
+      "translation_uz": "kelganlarni qayd etish varagʻi",
+      "collocations": [
+        "fill in the sign-in sheet",
+        "leave the sign-in sheet at the desk"
+      ]
+    },
+    {
+      "word": "pack up",
+      "part_of_speech": "phrasal verb",
+      "definition": "To gather things together and put them away or into bags or boxes, usually when you have finished an activity.",
+      "example": "After the last visitors leave, please pack up the unused activity sheets and put the box under the desk.",
+      "translation_ru": "собрать и упаковать вещи",
+      "translation_uz": "narsalarni yigʻishtirib, quti yoki xaltaga joylamoq",
+      "collocations": [
+        "pack up the supplies",
+        "pack up at the end of the day"
+      ]
+    },
+    {
+      "word": "lay out",
+      "part_of_speech": "phrasal verb",
+      "definition": "To arrange things on a surface so people can see or use them easily.",
+      "example": "Before the doors open, lay out the activity leaflets across the front of the desk so visitors can see their choices.",
+      "translation_ru": "разложить",
+      "translation_uz": "terib qoʻymoq",
+      "collocations": [
+        "lay out the leaflets",
+        "lay out the materials on a table"
+      ]
+    },
+    {
+      "word": "give out",
+      "part_of_speech": "phrasal verb",
+      "definition": "To give a copy or one of several things to each person in a group.",
+      "example": "Could you give out a programme to each person who comes to the activity desk?",
+      "translation_ru": "раздавать",
+      "translation_uz": "tarqatmoq",
+      "collocations": [
+        "give out programmes",
+        "give out copies to visitors"
+      ]
+    },
+    {
+      "word": "badge",
+      "part_of_speech": "noun",
+      "definition": "A small sign you wear that tells people who you are or what your role is.",
+      "example": "Clip your badge to your jacket so visitors can see your name and know to ask you for help.",
+      "translation_ru": "бейдж",
+      "translation_uz": "beyjik",
+      "collocations": [
+        "wear a badge",
+        "clip on a badge"
+      ]
+    },
+    {
+      "word": "on call",
+      "part_of_speech": "adjective phrase",
+      "definition": "Ready to come and work if someone contacts you and asks for help.",
+      "example": "I'm on call until three, so ring me if the afternoon volunteer can't come.",
+      "translation_ru": "на связи и готов выйти по вызову",
+      "translation_uz": "aloqada va chaqirishsa ishga chiqishga tayyor",
+      "collocations": [
+        "be on call all afternoon",
+        "stay on call until closing time"
+      ]
+    },
+    {
+      "word": "time slot",
+      "part_of_speech": "noun",
+      "definition": "A period of time set aside or available for an activity.",
+      "example": "The only time slot still free at the activity desk is from four to five.",
+      "translation_ru": "промежуток времени в расписании",
+      "translation_uz": "jadvaldagi vaqt oraligʻi",
+      "collocations": [
+        "choose a time slot",
+        "a free time slot"
+      ]
+    },
+    {
+      "word": "run out of",
+      "part_of_speech": "phrasal verb",
+      "definition": "To have none of something left.",
+      "example": "If you run out of programmes at the activity desk, there are more in the cupboard.",
+      "translation_ru": "остаться без чего-либо; исчерпать запас чего-либо",
+      "translation_uz": "biror narsaning zaxirasi tugamoq",
+      "collocations": [
+        "run out of programmes",
+        "run out of spare copies"
+      ]
+    },
+    {
+      "word": "go over",
+      "part_of_speech": "phrasal verb",
+      "definition": "To look at or talk through information carefully so it is clear.",
+      "example": "Can we go over the instructions for the activity desk before you leave?",
+      "translation_ru": "подробно разобрать",
+      "translation_uz": "batafsil koʻrib chiqmoq",
+      "collocations": [
+        "go over the instructions",
+        "go over the plan together"
+      ]
+    },
+    {
+      "word": "in advance",
+      "part_of_speech": "adverbial phrase",
+      "definition": "Before something happens or before the time when something is needed.",
+      "example": "If you can't work your Sunday shift, tell the organiser in advance so there's time to find someone else.",
+      "translation_ru": "заранее",
+      "translation_uz": "oldindan",
+      "collocations": [
+        "let someone know in advance",
+        "arrange cover in advance"
+      ]
+    }
+  ]
+}

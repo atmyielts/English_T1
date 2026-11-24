@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Reading a Zoo Map",
+    "description": "Read a simple zoo map and visitor notices to find animals, plan a stop, and see which areas are closed.",
+    "slug": "a2-reading-a-zoo-map",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 360,
+    "topic": "zoo visit"
+  },
+  "children": [
+    {
+      "word": "elephant",
+      "part_of_speech": "noun",
+      "definition": "A very large animal with big ears and a long nose.",
+      "example": "Look for the picture of an elephant to find where these animals live.",
+      "translation_ru": "слон",
+      "translation_uz": "fil",
+      "collocations": [
+        "an African elephant",
+        "a baby elephant"
+      ]
+    },
+    {
+      "word": "giraffe",
+      "part_of_speech": "noun",
+      "definition": "A tall animal with a very long neck and brown spots.",
+      "example": "The map shows a giraffe next to the north gate.",
+      "translation_ru": "жираф",
+      "translation_uz": "jirafa",
+      "collocations": [
+        "a young giraffe",
+        "a giraffe with brown spots"
+      ]
+    },
+    {
+      "word": "zebra",
+      "part_of_speech": "noun",
+      "definition": "An African animal like a horse with black and white lines on its body.",
+      "example": "The picture of a zebra shows where you can see these black and white animals.",
+      "translation_ru": "зебра",
+      "translation_uz": "zebra",
+      "collocations": [
+        "a young zebra",
+        "a group of zebras"
+      ]
+    },
+    {
+      "word": "monkey",
+      "part_of_speech": "noun",
+      "definition": "An animal that can climb very well and usually has a long tail.",
+      "example": "The notice says you may see a monkey high up in the trees.",
+      "translation_ru": "обезьяна",
+      "translation_uz": "maymun",
+      "collocations": [
+        "a small monkey",
+        "a monkey in a tree"
+      ]
+    },
+    {
+      "word": "penguin",
+      "part_of_speech": "noun",
+      "definition": "A black and white bird that can swim but cannot fly.",
+      "example": "The picture of a penguin on the map shows where these birds swim.",
+      "translation_ru": "пингвин",
+      "translation_uz": "pingvin",
+      "collocations": [
+        "a baby penguin",
+        "a penguin under water"
+      ]
+    },
+    {
+      "word": "crocodile",
+      "part_of_speech": "noun",
+      "definition": "A large reptile with short legs, a long snout, and sharp teeth that lives in or near water.",
+      "example": "The sign by the pool says a crocodile often lies under the heat lamp.",
+      "translation_ru": "крокодил",
+      "translation_uz": "timsoh",
+      "collocations": [
+        "a large crocodile",
+        "a crocodile in the water"
+      ]
+    },
+    {
+      "word": "enclosure",
+      "part_of_speech": "noun",
+      "definition": "A place with a fence or wall around it where zoo animals are kept.",
+      "example": "Please stay outside the zebra enclosure.",
+      "translation_ru": "вольер",
+      "translation_uz": "hayvonlar uchun oʻralgan joy",
+      "collocations": [
+        "an outdoor enclosure",
+        "the zebra enclosure"
+      ]
+    },
+    {
+      "word": "reptile house",
+      "part_of_speech": "noun phrase",
+      "definition": "A zoo building where visitors can see animals such as snakes and lizards.",
+      "example": "The map shows the reptile house beside the south gate.",
+      "translation_ru": "павильон рептилий",
+      "translation_uz": "sudralib yuruvchilar paviloni",
+      "collocations": [
+        "visit the reptile house",
+        "inside the reptile house"
+      ]
+    },
+    {
+      "word": "picnic area",
+      "part_of_speech": "noun phrase",
+      "definition": "A place outside where people can sit and eat food they bring.",
+      "example": "The map shows a picnic area with tables under the trees.",
+      "translation_ru": "зона для пикника",
+      "translation_uz": "piknik uchun joy",
+      "collocations": [
+        "a shaded picnic area",
+        "eat in the picnic area"
+      ]
+    },
+    {
+      "word": "symbol",
+      "part_of_speech": "noun",
+      "definition": "A small picture or mark that shows what something is or where to find it.",
+      "example": "The cup symbol on the zoo map shows where you can get a drink.",
+      "translation_ru": "условное обозначение",
+      "translation_uz": "shartli belgi",
+      "collocations": [
+        "a toilet symbol",
+        "a symbol on the map"
+      ]
+    },
+    {
+      "word": "footpath",
+      "part_of_speech": "noun",
+      "definition": "A narrow way for people to walk on.",
+      "example": "The dotted line on the zoo map shows a footpath through the trees.",
+      "translation_ru": "пешеходная дорожка",
+      "translation_uz": "piyodalar yoʻlagi",
+      "collocations": [
+        "a narrow footpath",
+        "follow the footpath"
+      ]
+    },
+    {
+      "word": "keeper talk",
+      "part_of_speech": "noun phrase",
+      "definition": "A short event where a zoo worker tells visitors about the animals they look after.",
+      "example": "The notice says the keeper talk takes place beside the penguin pool.",
+      "translation_ru": "рассказ сотрудника зоопарка о животных",
+      "translation_uz": "zoopark xodimining oʻzi parvarish qiladigan hayvonlar haqida tashrif buyuruvchilarga qisqacha soʻzlab berishi",
+      "collocations": [
+        "a keeper talk about penguins",
+        "listen to a keeper talk"
+      ]
+    },
+    {
+      "word": "drinking fountain",
+      "part_of_speech": "noun phrase",
+      "definition": "A device that sends a small stream of water up so people can drink from it directly.",
+      "example": "The zoo map shows a drinking fountain next to the toilets.",
+      "translation_ru": "питьевой фонтанчик",
+      "translation_uz": "ichimlik suvi favvorachasi",
+      "collocations": [
+        "use the drinking fountain",
+        "drink from the drinking fountain"
+      ]
+    },
+    {
+      "word": "staff only",
+      "part_of_speech": "phrase",
+      "definition": "Used on a sign to show that only people who work there can go into a place.",
+      "example": "The gate is marked “Staff Only,” so visitors must use the other gate.",
+      "translation_ru": "только для персонала",
+      "translation_uz": "faqat xodimlar uchun",
+      "collocations": [
+        "a staff-only sign",
+        "an area marked Staff Only"
+      ]
+    }
+  ]
+}

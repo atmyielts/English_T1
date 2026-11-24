@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b2-count-questions-or-follow-up-actions",
+    "title": "Choose a Better Check for a Public Briefing",
+    "level": "B2",
+    "prompt_text": "A community centre explains how to renew a room booking. During its pilot, only three visitors asked questions. The organiser says this proves the explanation was clear. Several visitors later returned with half-completed forms. Explain why the question count is limited, propose one inexpensive check, and say how you would use the result before the next session.",
+    "genre": "evaluation note",
+    "audience": "the organiser of a short public information session",
+    "target_grammar": "Cautious interpretations with may, could and suggests. Use conditional comparisons.",
+    "target_structure": "Summarise the evidence, suggest an observable check, and set a rule for revising the explanation.",
+    "target_vocabulary": [
+      "pilot",
+      "clarity",
+      "follow-up",
+      "sample form",
+      "instructions",
+      "step"
+    ],
+    "expected_length_min": 146,
+    "expected_length_max": 219,
+    "checklist": [
+      {
+        "point": "Explain why the question count is inconclusive.",
+        "keywords": [
+          "question count",
+          "few questions",
+          "three questions",
+          "may have"
+        ]
+      },
+      {
+        "point": "Connect the incomplete forms to a specific possible difficulty.",
+        "keywords": [
+          "half-completed",
+          "forms",
+          "field",
+          "renewal date"
+        ]
+      },
+      {
+        "point": "Propose a practical check of understanding.",
+        "keywords": [
+          "sample form",
+          "ask visitors",
+          "short trial",
+          "try the form"
+        ]
+      },
+      {
+        "point": "Say how the result should inform a future revision.",
+        "keywords": [
+          "if several",
+          "revise",
+          "next session",
+          "change the example"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    },
+    "sort_order": 356
+  },
+  "children": []
+}

@@ -1,0 +1,56 @@
+{
+  "item": {
+    "slug": "b2-introduce-a-strange-instrument-before-a-short-concert",
+    "title": "Introduce an Unfamiliar Instrument",
+    "level": "B2",
+    "prompt_text": "At a short concert, you want to introduce an instrument that uses a hand crank to keep a sound going. Audience members have never seen one. The performer can play twice, once with a steady note and once with a short tune. Explain how to use those demonstrations, what the audience should notice, and which technical detail can wait until after the performance.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 86,
+    "target_grammar": "Sequencing and cause with as and because. Use definition and contrast without relying on specialist terms.",
+    "fluency_objective": "Give the name or role of the instrument, tell the audience what to listen for, then link the two demonstrations.",
+    "pronunciation_objective": "Stress keeps turning and changes notes separately so the two actions are easy to hear.",
+    "target_vocabulary": [
+      "crank",
+      "steady note",
+      "short tune",
+      "continue",
+      "demonstration",
+      "mechanism"
+    ],
+    "cues": [
+      {
+        "text": "Give listeners a clear goal for the steady note.",
+        "keywords": [
+          "steady note",
+          "crank",
+          "keeps turning",
+          "continues"
+        ]
+      },
+      {
+        "text": "Explain what the tune will demonstrate.",
+        "keywords": [
+          "short tune",
+          "changes notes",
+          "changes the note",
+          "same motion"
+        ]
+      },
+      {
+        "text": "Leave a technical detail for later with a reason.",
+        "keywords": [
+          "after the performance",
+          "afterwards",
+          "save",
+          "inside",
+          "technical"
+        ]
+      }
+    ],
+    "model_opening": "Before we begin, listen to one note as the performer turns the handle.",
+    "model_answer": "Before we begin, listen to one note as the performer turns the handle. The note continues as long as the handle keeps turning. When she stops turning, listen for the note to end. That first demonstration gives you just one sound to follow, so you can connect what you hear with what her right hand is doing.\n\nThen listen to a short tune. Watch the other hand. It changes the notes while the handle continues to turn. The two movements do different jobs, and the tune lets you hear how they fit together. If the demonstration is over too quickly, think of which hand moved when the sound changed.\n\nI would save an explanation of the parts inside the instrument until after the performance. During these two examples, people can concentrate on the two movements they can actually see. Afterwards, we can answer questions about how the handle keeps the sound going.",
+    "sort_order": 408
+  },
+  "children": []
+}

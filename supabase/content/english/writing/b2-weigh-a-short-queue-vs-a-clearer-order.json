@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "b2-weigh-a-short-queue-vs-a-clearer-order",
+    "title": "Clarify a Community Lunch Queue",
+    "level": "B2",
+    "prompt_text": "A volunteer team calls people who have ordered lunch by the last two digits of their order number. Two visitors collected the wrong trays last week when their numbers ended the same way. The team can print larger full numbers or check a short name at collection. Write a recommendation that compares both options and gives a quick procedure for handling a duplicate.",
+    "genre": "operations proposal",
+    "audience": "the volunteer team of a community lunch",
+    "target_grammar": "Comparatives and concessive clauses. Use if and when for the exception.",
+    "target_structure": "State the problem, compare options, and propose a normal check plus a duplicate procedure.",
+    "target_vocabulary": [
+      "duplicate",
+      "tray",
+      "full number",
+      "receipt",
+      "confirm",
+      "collection"
+    ],
+    "expected_length_min": 143,
+    "expected_length_max": 220,
+    "checklist": [
+      {
+        "point": "Explain the error the team needs to prevent.",
+        "keywords": [
+          "wrong tray",
+          "last two digits",
+          "same digits",
+          "duplicate"
+        ]
+      },
+      {
+        "point": "Compare the two options before choosing.",
+        "keywords": [
+          "full numbers",
+          "short name",
+          "easier to",
+          "would use"
+        ]
+      },
+      {
+        "point": "Set out a practical duplicate procedure.",
+        "keywords": [
+          "if two",
+          "receipt",
+          "confirm",
+          "check the full"
+        ]
+      },
+      {
+        "point": "Explain one cost or benefit of that procedure.",
+        "keywords": [
+          "time",
+          "slower",
+          "line",
+          "privacy",
+          "without saying"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    },
+    "sort_order": 355
+  },
+  "children": []
+}

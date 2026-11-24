@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a1-buy-enough-tickets-for-a-boat-ride",
+    "title": "Buy enough tickets for a boat ride",
+    "level": "A1",
+    "mission_type": "travel",
+    "context_text": "One adult and two children want a short boat ride. You have ten pounds and a card.",
+    "objective_text": "Work out the cost and arrange the group’s tickets.",
+    "target_vocabulary": [
+      "adult",
+      "child",
+      "ticket",
+      "cash",
+      "card"
+    ],
+    "success_conditions": [
+      "Work out the cost and arrange the group’s tickets.",
+      "Give the new departure",
+      "Set the meeting place",
+      "Give the total cost"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the boat notice",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Adults: six pounds. Children: three pounds. The boat leaves at eleven and twelve. Pay at the desk by the river.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What is the cost for two children?",
+          "options": [
+            "Three pounds",
+            "Nine pounds",
+            "Six pounds"
+          ],
+          "answer_index": 2,
+          "explanation": "Two children at three pounds each cost six pounds."
+        },
+        {
+          "prompt": "Where do you buy tickets?",
+          "options": [
+            "On the boat",
+            "At the park gate",
+            "At the desk by the river"
+          ],
+          "answer_index": 2,
+          "explanation": "The desk beside the river sells tickets."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the ticket seller",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The eleven o’clock boat is full, but the twelve o’clock boat has room. We can take cards and cash, but please use one way to pay.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which departure still has space?",
+          "options": [
+            "Twelve o’clock",
+            "Eleven o’clock",
+            "Both"
+          ],
+          "answer_index": 0,
+          "explanation": "The seller says the eleven o’clock boat is full."
+        },
+        {
+          "prompt": "Can you pay part in cash and part by card?",
+          "options": [
+            "No, choose one way to pay",
+            "Yes, if a child pays",
+            "Yes, if you buy one ticket"
+          ],
+          "answer_index": 0,
+          "explanation": "The seller asks for one way to pay."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask the seller for tickets",
+      "prompt_text": "You are ready to buy the tickets and you have your card.",
+      "instructions": "Name the time, who is travelling, and how you want to pay. Check that you can say the numbers clearly.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Three tickets for the twelve o’clock boat, please. One adult and two children. Can I pay by card? Do we get on here?",
+      "points": [
+        {
+          "label": "State the group size",
+          "any": [
+            "one adult and two children",
+            "one adult and two child tickets"
+          ]
+        },
+        {
+          "label": "State the departure",
+          "any": [
+            "twelve o’clock",
+            "twelve o'clock",
+            "noon"
+          ]
+        },
+        {
+          "label": "Ask for card payment",
+          "any": [
+            "pay by card"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a message to the children’s parent",
+      "prompt_text": "Tell the parent the new time and where to meet. Explain why you used the card and how much you paid.",
+      "instructions": "Give the facts before adding a friendly closing. Check that the parent can find you using only the message.",
+      "goal": "Work out the cost and arrange the group’s tickets.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "The eleven o’clock boat is full, so we are taking the boat at noon. Meet us by the desk at the river. The three tickets cost twelve pounds. I only had ten pounds in cash, so I paid by card.",
+      "points": [
+        {
+          "label": "Give the new departure",
+          "any": [
+            "at noon",
+            "at twelve"
+          ]
+        },
+        {
+          "label": "Set the meeting place",
+          "any": [
+            "desk at the river",
+            "desk by the river"
+          ]
+        },
+        {
+          "label": "Give the total cost",
+          "any": [
+            "twelve pounds",
+            "£12"
+          ]
+        }
+      ]
+    }
+  ]
+}

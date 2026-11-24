@@ -1,0 +1,157 @@
+{
+  "item": {
+    "slug": "c2-write-a-fair-notice-after-an-open-call-attracts-the-same-applicants",
+    "title": "Write a fair notice after an open call attracts the same applicants",
+    "level": "C2",
+    "mission_type": "workplace",
+    "context_text": "An arts organisation published an open call, yet most completed applications came from people it had previously funded. The director wants the evaluation to explain what remains unknown.",
+    "objective_text": "Distinguish open publication from effective reach and propose a demonstrable improvement for the next round.",
+    "target_vocabulary": [
+      "reach",
+      "self-selection",
+      "accountability",
+      "nomination",
+      "access"
+    ],
+    "success_conditions": [
+      "Distinguish open publication from effective reach and propose a demonstrable improvement for the next round.",
+      "State the observed composition",
+      "Extend distribution",
+      "Test comprehension",
+      "Use anonymous measurement"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the evaluation extract",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "The call was posted on the organisation’s site for four weeks. Of 80 completed applications, 54 came from previous applicants. No data were collected on people who saw the call and did not start the form. A dozen applicants said they first heard about it directly from a staff member.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What is missing from the organisation’s evidence?",
+          "options": [
+            "Who saw the call but did not begin an application",
+            "The number of completed applications",
+            "Whether staff ever contacted an applicant"
+          ],
+          "answer_index": 0,
+          "explanation": "The evaluation describes completions but lacks data about non-starters."
+        },
+        {
+          "prompt": "What is established about repeat applicants?",
+          "options": [
+            "They submitted more than half of the complete forms",
+            "They alone were eligible",
+            "They all heard about the call from staff"
+          ],
+          "answer_index": 0,
+          "explanation": "Fifty-four out of eighty completed applications came from previous applicants."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the panel’s discussion",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The director says an open call gives everyone the same chance. A panel member points out that posting a page and being able to use it are different things. They suggest recruiting community partners to circulate the call, then asking a separate group of first-time readers to talk through the requirements on screen.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What distinction is the panel member making?",
+          "options": [
+            "Public availability differs from practical reach and usability",
+            "Applicants should be invited only by a panel member",
+            "Everyone who sees the page must be funded"
+          ],
+          "answer_index": 0,
+          "explanation": "The panel member separates whether a page is public from who encounters and can use it."
+        },
+        {
+          "prompt": "Why involve first-time readers?",
+          "options": [
+            "To identify barriers invisible to experienced applicants",
+            "To make existing applicants ineligible",
+            "To estimate how many awards were given"
+          ],
+          "answer_index": 0,
+          "explanation": "Fresh readers can show where directions or requirements are unclear without relying on prior knowledge."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Answer a stakeholder in the hallway",
+      "prompt_text": "A partner asks if the numbers prove the call discriminated against new applicants.",
+      "instructions": "Identify what the figures establish, what comparison is missing and one way to gather evidence.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 40,
+      "model_answer": "Repeat applicants submitted most of the complete forms. We do not know who saw the call or who stopped before starting, so the numbers cannot establish why that happened. Working with community partners and testing the form with first-time readers would give us better evidence.",
+      "points": [
+        {
+          "label": "Describe the completed forms",
+          "any": [
+            "most of the complete forms",
+            "most completed applications"
+          ]
+        },
+        {
+          "label": "Name missing data",
+          "any": [
+            "who saw the call",
+            "who stopped"
+          ]
+        },
+        {
+          "label": "Propose a fresh-user test",
+          "any": [
+            "first-time readers",
+            "new readers"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Publish a note about the next round",
+      "prompt_text": "Write for current applicants and people who may apply for the first time.",
+      "instructions": "Acknowledge the result accurately. Name one distribution change, one comprehension check and one anonymous way to learn where the process loses people.",
+      "goal": "Distinguish open publication from effective reach and propose a demonstrable improvement for the next round.",
+      "estimated_minutes": 15,
+      "min_words": 70,
+      "model_answer": "More than half of completed applications came from people who had applied before. We do not yet know whether this reflects who heard about the call or how easy the form was to use. Next round, community partners will share it beyond our own mailing list, and first-time readers will test the instructions before opening day. We will also count anonymous form starts and completions by referral route, so we can see where people stop without collecting their names.",
+      "points": [
+        {
+          "label": "State the observed composition",
+          "any": [
+            "more than half of completed applications",
+            "most completed applications"
+          ]
+        },
+        {
+          "label": "Extend distribution",
+          "any": [
+            "community partners",
+            "mailing list"
+          ]
+        },
+        {
+          "label": "Test comprehension",
+          "any": [
+            "first-time readers will test",
+            "test the instructions"
+          ]
+        },
+        {
+          "label": "Use anonymous measurement",
+          "any": [
+            "anonymous form starts",
+            "without collecting their names"
+          ]
+        }
+      ]
+    }
+  ]
+}

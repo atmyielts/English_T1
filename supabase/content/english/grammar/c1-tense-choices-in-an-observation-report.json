@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Tense choices in an observation report",
+    "explanation_text": "Choose the tense by asking what the sentence is doing in the report. Use the past simple to record a completed procedure or an event within a finished observation session. In “The observer reset the counter before the final trial,” the verb places the action in the documented sequence. When directing readers to a named visual included in the report, the present simple is a common choice. “Table 2 shows the distribution of response times” describes what readers can see on the page.\n\nThe present simple can also state what the evidence suggests at the time of writing. Use the present perfect when you frame earlier observations as part of an evidence record that extends to the time of writing. “The team has documented three recurrences so far” leaves the reporting period open. Tense conventions vary across disciplines, especially in results sections. A single paragraph can move from a completed event to a visual reference and then to a current interpretation.",
+    "contrast_text": "“The sensor registered a spike during the final trial” locates an event in a finished session. “Figure 4 shows the spike” directs readers to material in the report. “The pattern suggests a brief interruption” states the report's current interpretation. “The team has recorded two similar spikes so far” summarizes evidence gathered over a period that is still open.",
+    "common_error_pattern": "Carrying the past tense from the methods section into a sentence intended as a present-tense guide to a figure, or using the present perfect for an event explicitly located in a finished observation period.",
+    "tags": [
+      "tense-choices-in-an-observation-report",
+      "observation-reports",
+      "academic-writing"
+    ],
+    "examples": [
+      {
+        "bad": "During yesterday's completed calibration session, the technician has adjusted the reference scale twice.",
+        "good": "During yesterday's completed calibration session, the technician adjusted the reference scale twice."
+      },
+      {
+        "bad": "[Guiding the reader through the chart on this page in the present tense] Chart 3 displayed the readings by depth.",
+        "good": "[Guiding the reader through the chart on this page in the present tense] Chart 3 displays the readings by depth."
+      },
+      {
+        "bad": "The difference between the two traces indicate a timing offset.",
+        "good": "The difference between the two traces indicates a timing offset."
+      },
+      {
+        "bad": "So far in the ongoing survey, we have saw the same behaviour at three sites.",
+        "good": "So far in the ongoing survey, we have seen the same behaviour at three sites."
+      }
+    ],
+    "slug": "c1-tense-choices-in-an-observation-report",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 390,
+    "focus_area": "tense-in-observation-reports"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Record a completed procedure",
+      "instructions": "Use seal in the past simple. This step was completed before the first measurement.",
+      "prompt_text": "The technician ___ the chamber before the first measurement.",
+      "accepted_answers": [
+        "sealed"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Report an event in a closed session",
+      "instructions": "Use fall in the past simple to record an event during a session that ended.",
+      "prompt_text": "During the overnight session, which ended at dawn, the water level ___ below the lower mark.",
+      "accepted_answers": [
+        "fell"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Guide the reader to a diagram",
+      "instructions": "Use show in the present simple to tell readers what they can see in the named diagram.",
+      "prompt_text": "Diagram 1 ___ the position of each microphone relative to the stage.",
+      "accepted_answers": [
+        "shows"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "fill",
+      "title": "State a current interpretation",
+      "instructions": "Use suggest in the present simple to express the report's current interpretation of the readings.",
+      "prompt_text": "The agreement between the two independent readings ___ that the shift is genuine.",
+      "accepted_answers": [
+        "suggests"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Summarize evidence through today",
+      "instructions": "Use the present perfect of detect to give the total recorded so far in a monitoring programme that is still running.",
+      "prompt_text": "Since monitoring began, the network ___ four brief interruptions.",
+      "accepted_answers": [
+        "has detected"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Align the verb with a finished field visit",
+      "instructions": "Replace have collected with the past simple of collect. Keep every other word unchanged.",
+      "prompt_text": "On Tuesday's completed site visit, the observers have collected sediment from each marked location.",
+      "accepted_answers": [
+        "On Tuesday's completed site visit, the observers collected sediment from each marked location."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct a reference to a table",
+      "instructions": "The sentence directs readers to a table in the current report. Replace were listing with the present simple of list. Keep every other word unchanged.",
+      "prompt_text": "Table 5 were listing the intervals excluded from the analysis.",
+      "accepted_answers": [
+        "Table 5 lists the intervals excluded from the analysis."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a plotting note into a caption",
+      "instructions": "Rewrite the note as a caption that tells readers what the figure contains. Start with Figure 6, use plot in the present simple, and retain the phrase the median response for each group. Omit the author and the drafting time.",
+      "prompt_text": "While drafting the report, we plotted the median response for each group in Figure 6.",
+      "accepted_answers": [
+        "Figure 6 plots the median response for each group."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a closed count into an interim total",
+      "instructions": "The current review is still in progress, and five is the total to date. Start with So far in the current review, use the present perfect of flag, and keep the original subject and object.",
+      "prompt_text": "In the previous review, the panel flagged five inconsistencies.",
+      "accepted_answers": [
+        "So far in the current review, the panel has flagged five inconsistencies.",
+        "So far in the current review, the panel have flagged five inconsistencies."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Reframe an earlier interpretation",
+      "instructions": "Rewrite the sentence to state what the readings imply at the time of writing. Remove At the preliminary briefing and change only indicated to the present simple. Begin with The readings.",
+      "prompt_text": "At the preliminary briefing, the readings indicated a persistent offset.",
+      "accepted_answers": [
+        "The readings indicate a persistent offset."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Link a recorded event to a photograph",
+      "instructions": "Arrange the tiles to describe a past event and direct readers to the photograph in the current report. Start with The marker shifted and place during the second run immediately before the comma in the supplied tile.",
+      "prompt_text": "the new position. / as Photograph 2 shows / The marker shifted / during the second run, / by marking",
+      "accepted_answers": [
+        "The marker shifted during the second run, as Photograph 2 shows by marking the new position."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble a status sentence for ongoing monitoring",
+      "instructions": "Arrange the tiles to summarize an evidence record that is still open. Start with Since the replacement probe was installed, and place consistently immediately before matched.",
+      "prompt_text": "the reference readings. / consistently / Since the replacement probe was installed, / matched / its measurements / have",
+      "accepted_answers": [
+        "Since the replacement probe was installed, its measurements have consistently matched the reference readings."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.tense-in-observation-reports"
+    }
+  ]
+}

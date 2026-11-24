@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b1-two-ways-to-learn-a-dance",
+    "title": "Two Ways to Learn a Dance",
+    "level": "B1",
+    "summary": "A dance teacher shows why copying a partner can make an instruction about left and right confusing.",
+    "content_markdown": "At the first meeting of our dance club, teacher Rosa asked us to stand in two rows facing her. We were learning a dance with four steps and a turn. Rosa said, “Lift your left hand as I lift mine.” I looked up and copied what I saw. The hand on my right was rising, so I lifted my right hand. When I bumped the person beside me on the next step, I found that I had copied the movement as if Rosa were my reflection.\n\nFor the next attempt, Rosa turned so that we were all looking in the same direction. Now the left hand she lifted was on the same side as mine. The class made fewer mistakes, but people in the back row could not see the movement of her feet. She decided to teach the first four steps with everyone facing one way, and the turn with all of us standing around her in a circle.\n\nAt the end of the lesson we danced with partners. Rosa asked us to learn both jobs rather than keep the same one all evening. My partner first gave a short signal with her hand so I knew when to turn. When it was my turn to give the signal, I made it too late. We tried again more slowly until we could move together.\n\nOn my way home I wrote down “left hand” and “signal earlier”. The first note would help me remember the step. The second would help me dance with somebody else, even if I could already do the steps on my own. Both things had been difficult, but for different reasons.",
+    "category": "Culture",
+    "theme": "learning movements from different positions",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "personal account",
+      "word_count": 275
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the writer mainly learn?",
+        "options": [
+          "How to give a class without using sound",
+          "Why knowing a step and taking a cue from a partner are separate skills",
+          "Why dancers should always stay in two rows",
+          "How to choose the easiest partner in a large class"
+        ],
+        "answer_index": 1,
+        "explanation": "The last paragraph distinguishes remembering a movement from timing it with another dancer."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What happens when everyone faces the same direction?",
+        "options": [
+          "People in the back can see Rosa’s feet more clearly.",
+          "Rosa asks everyone to stop using their hands.",
+          "The dancers make fewer mistakes about which hand to move.",
+          "The class forgets the first four steps."
+        ],
+        "answer_index": 2,
+        "explanation": "The writer can match the side of Rosa's hand and the class makes fewer errors."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Rosa use a circle for the turn?",
+        "options": [
+          "The turn is only allowed in pairs.",
+          "She wants people to face the exit.",
+          "The four steps are easier when nobody sees her.",
+          "People in back cannot see her feet properly in the rows."
+        ],
+        "answer_index": 3,
+        "explanation": "She changes the arrangement after noticing that dancers in the back cannot see the movements of her feet."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “my reflection” refer to?",
+        "options": [
+          "An image of yourself in a mirror",
+          "The person who explained the dance",
+          "A note you write afterwards",
+          "The partner who makes the first turn"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer copies the left-right arrangement she sees as if she were looking in a mirror."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Rosa asks each dancer to try both jobs when working with a partner.",
+        "answer": "true",
+        "explanation": "She explicitly says to learn both jobs rather than keep the same one."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The writer gives the first signal at exactly the right time.",
+        "answer": "false",
+        "explanation": "The writer says the signal was too late."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage names the music used at the first meeting.",
+        "answer": "not_given",
+        "explanation": "It explains the steps and signals without identifying music."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The class stood in a ___ to learn the turn. The writer’s partner gave a short ___ with her hand.",
+        "answers": [
+          [
+            "circle"
+          ],
+          [
+            "signal"
+          ]
+        ],
+        "word_bank": [
+          "hand",
+          "signal",
+          "reflection",
+          "circle"
+        ],
+        "explanation": "Paragraph 2 changes the shape of the class. Paragraph 3 describes the signal the partner makes."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Sharing responsibility for a movement",
+          "A first attempt based on what the narrator sees",
+          "Two reminders for different problems",
+          "Changing how people stand",
+          "Choosing a song for the lesson"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The first two paragraphs show how positions matter. The third adds a partner’s signal, and the fourth records the two lessons."
+      }
+    ]
+  },
+  "children": []
+}

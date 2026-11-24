@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c1-keeping-the-wrong-solution",
+    "title": "Keeping the Wrong Solution",
+    "level": "C1",
+    "summary": "A maths teacher preserves a mistake long enough to show the problem it was trying to answer.",
+    "content_markdown": "In the maths room at Bellbank College, the most useful sheet on the wall was an answer that would never have earned full marks. The task was to find the cheapest way to frame a rectangular picture of a given size. A student had found the area of the picture and treated that number as the total length of wood. The teacher, Rita Mora, did not let the number stand. She asked to put the student’s drawing beside two other solutions on the wall.\n\nIn one correct solution a student drew a dark line around the outer edge. In another a student wrote the cost for each strip next to the side that needed it. The unsuccessful answer set a grid inside the picture. It showed all the squares clearly and gave the total. The grid was a good answer to an area problem. It gave Rita a chance to ask when a person making something would buy enough material to cover a surface, and when they would pay for the boundary around it.\n\nThe class tried a second task that only changed two words. They had to estimate the amount of paper needed to cover the back of the picture. This time the grid made sense, while the dark line around the outside left most of the relevant space without a mark. Several students began to describe which of the earlier sketches they would keep before deciding what number to calculate. They were slower at first. The teacher could now see whether a problem was coming from the arithmetic or from a decision made before it.\n\nSome students took the displayed answers as a set of templates to remember. Rita was careful to take the first sheet down once most of the group could explain the two cases. The next wall display showed a completely different error. A correct operation had been applied to the wrong column in a table. Keeping the old sheet forever would make it look like the only kind of misunderstanding the class had ever needed to think about.\n\nThe teacher’s point was not that any answer could become correct if it was presented generously. Each task still required the result that matched its wording. The point was that an unsuccessful answer can contain evidence of a sensible method as well as a wrong choice. By preserving the drawing long enough to compare it with other work, she learnt whether to teach an operation again or to make the choice of operation easier to see.",
+    "category": "Education",
+    "theme": "using a wrong solution as evidence",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "classroom feature",
+      "word_count": 420
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does Rita display the unsuccessful drawing?",
+        "options": [
+          "She believes it should earn full marks because the arithmetic is right.",
+          "She wants students to see a plausible method that answers the wrong question.",
+          "She wants pupils to memorise a single picture for all later tasks.",
+          "She thinks each pupil should choose what an assignment means."
+        ],
+        "answer_index": 1,
+        "explanation": "A grid describes area well. The framing question instead calls for the length of the boundary."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which material makes the unsuccessful grid useful when the class changes the task?",
+        "options": [
+          "Wood for a longer frame",
+          "Paint for the inner edge",
+          "Paper to cover the back of the picture",
+          "Glass to replace the front"
+        ],
+        "answer_index": 2,
+        "explanation": "The second task uses paper as a covering for a surface, which makes the square grid relevant."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Rita later remove the first sheet?",
+        "options": [
+          "The student wants to use its paper again.",
+          "The teacher has decided that incorrect answers should never stay on display.",
+          "She has worked out the price of the picture.",
+          "A new example can expose a different sort of choice error when the old one has been understood."
+        ],
+        "answer_index": 3,
+        "explanation": "Leaving a single sheet on the wall could make the class treat one kind of error as the whole topic."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “did not let the number stand” mean?",
+        "options": [
+          "Did not accept the result as a correct answer",
+          "Did not let students write it on the paper",
+          "Did not keep the number in the same place",
+          "Did not explain how it was found"
+        ],
+        "answer_index": 0,
+        "explanation": "The incorrect result remains incorrect even though she keeps the drawing for discussion."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The later wall display involved selecting the wrong column in a table.",
+        "answer": "true",
+        "explanation": "The fourth paragraph says a correct operation was applied to the wrong column."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Rita gives every answer full marks if some method inside it is sensible.",
+        "answer": "false",
+        "explanation": "The final paragraph insists that the result must fit the task."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The account gives the dimensions of the original rectangular picture.",
+        "answer": "not_given",
+        "explanation": "It refers to a picture of a given size without stating the dimensions."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The first incorrect answer uses a ___ of squares. In a later example someone chooses the wrong ___ in a table.",
+        "answers": [
+          [
+            "grid"
+          ],
+          [
+            "column"
+          ]
+        ],
+        "word_bank": [
+          "line",
+          "column",
+          "grid",
+          "boundary"
+        ],
+        "explanation": "The grid appears in paragraph 2, while paragraph 4 describes the next display."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Why the first display is replaced",
+          "An incorrect answer stays visible",
+          "A different task makes the same drawing useful",
+          "What the drawing does and does not represent",
+          "The teacher gives marks for presentation"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The first paragraphs introduce the wrong answer, compare its representation, change the task, and explain why the display later changes."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Ordering Materials at a Print Shop",
+    "description": "Order a small print job, explain how you want it printed and finished, and check a trial copy before the shop prints the rest.",
+    "slug": "b1-ordering-materials-at-a-print-shop",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 380,
+    "topic": "print shop"
+  },
+  "children": [
+    {
+      "word": "single-sided",
+      "part_of_speech": "adjective",
+      "definition": "Printed on only one side of each sheet.",
+      "example": "Please make the feedback forms single-sided so people can use the other side for notes.",
+      "translation_ru": "напечатанный с одной стороны",
+      "translation_uz": "bir tomoniga bosilgan",
+      "collocations": [
+        "single-sided printing",
+        "single-sided handout"
+      ]
+    },
+    {
+      "word": "two-sided",
+      "part_of_speech": "adjective",
+      "definition": "Printed on both sides of each sheet.",
+      "example": "Make the program two-sided so the map is on the back of the schedule.",
+      "translation_ru": "напечатанный с обеих сторон",
+      "translation_uz": "ikki tomoniga bosilgan",
+      "collocations": [
+        "two-sided printing",
+        "two-sided flyer"
+      ]
+    },
+    {
+      "word": "A4",
+      "part_of_speech": "noun",
+      "definition": "A standard size of paper that is 210 millimeters wide and 297 millimeters long.",
+      "example": "Could you print the instructions on A4 so they fit in our folders?",
+      "translation_ru": "формат А4",
+      "translation_uz": "A4 formati",
+      "collocations": [
+        "A4 paper",
+        "print on A4"
+      ]
+    },
+    {
+      "word": "print run",
+      "part_of_speech": "noun",
+      "definition": "The total number of copies of one design or document that are printed at one time.",
+      "example": "Could you give me a price for a print run of 60 flyers?",
+      "translation_ru": "тираж",
+      "translation_uz": "adad",
+      "collocations": [
+        "a small print run",
+        "a print run of 100 copies"
+      ]
+    },
+    {
+      "word": "proof copy",
+      "part_of_speech": "noun",
+      "definition": "A trial version made so you can check how the finished pages will look before the rest are printed.",
+      "example": "Could I see a proof copy to check that the text is large enough before you print all 40 copies?",
+      "translation_ru": "пробный экземпляр",
+      "translation_uz": "sinov nusxasi",
+      "collocations": [
+        "request a proof copy",
+        "check a proof copy"
+      ]
+    },
+    {
+      "word": "color copy",
+      "part_of_speech": "noun",
+      "definition": "A printed version that shows the different colors in the original.",
+      "example": "I need one color copy of the floor plan so the blue and green areas are easy to tell apart.",
+      "translation_ru": "цветная копия",
+      "translation_uz": "rangli nusxa",
+      "collocations": [
+        "make a color copy",
+        "a color copy of the original"
+      ]
+    },
+    {
+      "word": "black-and-white",
+      "part_of_speech": "adjective",
+      "definition": "Printed in black, with or without shades of gray, and without any other colors.",
+      "example": "The instructions are just text, so black-and-white printing is fine.",
+      "translation_ru": "чёрно-белый",
+      "translation_uz": "oq-qora",
+      "collocations": [
+        "black-and-white printing",
+        "black-and-white copies"
+      ]
+    },
+    {
+      "word": "staple",
+      "part_of_speech": "verb",
+      "definition": "To fasten sheets together with a small piece of metal that goes through them.",
+      "example": "Please staple the three pages of each information pack in the top left corner.",
+      "translation_ru": "скреплять степлером",
+      "translation_uz": "stepler bilan biriktirmoq",
+      "collocations": [
+        "staple the pages together",
+        "staple each set"
+      ]
+    },
+    {
+      "word": "fold",
+      "part_of_speech": "verb",
+      "definition": "To bend a sheet along a line so that one part lies over another.",
+      "example": "Could you fold each leaflet in half so the title is on the outside?",
+      "translation_ru": "сгибать",
+      "translation_uz": "buklamoq",
+      "collocations": [
+        "fold a leaflet in half",
+        "fold a brochure into thirds"
+      ]
+    },
+    {
+      "word": "laminate",
+      "part_of_speech": "verb",
+      "definition": "To cover a printed sheet with a thin layer of clear plastic to protect it.",
+      "example": "Could you laminate these price lists so we can wipe them clean at the counter?",
+      "translation_ru": "ламинировать",
+      "translation_uz": "shaffof himoya plyonkasi bilan qoplamoq",
+      "collocations": [
+        "laminate a sign",
+        "laminate a price list"
+      ]
+    },
+    {
+      "word": "margin",
+      "part_of_speech": "noun",
+      "definition": "The blank space between the edge of a page and the printed area.",
+      "example": "Please leave a wider left margin so we can punch holes without cutting into the text.",
+      "translation_ru": "поле страницы",
+      "translation_uz": "sahifa hoshiyasi",
+      "collocations": [
+        "leave a wide margin",
+        "adjust the top margin"
+      ]
+    },
+    {
+      "word": "page orientation",
+      "part_of_speech": "noun",
+      "definition": "The choice of whether a page is set up to be taller than it is wide or wider than it is tall.",
+      "example": "Could you change the page orientation so the six columns fit across the sheet?",
+      "translation_ru": "ориентация страницы",
+      "translation_uz": "sahifa yoʻnalishi",
+      "collocations": [
+        "change the page orientation",
+        "check the page orientation"
+      ]
+    },
+    {
+      "word": "matte",
+      "part_of_speech": "adjective",
+      "definition": "Having a surface that does not shine under light.",
+      "example": "I'd like matte paper for the posters because they'll hang under bright lights.",
+      "translation_ru": "матовый",
+      "translation_uz": "yaltiroq boʻlmagan",
+      "collocations": [
+        "matte paper",
+        "matte finish"
+      ]
+    },
+    {
+      "word": "trim",
+      "part_of_speech": "verb",
+      "definition": "To cut away a small amount from the edges to make something neat or the right size.",
+      "example": "Could you trim the invitations to fit these envelopes?",
+      "translation_ru": "подрезать по краям",
+      "translation_uz": "chetlarini qirqmoq",
+      "collocations": [
+        "trim the edges",
+        "trim to size"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Who, what and where questions at sports center reception",
+    "explanation_text": "At a sports center, use who to ask about a person, what to ask about a thing or information, and where to ask for a location. When the question already names the person or thing you are asking about, put the question word first, then am, is or are, then the person or thing. The receptionist can ask “What is your name?” A visitor can ask “Where are the lockers?” or “Where am I on this map?”\n\nSometimes who is the subject. It replaces the person you want to know about. Keep the rest of the sentence in the same order. For example, “Mina is here for yoga” becomes “Who is here for yoga?” In “Who is your coach?”, the named subject is your coach, and the question asks who fills that role.",
+    "contrast_text": "“Who is ready for the swim test?” asks which person is ready. Who is the subject. In “Who is your swim teacher?”, your swim teacher is the subject. The question asks who fills the role.",
+    "common_error_pattern": "Putting am, is or are after the named subject in a direct question, using the wrong form of be, or adding he or she when who is already the subject.",
+    "tags": [
+      "wh-questions",
+      "be",
+      "subject-questions",
+      "sports-center-reception"
+    ],
+    "examples": [
+      {
+        "bad": "Where the pool is?",
+        "good": "Where is the pool?"
+      },
+      {
+        "bad": "What are your phone number?",
+        "good": "What is your phone number?"
+      },
+      {
+        "bad": "Where is I in the line?",
+        "good": "Where am I in the line?"
+      },
+      {
+        "bad": "Who is she ready for the tennis lesson?",
+        "good": "Who is ready for the tennis lesson?"
+      }
+    ],
+    "slug": "a1-wh-questions-with-be-at-reception",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 370,
+    "focus_area": "wh-questions-with-be"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "A spare towel",
+      "instructions": "Ask for the location of one towel. Fill the gap with Where and the correct form of be.",
+      "prompt_text": "___ the spare towel?",
+      "accepted_answers": [
+        "Where is"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Two squash courts",
+      "instructions": "Ask for the location of both courts. Fill the gap with am, is or are.",
+      "prompt_text": "Where ___ the squash courts?",
+      "accepted_answers": [
+        "are"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A membership form",
+      "instructions": "Use Who, What or Where. The receptionist wants to hear your email address.",
+      "prompt_text": "___ is your email address?",
+      "accepted_answers": [
+        "What"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "fill",
+      "title": "The first player",
+      "instructions": "The receptionist wants one player's name. Fill the gap with Who and is. Use Who as the subject.",
+      "prompt_text": "___ first on the list?",
+      "accepted_answers": [
+        "Who is"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Your place in class",
+      "instructions": "Reception has a plan that shows where each person stands in dance class. Complete your question with am, is or are.",
+      "prompt_text": "Where ___ I in this plan?",
+      "accepted_answers": [
+        "am"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "The day pass",
+      "instructions": "Move one word to make a direct question about the price. Keep every word.",
+      "prompt_text": "What the price of a day pass is?",
+      "accepted_answers": [
+        "What is the price of a day pass?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A name on the team list",
+      "instructions": "Remove one word so the question asks which person is on the blue team. Use Who as the subject.",
+      "prompt_text": "Who is he on the blue team?",
+      "accepted_answers": [
+        "Who is on the blue team?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Pick up a wristband",
+      "instructions": "Ask for the place instead of giving it. Start with Where is and keep my wristband.",
+      "prompt_text": "My wristband is in the box.",
+      "accepted_answers": [
+        "Where is my wristband?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Meet the referee",
+      "instructions": "Ask for the person's name. Start with Who is and keep the referee for our match together.",
+      "prompt_text": "Lena is the referee for our match.",
+      "accepted_answers": [
+        "Who is the referee for our match?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Help with the sign-in screen",
+      "instructions": "Ask which person is free. Replace Omar with Who and keep the other words in the same order.",
+      "prompt_text": "Omar is free to help.",
+      "accepted_answers": [
+        "Who is free to help?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "The locker key",
+      "instructions": "Ask reception for the number on your locker key. Start with What is. Use each tile once and add a question mark.",
+      "prompt_text": "my / number / What / key / is / locker",
+      "accepted_answers": [
+        "What is my locker key number?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Find your bags",
+      "instructions": "Ask where your team's bags are now. Start with Where are and put now last. Use each tile once and add a question mark.",
+      "prompt_text": "bags / now / Where / our / are",
+      "accepted_answers": [
+        "Where are our bags now?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.wh-questions-with-be"
+    }
+  ]
+}
