@@ -1,0 +1,63 @@
+{
+  "item": {
+    "slug": "a2-a-used-desk-lamp-for-sale",
+    "title": "List a Used Desk Lamp",
+    "level": "A2",
+    "genre": "classified advertisement",
+    "audience": "neighbours who might buy the lamp",
+    "prompt_text": "You want to sell a small desk lamp in your building's notice group. It works, but there is a scratch on the base. You want $8. A buyer can see it working and collect it from the entrance on Saturday morning. Write the advert and say how to contact you.",
+    "expected_length_min": 55,
+    "expected_length_max": 90,
+    "target_grammar": "Present simple for condition; but for a contrast; can for collection options.",
+    "target_structure": "Name the item and price, describe its condition, and give a clear collection and contact instruction.",
+    "target_vocabulary": [
+      "desk lamp",
+      "base",
+      "scratch",
+      "works",
+      "entrance",
+      "message"
+    ],
+    "sort_order": 301,
+    "checklist": [
+      {
+        "point": "Describe the lamp and give the price.",
+        "keywords": [
+          "eight dollars",
+          "8 dollars",
+          "$8"
+        ]
+      },
+      {
+        "point": "Say that the lamp works and mention the scratch.",
+        "keywords": [
+          "scratch on the base",
+          "scratched base",
+          "small scratch",
+          "works well"
+        ]
+      },
+      {
+        "point": "Offer a chance to see it working and say when and where to collect it.",
+        "keywords": [
+          "saturday morning",
+          "entrance",
+          "show you it works",
+          "try it"
+        ]
+      },
+      {
+        "point": "Tell people how to contact you.",
+        "keywords": [
+          "send me a message",
+          "message me",
+          "reply here"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    }
+  },
+  "children": []
+}

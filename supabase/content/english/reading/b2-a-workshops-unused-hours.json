@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b2-a-workshops-unused-hours",
+    "title": "A Workshop’s Unused Hours",
+    "level": "B2",
+    "summary": "A community workshop finds that some unused time is needed to give new members a safe start.",
+    "content_markdown": "The organisers at Edge Lane Workshop showed their committee a chart with twenty hours in a week marked as free. The biggest gaps appeared on weekday mornings. Because evening tables were always booked, one committee member proposed moving first-time users to those free hours. She felt that experienced members could finish their projects more easily if fewer newcomers needed help during the evening.\n\nA technician called Ben asked what the chart’s free label meant. It showed that nobody had reserved a table during those hours. On three mornings, however, technicians used the space to check the tools and replenish the materials. They sometimes finished early, but could not promise to stop at a fixed time. On the other two mornings, one person was responsible for the front desk and for the workshop. A lesson with new users would leave the desk without anyone to answer visitors.\n\nBen asked the bookings team to test a different arrangement. They blocked most of the morning slots from booking but set aside two short evening sessions for first-time users. Each newcomer completed an introductory task while an experienced member was at a neighbouring table. Instead of waiting for a technician to answer every question, some new users could first ask their neighbour to show them where to find a reference sheet. Technicians still handled tool checks and anything that required their judgement.\n\nThe bookings chart initially showed the same number of booked tables as before. The equipment technician noticed a change a month later. Most of the people from the first evening sessions returned without needing the full introduction again, leaving a little more time for others who were new. The committee added separate labels for tables waiting to be booked, maintenance, and sessions for new users. It could now see where a booking had been refused because every table was taken and where moving people would have required more staff. The chart became more informative when it stopped describing very different sorts of time with a single word.",
+    "category": "Community",
+    "theme": "workshop access and introductory sessions",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "reported analysis",
+      "word_count": 337
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What had the committee initially misunderstood?",
+        "options": [
+          "Evening tables were booked by the same handful of people every week.",
+          "Time without a booking could still be occupied by work needed to run the workshop.",
+          "Its technicians were asking newcomers to do repair work.",
+          "The booking system did not let people choose an evening table."
+        ],
+        "answer_index": 1,
+        "explanation": "The chart showed unreserved time, but periods without bookings could still be used for maintenance or need more staff."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why could the staff not promise to set aside the first three mornings?",
+        "options": [
+          "The front desk was always closed in the morning.",
+          "Technicians could not guarantee when tool checks and restocking would finish.",
+          "New members had asked to work only on Saturdays.",
+          "Experienced members already had every table reserved."
+        ],
+        "answer_index": 1,
+        "explanation": "Three mornings were used to check tools and replenish materials, and the technicians could not give a fixed end time."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What benefit became visible only after several weeks?",
+        "options": [
+          "Returning learners needed less staff time on the introductory process.",
+          "The staff began to finish all morning checks at the same time.",
+          "Several tables could be removed from the workshop.",
+          "The first evening sessions had doubled the number of weekly bookings."
+        ],
+        "answer_index": 0,
+        "explanation": "Most first-time users returned without needing the whole introduction again, leaving time for other newcomers."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “replenish” mean in the second paragraph?",
+        "options": [
+          "Replace supplies that have been used",
+          "Move supplies to the front desk",
+          "Show a visitor where to find the exit",
+          "Record which tools belong to each member"
+        ],
+        "answer_index": 0,
+        "explanation": "Technicians replenish materials by bringing their supply back up after use."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Experienced members were expected to take over checking the tools.",
+        "answer": "false",
+        "explanation": "The third paragraph reserves tool checks and decisions needing special judgement for technicians."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "An experienced member could point a newcomer to a reference ___. At the end the chart uses a separate label for ___.",
+        "answers": [
+          [
+            "sheet"
+          ],
+          [
+            "maintenance"
+          ]
+        ],
+        "word_bank": [
+          "appointment",
+          "sheet",
+          "maintenance",
+          "visitors"
+        ],
+        "explanation": "The trial includes finding a reference sheet. The final paragraph names maintenance as a separate category."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Why the available hours were harder to use",
+          "A tempting interpretation of a booking chart",
+          "What the chart needed to distinguish",
+          "A different way to introduce members",
+          "Replacing the tools with cheaper models"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The passage starts with a proposal, reveals the limits of the unbooked hours, explains the trial and finishes with changes to how the chart represents time."
+      }
+    ]
+  },
+  "children": []
+}

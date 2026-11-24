@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-two-routes-for-the-fun-run",
+    "title": "Two Routes for the Fun Run",
+    "level": "A2",
+    "summary": "A new volunteer learns why following the right arrows matters at a race.",
+    "content_markdown": "On Sunday I helped at the fun run in West Field. I arrived at eight, before the runners, and met Alex at the gate. Our job was to put arrows where the paths divided. The short run went round the football field. The long run also went through the wood. Its signs had a blue arrow and the letter L.\n\nAt the first turn I put an L sign beside a narrow path. A runner getting ready for the race asked me if the long route went through the picnic area. I looked at the route sheet again. The path I had marked went to the picnic tables, but the long route went past them on the wider main path. I moved the sign before the first group started.\n\nAfter the race, Alex asked me what had helped me notice the mistake. I said the runner’s question made me look again. Alex wrote a note for next year. Now it asks two volunteers to walk the first turn together before anybody else arrives.",
+    "category": "Sport",
+    "theme": "directing runners safely",
+    "tone": "mint",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "volunteer diary",
+      "word_count": 173
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the writer learn by helping at the run?",
+        "options": [
+          "Only Alex can put up a route sign.",
+          "People prefer running past the picnic tables.",
+          "The route needs checking from the runner’s point of view.",
+          "The long route is always easier to mark."
+        ],
+        "answer_index": 2,
+        "explanation": "A runner’s question revealed where the sign might send someone. The plan now includes a check by two volunteers before the race."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What showed that a sign was for the long run?",
+        "options": [
+          "Two red arrows",
+          "A letter on a picnic table",
+          "A green arrow and S",
+          "A blue arrow and L"
+        ],
+        "answer_index": 3,
+        "explanation": "The first paragraph describes the blue arrow and letter L used for the long route."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the writer move the sign?",
+        "options": [
+          "Alex needed the sign at the gate.",
+          "The original sign pointed runners towards the wrong path.",
+          "The narrow path was too crowded before the start.",
+          "The route sheet had changed the time of the race."
+        ],
+        "answer_index": 1,
+        "explanation": "The arrow was beside the path to the picnic tables, but the long run stayed on the wider main path."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “the paths divided” mean?",
+        "options": [
+          "The paths were closed to runners.",
+          "The two paths met at the end.",
+          "Someone cut the path in half.",
+          "The paths went in different directions."
+        ],
+        "answer_index": 3,
+        "explanation": "At a divide, runners must choose which way to go, so the volunteers mark the turns."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Alex’s note says that one volunteer should check the first turn alone.",
+        "answer": "false",
+        "explanation": "The note asks two volunteers to walk the turn together."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The short run went round the football ___. Alex’s note asks volunteers to walk the first ___ together.",
+        "answers": [
+          [
+            "field"
+          ],
+          [
+            "turn"
+          ]
+        ],
+        "word_bank": [
+          "turn",
+          "field",
+          "wood",
+          "race"
+        ],
+        "explanation": "The first paragraph names the football field. The last paragraph refers to the first turn."
+      }
+    ]
+  },
+  "children": []
+}

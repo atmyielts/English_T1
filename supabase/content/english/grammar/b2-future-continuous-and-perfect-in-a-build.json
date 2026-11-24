@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "b2-future-continuous-and-perfect-in-a-build",
+    "level": "B2",
+    "focus_area": "future-continuous-and-future-perfect",
+    "title": "Future continuous and future perfect in a build schedule",
+    "tags": [
+      "future continuous",
+      "future perfect",
+      "deadlines"
+    ],
+    "explanation_text": "A build schedule can describe work in progress at a future time or work already complete at that time. Use will be + verb-ing for an activity in progress. “At ten on Friday, we will be testing the display” puts the reader inside the testing period. It leaves the exact finishing time open.\n\nUse will have + past participle to look back from a deadline. “By noon on Friday, we will have completed the tests” says we expect completion by noon. It allows an earlier finish. With an irregular verb, use the past participle: “We will have sent the files”, with sent after have.\n\nThe same schedule can use both forms: testing may be in progress at ten, and the testing may be complete by noon. A future time phrase alone does not choose the form. Decide whether the sentence describes being in the middle of the job or having it behind you at the stated time.",
+    "contrast_text": "“At noon, the team will be fitting the panels” puts the fitting in progress at noon. “By noon, the team will have fitted the panels” puts the completion at or before noon.",
+    "common_error_pattern": "After will have, use the past participle. After will be in the future continuous, use the -ing form.",
+    "examples": [
+      {
+        "bad": "By Tuesday, we will have send the fixture list.",
+        "good": "By Tuesday, we will have sent the fixture list."
+      },
+      {
+        "bad": "At eleven, the installers will be fit the panels.",
+        "good": "At eleven, the installers will be fitting the panels."
+      },
+      {
+        "bad": "By July, I will have wrote the maintenance guide.",
+        "good": "By July, I will have written the maintenance guide."
+      },
+      {
+        "bad": "At four, the technician will checking the sensors.",
+        "good": "At four, the technician will be checking the sensors."
+      }
+    ],
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "Tests begin at nine and end at noon. At ten, the technicians ___ the new controls. (test)",
+      "instructions": "Use the future continuous. Write will in full and enter only the words for the gap.",
+      "accepted_answers": [
+        "will be testing"
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The supplier promises to send the last batch on or before Wednesday. By Thursday, the supplier ___ every batch. (send)",
+      "instructions": "Use the future perfect. Write will in full and enter only the words for the gap.",
+      "accepted_answers": [
+        "will have sent"
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The wiring work fills the whole of Friday morning. At ten on Friday, we ___ the new lighting. (wire)",
+      "instructions": "Use the future continuous. Write will in full and enter only the words for the gap.",
+      "accepted_answers": [
+        "will be wiring"
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "We expect to check the full stock list before the packing starts. By the time we pack, we ___ the full list. (check)",
+      "instructions": "Use the future perfect. Write will in full and enter only the words for the gap.",
+      "accepted_answers": [
+        "will have checked"
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The staging crew works from two until five. At half past three, the crew ___ the floor covers. (lay)",
+      "instructions": "Use the future continuous. Write will in full and enter only the words for the gap.",
+      "accepted_answers": [
+        "will be laying"
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "By the end of the day, we will have wrote all the labels.",
+      "instructions": "Change only the participle after will have.",
+      "accepted_answers": [
+        "By the end of the day, we will have written all the labels."
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "On Friday morning the electricians will be run tests in the west wing.",
+      "instructions": "Change only the verb form after will be.",
+      "accepted_answers": [
+        "On Friday morning the electricians will be running tests in the west wing."
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "The stage team expects to finish hanging the curtains on or before noon.",
+      "instructions": "Begin with “By noon, the stage team”. Use the future perfect of finish, write will in full, and end with “hanging the curtains”.",
+      "accepted_answers": [
+        "By noon, the stage team will have finished hanging the curtains."
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "We plan to paint the front panels from ten until one.",
+      "instructions": "Describe the activity in progress at eleven. Start with “At eleven, we”, use the future continuous of paint, write will in full, and keep “the front panels”.",
+      "accepted_answers": [
+        "At eleven, we will be painting the front panels."
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the words in order",
+      "prompt_text": "the safety report. / will have / By Friday, / submitted / the project lead",
+      "instructions": "Use every tile once. Start with the deadline phrase and end with the tile that includes the period.",
+      "accepted_answers": [
+        "By Friday, the project lead will have submitted the safety report."
+      ],
+      "target_skill_key": "grammar.future-continuous-and-future-perfect",
+      "status": "published"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "b2-balance-a-workshop-ticket-policy",
+    "title": "Recommend a Workshop Ticket Policy",
+    "level": "B2",
+    "genre": "recommendation brief",
+    "audience": "the organiser of a six-session evening workshop",
+    "prompt_text": "An evening workshop has six sessions and 20 seats in each. The organiser can sell passes for all six sessions or sell each session separately. Regular participants want the same seat each week, while people working changing shifts want to attend on the days they are free. Recommend a ticket policy that serves both groups, explain a likely drawback, and suggest one way to review the policy after the first month.",
+    "expected_length_min": 153,
+    "expected_length_max": 211,
+    "target_grammar": "Modal suggestions; conditionals for released seats; although and whereas for trade-offs.",
+    "target_structure": "Summarise the competing needs, specify a ticket split and release rule, then explain how to review it.",
+    "target_vocabulary": [
+      "series pass",
+      "single ticket",
+      "changing shifts",
+      "unused seat",
+      "release",
+      "waitlist"
+    ],
+    "sort_order": 303,
+    "checklist": [
+      {
+        "point": "Explain what each group needs.",
+        "keywords": [
+          "regular participants",
+          "changing shifts",
+          "every week",
+          "one evening"
+        ]
+      },
+      {
+        "point": "Give a specific recommendation that could be put in place.",
+        "keywords": [
+          "series pass",
+          "single tickets",
+          "split",
+          "fourteen seats",
+          "six seats"
+        ]
+      },
+      {
+        "point": "Explain a drawback and how to manage it.",
+        "keywords": [
+          "unused seat",
+          "if someone",
+          "release",
+          "drawback",
+          "waitlist"
+        ]
+      },
+      {
+        "point": "Identify one useful measure for the first month.",
+        "keywords": [
+          "track",
+          "record",
+          "compare",
+          "turn people away",
+          "review"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    }
+  },
+  "children": []
+}

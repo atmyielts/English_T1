@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "b1-review-a-coat-repair",
+    "title": "Review a Coat Repair Service",
+    "level": "B1",
+    "genre": "customer review",
+    "audience": "people choosing a clothes repair shop",
+    "prompt_text": "A repair shop fixed a loose pocket on your winter coat. You paid $12 and collected the coat two days later. The repair is neat, but the shop did not send the pickup message it promised. Write a useful review. Describe the job, discuss both parts of the experience, and recommend the service to a specific kind of customer.",
+    "expected_length_min": 96,
+    "expected_length_max": 145,
+    "target_grammar": "Past simple for the visit; although and however for a balanced review; would for a recommendation.",
+    "target_structure": "Introduce the job and cost, describe the result and pickup issue, and give a qualified recommendation.",
+    "target_vocabulary": [
+      "loose pocket",
+      "stitch",
+      "repair",
+      "collection",
+      "pickup message",
+      "recommend"
+    ],
+    "sort_order": 302,
+    "checklist": [
+      {
+        "point": "Say what the shop repaired and give a practical detail such as price or time.",
+        "keywords": [
+          "loose pocket",
+          "twelve dollars",
+          "$12",
+          "two days"
+        ]
+      },
+      {
+        "point": "Describe the quality of the repair.",
+        "keywords": [
+          "neat",
+          "stitch",
+          "holds well",
+          "looks good"
+        ]
+      },
+      {
+        "point": "Explain what happened with the pickup message.",
+        "keywords": [
+          "no message",
+          "didn't get",
+          "did not send",
+          "wasn't sent",
+          "pickup message"
+        ]
+      },
+      {
+        "point": "Recommend the shop to a particular kind of customer.",
+        "keywords": [
+          "would recommend",
+          "if you need",
+          "quick repair",
+          "simple repair"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    }
+  },
+  "children": []
+}

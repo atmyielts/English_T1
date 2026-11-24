@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "c1-facilitating-a-mediated-agreement",
+    "level": "C1",
+    "topic": "community mediation",
+    "title": "Facilitating a mediated agreement",
+    "description": "Describe how a facilitator handles a disagreement, tests proposals and helps participants move toward an agreement. Distinguish fairness, tone and specific stages of a negotiation.",
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "word": "common ground",
+      "part_of_speech": "noun phrase",
+      "definition": "Shared views, interests or goals that can support further agreement.",
+      "example": "They found common ground in wanting the playground to remain open at weekends.",
+      "translation_ru": "точки соприкосновения, общие интересы",
+      "translation_uz": "kelishuvga asos boʻladigan umumiy qarash yoki manfaatlar",
+      "collocations": [
+        "find common ground",
+        "start from common ground"
+      ]
+    },
+    {
+      "word": "caucus",
+      "part_of_speech": "noun",
+      "definition": "A private meeting during mediation in which the mediator speaks with one party without the other party present.",
+      "example": "In a caucus, the tenant told the mediator which repair dates would actually work.",
+      "translation_ru": "отдельная встреча медиатора с одной из сторон",
+      "translation_uz": "mediatorning tomonlardan biri bilan alohida uchrashuvi",
+      "collocations": [
+        "hold a caucus",
+        "a private caucus"
+      ]
+    },
+    {
+      "word": "impasse",
+      "part_of_speech": "noun",
+      "definition": "A point in a discussion when progress stops because the parties cannot agree how to proceed.",
+      "example": "The talks reached an impasse over who would have access to the shared entrance.",
+      "translation_ru": "тупик в переговорах",
+      "translation_uz": "muzokara oldinga siljimay qolgan holat",
+      "collocations": [
+        "reach an impasse",
+        "break an impasse"
+      ]
+    },
+    {
+      "word": "impartial",
+      "part_of_speech": "adjective",
+      "definition": "Treating each side fairly without favoring any participant or outcome.",
+      "example": "An impartial facilitator let each neighbor explain the problem before discussing possible changes.",
+      "translation_ru": "беспристрастный",
+      "translation_uz": "xolis, hech bir tomonga yon bosmaydigan",
+      "collocations": [
+        "an impartial facilitator",
+        "remain impartial"
+      ]
+    },
+    {
+      "word": "de-escalate",
+      "part_of_speech": "verb",
+      "definition": "To reduce the intensity of a conflict or make a tense situation less likely to worsen.",
+      "example": "The mediator paused the discussion to de-escalate the argument before asking either person to reply.",
+      "translation_ru": "снижать накал конфликта",
+      "translation_uz": "ziddiyatni yumshatmoq",
+      "collocations": [
+        "de-escalate a conflict",
+        "de-escalate a tense exchange"
+      ]
+    },
+    {
+      "word": "safeguard",
+      "part_of_speech": "noun",
+      "definition": "A protective condition or measure that reduces the risk of harm or misuse.",
+      "example": "The agreement included a safeguard requiring both groups to approve changes to the timetable.",
+      "translation_ru": "защитная мера",
+      "translation_uz": "zararning oldini olishga qaratilgan himoya chorasi",
+      "collocations": [
+        "introduce a safeguard",
+        "a safeguard against misuse"
+      ]
+    },
+    {
+      "word": "workable compromise",
+      "part_of_speech": "noun phrase",
+      "definition": "A realistic agreement in which each side gives up something and can carry out the result.",
+      "example": "Sharing the room on alternate evenings was a workable compromise for the two groups.",
+      "translation_ru": "практически выполнимый компромисс",
+      "translation_uz": "har ikki tomon amalga oshira oladigan murosa",
+      "collocations": [
+        "reach a workable compromise",
+        "propose a workable compromise"
+      ]
+    },
+    {
+      "word": "ground rule",
+      "part_of_speech": "noun phrase",
+      "definition": "A basic rule agreed before an activity that tells participants how to take part.",
+      "example": "The first ground rule allowed each resident to speak without interruption.",
+      "translation_ru": "основное правило совместного обсуждения",
+      "translation_uz": "muhokama boshida kelishib olinadigan asosiy qoida",
+      "collocations": [
+        "set a ground rule",
+        "follow the ground rules"
+      ]
+    },
+    {
+      "word": "reframe",
+      "part_of_speech": "verb",
+      "definition": "To present an issue from a different angle so people can understand or discuss it differently.",
+      "example": "The facilitator asked them to reframe the dispute as a question about access to the hallway.",
+      "translation_ru": "рассматривать или формулировать вопрос под другим углом",
+      "translation_uz": "masalani boshqa nuqtai nazardan ifodalamoq",
+      "collocations": [
+        "reframe a problem",
+        "reframe a complaint"
+      ]
+    },
+    {
+      "word": "good faith",
+      "part_of_speech": "noun phrase",
+      "definition": "An honest intention to deal fairly and engage sincerely with the other side.",
+      "example": "Both groups showed good faith by sharing their actual booking records.",
+      "translation_ru": "добросовестность, искреннее намерение договориться",
+      "translation_uz": "halol va vijdonan kelishishga intilish",
+      "collocations": [
+        "negotiate in good faith",
+        "show good faith"
+      ]
+    },
+    {
+      "word": "conciliatory",
+      "part_of_speech": "adjective",
+      "definition": "Intended to reduce disagreement and improve relations.",
+      "example": "Her conciliatory opening acknowledged the other team’s concerns without accepting every demand.",
+      "translation_ru": "примирительный",
+      "translation_uz": "kelishmovchilikni kamaytirish va munosabatni yaxshilashga qaratilgan",
+      "collocations": [
+        "a conciliatory tone",
+        "make a conciliatory gesture"
+      ]
+    },
+    {
+      "word": "procedural fairness",
+      "part_of_speech": "noun phrase",
+      "definition": "Fair treatment in how a decision is made, including a meaningful chance to be heard.",
+      "example": "The facilitator protected procedural fairness by giving each resident the same opportunity to answer the complaint.",
+      "translation_ru": "справедливость процедуры принятия решения",
+      "translation_uz": "qaror qabul qilish jarayonida adolatli muomala",
+      "collocations": [
+        "ensure procedural fairness",
+        "a concern about procedural fairness"
+      ]
+    },
+    {
+      "word": "nonbinding proposal",
+      "part_of_speech": "noun phrase",
+      "definition": "A suggested arrangement that does not require anyone to accept or follow it.",
+      "example": "The facilitator circulated a nonbinding proposal so both groups could react before making any commitment.",
+      "translation_ru": "предложение, не создающее обязательств",
+      "translation_uz": "amal qilish majburiyatini yuklamaydigan taklif",
+      "collocations": [
+        "circulate a nonbinding proposal",
+        "consider a nonbinding proposal"
+      ]
+    },
+    {
+      "word": "grievance",
+      "part_of_speech": "noun",
+      "definition": "A complaint about something a person or group considers unfair.",
+      "example": "The residents raised a grievance about how the booking rules had been applied.",
+      "translation_ru": "жалоба на несправедливое обращение",
+      "translation_uz": "adolatsiz deb hisoblangan holat yuzasidan shikoyat",
+      "collocations": [
+        "raise a grievance",
+        "address a grievance"
+      ]
+    }
+  ]
+}

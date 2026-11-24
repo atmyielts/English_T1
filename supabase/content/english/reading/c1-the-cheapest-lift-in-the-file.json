@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c1-the-cheapest-lift-in-the-file",
+    "title": "The Cheapest Lift in the File",
+    "level": "C1",
+    "summary": "A community centre separates the cheapest purchase from the least expensive lift to keep in use.",
+    "content_markdown": "When the Marden Community Centre reviewed two bids for a lift, the summary table had a column called cost. Under that heading, one contractor had entered £42,000 and the other £49,000. Both lifts met the centre’s requirements, so the cheaper purchase seemed an obvious choice. The building manager asked the committee to postpone its vote until somebody had read the schedule printed behind the table.\n\nThe first bid included two major maintenance visits within ten years. Each was priced at 7,000, and the centre would be responsible for paying for both. The second bid proposed one scheduled upgrade within the same period, priced at 4,000. Using these quoted figures, the lift with the lower purchase price would cost 56,000 over a decade. The other would cost 53,000. The manager put those totals in the next report, with “purchase and listed work” above them. Neither company promised that there would be no faults outside the schedule.\n\nThe mistake in the original table had not been a failure to calculate. The amount needed to buy and install equipment came from one budget. In later years, the cost of keeping it in service would come from another. The first committee only saw an installation budget, so the summary had put the purchase price in the most prominent place. That made sense for deciding whether the project could start. It encouraged an incomplete answer to the question of what the centre would pay over time.\n\nThere was a third question. The lift beside the classrooms was the only step-free route to the upper floor. The second contractor offered to carry out its upgrade during a scheduled closure. The company proposing two visits could not yet give dates for both. The manager asked for comparable promises about how much warning the companies could give before a closure. That information mattered even though it did not change either quoted total.\n\nThe revised recommendation gives three separate judgements. It names the cheaper purchase, identifies the cheaper plan over ten years on the stated assumptions and asks what each company can commit to about keeping the building usable. It does not reduce the third point to a token figure in the price column. A day’s closure means different things if classes can move downstairs, if the whole building is already closed, or if an event has sold tickets. The first table had given the committee one number to decide with. The second gave it enough questions to know what a decision would involve.",
+    "category": "Society",
+    "theme": "public procurement and maintenance",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "institutional case study",
+      "word_count": 416
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does the revised recommendation separate three judgements?",
+        "options": [
+          "A ten-year price can settle how much disruption each lift will cause.",
+          "The centre wants each bid to be funded by three separate budgets.",
+          "A contractor’s estimate is useful only if it lists unscheduled faults.",
+          "Purchase price, projected spending and disruption answer different practical questions."
+        ],
+        "answer_index": 3,
+        "explanation": "The new assessment distinguishes affordability at purchase, quoted cost over time and how closures would affect people using the building."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "By how much is the second model cheaper under the quoted ten-year schedules?",
+        "options": [
+          "4,000",
+          "7,000",
+          "3,000",
+          "11,000"
+        ],
+        "answer_index": 2,
+        "explanation": "The quoted decade totals are 56,000 and 53,000. Their difference is 3,000."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why was the original table understandable even though it was incomplete?",
+        "options": [
+          "It listed the cheapest planned maintenance as well as the purchase price.",
+          "The committee had already obtained a promise about closure dates.",
+          "Its authors were considering a budget that only had to fund the installation.",
+          "Neither contractor had supplied any price for future work."
+        ],
+        "answer_index": 2,
+        "explanation": "The first committee saw the installation budget. The number answered whether it could begin the project within that budget."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “token figure” suggest in the final paragraph?",
+        "options": [
+          "A nominal amount that would give little account of the disruption",
+          "A refund that can be used to buy a service",
+          "A figure that applies only to an evening booking",
+          "A number that is fixed by the maintenance schedule"
+        ],
+        "answer_index": 0,
+        "explanation": "The impact of a closure depends on what takes place that day. A single placeholder cost would hide those differences."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The second contractor guaranteed that the lift would need no work beyond the listed upgrade.",
+        "answer": "false",
+        "explanation": "The second paragraph explicitly says neither company ruled out faults outside the schedule."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The second contractor quotes a scheduled ___. The manager also asks how much ___ each contractor can give before a closure.",
+        "answers": [
+          [
+            "upgrade"
+          ],
+          [
+            "warning"
+          ]
+        ],
+        "word_bank": [
+          "upgrade",
+          "time",
+          "warning",
+          "schedule"
+        ],
+        "explanation": "The second paragraph describes the scheduled upgrade. The fourth asks for commitments about warning before closure."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Why the first budget encouraged a limited view",
+          "Working out the costs of the listed work",
+          "A practical cost that cannot be read from a quote",
+          "Different judgements for different decisions",
+          "A dispute over whether the lift was needed at all"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The middle paragraphs calculate spending, explain the budget boundary and raise closure planning. The last integrates the three kinds of judgement."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,115 @@
+{
+  "item": {
+    "slug": "c1-handle-conditions-on-a-campus-gift",
+    "title": "Handle conditions on a campus gift",
+    "level": "C1",
+    "mission_type": "workplace",
+    "context_text": "A donor offers equipment to a campus club and asks for influence over how participants are selected. The club has already published its selection criteria.",
+    "objective_text": "Propose a fair acceptance process and explain the boundary with tact.",
+    "target_vocabulary": [
+      "anonymous",
+      "selection",
+      "condition",
+      "conflict of interest",
+      "acknowledgment"
+    ],
+    "success_conditions": [
+      "Propose a fair acceptance process and explain the boundary with tact."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the information",
+      "instructions": "Read the note and use its details to answer both questions.",
+      "prompt_text": "CLUB FUNDING RULE\nThe club may accept anonymous equipment donations. Selection for supported places remains with a panel that applies the published criteria. A donor can choose whether the club acknowledges the gift publicly, but cannot see applications or choose participants. The donor asks to nominate two applicants and reserve places for them. The equipment can run the workshop even if the number of supported places stays the same.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which donor request conflicts with the funding rule?",
+          "options": [
+            "Remaining anonymous",
+            "Reserving places for nominated applicants",
+            "Giving equipment only"
+          ],
+          "answer_index": 1,
+          "explanation": "The panel must apply the published criteria and donors cannot choose participants."
+        },
+        {
+          "prompt": "Which concession could the club make?",
+          "options": [
+            "Letting the donor read the applications",
+            "Replacing the panel with a private meeting",
+            "Agreeing whether to acknowledge the donation publicly"
+          ],
+          "answer_index": 2,
+          "explanation": "Public acknowledgement is expressly within the donor's choice."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Reply to the donor",
+      "prompt_text": "Donor: Could we reserve two places for people I nominate?",
+      "instructions": "Thank the donor, separate giving from selection, and offer a permitted alternative.",
+      "goal": "Keep the relationship while preserving the published criteria.",
+      "estimated_minutes": 5,
+      "min_words": 51,
+      "model_answer": "Thank you for offering the equipment. It would make a real difference to the workshop. The panel has to assess everyone against the published criteria, so we cannot reserve places or share applications. The people you have in mind are welcome to apply through the same process, and we can acknowledge the gift publicly or keep it anonymous as you prefer.",
+      "points": [
+        {
+          "label": "Recognise the gift",
+          "any": [
+            "grateful",
+            "appreciate",
+            "thank"
+          ]
+        },
+        {
+          "label": "Confirm independent selection",
+          "any": [
+            "panel",
+            "published criteria"
+          ]
+        },
+        {
+          "label": "Offer an allowed alternative",
+          "any": [
+            "acknowledge",
+            "anonymous",
+            "same process",
+            "apply through"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain your recommendation to the chair",
+      "prompt_text": "Chair: Would accepting the equipment put us in a difficult position?",
+      "instructions": "Explain when acceptance is possible and what should be recorded.",
+      "goal": "Give a condition that staff can apply.",
+      "estimated_minutes": 3,
+      "min_words": 27,
+      "model_answer": "We can accept it if selection stays independent and there are no reserved places. I'd document those terms in writing and confirm whether the donor wants public acknowledgement.",
+      "points": [
+        {
+          "label": "Separate the donation from allocation",
+          "any": [
+            "independent",
+            "separate",
+            "no reserved places"
+          ]
+        },
+        {
+          "label": "Record the agreed terms",
+          "any": [
+            "record",
+            "written",
+            "document"
+          ]
+        }
+      ]
+    }
+  ]
+}

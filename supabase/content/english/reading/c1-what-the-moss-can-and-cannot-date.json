@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c1-what-the-moss-can-and-cannot-date",
+    "title": "What the Moss Can and Cannot Date",
+    "level": "C1",
+    "summary": "A conservation diary shows why a living mark can tell you the order of events without fixing a year.",
+    "content_markdown": "The contractor’s photograph showed a new concrete lining in the drainage channel and a patch of green on the wall above it. There was no date on the print, but the lining was described in a notebook kept between 1981 and 1983. In a draft display, a volunteer called the green patch “moss that has been growing here since 1982”. The conservator, Samir, asked the team to retain the photograph and remove the date from the caption.\n\nTwo pieces of evidence had been combined too quickly. The notebook gave an interval in which the repair crew had worked. The photograph showed that the patch and the new lining were visible when somebody stood at the bend with a camera. It did not establish that the patch began growing during the repair. The wall was already old when the lining was installed, and it could have supported growth before the crew arrived. Even if the exact date of the photograph were known, that would locate one observation of the moss, not its beginning.\n\nOn a later visit the team found a useful clue on a side wall. A strip of pale paint crossed part of a dark patch. Where the paint had worn through, the dark material was visible beneath it. Along the top edge, a narrow band lay over the paint. The two parts did not have to belong to the same period of growth just because they touched. Samir drew a section through the layers in his notebook. It showed what must have been in place first, where material lay underneath, and what must have arrived later, where it covered the paint.\n\nOne visitor wanted to know whether that sequence was enough to identify which maintenance crew painted the wall. Samir said it helped him frame the search rather than finish it. Once the order was known, he could look for a record of the strip of paint without using the moss as a calendar. He might also find that the wall had been painted in separate visits.\n\nThe final display shows the photograph on one side and the drawing of the layers on the other. The caption gives a period for the lining work and describes the relative order at the side wall. A short question at the bottom asks which date a dated paint invoice would provide. It would help place an intervention, but the interval between the painted surface and a new layer of moss would still need different evidence. The visitors get a more limited answer than the old caption promised, and a clearer account of how to make it less limited.",
+    "category": "Science",
+    "theme": "dating exposed surfaces",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "conservation diary",
+      "word_count": 437
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the passage mainly concerned with?",
+        "options": [
+          "Separating evidence about the order of events from evidence about their dates",
+          "Showing that dated invoices tell researchers less than undated photographs",
+          "Using the age of a green patch to establish when a channel was lined",
+          "Finding out why repairs attract different kinds of moss"
+        ],
+        "answer_index": 0,
+        "explanation": "The observations can put some events in sequence, but neither the photograph nor the layers alone gives an exact start date for the growth."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What exactly does the undated photograph establish?",
+        "options": [
+          "The green patch was absent before the lining was installed.",
+          "The new lining and the green patch were visible together when the picture was taken.",
+          "The lining was installed in 1982.",
+          "The repair crew photographed the channel every year."
+        ],
+        "answer_index": 1,
+        "explanation": "The photograph shows both features at a moment whose precise date is unknown. It does not show when the green growth began."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why would a dated paint invoice leave part of the history unresolved?",
+        "options": [
+          "It could date a painting job without showing how long growth took to cover the painted edge.",
+          "It could identify the photographer but not the people who did the repair.",
+          "An invoice cannot help place an event even when it names the particular work.",
+          "The painted strip was first visible only after the moss had grown over it."
+        ],
+        "answer_index": 0,
+        "explanation": "The last paragraph distinguishes placing the painting work from establishing the length of time before later growth."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “frame the search” mean here?",
+        "options": [
+          "Know more precisely what evidence to look for",
+          "Choose a frame for the enlarged photograph",
+          "Separate all the paint from the wall",
+          "Put the records in order of their age"
+        ],
+        "answer_index": 0,
+        "explanation": "The layer sequence helps Samir decide which maintenance record to seek, although it does not itself identify the crew or a year."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Samir found a dated invoice for the paint during the project.",
+        "answer": "not_given",
+        "explanation": "The invoice is posed as a possible additional source in a question. No discovery of such an invoice is reported."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "A strip of pale ___ crossed a dark patch on the side wall. The final display pairs a photograph with a drawing of the ___.",
+        "answers": [
+          [
+            "paint"
+          ],
+          [
+            "layers"
+          ]
+        ],
+        "word_bank": [
+          "notebook",
+          "layers",
+          "paint",
+          "invoice"
+        ],
+        "explanation": "The side wall has paint over dark material in one place and new growth over paint in another. The drawing shows those layers."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Evidence that establishes a sequence",
+          "What a single photograph cannot establish",
+          "Putting separate claims into the new display",
+          "How a clue helps narrow a search",
+          "Which crew received payment for the repair"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "Paragraph 2 limits the photograph, paragraph 3 reads overlapping layers, paragraph 4 uses the clue to refine the research, and paragraph 5 explains the display."
+      }
+    ]
+  },
+  "children": []
+}

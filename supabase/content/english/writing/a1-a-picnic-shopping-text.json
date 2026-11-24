@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "a1-a-picnic-shopping-text",
+    "title": "Send a Picnic Shopping Text",
+    "level": "A1",
+    "genre": "text message",
+    "audience": "a friend who is going to the shop",
+    "prompt_text": "You and your friend Ivo are having a picnic. Ask Ivo to buy four apples and a small bottle of water. You already have sandwiches. Tell Ivo that the shopping money is in the cup by the door.",
+    "expected_length_min": 29,
+    "expected_length_max": 50,
+    "target_grammar": "Simple requests with can you; numbers and place phrases.",
+    "target_structure": "Greet Ivo, give the shopping list, say what you already have, and say where the money is.",
+    "target_vocabulary": [
+      "four apples",
+      "bottle",
+      "small",
+      "sandwiches",
+      "cup",
+      "door"
+    ],
+    "sort_order": 300,
+    "checklist": [
+      {
+        "point": "Ask for four apples and a small bottle of water.",
+        "keywords": [
+          "four apples",
+          "4 apples",
+          "small bottle of water"
+        ]
+      },
+      {
+        "point": "Say you already have sandwiches.",
+        "keywords": [
+          "i have sandwiches",
+          "we have sandwiches",
+          "already have sandwiches"
+        ]
+      },
+      {
+        "point": "Say where Ivo can find the money.",
+        "keywords": [
+          "cup by the door",
+          "in the cup",
+          "cup near the door"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    }
+  },
+  "children": []
+}

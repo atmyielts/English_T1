@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "c2-describing-recorded-sound",
+    "level": "C2",
+    "topic": "recorded sound",
+    "title": "Describing recorded sound",
+    "description": "Use precise listening vocabulary when discussing a mix or reviewing a recording. Distinguish tone, space, short-lived changes in sound and levels.",
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "word": "sibilant",
+      "part_of_speech": "adjective",
+      "definition": "Having conspicuously sharp, hiss-like s or similar sounds in speech or singing.",
+      "example": "The first vocal take was so sibilant that every final s drew attention away from the melody.",
+      "translation_ru": "с отчётливо выраженными шипящими или свистящими звуками",
+      "translation_uz": "nutq yoki kuylashda s kabi sirgʻaluvchi tovushlari keskin eshitiladigan",
+      "collocations": [
+        "a sibilant vocal",
+        "a sibilant recording"
+      ]
+    },
+    {
+      "word": "brittle",
+      "part_of_speech": "adjective",
+      "definition": "Harsh and thin in tone, especially when sharp high frequencies dominate.",
+      "example": "The cymbals sounded brittle in the new mix, with a hard edge and little sense of body.",
+      "translation_ru": "резкий и тонкий по звучанию",
+      "translation_uz": "yuqori tovushlari qattiq, jarangi yupqa eshitiladigan",
+      "collocations": [
+        "brittle treble",
+        "a brittle tone"
+      ]
+    },
+    {
+      "word": "airy",
+      "part_of_speech": "adjective",
+      "definition": "Light and open in tone, with a sense of space around fine high-frequency detail.",
+      "example": "The flute had an airy quality that let its smallest changes in breath come through.",
+      "translation_ru": "лёгкий, воздушный по звучанию",
+      "translation_uz": "yengil, ochiq jarangli va mayda yuqori tovushlari seziladigan",
+      "collocations": [
+        "an airy flute tone",
+        "an airy top end"
+      ]
+    },
+    {
+      "word": "boxy",
+      "part_of_speech": "adjective",
+      "definition": "Hollow and enclosed in tone, with too much emphasis in part of the middle frequency range.",
+      "example": "The guitar sounded boxy, as if the room around it had shrunk to a small wooden cupboard.",
+      "translation_ru": "гулковатый, как в коробке, с избытком средних частот",
+      "translation_uz": "goʻyo quti ichida yangragandek, oʻrta chastotalari ortiqcha boʻlgan",
+      "collocations": [
+        "a boxy sound",
+        "boxy midrange"
+      ]
+    },
+    {
+      "word": "resonant",
+      "part_of_speech": "adjective",
+      "definition": "Rich and full in tone, with vibrations that continue to be heard after the sound begins.",
+      "example": "The cello’s lowest note was resonant enough to stay audible under the start of the next phrase.",
+      "translation_ru": "насыщенный, резонирующий, с продолжительным звучанием",
+      "translation_uz": "toʻliq, boy jarangli va tebranishi uzoqroq eshitiladigan",
+      "collocations": [
+        "a resonant low note",
+        "a resonant cello tone"
+      ]
+    },
+    {
+      "word": "muffled",
+      "part_of_speech": "adjective",
+      "definition": "Dull and unclear because some of the higher detail is blocked or lost.",
+      "example": "The spoken introduction sounded muffled, so the quiet consonants were hard to make out.",
+      "translation_ru": "приглушённый, неясный из-за потери высоких частот",
+      "translation_uz": "yuqori tovushlari pasayib, boʻgʻiq va noaniq eshitiladigan",
+      "collocations": [
+        "a muffled voice",
+        "a muffled recording"
+      ]
+    },
+    {
+      "word": "cavernous",
+      "part_of_speech": "adjective",
+      "definition": "Having a large, hollow sound with strong reflections that suggest a very big enclosed space.",
+      "example": "The cavernous recording made a single handclap seem to travel the length of an empty hall.",
+      "translation_ru": "гулкий, с эхом большого пустого помещения",
+      "translation_uz": "katta boʻsh xonadagidek gumburlab, aks sado beradigan",
+      "collocations": [
+        "a cavernous sound",
+        "cavernous reverberation"
+      ]
+    },
+    {
+      "word": "dry",
+      "part_of_speech": "adjective",
+      "definition": "Having little audible reverberation or echo around the original sound.",
+      "example": "The drum take was deliberately dry: each hit ended without a sense of room around it.",
+      "translation_ru": "сухой, почти без реверберации или эха",
+      "translation_uz": "aks sadosi deyarli sezilmaydigan quruq jarangli",
+      "collocations": [
+        "a dry vocal",
+        "a dry drum sound"
+      ]
+    },
+    {
+      "word": "diffuse",
+      "part_of_speech": "adjective",
+      "definition": "Spread across the listening space so the sound is hard to locate at one distinct point.",
+      "example": "The background choir sounded diffuse, with no single place between the speakers where I could locate it.",
+      "translation_ru": "рассеянный, без чёткой локализации",
+      "translation_uz": "tinglash makoniga tarqalib, qayerdan kelayotgani aniq bilinmaydigan",
+      "collocations": [
+        "a diffuse sound field",
+        "a diffuse background"
+      ]
+    },
+    {
+      "word": "transient",
+      "part_of_speech": "noun",
+      "definition": "A brief surge of energy or a sudden change in a sound’s level, often at the start of a note or drum hit.",
+      "example": "The snare transient was still sharp even after we lowered the level of the sound that followed it.",
+      "translation_ru": "краткий всплеск энергии или резкое изменение уровня звука",
+      "translation_uz": "tovush energiyasining qisqa ortishi yoki darajasining keskin oʻzgarishi",
+      "collocations": [
+        "the initial transient",
+        "preserve a transient"
+      ]
+    },
+    {
+      "word": "decay",
+      "part_of_speech": "noun",
+      "definition": "The gradual decrease in a sound’s level after it reaches its peak.",
+      "example": "The bell’s decay is audible for several seconds after the initial strike.",
+      "translation_ru": "постепенное затухание звука после пика",
+      "translation_uz": "tovushning eng baland nuqtasidan keyin asta-sekin susayishi",
+      "collocations": [
+        "a long decay",
+        "hear the decay"
+      ]
+    },
+    {
+      "word": "boomy",
+      "part_of_speech": "adjective",
+      "definition": "Having excessive low-frequency energy that makes the bass sound heavy or uncontrolled.",
+      "example": "The bass was boomy in the small room and covered part of the singer’s lower range.",
+      "translation_ru": "гулкий из-за избытка низких частот",
+      "translation_uz": "past chastotalari ortiqcha, bas tovushi gumburlab chiqadigan",
+      "collocations": [
+        "a boomy bass",
+        "a boomy low end"
+      ]
+    },
+    {
+      "word": "soundstage",
+      "part_of_speech": "noun",
+      "definition": "The apparent arrangement and spread of performers or sounds across the space suggested by a recording.",
+      "example": "The recording’s soundstage places the piano just left of center and the solitary violin well to the right.",
+      "translation_ru": "звуковая сцена, воспринимаемое расположение источников звука",
+      "translation_uz": "yozuvda tovush manbalari tinglovchiga qanday joylashgandek eshitilishi",
+      "collocations": [
+        "a wide soundstage",
+        "a clear soundstage"
+      ]
+    },
+    {
+      "word": "headroom",
+      "part_of_speech": "noun",
+      "definition": "The margin between the current signal level and the level at which the system begins to overload or clip.",
+      "example": "We left enough headroom above the singer’s loudest rehearsal notes to record a stronger take cleanly.",
+      "translation_ru": "запас уровня сигнала до перегрузки или клиппинга",
+      "translation_uz": "signal darajasi bilan tizim ortiqcha yuklana boshlaydigan daraja orasidagi zaxira",
+      "collocations": [
+        "leave headroom",
+        "preserve headroom"
+      ]
+    }
+  ]
+}

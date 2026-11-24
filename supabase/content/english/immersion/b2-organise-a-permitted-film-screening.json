@@ -1,0 +1,114 @@
+{
+  "item": {
+    "slug": "b2-organise-a-permitted-film-screening",
+    "title": "Organise a permitted film screening",
+    "level": "B2",
+    "mission_type": "study",
+    "context_text": "A student society wants to share a short documentary. The permission you received covers particular uses.",
+    "objective_text": "Plan an accessible screening that fits the filmmaker’s permission.",
+    "target_vocabulary": [
+      "permission",
+      "screening",
+      "caption",
+      "excerpt",
+      "unlisted"
+    ],
+    "success_conditions": [
+      "Plan an accessible screening that fits the filmmaker’s permission."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the information",
+      "instructions": "Read the note and use its details to answer both questions.",
+      "prompt_text": "FILMMAKER'S PERMISSION\nYou may show the documentary once to an in-person audience of up to sixty, free of charge. A caption file can be emailed for use at the event. Posting the full film online, even on an unlisted link, needs a separate licence. You may post a trailer of up to forty seconds using the official clip. The hall seats fifty-five and several attendees have asked about captions.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which online use is already allowed?",
+          "options": [
+            "Posting the full film as an unlisted link",
+            "Sharing the official trailer within forty seconds",
+            "Selling access to a recorded screening"
+          ],
+          "answer_index": 1,
+          "explanation": "The permission explicitly allows the official short clip and treats the full film separately."
+        },
+        {
+          "prompt": "What should the society request for accessibility?",
+          "options": [
+            "The caption file",
+            "A higher online resolution",
+            "A second in-person showing"
+          ],
+          "answer_index": 0,
+          "explanation": "The filmmaker offers the caption file for the event."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the screening plan",
+      "prompt_text": "Committee: Can we put the film online afterwards and announce captions?",
+      "instructions": "State what the permission covers, offer an allowed online option, and say how you will get captions.",
+      "goal": "Set realistic expectations before advertising.",
+      "estimated_minutes": 5,
+      "min_words": 41,
+      "model_answer": "We can hold one in-person screening in the hall. To make it accessible, I'll request the caption file and test it before the event. Posting the full film needs a separate licence, so our online announcement should use the official trailer within forty seconds.",
+      "points": [
+        {
+          "label": "State the one in-person showing",
+          "any": [
+            "one in-person",
+            "once",
+            "single screening"
+          ]
+        },
+        {
+          "label": "Name a separate online licence",
+          "any": [
+            "licence",
+            "license",
+            "separate permission"
+          ]
+        },
+        {
+          "label": "Request captions",
+          "any": [
+            "caption file",
+            "captions"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Respond to an unlisted-link suggestion",
+      "prompt_text": "Volunteer: What if we upload it without making the link searchable?",
+      "instructions": "Explain the restriction and give a permitted alternative.",
+      "goal": "Explain the boundary clearly and respectfully.",
+      "estimated_minutes": 3,
+      "min_words": 25,
+      "model_answer": "Even an unlisted link would still be an online upload of the full film, so we need a separate licence. We can share the official short trailer now.",
+      "points": [
+        {
+          "label": "Identify the full upload restriction",
+          "any": [
+            "full film",
+            "licence",
+            "license",
+            "permission"
+          ]
+        },
+        {
+          "label": "Give the trailer alternative",
+          "any": [
+            "trailer",
+            "official clip"
+          ]
+        }
+      ]
+    }
+  ]
+}

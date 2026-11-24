@@ -1,0 +1,63 @@
+{
+  "item": {
+    "slug": "a2-explain-the-picture-pair-game",
+    "title": "Teach a Picture Card Game",
+    "level": "A2",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 46,
+    "prompt_text": "Teach a friend a game with picture cards. Put five cards face up between two players. On each turn, choose two and say what they have in common. If the other person agrees, keep the pair and put out two new cards. If they disagree, leave both cards. After six turns each, count the pairs. Explain the rules with one example.",
+    "target_grammar": "Imperatives for setup; if clauses for agreement; first and after for order.",
+    "fluency_objective": "Separate setup, taking a turn and finishing. Give your example while explaining a turn.",
+    "pronunciation_objective": "Stress pair and agree. Pause after if they disagree so the listener can hear the contrast.",
+    "target_vocabulary": [
+      "face up",
+      "turn",
+      "pair",
+      "agree",
+      "in common",
+      "count"
+    ],
+    "sort_order": 301,
+    "cues": [
+      {
+        "text": "Say where and how many cards to put out.",
+        "keywords": [
+          "five cards",
+          "five picture cards",
+          "face up"
+        ]
+      },
+      {
+        "text": "Explain a turn and give an example of a pair.",
+        "keywords": [
+          "on your turn",
+          "choose two",
+          "an apple",
+          "a pear",
+          "have in common"
+        ]
+      },
+      {
+        "text": "Explain what changes if the other person agrees or disagrees.",
+        "keywords": [
+          "if they agree",
+          "if they disagree",
+          "keep the pair",
+          "leave both cards"
+        ]
+      },
+      {
+        "text": "Explain when the game ends and how to win.",
+        "keywords": [
+          "six turns",
+          "most pairs",
+          "count the pairs"
+        ]
+      }
+    ],
+    "model_opening": "First, put five picture cards face up between us.",
+    "model_answer": "First, put five picture cards face up between us. On your turn, choose two cards and say what they have in common. For example, an apple and a pear are both fruit. If I agree, keep the pair and put out two new cards. If I disagree, leave both cards where they are. After six turns each, count the pairs. The player with the most pairs wins."
+  },
+  "children": []
+}

@@ -1,30 +1,27 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-hub-practice-depth",
+  "releaseId": "english-hub-practice-wave-two",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
-  "migrations": ["20261124153000_english_hub_practice_depth.sql"],
-  "edgeFunctions": ["writing-workbench"],
+  "migrations": ["20261124154000_english_hub_practice_wave2.sql"],
+  "edgeFunctions": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "migration:20261124153000_english_hub_practice_depth.sql",
-    "content:private-authored-writing-models",
-    "function:writing-workbench",
+    "migration:20261124154000_english_hub_practice_wave2.sql",
+    "content:private-authored-writing-models-wave-two",
     "verify:english-hub-catalogue"
   ],
   "manualFollowUps": [
-    "Dry-run supabase db push --linked from a workspace containing the applied migration versions and only the English Hub release migration as pending. Apply the migration and the checksum-verified private Writing model cache seed.",
-    "Run supabase functions deploy writing-workbench with its current authentication configuration. Writing model responses still require the learner to submit their own response first."
+    "Dry-run supabase db push --linked with only the English Hub release migration pending. Apply the migration and the checksum-verified private Writing model cache seed. This release reuses the existing learner apps and Writing model route."
   ],
   "verification": [
-    "Find all 96 new English Hub activities across seven skills and CEFR A1 through C2 using the native learner catalogue.",
-    "Check the browser-read Listening path and verify that IELTS and TOEFL Listening release plans remain independent.",
-    "Check that each new Writing prompt has an authored cache entry at its declared level and that the completed-learner model route returns that entry when the preferred level has no cached example."
+    "Verify that the learner catalogues contain 48 new activities across all seven skills and all six CEFR levels.",
+    "Verify that the six new Writing prompts have private model records and the existing model route requires a first submission.",
+    "Verify that the new English Hub Listening activities use existing browser playback."
   ],
   "rollback": {
-    "content": "Archive the release-specific new items through English Content Studio and preserve existing activity attempts. Retain the private Writing model cache rows for the corresponding prompts.",
-    "edge": "Redeploy the previous writing-workbench bundle with its existing configuration."
+    "content": "Archive the release-specific activities through English Content Studio and retain saved attempts and corresponding Writing models."
   }
 }

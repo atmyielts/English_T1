@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "c2-as-if-and-modal-distance",
+    "level": "C2",
+    "focus_area": "as-if-modal-remoteness",
+    "title": "As if, as though and distance from reality",
+    "tags": [
+      "as if",
+      "as though",
+      "modal remoteness"
+    ],
+    "explanation_text": "After as if or as though, a speaker can describe an impression without confirming it. “It looks as though the door is locked” uses the ordinary present because a locked door is a real possibility. The form reports the impression and leaves room for doubt.\n\nA past form can put some distance between a present appearance and what the speaker takes to be real. “He talks as if he owned the hall” can imply he does not own it. In formal English, were can mark this distance with a singular subject: “She acts as though she were in charge.” Was is also heard in ordinary conversation. An actual past narrative can contain past forms too, so tense alone does not prove that the comparison is unreal.\n\nWhen the imagined situation is earlier than the behavior we are describing, the past perfect can mark that earlier time: “She greets us as if she had never seen us before.” Context can make the imaginary comparison clear, for example by stating that we met yesterday.",
+    "contrast_text": "“It sounds as if the caretaker knows the code” entertains a real possibility. “He speaks as if he knew every code, though I know he has only one” imagines a wider knowledge that conflicts with what the speaker knows.",
+    "common_error_pattern": "Look for evidence of the speaker’s stance and of the comparison’s time. A past form after as if can mark distance from a present reality or simply belong to a past context.",
+    "examples": [
+      {
+        "bad": "She is not the director, but she acts as if were she in charge.",
+        "good": "She is not the director, but she acts as if she were in charge."
+      },
+      {
+        "bad": "It looks as though is the room empty.",
+        "good": "It looks as though the room is empty."
+      },
+      {
+        "bad": "They had met before, but he greeted her as if he had never saw her.",
+        "good": "They had met before, but he greeted her as if he had never seen her."
+      },
+      {
+        "bad": "It's possible the bell is broken. It sounds as like the bell is broken.",
+        "good": "It's possible the bell is broken. It sounds as if the bell is broken."
+      }
+    ],
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "There are footsteps above us. It sounds as if someone ___ upstairs. (be)",
+      "instructions": "Use the ordinary present simple of be. The speaker thinks someone really might be there.",
+      "accepted_answers": [
+        "is"
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "She has no vote, yet she talks as though she ___ the final decision. (make)",
+      "instructions": "Use the past simple of make to signal distance from reality. Enter only the verb.",
+      "accepted_answers": [
+        "made"
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "He sits at the head of the table as if he ___ the chair, although a different person chairs the meetings. (be)",
+      "instructions": "Use the formal irrealis form of be. Enter only the verb.",
+      "accepted_answers": [
+        "were"
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The guide has met us three times. Today he greets us as though he ___ us before. (never / meet)",
+      "instructions": "Use the past perfect. Keep never and write had in full.",
+      "accepted_answers": [
+        "had never met"
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "They know the result from last week, yet they are acting as if they ___ the news for the first time this morning. (hear)",
+      "instructions": "Use the past perfect of hear for the imagined earlier event. Write had in full.",
+      "accepted_answers": [
+        "had heard"
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "In the rehearsal, Inez spoke as though had she read the letter that morning.",
+      "instructions": "Rewrite the sentence. Put the subject before had inside the as though clause. Keep every other word.",
+      "accepted_answers": [
+        "In the rehearsal, Inez spoke as though she had read the letter that morning."
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "She talks as if she were know the procedure.",
+      "instructions": "Use the past simple of know as the only verb after she. Keep the rest of the sentence.",
+      "accepted_answers": [
+        "She talks as if she knew the procedure."
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "We know that the stage assistant is not the director. He gives orders in the director’s manner.",
+      "instructions": "Use as if to express the unreal comparison. Start with “The stage assistant gives orders” and finish with a clause using “he”, the formal irrealis form of be, and “the director”.",
+      "accepted_answers": [
+        "The stage assistant gives orders as if he were the director."
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "She read the bulletin yesterday. Her reaction today suggests she is encountering it for the first time.",
+      "instructions": "Start with “She reacts as though”. Use the past perfect of read, write had in full, and use “never” and “the bulletin before”.",
+      "accepted_answers": [
+        "She reacts as though she had never read the bulletin before."
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the words in order",
+      "prompt_text": "had never used / as if / the new screen before. / He / he / stares at the guide",
+      "instructions": "Use each tile once. Begin with “He” followed by “stares at the guide”. End with the tile that contains the period.",
+      "accepted_answers": [
+        "He stares at the guide as if he had never used the new screen before."
+      ],
+      "target_skill_key": "grammar.as-if-modal-remoteness",
+      "status": "published"
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a2-both-either-neither-with-two-choices",
+    "level": "A2",
+    "focus_area": "both-either-neither",
+    "title": "Both, either and neither for two choices",
+    "tags": [
+      "two options",
+      "both",
+      "either",
+      "neither"
+    ],
+    "explanation_text": "Use both when a statement is true for the two things you are talking about. “Both stops have seats” means there are seats at stop A and at stop B. Both can go before a plural noun, as in both stops. You can also say both of the stops or both of them.\n\nUse either when one of two choices is fine. Say “You can use either gate” if there are two gates and anyone can choose one. Use a singular noun after either in this pattern. Say either of them when you are speaking about two things you already named.\n\nUse neither to rule out the two options together. “Neither gate is open” means the first gate is closed and the second gate is closed. Neither already gives a negative meaning, so use is open here. In these exercises, use the singular form is after neither plus a singular noun.",
+    "contrast_text": "“Both lockers are free” makes a statement about the two lockers. “Either locker is fine” gives a free choice. “Neither locker is free” rules out the two lockers.",
+    "common_error_pattern": "After both, use a plural noun in “both seats”. After either or neither, use a singular noun in “either seat” or “neither seat”.",
+    "examples": [
+      {
+        "bad": "Both ticket is valid.",
+        "good": "Both tickets are valid."
+      },
+      {
+        "bad": "You can choose either routes.",
+        "good": "You can choose either route."
+      },
+      {
+        "bad": "Neither ticket are valid.",
+        "good": "Neither ticket is valid."
+      },
+      {
+        "bad": "Both of they have a blue cover.",
+        "good": "Both of them have a blue cover."
+      }
+    ],
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "Door A opens at nine and door B opens at nine. ___ doors open at nine.",
+      "instructions": "Choose both, either or neither. Write only the missing word.",
+      "accepted_answers": [
+        "Both"
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "You want just one ticket. The upstairs ticket and the downstairs ticket cost the same. You can choose ___ ticket.",
+      "instructions": "Choose both, either or neither. Use the word that gives a free choice.",
+      "accepted_answers": [
+        "either"
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The first locker is full and the second locker is full. ___ locker is free.",
+      "instructions": "Choose both, either or neither. Write only the missing word.",
+      "accepted_answers": [
+        "Neither"
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "You need just one seat, and the two seats by the window are free. You can sit in ___ of them.",
+      "instructions": "Choose both, either or neither. Use the word that gives a free choice.",
+      "accepted_answers": [
+        "either"
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The two maps show the library. You can see it on ___ of them.",
+      "instructions": "Choose both, either or neither. Use the word that refers to the two maps together.",
+      "accepted_answers": [
+        "both"
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "You can use either entrances.",
+      "instructions": "Keep either. Change only the noun after it.",
+      "accepted_answers": [
+        "You can use either entrance."
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "Neither vending machine are working.",
+      "instructions": "Keep the singular noun and the form working. Change only the form of be.",
+      "accepted_answers": [
+        "Neither vending machine is working."
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "Ava has a day pass. Leon has a day pass too.",
+      "instructions": "Rewrite as one sentence. Start with “Both of them” and use the ending “a day pass”. Keep have as the main verb.",
+      "accepted_answers": [
+        "Both of them have a day pass."
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "The red kiosk is closed and the green kiosk is closed.",
+      "instructions": "Use neither and the singular noun kiosk to say that no kiosk is open. Begin with “Neither kiosk” and end with “open”.",
+      "accepted_answers": [
+        "Neither kiosk is open."
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the words in order",
+      "prompt_text": "cash. / accept / Both / machines",
+      "instructions": "Use every tile once. Begin with Both and end with the tile that includes the period.",
+      "accepted_answers": [
+        "Both machines accept cash."
+      ],
+      "target_skill_key": "grammar.both-either-neither",
+      "status": "published"
+    }
+  ]
+}

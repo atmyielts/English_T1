@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "a1-at-a-pet-shelter",
+    "level": "A1",
+    "topic": "pet shelter",
+    "title": "At a pet shelter",
+    "description": "Name common pets and things used to care for them. Use simple words to say what you do when you visit a shelter.",
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "word": "pet",
+      "part_of_speech": "noun",
+      "definition": "An animal that lives with people and that they look after.",
+      "example": "Is this animal your pet?",
+      "translation_ru": "домашний питомец",
+      "translation_uz": "uy hayvoni",
+      "collocations": [
+        "a family pet",
+        "look after a pet"
+      ]
+    },
+    {
+      "word": "dog",
+      "part_of_speech": "noun",
+      "definition": "An animal that can bark and that many people keep as a pet.",
+      "example": "The dog is waiting by the gate.",
+      "translation_ru": "собака",
+      "translation_uz": "it",
+      "collocations": [
+        "a big dog",
+        "take the dog for a walk"
+      ]
+    },
+    {
+      "word": "cat",
+      "part_of_speech": "noun",
+      "definition": "A small animal with a tail and whiskers that can make a meow sound.",
+      "example": "The cat is asleep in the sun.",
+      "translation_ru": "кошка",
+      "translation_uz": "mushuk",
+      "collocations": [
+        "a black cat",
+        "a cat meows"
+      ]
+    },
+    {
+      "word": "tail",
+      "part_of_speech": "noun",
+      "definition": "A part that sticks out from the back of an animal’s body.",
+      "example": "The dog moves its tail from side to side.",
+      "translation_ru": "хвост",
+      "translation_uz": "dum",
+      "collocations": [
+        "a long tail",
+        "wag its tail"
+      ]
+    },
+    {
+      "word": "fur",
+      "part_of_speech": "noun",
+      "definition": "The thick, soft hair that covers some animals.",
+      "example": "This rabbit has soft brown fur.",
+      "translation_ru": "мех, шерсть на теле животного",
+      "translation_uz": "hayvon juni",
+      "collocations": [
+        "soft fur",
+        "thick fur"
+      ]
+    },
+    {
+      "word": "paw",
+      "part_of_speech": "noun",
+      "definition": "A foot of an animal such as a dog or cat.",
+      "example": "The cat lifts one paw before it moves.",
+      "translation_ru": "лапа",
+      "translation_uz": "hayvon panjasi",
+      "collocations": [
+        "a front paw",
+        "lift a paw"
+      ]
+    },
+    {
+      "word": "bowl",
+      "part_of_speech": "noun",
+      "definition": "A round, open container you can put food or water in.",
+      "example": "There is fresh water in the blue bowl.",
+      "translation_ru": "миска",
+      "translation_uz": "kosa",
+      "collocations": [
+        "a water bowl",
+        "fill a bowl"
+      ]
+    },
+    {
+      "word": "leash",
+      "part_of_speech": "noun",
+      "definition": "A long strap that you hold when you walk a dog.",
+      "example": "Please put the leash on before we go out with the dog.",
+      "translation_ru": "поводок",
+      "translation_uz": "it yetaklash uchun tasma",
+      "collocations": [
+        "a short leash",
+        "walk a dog on a leash"
+      ]
+    },
+    {
+      "word": "cage",
+      "part_of_speech": "noun",
+      "definition": "A space with bars that keeps an animal inside.",
+      "example": "The shelter worker opens the cage to change the rabbit’s water.",
+      "translation_ru": "клетка",
+      "translation_uz": "qafas",
+      "collocations": [
+        "inside a cage",
+        "open the cage"
+      ]
+    },
+    {
+      "word": "brush",
+      "part_of_speech": "noun",
+      "definition": "A tool with many short, stiff hairs, used here to make an animal’s fur neat.",
+      "example": "Use this soft brush on the dog’s fur.",
+      "translation_ru": "щётка для шерсти",
+      "translation_uz": "jun tarash choʻtkasi",
+      "collocations": [
+        "a soft brush",
+        "use a brush"
+      ]
+    },
+    {
+      "word": "feed",
+      "part_of_speech": "verb",
+      "definition": "To give food to a person or an animal.",
+      "example": "I feed the cats in the morning.",
+      "translation_ru": "кормить",
+      "translation_uz": "ovqat bermoq",
+      "collocations": [
+        "feed the cats",
+        "feed an animal"
+      ]
+    },
+    {
+      "word": "carry",
+      "part_of_speech": "verb",
+      "definition": "To hold something and take it from one place to another.",
+      "example": "Can you help me carry this bag of dog food?",
+      "translation_ru": "нести",
+      "translation_uz": "koʻtarib olib bormoq",
+      "collocations": [
+        "carry a bag",
+        "carry a box"
+      ]
+    },
+    {
+      "word": "pet bed",
+      "part_of_speech": "noun phrase",
+      "definition": "A small, soft place for a pet to sleep.",
+      "example": "The dog likes to sleep in its pet bed.",
+      "translation_ru": "лежанка для питомца",
+      "translation_uz": "uy hayvoni uchun yotoqcha",
+      "collocations": [
+        "a soft pet bed",
+        "wash a pet bed"
+      ]
+    },
+    {
+      "word": "collar",
+      "part_of_speech": "noun",
+      "definition": "A band that a pet wears around its neck.",
+      "example": "The dog has a red collar with its name on it.",
+      "translation_ru": "ошейник",
+      "translation_uz": "boʻyinbogʻ",
+      "collocations": [
+        "wear a collar",
+        "a dog collar"
+      ]
+    }
+  ]
+}

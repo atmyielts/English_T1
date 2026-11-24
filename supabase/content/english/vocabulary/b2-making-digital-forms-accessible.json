@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "b2-making-digital-forms-accessible",
+    "level": "B2",
+    "topic": "digital accessibility",
+    "title": "Making digital forms accessible",
+    "description": "Build vocabulary for testing whether people can read, understand and complete a digital form. Describe changes without assuming every user uses a mouse or can see the screen.",
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "word": "screen reader",
+      "part_of_speech": "noun phrase",
+      "definition": "Software that presents on-screen text and controls through speech or Braille.",
+      "example": "The tester used a screen reader to check whether each form button had a useful name.",
+      "translation_ru": "программа экранного доступа, озвучивающая интерфейс или выводящая его на дисплей Брайля",
+      "translation_uz": "ekrandagi matn va boshqaruv elementlarini ovoz yoki Brayl orqali yetkazadigan dastur",
+      "collocations": [
+        "use a screen reader",
+        "test with a screen reader"
+      ]
+    },
+    {
+      "word": "high contrast",
+      "part_of_speech": "noun phrase",
+      "definition": "A strong difference between light and dark areas that makes text or objects easier to distinguish.",
+      "example": "The form uses high contrast so the labels stand out against the background.",
+      "translation_ru": "высокая контрастность",
+      "translation_uz": "yuqori kontrast",
+      "collocations": [
+        "use high contrast",
+        "a high-contrast setting"
+      ]
+    },
+    {
+      "word": "alternative text",
+      "part_of_speech": "noun phrase",
+      "definition": "A written description that gives users the important meaning of an image when they cannot see it.",
+      "example": "We added alternative text to explain what the diagram shows about the waiting area.",
+      "translation_ru": "альтернативный текст, описывающий изображение",
+      "translation_uz": "tasvirning muhim mazmunini tushuntiradigan muqobil matn",
+      "collocations": [
+        "write alternative text",
+        "add alternative text"
+      ]
+    },
+    {
+      "word": "transcript",
+      "part_of_speech": "noun",
+      "definition": "A written record of the words spoken in a recording or event.",
+      "example": "The video page links to a transcript of the instructions.",
+      "translation_ru": "расшифровка записи или выступления",
+      "translation_uz": "yozuvdagi yoki tadbirdagi nutqning yozma matni",
+      "collocations": [
+        "read a transcript",
+        "provide a transcript"
+      ]
+    },
+    {
+      "word": "readable",
+      "part_of_speech": "adjective",
+      "definition": "Clear and easy to read.",
+      "example": "The date stays readable when I make the text larger on my phone.",
+      "translation_ru": "разборчивый, удобный для чтения",
+      "translation_uz": "oʻqishga qulay, ravshan",
+      "collocations": [
+        "remain readable",
+        "make text readable"
+      ]
+    },
+    {
+      "word": "navigation",
+      "part_of_speech": "noun",
+      "definition": "The process or controls for moving between parts of a site or app.",
+      "example": "The team simplified the navigation so a learner can reach the help page in one step.",
+      "translation_ru": "навигация по сайту или приложению",
+      "translation_uz": "sayt yoki ilova boʻlimlari boʻylab oʻtish",
+      "collocations": [
+        "simplify navigation",
+        "keyboard navigation"
+      ]
+    },
+    {
+      "word": "barrier",
+      "part_of_speech": "noun",
+      "definition": "Something that prevents people from using a service or taking part.",
+      "example": "A required phone call can be a barrier for someone who cannot hear the automated instructions.",
+      "translation_ru": "доступу мешающее препятствие",
+      "translation_uz": "xizmatdan foydalanishga yoki ishtirok etishga toʻsqinlik qiladigan holat",
+      "collocations": [
+        "remove a barrier",
+        "a barrier to access"
+      ]
+    },
+    {
+      "word": "adjustable",
+      "part_of_speech": "adjective",
+      "definition": "Able to be changed to suit a person’s needs or preferences.",
+      "example": "The adjustable line spacing helped Sam read the form more comfortably.",
+      "translation_ru": "регулируемый, настраиваемый",
+      "translation_uz": "sozlash mumkin boʻlgan",
+      "collocations": [
+        "adjustable line spacing",
+        "an adjustable setting"
+      ]
+    },
+    {
+      "word": "captioning",
+      "part_of_speech": "noun",
+      "definition": "The practice of showing spoken words and important sounds as text at the same time as a video or live event.",
+      "example": "The workshop recording uses captioning to identify speakers and show when the alarm rings.",
+      "translation_ru": "добавление синхронных субтитров с речью и важными звуками",
+      "translation_uz": "nutq va muhim tovushlarni video bilan bir vaqtda matnda koʻrsatish",
+      "collocations": [
+        "live captioning",
+        "provide captioning"
+      ]
+    },
+    {
+      "word": "tab order",
+      "part_of_speech": "noun phrase",
+      "definition": "The sequence in which the focus moves through controls when a user presses the Tab key.",
+      "example": "The submit button comes after the last field in the tab order.",
+      "translation_ru": "порядок перехода между элементами по клавише Tab",
+      "translation_uz": "Tab tugmasi bosilganda fokusning elementlar boʻylab oʻtish tartibi",
+      "collocations": [
+        "check the tab order",
+        "logical tab order"
+      ]
+    },
+    {
+      "word": "keyboard shortcut",
+      "part_of_speech": "noun phrase",
+      "definition": "A key or combination of keys that performs a particular action quickly.",
+      "example": "The guide lists a keyboard shortcut for opening the search box.",
+      "translation_ru": "сочетание клавиш для быстрого выполнения команды",
+      "translation_uz": "amalni tez bajaradigan klavish yoki klavishlar birikmasi",
+      "collocations": [
+        "use a keyboard shortcut",
+        "learn a keyboard shortcut"
+      ]
+    },
+    {
+      "word": "assistive technology",
+      "part_of_speech": "noun phrase",
+      "definition": "Equipment or software that helps a person with a disability carry out a task.",
+      "example": "A tester used assistive technology to select form options with a switch instead of a mouse.",
+      "translation_ru": "ассистивные технологии для людей с инвалидностью",
+      "translation_uz": "nogironligi boʻlgan kishilarga vazifani bajarishda yordam beradigan texnologiya",
+      "collocations": [
+        "use assistive technology",
+        "support assistive technology"
+      ]
+    },
+    {
+      "word": "focus indicator",
+      "part_of_speech": "noun phrase",
+      "definition": "A visible marker that shows which on-screen control will respond to keyboard input.",
+      "example": "A thick blue focus indicator appears around the button I have reached with Tab.",
+      "translation_ru": "видимый указатель фокуса на активном элементе интерфейса",
+      "translation_uz": "klaviatura orqali boshqarilayotgan elementni koʻrsatadigan koʻrinadigan belgi",
+      "collocations": [
+        "show a focus indicator",
+        "a visible focus indicator"
+      ]
+    },
+    {
+      "word": "plain language",
+      "part_of_speech": "noun phrase",
+      "definition": "Clear, direct wording that the intended reader can understand without extra explanation.",
+      "example": "The team rewrote the error message in plain language and explained how to fix the date.",
+      "translation_ru": "простой и понятный язык",
+      "translation_uz": "oʻquvchiga tushunarli, sodda va aniq til",
+      "collocations": [
+        "use plain language",
+        "explain in plain language"
+      ]
+    }
+  ]
+}

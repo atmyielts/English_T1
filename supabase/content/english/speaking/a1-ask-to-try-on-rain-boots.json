@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "a1-ask-to-try-on-rain-boots",
+    "title": "Ask to Try On Rain Boots",
+    "level": "A1",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 25,
+    "prompt_text": "You are in a shop. You want to try on the short green rain boots. You wear size 38. Ask the shop assistant for that size, ask where you can sit to try the boots on, and ask the price.",
+    "target_grammar": "Can I for a request; in size 38; how much are for prices.",
+    "fluency_objective": "Make one short request at a time. Pause after the size so the assistant can hear it.",
+    "pronunciation_objective": "Stress green and size 38. Say thirty-eight with both parts clear.",
+    "target_vocabulary": [
+      "rain boots",
+      "size",
+      "short",
+      "green",
+      "try on",
+      "sit"
+    ],
+    "sort_order": 300,
+    "cues": [
+      {
+        "text": "Say which boots you want in size 38.",
+        "keywords": [
+          "green rain boots",
+          "short green boots",
+          "size thirty-eight",
+          "size 38"
+        ]
+      },
+      {
+        "text": "Ask where to sit to try them on.",
+        "keywords": [
+          "where can i sit",
+          "sit to try",
+          "try these on"
+        ]
+      },
+      {
+        "text": "Ask how much the boots cost.",
+        "keywords": [
+          "how much",
+          "the price",
+          "do they cost"
+        ]
+      }
+    ],
+    "model_opening": "Hello.",
+    "model_answer": "Hello. Can I try on the short green rain boots in size thirty-eight, please? Where can I sit to try them on? And how much are they? Thank you."
+  },
+  "children": []
+}
