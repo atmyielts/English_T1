@@ -84,19 +84,19 @@
         "type": "gap",
         "skill": "reading.detail",
         "prompt": "Complete the sentences with words from the passage.",
-        "text": "Full bags were first placed on a ___. In the second week food went into a separate ___.",
+        "text": "Full bags were first placed on a ___. In the second week the team put out two labelled ___.",
         "answers": [
           [
             "scale"
           ],
           [
-            "container"
+            "containers"
           ]
         ],
         "word_bank": [
           "scale",
           "bottles",
-          "container",
+          "containers",
           "fruit"
         ],
         "explanation": "The first paragraph names the scale. The second explains the new containers for separate waste."
