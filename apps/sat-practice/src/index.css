@@ -292,6 +292,8 @@ a {
   padding: 22px;
 }
 
+.plan-guide-summary { cursor: pointer; min-height: 44px; padding-block: 10px; font-weight: 600; }
+
 .section-head {
   display: flex;
   justify-content: space-between;

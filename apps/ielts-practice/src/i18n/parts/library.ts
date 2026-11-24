@@ -27,6 +27,14 @@ const en = {
   'library.incorrect': 'Incorrect.',
   'library.tryAgain': 'Try this set again',
   'library.partTwoTiming': 'Take one minute to prepare. You may make notes. Then speak for one to two minutes.',
+  'library.calendarTitle': 'Eight-week study plan',
+  'library.calendarIntro': 'Work through five sessions a week, about 30–40 minutes each. Choose Academic or General Training to get the right Reading and Writing tasks.',
+  'library.calendarWeekLabel': 'Choose a week',
+  'library.calendarWeek': 'Week {number}',
+  'library.calendarDay': 'Session {number}',
+  'library.calendarReview': '{done} of {total} sessions reviewed this week',
+  'library.calendarCheck': 'Take four minutes to recheck one Reading answer and say one Speaking answer again with a clearer example.',
+  'library.calendarUnavailable': 'The study plan is unavailable for this test type. You can still open sets from the library.',
 };
 
 const uz: Record<keyof typeof en, string> = {
@@ -58,6 +66,14 @@ const uz: Record<keyof typeof en, string> = {
   'library.incorrect': 'Noto‘g‘ri.',
   'library.tryAgain': 'To‘plamni qayta ishlash',
   'library.partTwoTiming': 'Tayyorgarlik uchun bir daqiqa ajrating. Qayd yozib olishingiz mumkin. Keyin bir yoki ikki daqiqa gapiring.',
+  'library.calendarTitle': 'Sakkiz haftalik o‘quv rejasi',
+  'library.calendarIntro': 'Har hafta 30–40 daqiqadan beshta mashq bajaring. Mos Reading va Writing topshiriqlari uchun Academic yoki General Training turini tanlang.',
+  'library.calendarWeekLabel': 'Haftani tanlang',
+  'library.calendarWeek': '{number}-hafta',
+  'library.calendarDay': '{number}-mashg‘ulot',
+  'library.calendarReview': 'Bu hafta {total} ta mashg‘ulotdan {done} tasi ko‘rib chiqildi',
+  'library.calendarCheck': 'To‘rt daqiqada bitta Reading javobini qayta tekshiring va bitta Speaking javobini aniqroq misol bilan yana ayting.',
+  'library.calendarUnavailable': 'Bu test turi uchun o‘quv rejasi hozircha mavjud emas. Kutubxonadan mashqlarni ochishingiz mumkin.',
 };
 
 const ru: Record<keyof typeof en, string> = {
@@ -89,6 +105,14 @@ const ru: Record<keyof typeof en, string> = {
   'library.incorrect': 'Неверно.',
   'library.tryAgain': 'Пройти комплект ещё раз',
   'library.partTwoTiming': 'Подготовьтесь за одну минуту. Можно делать заметки. Затем говорите одну-две минуты.',
+  'library.calendarTitle': 'План подготовки на восемь недель',
+  'library.calendarIntro': 'Занимайтесь пять раз в неделю по 30–40 минут. Выберите Academic или General Training, чтобы получить подходящие задания Reading и Writing.',
+  'library.calendarWeekLabel': 'Выберите неделю',
+  'library.calendarWeek': 'Неделя {number}',
+  'library.calendarDay': 'Занятие {number}',
+  'library.calendarReview': 'На этой неделе разобрано занятий: {done} из {total}',
+  'library.calendarCheck': 'За четыре минуты перепроверьте один ответ Reading и повторите один ответ Speaking, добавив более ясный пример.',
+  'library.calendarUnavailable': 'План подготовки для этого типа теста пока недоступен. Можно открыть задания из библиотеки.',
 };
 
 export const library = { en, uz, ru };

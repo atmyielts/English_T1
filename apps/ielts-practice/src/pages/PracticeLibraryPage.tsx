@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { PracticeShell } from '../components/PracticeShell';
+import { LibraryStudyCalendar } from '../components/LibraryStudyCalendar';
 import { useAppT } from '../i18n';
 import { getPracticeLibrary, getPracticeLibrarySet, reviewPracticeLibrarySet, type LibraryAnswer, type LibraryContent, type LibraryReview, type LibrarySet } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
@@ -24,6 +25,7 @@ export function PracticeLibraryPage() {
   const selectedProgress = params.get('progress');
   const progress = selectedProgress === 'new' || selectedProgress === 'reviewed' ? selectedProgress : 'any';
   const query = params.size ? `?${params}` : '';
+  const calendar = params.get('plan') === '8-weeks';
 
   const changeFilter = (name: string, value: string, defaultValue: string) => {
     setShown({});
@@ -52,13 +54,16 @@ export function PracticeLibraryPage() {
 
   return <PracticeShell><main className="practice-library">
     <header className="glass dashboard-card">
-      {slug ? <Link to={`/library${query}`}>{t('library.title')}</Link> : null}
-      <h1>{current?.slug === slug && current ? current.title : t('library.title')}</h1>
-      {!slug ? <p>{t('library.intro')}</p> : null}
+      {slug ? <Link to={`/library${query}`}>{t(calendar ? 'library.calendarTitle' : 'library.title')}</Link> : null}
+      {!slug && calendar ? <Link to={`/library?track=${track === 'general' ? 'general' : 'academic'}`}>{t('library.title')}</Link> : null}
+      <h1>{current?.slug === slug && current ? current.title : t(calendar ? 'library.calendarTitle' : 'library.title')}</h1>
+      {!slug ? <p>{t(calendar ? 'library.calendarIntro' : 'library.intro')}</p> : null}
+      {!slug && !calendar ? <Link className="btn ghost" to={`/library?plan=8-weeks&track=${track === 'general' ? 'general' : 'academic'}`}>{t('library.calendarTitle')}</Link> : null}
     </header>
     {loading ? <p role="status">{t('shell.loadingPage')}</p> : null}
     {error ? <div className="glass dashboard-card" role="alert"><p>{t('common.error.generic')}</p><button type="button" className="btn ghost" onClick={() => setRetry(n => n + 1)}>{t('common.retry')}</button></div> : null}
-    {!slug && !loading && !error ? <>
+    {!slug && !loading && !error && calendar ? <LibraryStudyCalendar sets={sets} /> : null}
+    {!slug && !loading && !error && !calendar ? <>
       <div className="glass dashboard-card library-filters">
         <label>{t('library.track')}
           <select value={track} onChange={event => changeFilter('track', event.currentTarget.value, 'both')}>

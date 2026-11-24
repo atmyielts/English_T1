@@ -5,6 +5,7 @@ import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/pl
 import { useAccess } from '../lib/useAccess';
 import { Toefl2026Results } from '../features/toefl2026/Toefl2026Results';
 import { toefl2026From } from '../features/toefl2026/resultShape';
+import { isRecord } from '../features/toefl2026/tasks';
 import { useAppT } from '../i18n';
 
 const asNumber = (value: unknown): number | null => {
@@ -165,7 +166,9 @@ export const SessionResultsPage: React.FC = () => {
   const hasWriting = Object.values(result?.sections ?? {}).some((s: any) => String((s as any)?.type ?? '').toLowerCase() === 'writing');
   const isCandidate = String((data?.session?.metadata as any)?.exam_mode ?? '') === 'token';
   const isAdminSessionRoute = location.pathname.startsWith('/admin/session/');
-  const backPath = isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : '/dashboard';
+  const metadata = data?.session?.metadata;
+  const fromCalendar = !isCandidate && !isAdminSessionRoute && isRecord(metadata) && metadata.practice_calendar === '8-weeks';
+  const backPath = isCandidate ? '/' : isAdminSessionRoute ? '/admin/tests' : fromCalendar ? '/practice?plan=8-weeks' : '/dashboard';
 
   useEffect(() => {
     if (isCandidate) localStorage.removeItem('toefl:candidate_session');
@@ -275,7 +278,8 @@ export const SessionResultsPage: React.FC = () => {
   if (data && sessionId && accessToken && toefl2026From(data)) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Toefl2026Results sessionId={sessionId} accessToken={accessToken} initial={data} backPath={backPath} isCandidate={isCandidate} />
+        <Toefl2026Results sessionId={sessionId} accessToken={accessToken} initial={data} backPath={backPath}
+          isCandidate={isCandidate} backLabel={fromCalendar ? t('practice.calendarTitle') : undefined} />
       </div>
     );
   }

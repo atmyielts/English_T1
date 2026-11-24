@@ -3767,5 +3767,8 @@ audio.practice-audio {
 .practice-library .library-sets { list-style: none; padding: 0; }
 .practice-library .library-sets li { display: grid; gap: 0.25rem; padding: 0.75rem 0; border-bottom: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 16%, transparent); }
 .practice-library .library-sets li span { font-size: 0.875rem; }
+.practice-library .library-study-days { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.practice-library .library-study-days > li { padding: 1rem; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 1rem; }
+.practice-library .library-study-days h3 { margin: 0; }
 .practice-library .library-table { overflow: auto; margin-block: 1rem; }
 .practice-library td, .practice-library th { padding: 0.5rem; text-align: left; }

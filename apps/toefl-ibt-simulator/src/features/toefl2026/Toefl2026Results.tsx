@@ -47,8 +47,9 @@ export const Toefl2026Results: React.FC<{
   accessToken: string;
   initial: ScoreSessionResponse;
   backPath: string;
+  backLabel?: string;
   isCandidate: boolean;
-}> = ({ sessionId, accessToken, initial, backPath, isCandidate }) => {
+}> = ({ sessionId, accessToken, initial, backPath, isCandidate, backLabel }) => {
   const t = useAppT();
   const { date } = useI18n();
   const [data, setData] = useState<ScoreSessionResponse>(initial);
@@ -242,7 +243,7 @@ export const Toefl2026Results: React.FC<{
       ) : null}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginTop: '1.5rem' }}>
-        <Link className="t26-button" to={backPath} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>{isCandidate ? t('common.back') : t('results.back')}</Link>
+        <Link className="t26-button" to={backPath} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>{backLabel ?? (isCandidate ? t('common.back') : t('results.back'))}</Link>
         {!isCandidate ? <Link className="t26-button-secondary" to={`/review/${sessionId}`} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>{t('results.review')}</Link> : null}
       </div>
       {typeof computedAt === 'string' ? <p className="t26-muted" style={{ marginTop: '1rem' }}>{t('results.computed', { date: date(computedAt) })}</p> : null}

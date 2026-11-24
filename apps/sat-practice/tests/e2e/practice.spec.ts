@@ -196,6 +196,9 @@ test('weekly plan shows progress and starts a plan item on the server', async ({
   await signIn(page); await mock(page, state);
   await page.goto('/plan');
   await expect(page.getByRole('heading', { name: 'Your weekly SAT plan' })).toBeVisible();
+  await page.getByText('A study routine for eight weeks', { exact: true }).click();
+  await expect(page.getByText(/Weeks 7–8/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open unseen questions' })).toHaveAttribute('href', '/bank?status=unseen');
   await expect(page.getByText('1 of 3 tasks done')).toBeVisible();
   await expect(page.getByText('Nothing to review right now, so this task is marked done.')).toBeVisible();
   await expect(page.getByText('Math module, timed')).toBeVisible();

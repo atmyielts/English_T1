@@ -54,6 +54,21 @@ export const PlanPage = () => {
         {plan.notice ? <div className="alert" role="status">{t('plan.nothingDue')}</div> : null}
         {week?.goals_set === false ? <div className="alert" role="status">{t('dashboard.setGoal.body')} <Link to="/onboarding">{t('dashboard.setGoal.cta')}</Link></div> : null}
         {!week && !error ? <PageLoading label={t('plan.loading')} /> : null}
+        <details className="panel">
+          <summary className="plan-guide-summary">{t('plan.eightWeeksTitle')}</summary>
+          <p>{t('plan.eightWeeksPace')}</p>
+          <ol>
+            <li>{t('plan.eightWeeksStart')}</li>
+            <li>{t('plan.eightWeeksDrill')}</li>
+            <li>{t('plan.eightWeeksTime')}</li>
+            <li>{t('plan.eightWeeksReview')}</li>
+          </ol>
+          <div className="row-actions">
+            <Link className="btn ghost compact" to="/onboarding">{t('plan.changeGoal')}</Link>
+            <Link className="btn ghost compact" to="/bank?status=unseen">{t('plan.eightWeeksUnseen')}</Link>
+            <Link className="btn ghost compact" to="/modules">{t('plan.eightWeeksModules')}</Link>
+          </div>
+        </details>
         {week ? <section className="panel">
           <p>{t('plan.progress', { done: week.progress.completed, total: week.progress.total, minutes: week.progress.minutes_completed, planned: week.progress.minutes_planned })}</p>
           <div className="progress-track" role="progressbar" aria-label={t('plan.title')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><div className="progress-fill" style={{ width: `${pct}%` }} /></div>
