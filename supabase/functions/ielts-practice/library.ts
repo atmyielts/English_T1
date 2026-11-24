@@ -1,10 +1,22 @@
 type JsonObject = Record<string, unknown>;
 
-export function checkLibraryReading(questions: unknown, answers: unknown) {
-  if (!Array.isArray(questions) || !Array.isArray(answers) || answers.length !== questions.length) return null;
-  if (answers.some(answer => !Number.isInteger(answer) || answer < 0 || answer > 3)) return null;
+const normaliseAnswer = (value: string) => value.normalize('NFC').trim().replace(/[‘’]/g, "'").replace(/\s+/g, ' ').toLowerCase();
+
+export function checkLibraryReading(questions: unknown, answers: unknown, learnerQuestions: unknown) {
+  if (!Array.isArray(questions) || !questions.length || !Array.isArray(answers) || answers.length !== questions.length
+    || !Array.isArray(learnerQuestions) || learnerQuestions.length !== questions.length) return null;
+  const valid = answers.every((answer: unknown, index) => {
+    const options = learnerQuestions[index]?.options;
+    if (Array.isArray(options)) {
+      return typeof answer === 'number' && Number.isInteger(answer) && answer >= 0 && answer < options.length;
+    }
+    return typeof answer === 'string' && answer.length <= 80 && normaliseAnswer(answer) !== '';
+  });
+  if (!valid) return null;
   const items = questions.map((question: JsonObject, index) => ({
-    correct: answers[index] === question.key,
+    correct: typeof answers[index] === 'string' && Array.isArray(question.key)
+      ? question.key.some(key => typeof key === 'string' && normaliseAnswer(answers[index]) === normaliseAnswer(key))
+      : answers[index] === question.key,
     key: question.key,
     explanation: question.explanation,
     evidence: question.evidence,
@@ -14,27 +26,34 @@ export function checkLibraryReading(questions: unknown, answers: unknown) {
 
 const inventory = 'slug,skill,track,title,minutes';
 
-export async function practiceLibraryRequest(db: any, method: string, route: string, body?: JsonObject) {
+export async function practiceLibraryRequest(db: any, userId: string, method: string, route: string, body?: JsonObject) {
   const resource = () => db.from('ielts_practice_library_sets').select(inventory).eq('is_published', true);
   if (method === 'GET' && route === '/library') {
-    const { data, error } = await resource().order('display_order').order('slug').limit(200);
-    if (error) throw new Error('Failed to load the IELTS practice library');
-    return { status: 200, body: { sets: data ?? [] } };
+    const [sets, progress] = await Promise.all([
+      resource().order('display_order').order('slug').limit(200),
+      db.from('ielts_practice_library_progress').select('set_slug,reviewed_at,best_correct,question_total').eq('user_id', userId),
+    ]);
+    if (sets.error || progress.error) throw new Error('Failed to load the IELTS practice library');
+    const bySlug = new Map((progress.data ?? []).map(({ set_slug, ...rest }: { set_slug: string }) => [set_slug, rest]));
+    return { status: 200, body: { sets: ((sets.data ?? []) as { slug: string }[]).map(set => ({ ...set, progress: bySlug.get(set.slug) ?? null })) } };
   }
   const match = /^\/library\/([a-z0-9]+(?:-[a-z0-9]+)*)(\/review)?$/.exec(route);
   if (!match || match[1].length > 100 || (match[2] ? method !== 'POST' : method !== 'GET')) {
     return { status: 404, body: { error: 'Practice set not found' } };
   }
   const { data, error } = await db.from('ielts_practice_library_sets')
-    .select(`${inventory},${match[2] ? 'review_content' : 'learner_content'}`)
+    .select(`${inventory},learner_content${match[2] ? ',review_content' : ''}`)
     .eq('is_published', true).eq('slug', match[1]).maybeSingle();
   if (error) throw new Error('Failed to load the IELTS practice set');
   if (!data) return { status: 404, body: { error: 'Practice set not found' } };
   if (!match[2]) return { status: 200, body: { set: data } };
-  if (data.skill === 'reading') {
-    const review = checkLibraryReading(data.review_content.questions, body?.answers);
-    if (!review) return { status: 422, body: { error: 'Answer each question before checking the set.' } };
-    return { status: 200, body: { review } };
-  }
-  return { status: 200, body: { review: data.review_content } };
+  const graded = data.skill === 'reading'
+    ? checkLibraryReading(data.review_content.questions, body?.answers, data.learner_content.questions)
+    : null;
+  if (data.skill === 'reading' && !graded) return { status: 422, body: { error: 'Answer each question before checking the set.' } };
+  const { error: writeError } = await db.rpc('record_ielts_practice_library_review', {
+    p_user_id: userId, p_set_slug: match[1], p_correct: graded?.score ?? null, p_total: graded?.total ?? null,
+  });
+  if (writeError) throw new Error('Failed to record IELTS practice progress');
+  return { status: 200, body: { review: graded ?? data.review_content } };
 }

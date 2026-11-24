@@ -1,17 +1,16 @@
 {
   "schemaVersion": 1,
-  "releaseId": "exam-practice-depth",
+  "releaseId": "exam-practice-catalogue-depth",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": ["ielts-practice", "sat-practice", "toefl-ibt-simulator"],
-  "migrations": ["20261124120000_ielts_practice_library.sql"],
-  "edgeFunctions": ["ielts-practice", "sat-practice"],
+  "frontends": ["ielts-practice", "toefl-ibt-simulator"],
+  "migrations": ["20261124130000_ielts_practice_library_progress.sql"],
+  "edgeFunctions": ["ielts-practice"],
   "workers": [],
-  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "IELTS_PRACTICE_SCORE_SESSION_FUNCTION", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "OPENROUTER_APP_NAME", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
+  "requiredSecrets": ["IELTS_PRACTICE_SCORE_SESSION_FUNCTION", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "OPENROUTER_APP_NAME", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER"],
   "rolloutOrder": [
     "pages",
-    "migration:20261124120000_ielts_practice_library.sql",
-    "secret:AI_ADDON_PRODUCT_ID",
+    "migration:20261124130000_ielts_practice_library_progress.sql",
     "secret:IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
     "secret:OPENAI_API_KEY",
     "secret:OPENROUTER_API_KEY",
@@ -19,27 +18,24 @@
     "secret:OPENROUTER_BASE_URL",
     "secret:OPENROUTER_MODEL",
     "secret:OPENROUTER_REFERER",
-    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
     "function:ielts-practice",
-    "function:sat-practice",
-    "content:authorized-private-practice-supplements",
-    "verify:learner-access"
+    "content:verified-private-practice-supplements",
+    "verify:paid-learner-access"
   ],
   "manualFollowUps": [
-    "Run supabase db push --linked with only the IELTS Practice library migration in the release scope.",
-    "Run supabase functions deploy ielts-practice with its existing JWT setting.",
-    "Run supabase functions deploy sat-practice with its existing JWT setting.",
-    "Import the verified private content packages after their learner routes are deployed.",
-    "Preserve the existing Edge settings. The existing reconfiguration commands, if ever needed, are supabase secrets set AI_ADDON_PRODUCT_ID=, supabase secrets set IELTS_PRACTICE_SCORE_SESSION_FUNCTION=, supabase secrets set OPENAI_API_KEY=, supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_APP_NAME=, supabase secrets set OPENROUTER_BASE_URL=, supabase secrets set OPENROUTER_MODEL=, supabase secrets set OPENROUTER_REFERER=, and supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=."
+    "Run supabase db push --linked with only the IELTS library progress migration in the release scope.",
+    "Run supabase functions deploy ielts-practice with its existing JWT and deployed media settings.",
+    "Preserve the existing Edge settings. Recovery commands, if needed, are supabase secrets set IELTS_PRACTICE_SCORE_SESSION_FUNCTION=<existing value>, supabase secrets set OPENAI_API_KEY=<existing value>, supabase secrets set OPENROUTER_API_KEY=<existing value>, supabase secrets set OPENROUTER_APP_NAME=<existing value>, supabase secrets set OPENROUTER_BASE_URL=<existing value>, supabase secrets set OPENROUTER_MODEL=<existing value>, and supabase secrets set OPENROUTER_REFERER=<existing value>.",
+    "Import the verified new content once the IELTS player can display typed Reading responses."
   ],
   "verification": [
-    "Verify counts and review actions for an exhausted SAT Unseen filter.",
-    "Verify IELTS reading submissions and feedback, and confirm the library never returns answer keys before submission.",
-    "Verify TOEFL focused practice can start individually and existing playable sections remain available."
+    "Verify that a paid IELTS learner can grade choices and typed responses, retry a set, and see the prior best score in the library.",
+    "Verify that TOEFL focused sets can be expanded and completed sets remain available.",
+    "Verify that paid learners can access the new private content, and the new Listening notices remain available without new audio."
   ],
   "rollback": {
-    "pages": "Restore the three previous Cloudflare Pages deployments.",
-    "edge": "Restore the prior IELTS and SAT Edge Function bundles with their original JWT verification settings.",
-    "content": "Unpublish the supplemental records by their release IDs if required. Keep the compatible IELTS table in place."
+    "pages": "Restore the prior IELTS Practice and TOEFL Pages deployments after hiding any new sets whose question format needs this release.",
+    "edge": "Restore the prior IELTS Practice Edge bundle with its existing JWT and media settings.",
+    "content": "Unpublish the affected supplement by its release IDs if necessary. Leave the additive progress table in place."
   }
 }

@@ -25,6 +25,8 @@ export const PracticePage: React.FC = () => {
   const [starting, setStarting] = useState<string | null>(null);
   const [experiences, setExperiences] = useState<ExperienceRow[]>([]);
   const [sectionsByExperience, setSectionsByExperience] = useState<Record<string, SectionRow[]>>({});
+  const [completed, setCompleted] = useState<Set<string> | null>(null);
+  const [expanded, setExpanded] = useState<Partial<Record<Toefl2026Task, boolean>>>({});
   const selectedRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -72,6 +74,24 @@ export const PracticePage: React.FC = () => {
   const legacy = useMemo(() => experiences.filter((e) => !is2026Metadata(e.metadata)), [experiences]);
 
   useEffect(() => {
+    let active = true;
+    setCompleted(null);
+    if (!userId || !banks.length) return;
+    void supabase.from('sessions').select('metadata').eq('user_id', userId)
+      .in('experience_id', banks.map(bank => bank.id)).eq('status', 'completed')
+      .eq('metadata->>mode', 'practice').then(({ data, error }) => {
+        if (!active || error) return;
+        const sectionIds = new Set<string>();
+        for (const row of data ?? []) {
+          const ids: unknown = row.metadata?.allowed_section_ids;
+          if (Array.isArray(ids) && ids.length === 1 && typeof ids[0] === 'string') sectionIds.add(ids[0]);
+        }
+        setCompleted(sectionIds);
+      });
+    return () => { active = false; };
+  }, [userId, banks]);
+
+  useEffect(() => {
     if (!loading && selectedTask) selectedRef.current?.scrollIntoView?.({ block: 'center' });
   }, [loading, selectedTask]);
 
@@ -97,6 +117,12 @@ export const PracticePage: React.FC = () => {
   const taskCard = (task: Toefl2026Task) => {
     const sets = bankSections.get(task) ?? [];
     const selected = task === selectedTask;
+    const focused = sets.filter(section => section.metadata?.practice_short_set === true);
+    const ordered = [...sets].sort((left, right) => {
+      const byType = Number(left.metadata?.practice_short_set === true) - Number(right.metadata?.practice_short_set === true);
+      return byType || Number(completed?.has(left.id) ?? false) - Number(completed?.has(right.id) ?? false);
+    });
+    const visible = expanded[task] ? ordered : ordered.slice(0, 4);
     return (
       <div
         key={task}
@@ -109,9 +135,12 @@ export const PracticePage: React.FC = () => {
         {selected ? <div className="text-xs font-semibold uppercase tracking-wider text-[#c2410c] mb-1">{t('practice.selected')}</div> : null}
         <h3 className="font-semibold text-[#0f172a] text-lg break-words">{t(`task.${task}` as AppKey)}</h3>
         <p className="text-sm text-[#475569] mt-1 break-words">{t(`task_desc.${task}` as AppKey)}</p>
-        {sets.length ? (
-          <ul className="mt-2 divide-y divide-[#151d2b]/12">
-            {sets.map(section => {
+        {sets.length ? <>
+          {focused.length > 0 ? <p className="mt-2 text-xs text-[#475569]">{completed
+            ? t('practice.focusedProgress', { complete: focused.filter(section => completed.has(section.id)).length, total: focused.length })
+            : t('practice.focusedCount', { count: focused.length })}</p> : null}
+          <ul id={`practice-sets-${task}`} className="mt-2 divide-y divide-[#151d2b]/12">
+            {visible.map(section => {
               const short = section.metadata?.practice_short_set === true;
               const minutes = Math.max(1, Math.round(Number(section.metadata?.duration_seconds ?? 0) / 60));
               const items = Number(section.metadata?.item_sets ?? 0);
@@ -119,6 +148,7 @@ export const PracticePage: React.FC = () => {
               return <li key={section.id} className="py-2">
                 {sets.length > 1 ? <p className="text-sm font-semibold">{title}{short && task === 'take_interview' ? ` · ${t('practice.textCue')}` : ''}</p> : null}
                 <p className="text-xs text-[#64748b]">{items > 0 ? t('practice.items', { count: items }) : null}{items > 0 ? ' · ' : ''}{t('practice.minutes', { count: minutes })}</p>
+                {short && completed?.has(section.id) ? <p className="mt-1 text-xs font-medium text-[#475569]">{t('practice.completedSet')}</p> : null}
                 <button type="button" aria-label={`${t('practice.start')} — ${t(`task.${task}` as AppKey)} — ${title}`}
                   onClick={() => void start(section.experience_id, section.id)} disabled={starting != null}
                   className="mt-2 min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-full bg-[#0f172a] text-white font-semibold disabled:opacity-60">
@@ -127,7 +157,12 @@ export const PracticePage: React.FC = () => {
               </li>;
             })}
           </ul>
-        ) : (
+          {sets.length > 4 ? <button type="button" aria-controls={`practice-sets-${task}`} aria-expanded={Boolean(expanded[task])}
+            onClick={() => setExpanded(previous => ({ ...previous, [task]: !previous[task] }))}
+            className="mt-2 min-h-[44px] px-3 text-sm font-semibold underline underline-offset-4">
+            {expanded[task] ? t('practice.showFewer') : t('practice.showMore', { count: sets.length - visible.length })}
+          </button> : null}
+        </> : (
           <p className="text-sm text-[#64748b] mt-2">{t('practice.unavailable')}</p>
         )}
       </div>

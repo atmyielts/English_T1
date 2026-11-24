@@ -15,6 +15,18 @@ const en = {
   'library.score': '{correct} of {total} correct',
   'library.model': 'Show worked response',
   'library.modelTitle': 'Worked response',
+  'library.progress': 'Progress',
+  'library.allProgress': 'All sets',
+  'library.new': 'Unreviewed',
+  'library.reviewed': 'Reviewed',
+  'library.remaining': '{count} of {total} unreviewed',
+  'library.showMore': 'Show {count} more {skill} sets',
+  'library.best': 'Best {correct}/{total}',
+  'library.textAnswer': 'Your answer',
+  'library.correct': 'Correct.',
+  'library.incorrect': 'Incorrect.',
+  'library.tryAgain': 'Try this set again',
+  'library.partTwoTiming': 'Take one minute to prepare. You may make notes. Then speak for one to two minutes.',
 };
 
 const uz: Record<keyof typeof en, string> = {
@@ -34,6 +46,18 @@ const uz: Record<keyof typeof en, string> = {
   'library.score': '{total} tadan {correct} ta to‘g‘ri',
   'library.model': 'Namunaviy javobni ko‘rish',
   'library.modelTitle': 'Namunaviy javob',
+  'library.progress': 'Mashq holati',
+  'library.allProgress': 'Barcha to‘plamlar',
+  'library.new': 'Ko‘rib chiqilmagan',
+  'library.reviewed': 'Ko‘rib chiqilgan',
+  'library.remaining': '{total} tadan {count} tasi ko‘rib chiqilmagan',
+  'library.showMore': 'Yana {count} ta {skill} to‘plamini ko‘rsatish',
+  'library.best': 'Eng yaxshi natija {correct}/{total}',
+  'library.textAnswer': 'Javobingiz',
+  'library.correct': 'To‘g‘ri.',
+  'library.incorrect': 'Noto‘g‘ri.',
+  'library.tryAgain': 'To‘plamni qayta ishlash',
+  'library.partTwoTiming': 'Tayyorgarlik uchun bir daqiqa ajrating. Qayd yozib olishingiz mumkin. Keyin bir yoki ikki daqiqa gapiring.',
 };
 
 const ru: Record<keyof typeof en, string> = {
@@ -53,6 +77,18 @@ const ru: Record<keyof typeof en, string> = {
   'library.score': 'Верных ответов: {correct} из {total}',
   'library.model': 'Показать образец ответа',
   'library.modelTitle': 'Образец ответа',
+  'library.progress': 'Прогресс',
+  'library.allProgress': 'Все комплекты',
+  'library.new': 'Без разбора',
+  'library.reviewed': 'Разобрано',
+  'library.remaining': 'Без разбора: {count} из {total}',
+  'library.showMore': 'Показать ещё {count} ({skill})',
+  'library.best': 'Лучший результат {correct}/{total}',
+  'library.textAnswer': 'Ваш ответ',
+  'library.correct': 'Верно.',
+  'library.incorrect': 'Неверно.',
+  'library.tryAgain': 'Пройти комплект ещё раз',
+  'library.partTwoTiming': 'Подготовьтесь за одну минуту. Можно делать заметки. Затем говорите одну-две минуты.',
 };
 
 export const library = { en, uz, ru };
