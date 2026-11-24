@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b2-what-a-jug-label-really-measures",
+    "title": "What a Jug Label Really Measures",
+    "level": "B2",
+    "summary": "A volunteer reads beyond a product headline to choose equipment for a particular job.",
+    "content_markdown": "When the West Court chess club began meeting in a room without a kitchen, volunteers took turns bringing hot drinks. One volunteer, Kara, suggested buying two insulated jugs. The label on the first model said it kept liquid above 65 degrees Celsius for two hours. The second label made the same claim, but its sales sheet gave a slightly lower final temperature. Kara was about to choose the first model when another member asked how often the jugs would be opened during a session.\n\nThe supplier’s booklet made the procedure clear. Each jug was filled to the same level with water at the same starting temperature. Both lids remained closed until the last measurement. After two hours, the water in the first jug measured 71 degrees and the water in the second 66. There was nothing misleading about those results as statements about the test. They said little about a container that would be opened every twenty minutes to pour another drink.\n\nThe club borrowed one of each model and tried the procedure that mattered to them. Volunteers opened both jugs at the same times and poured the same amount from each. They used the same starting temperature as the supplier and recorded the water left at the end of the second hour. Under this routine, the first jug finished at 50 degrees and the second at 57. The club had reversed the ranking without discovering a mistake in the supplier’s figures.\n\nKara bought the second model for the club. In the note recording her decision, she did not write that its label understated the jug’s quality or that the first model was poor. She wrote that the comparison favoured the second model when liquid was poured repeatedly. A scout club that planned to carry a full jug to the end of a long walk, and open it only on arrival, might reasonably make a different choice. The important thing was knowing what the number on the label led people to assume about their own use.",
+    "category": "Research",
+    "theme": "interpreting a product test",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "consumer feature",
+      "word_count": 336
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Which statement gives the main lesson of the passage?",
+        "options": [
+          "Two similar labels mean two products will perform in much the same way.",
+          "A product should be judged mainly by whether the supplier publishes the exact water temperature.",
+          "A test can be accurate yet produce a ranking that changes under a different pattern of use.",
+          "A club’s practical trial should reproduce every part of a supplier’s test."
+        ],
+        "answer_index": 2,
+        "explanation": "The sealed-lid test and the club’s repeated-opening test can both be accurate while giving different rankings."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did both jugs have in common in the supplier’s test?",
+        "options": [
+          "Both were opened every twenty minutes.",
+          "Both were kept closed until the end of the test.",
+          "Both were tested in the club’s meeting room.",
+          "Both ended at the same temperature."
+        ],
+        "answer_index": 1,
+        "explanation": "The second paragraph says that both lids remained closed until the last measurement."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why is the scout club mentioned?",
+        "options": [
+          "The chess club planned to lend its less successful model to it.",
+          "The first model would be safer to carry over a long distance.",
+          "Its members had already tried the two jugs on a walk.",
+          "Its way of using a jug could make the supplier’s comparison more relevant."
+        ],
+        "answer_index": 3,
+        "explanation": "The scouts might keep the jug closed until arrival, which is closer to the condition tested by the supplier."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “reversed the ranking” mean here?",
+        "options": [
+          "Made the two temperatures equal",
+          "Tested the second jug before the first",
+          "Published the results in a different table",
+          "Found that the other model now had the higher temperature"
+        ],
+        "answer_index": 3,
+        "explanation": "The first model led in the sealed test. The second led when the containers were opened and used."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The club poured different amounts from the jugs during its own test.",
+        "answer": "false",
+        "explanation": "The volunteers poured the same amount from each jug and opened both at the same times."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The supplier recorded 71 degrees in the first jug and ___ in the second. In the club’s trial the second jug finished at ___ degrees.",
+        "answers": [
+          [
+            "66"
+          ],
+          [
+            "57"
+          ]
+        ],
+        "word_bank": [
+          "57",
+          "50",
+          "66",
+          "71"
+        ],
+        "explanation": "The second and third paragraphs report the second jug at 66 in the sealed test and 57 in the club’s trial."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "What the published number measured",
+          "What an everyday trial changed",
+          "A headline that raised a practical question",
+          "A decision tied to a particular use",
+          "How the club arranged its meeting schedule"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The paragraphs introduce a decision, explain the supplier’s test, report the club’s alternative and limit the conclusion to the relevant use."
+      }
+    ]
+  },
+  "children": []
+}

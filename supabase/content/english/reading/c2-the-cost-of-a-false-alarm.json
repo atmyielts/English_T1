@@ -1,0 +1,140 @@
+{
+  "item": {
+    "slug": "c2-the-cost-of-a-false-alarm",
+    "title": "The Cost of a False Alarm",
+    "level": "C2",
+    "summary": "An essay asks how to judge a warning that changes the circumstances in which its accuracy is later measured.",
+    "content_markdown": "The last line of the Harbour Street committee’s annual report congratulates its stewards on the reduction in trouble beside the lower arch. It is followed by a footnote counting six occasions on which the stewards closed the riverside path and no one got wet. At the next meeting a member called those closures false alarms. He proposed keeping the warning in place but making it harder to trigger. The proposal was sensible enough to deserve a better argument than his count.\n\nWhether the path would flood and whether people would be on it were separate questions. In three of the six cases, water did spread over the stones after the path closed. Nobody got wet because the stewards had sent the afternoon walkers up the next street. If a warning is supposed to prevent people coming into contact with water, the absence of wet shoes can look much the same after a useful closure as it does after an unnecessary one. The warning has changed the circumstances in which its apparent accuracy is measured.\n\nThe other three closures cannot be defended by that argument. Water never reached the path. In one case the gauge was overdue for inspection, and its rising readings turned out to be a result of a fault. In another, a rise that looked likely at noon slowed by the time it passed the station upstream. The steward who acted at noon had the earlier report, not the later one. Those two closures both stopped walkers for no immediate benefit, but they do not point to the same repair. One gives a reason to maintain the instrument. The other gives a reason to ask whether the best information available in the moment justified acting.\n\nThere is a cost to putting up a barrier, even one that works. The higher route adds ten minutes for somebody walking home with shopping and considerably more for somebody who has to find a crossing with a dropped kerb. A resident who has made that journey three times can reasonably ask how much extra evidence was needed before the steward closed the arch. To defend a particular decision, the committee should be able to say why the information at the time was good enough to justify that cost. Pointing to a later photograph of a dry path will rarely settle the matter; nor will saying that it is always better to be careful.\n\nThe committee’s next report divided the footnote into three columns. One recorded what the stewards knew, one what happened to the water and one what the detour required of the people using it. The columns made little difference to the total number of closures. They made a considerable difference to the discussion that followed. A useful warning could be recognised without making all the other warnings respectable by association. An unnecessary one could become a reason to improve the gauge or to rethink when it was reasonable to ask people to walk another way. A review worth having begins when such choices remain open.",
+    "category": "Society",
+    "theme": "how warnings should be assessed",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "argumentative essay",
+      "word_count": 505
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Which claim best expresses the essay’s argument?",
+        "options": [
+          "Closure records should be used only to investigate the condition of equipment.",
+          "When a precaution can be defended in one case, all apparently similar decisions should be treated as reasonable.",
+          "Reviewing a warning requires separating the evidence at the time, the event that followed and the burden of the response.",
+          "A decision to issue a warning can be judged by its later outcome alone, provided the outcome is measured reliably."
+        ],
+        "answer_index": 2,
+        "explanation": "The author distinguishes the information available to stewards, subsequent water levels and the practical cost of sending walkers elsewhere."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What happened in three of the six cases mentioned in the first report?",
+        "options": [
+          "Water covered part of the path after stewards sent walkers away.",
+          "The upstream station failed to send a report.",
+          "Residents stayed on the path after the arch closed.",
+          "The gauge was found to be overdue for inspection."
+        ],
+        "answer_index": 0,
+        "explanation": "Paragraph 2 says three closures were followed by water spreading over the stones. There were no walkers there because the path had been closed."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does paragraph 3 put two different closures side by side?",
+        "options": [
+          "To argue that closing the path is only justified when a gauge has failed",
+          "To show that a single count tells the committee exactly which error to fix",
+          "To prove the upstream station should have waited longer before sending a report",
+          "To show that the same outcome can point to different improvements"
+        ],
+        "answer_index": 3,
+        "explanation": "A known instrument fault calls for maintenance. A forecast that changed calls for examining the quality and timing of the evidence used in the decision."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “respectable by association” suggest in the last paragraph?",
+        "options": [
+          "Remembered fondly by stewards who worked together",
+          "Known to residents because they happened in the same street",
+          "Treating other warnings as justified because some warnings were useful",
+          "Judged to be equally difficult to organise"
+        ],
+        "answer_index": 2,
+        "explanation": "Recognising a successful warning should not automatically lend credibility to the other warnings."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.inference",
+        "prompt": "The writer regards the inconvenience of the higher route as irrelevant to whether the arch should be closed.",
+        "answer": "false",
+        "explanation": "The writer describes the cost of the detour and argues that the evidence for a closure must justify that cost.",
+        "variant": "yes_no"
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "One rising reading came from a fault in the ___. The higher route may require people to find a crossing with a dropped ___.",
+        "answers": [
+          [
+            "gauge"
+          ],
+          [
+            "kerb"
+          ]
+        ],
+        "word_bank": [
+          "footnote",
+          "gauge",
+          "kerb",
+          "route"
+        ],
+        "explanation": "The third paragraph identifies the instrument fault. The fourth explains why a person might need to find a dropped kerb."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Two apparently similar closures suggest different actions",
+          "Separating exposure from the event being predicted",
+          "The cost of intervening belongs in the review",
+          "Proof that the highest tide never reached the arch",
+          "A report designed to support a better decision"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 4
+          }
+        ],
+        "explanation": "The selected paragraphs distinguish whether anybody was exposed, look at two reasons for dry paths, account for the detour and explain the new reporting method."
+      }
+    ]
+  },
+  "children": []
+}

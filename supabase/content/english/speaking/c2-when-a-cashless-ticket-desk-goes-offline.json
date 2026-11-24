@@ -1,0 +1,70 @@
+{
+  "item": {
+    "slug": "c2-when-a-cashless-ticket-desk-goes-offline",
+    "title": "Judge a Cashless Ticket Desk by Its Fallback",
+    "level": "C2",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 116,
+    "prompt_text": "A concert venue wants to accept only card payments. The manager argues that card payments simplify closing the tills. A volunteer points out that the payment network failed during a crowded event and that some visitors had come prepared to pay cash. Give a position that distinguishes a brief outage from a predictable access problem, proposes a way to handle each, and explains what evidence should decide whether the policy works.",
+    "target_grammar": "Concession, qualification, conditional safeguards and explicit assumptions.",
+    "fluency_objective": "Separate the reason for the change from the problems it could cause. Give the fallback before telling listeners how to test it.",
+    "pronunciation_objective": "Give outage and access problem distinct stress. Pause before naming the two measures you would review.",
+    "target_vocabulary": [
+      "outage",
+      "fallback",
+      "access",
+      "cash option",
+      "reconcile",
+      "queue",
+      "record"
+    ],
+    "sort_order": 305,
+    "cues": [
+      {
+        "text": "Acknowledge a practical advantage of card payments.",
+        "keywords": [
+          "close the tills",
+          "closing",
+          "easier to reconcile",
+          "practical benefit",
+          "fewer cash payments"
+        ]
+      },
+      {
+        "text": "Distinguish a network outage from an access issue.",
+        "keywords": [
+          "network",
+          "outage",
+          "without a card",
+          "cash only",
+          "predictable"
+        ]
+      },
+      {
+        "text": "Propose a different way to handle each problem.",
+        "keywords": [
+          "hold a seat",
+          "pay later",
+          "cash desk",
+          "set time",
+          "fallback"
+        ]
+      },
+      {
+        "text": "Give evidence that could test both outcomes.",
+        "keywords": [
+          "record",
+          "turned away",
+          "queue",
+          "accounts close",
+          "check whether",
+          "review"
+        ]
+      }
+    ],
+    "model_opening": "I understand why the manager wants fewer cash payments.",
+    "model_answer": "I understand why the manager wants fewer cash payments. If volunteers spend less time counting money and resolving differences at the end of a concert, there is a practical benefit. But the network outage and a visitor arriving without a card are two different problems. Restoring the network solves one of them. It doesn't create a payment option for the other visitor.\n\nFor a brief outage, I would hold reserved seats for a stated period while the staff restart the terminal. Have one person tell the queue when they will hear the next update. For the predictable access problem, I would retain a cash option at one desk and publish its hours clearly. On a busy evening, opening it for a limited period would give people a real alternative without requiring every volunteer to manage a second payment method.\n\nThe venue could then review two kinds of evidence. Record when card payments are unavailable and whether people who were already waiting can still collect their seats. Separately, note how often the cash desk is used and whether visitors are turned away outside its hours. If the accounts close faster but more people regularly leave without attending, the faster closing routine would be only part of the result. I would adjust the hours before concluding that the cash option is unnecessary."
+  },
+  "children": []
+}

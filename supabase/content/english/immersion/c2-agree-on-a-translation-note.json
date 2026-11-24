@@ -1,0 +1,121 @@
+{
+  "item": {
+    "slug": "c2-agree-on-a-translation-note",
+    "title": "Agree on a translation note",
+    "level": "C2",
+    "mission_type": "problem_solving",
+    "context_text": "An exhibition label uses a local term for a collective practice. The short English translation has a familiar but narrower connotation.",
+    "objective_text": "Preserve the local term and make its meaning accessible in a short label.",
+    "target_vocabulary": [
+      "gloss",
+      "register",
+      "connotation",
+      "label",
+      "context"
+    ],
+    "success_conditions": [
+      "Preserve the local term and make its meaning accessible in a short label."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the information",
+      "instructions": "Read the note and use its details to answer both questions.",
+      "prompt_text": "EDITORIAL OPTIONS\nThe exhibition label describes this neighbourhood's yig‘in, a practice in which neighbours take turns hosting a meal and contributing supplies. Translating the term as ‘potluck’ helps visitors picture shared food, but leaves out the expectation of reciprocating across households. The curator wants to keep the local name for identification and search. The label allows forty-five words, with space for a longer explanation in a companion note. An accessibility reviewer asks for the basic meaning to be clear in the label itself.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What is lost when the term is translated only as ‘potluck’?",
+          "options": [
+            "The fact that food is eaten together",
+            "The name of the exhibition curator",
+            "The continuing obligation to reciprocate"
+          ],
+          "answer_index": 2,
+          "explanation": "The note contrasts a familiar one-off image with a practice organised around repeated reciprocal turns."
+        },
+        {
+          "prompt": "Which approach satisfies both readers and indexing?",
+          "options": [
+            "Keep the local term and add a short plain-English gloss in the label",
+            "Use only the local term and explain it elsewhere",
+            "Replace it entirely with a single familiar English word"
+          ],
+          "answer_index": 0,
+          "explanation": "Keeping the name supports identification while a concise gloss lets people understand the display without following another link."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Draft a label and explain the edit",
+      "prompt_text": "Editor: Please propose wording we can keep under forty-five words, with a brief editorial note.",
+      "instructions": "Put the description in one concise label. Add a separate note about what the longer explanation should cover.",
+      "goal": "Make the label accessible without flattening the term.",
+      "estimated_minutes": 5,
+      "min_words": 56,
+      "model_answer": "Label: Yig‘in. Neighbours take turns hosting a shared meal. Guests bring supplies, and another household hosts the next gathering. Editorial note: Keep the local name beside the gloss for identification. The companion note can explain how reciprocity works over time and why this practice is distinct from a one-off meal. Readers can understand the display without opening the companion note.",
+      "points": [
+        {
+          "label": "Retain or refer to the local term",
+          "any": [
+            "local name",
+            "local term"
+          ]
+        },
+        {
+          "label": "Explain the cycle of reciprocal hosting",
+          "any": [
+            "take turns",
+            "each household",
+            "reciprocate",
+            "reciprocity"
+          ]
+        },
+        {
+          "label": "Use the companion note for depth",
+          "any": [
+            "companion note",
+            "longer note"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain why a short gloss helps",
+      "prompt_text": "Curator: Why include plain English here if a full explanation is available elsewhere?",
+      "instructions": "Explain how both versions serve readers and preserve the name.",
+      "goal": "Defend a two-layer explanation.",
+      "estimated_minutes": 3,
+      "min_words": 30,
+      "model_answer": "The label lets anyone understand the basics in front of the display. Keeping the local name also makes the practice searchable. The companion note can explain the longer cycle of reciprocity without forcing every visitor to read further.",
+      "points": [
+        {
+          "label": "Explain immediate comprehension",
+          "any": [
+            "understand",
+            "meaning",
+            "basics"
+          ]
+        },
+        {
+          "label": "Retain the local name",
+          "any": [
+            "local name",
+            "original term"
+          ]
+        },
+        {
+          "label": "Reserve detail for the longer note",
+          "any": [
+            "companion note",
+            "longer",
+            "depth"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "a2-visiting-the-beach",
+    "level": "A2",
+    "topic": "beach visit",
+    "title": "A visit to the beach",
+    "description": "Describe what you see at the beach and what you take with you. Learn words for activities on the sand and in the water.",
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "word": "beach",
+      "part_of_speech": "noun",
+      "definition": "An area of sand or small stones beside the sea or a lake.",
+      "example": "We found a clean beach near the village.",
+      "translation_ru": "пляж",
+      "translation_uz": "sohil, plyaj",
+      "collocations": [
+        "a sandy beach",
+        "walk along the beach"
+      ]
+    },
+    {
+      "word": "wave",
+      "part_of_speech": "noun",
+      "definition": "A moving line of water that rises and then falls.",
+      "example": "A wave came up the sand and wet our feet.",
+      "translation_ru": "волна",
+      "translation_uz": "toʻlqin",
+      "collocations": [
+        "a small wave",
+        "a wave breaks"
+      ]
+    },
+    {
+      "word": "sand",
+      "part_of_speech": "noun",
+      "definition": "Very small pieces of rock that cover many beaches.",
+      "example": "We left our shoes on the dry sand.",
+      "translation_ru": "песок",
+      "translation_uz": "qum",
+      "collocations": [
+        "soft sand",
+        "walk on the sand"
+      ]
+    },
+    {
+      "word": "shell",
+      "part_of_speech": "noun",
+      "definition": "The hard cover of a small sea animal, which you can sometimes find empty on a beach.",
+      "example": "I saw an empty white shell beside the rocks.",
+      "translation_ru": "ракушка",
+      "translation_uz": "dengiz chigʻanogʻi",
+      "collocations": [
+        "an empty shell",
+        "find a shell"
+      ]
+    },
+    {
+      "word": "lifeguard",
+      "part_of_speech": "noun",
+      "definition": "A person whose job is to watch people in the water and help anyone in danger.",
+      "example": "The lifeguard watched the swimmers from a high seat.",
+      "translation_ru": "спасатель на пляже или у бассейна",
+      "translation_uz": "choʻmiluvchilar xavfsizligini kuzatuvchi qutqaruvchi",
+      "collocations": [
+        "a beach lifeguard",
+        "ask the lifeguard"
+      ]
+    },
+    {
+      "word": "shade",
+      "part_of_speech": "noun",
+      "definition": "A place where direct sunlight is blocked.",
+      "example": "We had lunch in the shade behind the beach café.",
+      "translation_ru": "тень",
+      "translation_uz": "soya",
+      "collocations": [
+        "sit in the shade",
+        "look for shade"
+      ]
+    },
+    {
+      "word": "sunburn",
+      "part_of_speech": "noun",
+      "definition": "Red or sore skin that you get after too much sun.",
+      "example": "My shoulders were sore from sunburn after the trip.",
+      "translation_ru": "солнечный ожог",
+      "translation_uz": "quyoshda terining kuyishi",
+      "collocations": [
+        "get sunburn",
+        "a bad case of sunburn"
+      ]
+    },
+    {
+      "word": "tide",
+      "part_of_speech": "noun",
+      "definition": "The regular rise and fall of the level of the sea.",
+      "example": "When the tide went out, we could see more rocks.",
+      "translation_ru": "прилив и отлив",
+      "translation_uz": "dengiz suvining muntazam koʻtarilib-pasayishi",
+      "collocations": [
+        "the tide goes out",
+        "a high tide"
+      ]
+    },
+    {
+      "word": "bucket",
+      "part_of_speech": "noun",
+      "definition": "An open container with a handle, often used to carry water or sand.",
+      "example": "The children filled a yellow bucket with wet sand.",
+      "translation_ru": "ведро",
+      "translation_uz": "chelak",
+      "collocations": [
+        "a plastic bucket",
+        "fill a bucket"
+      ]
+    },
+    {
+      "word": "sandcastle",
+      "part_of_speech": "noun",
+      "definition": "A shape made from sand that looks like a little building with towers.",
+      "example": "Our sandcastle had three towers and a wall.",
+      "translation_ru": "замок из песка",
+      "translation_uz": "qumdan yasalgan qasr",
+      "collocations": [
+        "build a sandcastle",
+        "a tall sandcastle"
+      ]
+    },
+    {
+      "word": "paddle",
+      "part_of_speech": "noun",
+      "definition": "A long tool with a flat end that you move through water to move a small boat.",
+      "example": "Please put the paddle back beside the canoe.",
+      "translation_ru": "весло",
+      "translation_uz": "eshkak",
+      "collocations": [
+        "hold a paddle",
+        "use a paddle"
+      ]
+    },
+    {
+      "word": "beach towel",
+      "part_of_speech": "noun phrase",
+      "definition": "A large piece of cloth you use to dry yourself or sit on at the beach.",
+      "example": "I spread my beach towel on the dry sand.",
+      "translation_ru": "пляжное полотенце",
+      "translation_uz": "plyaj sochigʻi",
+      "collocations": [
+        "a large beach towel",
+        "spread out a beach towel"
+      ]
+    },
+    {
+      "word": "seagull",
+      "part_of_speech": "noun",
+      "definition": "A bird often seen by the sea, usually white and grey with long wings.",
+      "example": "A seagull flew low over the boats.",
+      "translation_ru": "чайка",
+      "translation_uz": "dengiz chaykasi",
+      "collocations": [
+        "a seagull flies",
+        "a group of seagulls"
+      ]
+    },
+    {
+      "word": "flippers",
+      "part_of_speech": "plural noun",
+      "definition": "Long, flat things you wear on your feet to help you swim.",
+      "example": "The swimmer took off her flippers at the water’s edge.",
+      "translation_ru": "ласты",
+      "translation_uz": "suzish uchun oyoqqa kiyiladigan lastalar",
+      "collocations": [
+        "wear flippers",
+        "a pair of flippers"
+      ]
+    }
+  ]
+}

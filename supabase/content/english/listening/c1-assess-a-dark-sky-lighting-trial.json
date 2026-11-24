@@ -1,0 +1,91 @@
+{
+  "item": {
+    "slug": "c1-assess-a-dark-sky-lighting-trial",
+    "title": "Assess a dark-sky lighting trial",
+    "level": "C1",
+    "summary": "A council officer separates different findings from a trial of shielded streetlights.",
+    "transcript_text": "A common reading of the dark-sky trial is that the lamps have solved the glare problem. The measurements actually show a narrower result: on the two streets where the new fittings were aimed correctly, less light reached upstairs windows. Complaints on the third street did not fall. An inspection there found the lamps were installed at a different angle, and the complaint records don't distinguish light from the street and light from a nearby loading yard. I would keep the shielding specification, correct the installation, and agree a separate observation period with the yard operator. We should describe the successful streets as evidence that the design can work under the right conditions, rather than an assurance that any installation will have the same effect.",
+    "category": "Civic",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 144,
+    "duration_seconds": 52,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "civic",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What is the purpose of the officer's briefing?",
+        "options": [
+          "To assign blame for a complaint",
+          "To close inquiries about every road",
+          "To retain a promising design while limiting the claims made for it",
+          "To replace light measurements with a complaint count"
+        ],
+        "answer_index": 2,
+        "explanation": "The officer recommends retaining the design and investigating installation and other light while making only a conditional claim."
+      },
+      {
+        "prompt": "Which conclusion is justified by the measurements?",
+        "options": [
+          "The loading yard caused every complaint",
+          "Shielded fittings reduced light at windows when correctly aimed on the measured streets",
+          "Any shielded lamp will cut glare in every installation",
+          "Complaints fell equally across all three streets"
+        ],
+        "answer_index": 1,
+        "explanation": "The officer limits the positive observation to two correctly installed streets."
+      },
+      {
+        "prompt": "Why is the third street difficult to interpret?",
+        "options": [
+          "No one complained there",
+          "The fittings were deliberately removed",
+          "There were two potential light sources and the fitting angle differed",
+          "The study compared entirely different types of house"
+        ],
+        "answer_index": 2,
+        "explanation": "The angle and possible loading yard light make it hard to assign the complaints to one cause."
+      },
+      {
+        "prompt": "Which next step does the officer recommend?",
+        "options": [
+          "Keep the specification and check installation and yard activity separately",
+          "Abandon all shielding immediately",
+          "Assume the streetlight fitting is responsible for every complaint",
+          "Discard the measurements from the two streets that improved"
+        ],
+        "answer_index": 0,
+        "explanation": "The officer proposes correcting aim and separating observation of the other potential source."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "less light reached upstairs windows",
+      "focus_phrase": "upstairs windows",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "installed at a different angle",
+      "focus_phrase": "a different angle",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "that the design can work under the right conditions",
+      "focus_phrase": "under the right conditions",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

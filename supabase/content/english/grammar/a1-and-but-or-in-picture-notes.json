@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a1-and-but-or-in-picture-notes",
+    "level": "A1",
+    "focus_area": "and-but-or",
+    "title": "And, but and or in picture notes",
+    "tags": [
+      "joining ideas",
+      "and",
+      "but",
+      "or"
+    ],
+    "explanation_text": "And adds one thing to another. “I can see a boat and a house” means I can see both. You can use and to join actions too: “I pick up the pencil and draw a boat.”\n\nBut adds something that is different from what you may expect. “The room is small, but it is bright” gives two details that pull in different directions. But can connect two short sentences when both ideas are true.\n\nOr gives a choice. “Draw a boat or a house” asks you to choose a picture. “Is the pencil blue or green?” asks which of two colors it is. In these practice tasks, the words both, surprising detail and choose help you decide which joining word to use.\n\nThe examples compare a note with a joining word that does not match the message and a corrected note.",
+    "contrast_text": "“Take the pencil and the pen” asks for both. “Take the pencil or the pen” gives you a choice in this context. “The pen is old, but it still works” gives a contrast.",
+    "common_error_pattern": "Choose and for an addition, but for a contrast, or or for a choice. Read the whole message before you choose the joining word.",
+    "examples": [
+      {
+        "bad": "Take both things. Take the brush or the cup.",
+        "good": "Take both things. Take the brush and the cup."
+      },
+      {
+        "bad": "Choose one color. Use red and yellow.",
+        "good": "Choose one color. Use red or yellow."
+      },
+      {
+        "bad": "The pencil is short, or I can still use it.",
+        "good": "The pencil is short, but I can still use it."
+      },
+      {
+        "bad": "I see a blue line but a red line. Both are here.",
+        "good": "I see a blue line and a red line. Both are here."
+      }
+    ],
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "Take both tools. Pick up the pencil ___ the ruler.",
+      "instructions": "Choose “and”, “but” or “or”. Write only the missing word.",
+      "accepted_answers": [
+        "and"
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "You need only one sheet. Take the white one ___ the yellow one.",
+      "instructions": "Choose “and”, “but” or “or”. Use the word that gives a choice.",
+      "accepted_answers": [
+        "or"
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "I thought the marker was empty, ___ it still works.",
+      "instructions": "Choose “and”, “but” or “or”. Use the word that marks the surprising detail.",
+      "accepted_answers": [
+        "but"
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "I do both things. I draw the door ___ color it green.",
+      "instructions": "Choose “and”, “but” or “or”. Write only the missing word.",
+      "accepted_answers": [
+        "and"
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "Which do you want to draw, a cat ___ a bird? Choose one.",
+      "instructions": "Choose “and”, “but” or “or”. Write only the missing word.",
+      "accepted_answers": [
+        "or"
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "I draw a cup or a plate.",
+      "instructions": "The picture has both a cup and a plate. Rewrite the sentence. Change only the joining word to show that you draw both.",
+      "accepted_answers": [
+        "I draw a cup and a plate."
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "The pencil is short, or I can still use it.",
+      "instructions": "Both ideas are true. Rewrite the sentence. Replace or with the joining word that shows a contrast.",
+      "accepted_answers": [
+        "The pencil is short, but I can still use it."
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "Draw a window. Draw a door too.",
+      "instructions": "Write one instruction. Begin with “Draw a window”, use and, and end with “a door”.",
+      "accepted_answers": [
+        "Draw a window and a door."
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "The line looks long. It is only five centimeters.",
+      "instructions": "Join the two sentences with but. Keep all the other words in the same order.",
+      "accepted_answers": [
+        "The line looks long, but it is only five centimeters."
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the words in order",
+      "prompt_text": "or / for the roof? / red / Do you want / blue",
+      "instructions": "Begin with “Do you want red”. Use every tile once to give a choice.",
+      "accepted_answers": [
+        "Do you want red or blue for the roof?"
+      ],
+      "target_skill_key": "grammar.and-but-or",
+      "status": "published"
+    }
+  ]
+}

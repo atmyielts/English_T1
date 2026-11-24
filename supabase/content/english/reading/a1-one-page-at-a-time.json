@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a1-one-page-at-a-time",
+    "title": "One Page at a Time",
+    "level": "A1",
+    "summary": "A classroom notice explains how to use the shared printer and what to do when there is a problem.",
+    "content_markdown": "## Print your work\n\nThere is one printer for our class. It is on the table next to the teacher’s desk. You can use it before class or during the lunch break. Please do not print while the teacher is speaking.\n\nUse the paper in the white box. Start with one page. Look at the page before you print the rest of your work. If the printer stops, ask Mr Karim for help. Do not pull the paper out yourself.\n\nOn Fridays, Mr Karim takes the printed work to the front desk at three. If you leave work on the printer, you can get it there after three. Write your name on the first page.",
+    "category": "Everyday",
+    "theme": "shared classroom printer",
+    "tone": "lavender",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "instruction notice",
+      "word_count": 114
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why did the teacher put up this notice?",
+        "options": [
+          "To show students how to use the class printer",
+          "To ask students to buy a new printer",
+          "To tell students how to find another classroom",
+          "To explain a new homework topic"
+        ],
+        "answer_index": 0,
+        "explanation": "The notice explains when and how to print and what to do if there is a problem."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "When can students use the printer?",
+        "options": [
+          "Only while the teacher is speaking",
+          "Before class or during lunch",
+          "At any time during class",
+          "Only after three on Friday"
+        ],
+        "answer_index": 1,
+        "explanation": "The first paragraph gives two times, before class and during the lunch break."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Where is the paper for the printer?",
+        "options": [
+          "In a bag by the door",
+          "On the front desk",
+          "In Mr Karim’s desk",
+          "In the white box"
+        ],
+        "answer_index": 3,
+        "explanation": "The notice says to use the paper in the white box."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why should students print one page first?",
+        "options": [
+          "To put it in the white box",
+          "To check how their work looks before printing more",
+          "To show the front desk what they plan to print",
+          "To save a page for Mr Karim"
+        ],
+        "answer_index": 1,
+        "explanation": "They should look at the first page before printing the rest."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Students should pull out the paper when the printer stops.",
+        "answer": "false",
+        "explanation": "The notice tells students to ask Mr Karim for help and not pull out the paper."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "After three on Friday, students can get work they left at the front ___.",
+        "answers": [
+          [
+            "desk"
+          ]
+        ],
+        "word_bank": [
+          "desk",
+          "box",
+          "table"
+        ],
+        "explanation": "Mr Karim takes the printed work to the front desk at three on Fridays."
+      }
+    ]
+  },
+  "children": []
+}

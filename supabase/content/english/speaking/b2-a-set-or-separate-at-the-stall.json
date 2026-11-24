@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "b2-a-set-or-separate-at-the-stall",
+    "title": "Decide Whether to Sell a Kit as a Set",
+    "level": "B2",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 84,
+    "prompt_text": "You are helping run a second-hand stall. A donated bread-making kit contains a mixing bowl, a measuring jug and two baking tins. One volunteer wants to sell all four items together. Another says buyers may need only one piece. Give a recommendation that considers the buyer and the volunteer, and explain when you would change the plan.",
+    "target_grammar": "Comparative priorities; conditionals; concession with even if or although.",
+    "fluency_objective": "Name the two kinds of buyer before recommending a plan. Give an exact time or signal for changing it.",
+    "pronunciation_objective": "Stress together and separately to make the alternatives clear. Pause briefly before the changeover rule.",
+    "target_vocabulary": [
+      "as a set",
+      "separately",
+      "starter kit",
+      "label",
+      "bundle",
+      "by noon"
+    ],
+    "sort_order": 303,
+    "cues": [
+      {
+        "text": "Explain why some buyers want the whole kit and others want individual pieces.",
+        "keywords": [
+          "starter kit",
+          "whole kit",
+          "already own",
+          "just one",
+          "complete set"
+        ]
+      },
+      {
+        "text": "Recommend a practical starting arrangement.",
+        "keywords": [
+          "start with",
+          "as a set",
+          "sell them separately",
+          "bundle"
+        ]
+      },
+      {
+        "text": "Describe a benefit or drawback for the stall volunteer.",
+        "keywords": [
+          "volunteer",
+          "label",
+          "prices",
+          "keep track",
+          "explain the rule"
+        ]
+      },
+      {
+        "text": "Give a clear condition for changing the plan.",
+        "keywords": [
+          "by noon",
+          "if nobody",
+          "change the plan",
+          "after noon"
+        ]
+      }
+    ],
+    "model_opening": "I'd offer the items as a set in the morning.",
+    "model_answer": "I'd offer the items as a set in the morning. Someone who has just moved into a flat might want a starter kit and be pleased to find a bowl, a jug and both tins in one box. Other buyers may already own most of it and want only one size of tin. If we let the first visitor take one piece, a later buyer will never see the complete set.\n\nI'd put one clear label on the box. It could show the price for the set and say that we will sell items separately after noon if the box hasn't sold. I'd also prepare the individual prices in advance so the volunteer doesn't have to think them up during a busy period. At noon, we could take the items out, put their labels next to them and make sure the old price sign is removed. That gives both kinds of buyer a chance and keeps the change easy for the volunteer to explain."
+  },
+  "children": []
+}

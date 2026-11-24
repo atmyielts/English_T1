@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c2-the-spare-ending",
+    "title": "The Spare Ending",
+    "level": "C2",
+    "summary": "A short story follows an understudy whose alternative last scene changes what the company has to ask of an audience.",
+    "content_markdown": "In my first month with the theatre, I learned to distrust anything marked spare. A spare coat was the one whose sleeve came off when you took it by the shoulder. Spare keys opened a cupboard that had been replaced the year before. When I was asked to carry a copy of the spare ending to the last rehearsal, I tucked it under my arm without reading it. I thought it was one of those things people wanted to know they had, like a torch behind a radiator.\n\nThe play concerned two sisters running a boarding house. One had bought a train ticket and kept it in the sugar bowl. In the ending we had been rehearsing, she took it out, told the other sister that she was leaving and set her cup on its saucer without a noise. The other sister said she understood. Then the lights went down. Members of the company had praised the restraint of the scene. I had never heard a saucer in a boarding house make so little noise.\n\nOur leading actor was late that afternoon, so I stood in for her. At the last line Ida, playing the sister who stayed, lifted the empty sugar bowl and asked what she was supposed to tell the lodgers. This had not happened before. I looked at the director. He was looking at the paper I had brought. That version had a short exchange in which the departing sister offered to write down what was owed for the week. I could give Ida that answer, tell her I had already made a list, or say nothing and leave as I had been taught. I said, “You could tell them I’ll be back on Thursday.” It was the first thing that occurred to me. I did not know whether it was true.\n\nWhen our leading actor arrived, both endings were still lying on the table. The director wanted to know why I had made a promise. I said I had not meant it as a promise, which sounded poor even to me. Ida said that my answer was the first one that made her want to know what her character would do next. The director asked if she meant on Thursday. She said she meant when the lights came up and she had to open the door for the lodgers. Afterwards nobody said whether the sister would come back. They talked about how long Ida needed to look at the bowl.\n\nThe opening night finally used the printed spare ending. No one spoke of Thursday. Before the lights went down, Ida took the list of the week’s payments and ran a finger down it until she reached a blank space. The person beside me moved as though he had remembered something he had agreed to do. I had expected to hear the line I had invented. Instead I heard the cup touch the saucer. It made the small, quite ordinary sound that the other ending had kept out of the room. Walking home, I tried to decide whether the company had used any of my answer at all. By the time I reached the station, I could think of three reasons why that was the wrong question.",
+    "category": "Fiction",
+    "theme": "rehearsal and a disputed ending",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 540
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What connection between the rehearsal and the final performance is best supported?",
+        "options": [
+          "Both end with a promise that the departing sister will return on Thursday.",
+          "Both remove the routine details and keep the stage entirely silent.",
+          "Both reveal that the sugar bowl held the week’s payments rather than a ticket.",
+          "Both draw attention to the sister who stays and what she still has to do, though the promise to return is omitted on opening night."
+        ],
+        "answer_index": 3,
+        "explanation": "Ida says the rehearsal made her consider what she must do when the lodgers arrive. The opening-night scene focuses on her response to the payments list without including the improvised promise."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which action belongs to the ending the company had originally rehearsed?",
+        "options": [
+          "The sister who stays asks what to tell the lodgers.",
+          "The sister who stays studies a list of weekly payments.",
+          "The departing sister says she will be back on Thursday.",
+          "The departing sister sets her cup down quietly after announcing her departure."
+        ],
+        "answer_index": 3,
+        "explanation": "Paragraph 2 describes the quiet cup and saucer in the rehearsed ending. The other actions emerge later."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What does Ida mean when she says she wants to know what her character will do next?",
+        "options": [
+          "She wants the writer to explain whether everyone will be present on Thursday.",
+          "She is asking the company to go back to the original ending.",
+          "She is thinking about the immediate work her character still faces at the boarding house.",
+          "She wants the director to say which actress will play the departing sister."
+        ],
+        "answer_index": 2,
+        "explanation": "Ida explains that she means when she has to open the door for the lodgers, rather than the later date in the promise."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What is the point of comparing the extra ending to “a torch behind a radiator”?",
+        "options": [
+          "The understudy thinks the paper could be destroyed accidentally.",
+          "The company often performs without the stage lights it needs.",
+          "The understudy assumes its presence is reassuring but that nobody expects to use it.",
+          "The understudy wants to keep the alternative ready for use on opening night."
+        ],
+        "answer_index": 2,
+        "explanation": "The narrator carries the paper unread and expects it to remain an unused backup."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The audience member who moves beside the narrator explains what he was reminded of.",
+        "answer": "not_given",
+        "explanation": "The narrator compares his movement to remembering a responsibility, but the man does not say why he moved."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The train ticket was kept in the sugar ___. On opening night Ida takes the list of the week’s ___.",
+        "answers": [
+          [
+            "bowl"
+          ],
+          [
+            "payments"
+          ]
+        ],
+        "word_bank": [
+          "payments",
+          "cup",
+          "radiator",
+          "bowl"
+        ],
+        "explanation": "Paragraph 2 names the sugar bowl; the final paragraph says Ida examines the list of payments."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A practical question changes a rehearsal",
+          "A familiar ending has an unnatural quiet",
+          "The company discusses what the sister still has to do",
+          "Opening night retains the change in an unexpected way",
+          "A clear decision to put the Thursday promise in the final script"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The later paragraphs move from the rehearsed restraint, through an improvised answer and discussion, to a performance in which the invented words are absent but the question changes the scene."
+      }
+    ]
+  },
+  "children": []
+}

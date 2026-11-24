@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b1-the-kite-that-would-not-stay-up",
+    "title": "The Kite That Would Not Stay Up",
+    "level": "B1",
+    "summary": "Two children discover why it helps to keep the first version of something they have made.",
+    "content_markdown": "Mina and her brother Pavel took their first homemade kite to the hill behind the sports centre. They had cut a large diamond from a blue shopping bag and tied it to a light wooden frame. Their uncle had suggested adding a tail, so they used a black ribbon just long enough to reach their knees. The kite rose several metres, turned onto its side and sank back into the grass.\n\nPavel wanted to cut a smaller shape from a new bag. Mina wanted to try something they could undo. They used a knot to attach a second ribbon to the first one and sent the same kite up again. It stayed above their heads for longer, although it still turned when the wind dropped. They removed the second ribbon and watched the shorter version fall sooner. Now they had a reason to keep the second ribbon rather than start again with new material.\n\nThe next afternoon their cousin brought a yellow kite. It was wider than theirs, and its tail was made of several short strips side by side. Mina asked how long the tail needed to be. Their cousin said he had tried three tails and still kept all of them in his pocket. He chose a different one when the wind was stronger.\n\nAt home Mina wrote the date on each ribbon. Pavel laughed and called them pieces of an old bag. Later he asked her which ribbon had worked best on the hill. They tried the longer one again on Saturday. This time they brought the short one too.",
+    "category": "Fiction",
+    "theme": "building and testing a kite",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 263
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does Mina learn from making the kite?",
+        "options": [
+          "A successful kite must be smaller than a shopping bag.",
+          "Keeping trial versions helps people compare what works.",
+          "A kite made of yellow material is easier to fly.",
+          "Once a kite flies, its other parts can be thrown away."
+        ],
+        "answer_index": 1,
+        "explanation": "She keeps the old and new tails so the children can try them in different conditions and remember what worked."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which change did they make to their first kite at the hill?",
+        "options": [
+          "They replaced the wooden frame.",
+          "They cut a smaller blue diamond.",
+          "They added another ribbon to extend the tail.",
+          "They put short strips side by side."
+        ],
+        "answer_index": 2,
+        "explanation": "They tied a second ribbon to the original without changing the shape or frame."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did Mina prefer the ribbon change to Pavel’s suggestion?",
+        "options": [
+          "A new shopping bag was not allowed on the hill.",
+          "They could easily return to their first design for another comparison.",
+          "They knew a smaller shape would work best the following day.",
+          "The coloured ribbon was easier to see than the blue bag."
+        ],
+        "answer_index": 1,
+        "explanation": "Mina wanted a change they could undo. They were able to remove the ribbon to see how the shorter tail performed."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “something they could undo” mean here?",
+        "options": [
+          "Something they could hand to their cousin",
+          "A change they could reverse",
+          "A choice they had to make quickly",
+          "A part nobody else could see"
+        ],
+        "answer_index": 1,
+        "explanation": "They can attach the second ribbon, test it and then take it off again."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The cousin always used the same tail on his yellow kite.",
+        "answer": "false",
+        "explanation": "He kept several tails and made a different choice when the wind was stronger."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Mina and Pavel joined the ribbons with a ___. Mina later wrote the ___ on each ribbon.",
+        "answers": [
+          [
+            "knot"
+          ],
+          [
+            "date"
+          ]
+        ],
+        "word_bank": [
+          "frame",
+          "date",
+          "knot",
+          "shape"
+        ],
+        "explanation": "They use a knot at the hill. At home Mina writes the date on the ribbons."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Keeping the old parts for another try",
+          "The kite rises and falls",
+          "A cousin has more than one answer",
+          "Changing a part they can put back",
+          "A kite store opens nearby"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The paragraphs describe the first flight, a reversible test, the cousin's practice and the children keeping the alternatives."
+      }
+    ]
+  },
+  "children": []
+}

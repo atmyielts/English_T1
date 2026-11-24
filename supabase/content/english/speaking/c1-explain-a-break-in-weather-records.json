@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "c1-explain-a-break-in-weather-records",
+    "title": "Explain a Break in a Weather Record",
+    "level": "C1",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 105,
+    "prompt_text": "Your neighbourhood group moved a thermometer from a shaded balcony to a sunny roof on Tuesday. Its dashboard then showed higher afternoon readings. A community newsletter wants to call this a local warming trend. Speak to the editor. Say what you can report confidently, what the change stops you from concluding, and what comparison would clarify the result.",
+    "target_grammar": "Past simple and present perfect; distinguishing observation from inference; conditionals for a comparison.",
+    "fluency_objective": "Lead with what changed on Tuesday. Keep your readings, interpretation and recommendation in three separate phrases.",
+    "pronunciation_objective": "Use contrastive stress on readings and temperature of the neighbourhood. Pause before the wording you propose for the editor.",
+    "target_vocabulary": [
+      "reading",
+      "record",
+      "location",
+      "comparison",
+      "shade",
+      "trend",
+      "overlap"
+    ],
+    "sort_order": 304,
+    "cues": [
+      {
+        "text": "State what happened to the sensor and its readings.",
+        "keywords": [
+          "shaded balcony",
+          "sunny roof",
+          "moved",
+          "higher readings",
+          "tuesday"
+        ]
+      },
+      {
+        "text": "Explain why the readings alone do not establish a trend.",
+        "keywords": [
+          "cannot tell",
+          "can't tell",
+          "can't conclude",
+          "changed at the same time",
+          "two different places"
+        ]
+      },
+      {
+        "text": "Offer wording the editor could use now.",
+        "keywords": [
+          "i would say",
+          "newsletter",
+          "readings rose",
+          "we cannot yet tell"
+        ]
+      },
+      {
+        "text": "Propose a comparison that could improve the evidence.",
+        "keywords": [
+          "at both locations",
+          "side by side",
+          "same afternoons",
+          "second thermometer",
+          "overlap"
+        ]
+      }
+    ],
+    "model_opening": "We can report that the afternoon readings rose after Tuesday, when the thermometer moved from the shaded balcony to the sunny roof.",
+    "model_answer": "We can report that the afternoon readings rose after Tuesday, when the thermometer moved from the shaded balcony to the sunny roof. I would put both facts together in the newsletter. The readings tell us what the instrument recorded, but location and date changed at the same time. We can't tell how much of the difference came from the weather and how much came from the new position.\n\nI would say, 'Afternoon readings were higher after the move. We can't yet tell whether temperatures rose across the neighbourhood.' That wording still gives readers a result, while identifying the comparison we are missing.\n\nIf we can borrow a second thermometer, I would check that the two instruments agree when they are side by side. Then we could measure at both locations on the same afternoons. We might see, for example, that the roof tends to give higher readings even when both instruments are working as expected. That would help us put the two parts of the record in context. I would also add a break symbol to the dashboard so someone looking at it later can see exactly when the location changed."
+  },
+  "children": []
+}

@@ -1,0 +1,94 @@
+{
+  "item": {
+    "slug": "b1-check-captions-before-the-craft-demo",
+    "title": "Check captions before the craft demo",
+    "level": "B1",
+    "summary": "A coordinator and presenter plan captions for a glass-making demonstration.",
+    "transcript_text": "Facilitator: Our craft demonstration is tomorrow. The captions are ready for the video introduction. Have we sorted out the instructions during the live part?\nPresenter: The local captioner can't start until half past one. The live demonstration begins at one. I could send a sheet with the key steps today.\nFacilitator: The sheet helps, but people also need to follow your changes as you make them. Could we show the video first, then start live at half past one?\nPresenter: Yes, if we leave the question box open during the video. That gets questions in before we begin. I'll send the sheet for people who want to read along.\nFacilitator: Good. Ask the captioner to check the glass-making terms before the session.",
+    "category": "Work",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 124,
+    "duration_seconds": 57,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "work",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Facilitator",
+        "Presenter"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What problem chiefly shapes the revised programme?",
+        "options": [
+          "A video that is missing important steps",
+          "Participants who want a longer question-and-answer session",
+          "A presenter who cannot travel to the venue",
+          "A gap in caption coverage for the live demonstration"
+        ],
+        "answer_index": 3,
+        "explanation": "The presenter can send notes, but the organisers change the programme so the captioner can cover the live instructions."
+      },
+      {
+        "prompt": "Why is the sheet alone insufficient?",
+        "options": [
+          "Some visitors need the video introduction",
+          "The group needs to get questions in advance",
+          "Unplanned changes would be hard to follow",
+          "The presenter has written the sheet in another language"
+        ],
+        "answer_index": 2,
+        "explanation": "The facilitator distinguishes fixed written steps from live adjustments people need to understand as they happen."
+      },
+      {
+        "prompt": "What sequence do they agree to?",
+        "options": [
+          "A video first, then the live demonstration at 1:30",
+          "A live demonstration first with a later video",
+          "Both parts live at one",
+          "A written sheet followed by questions the next day"
+        ],
+        "answer_index": 0,
+        "explanation": "Moving the live portion to 1:30 lets the captioner cover it."
+      },
+      {
+        "prompt": "What should the captioner check in advance?",
+        "options": [
+          "The height of the workbench",
+          "The question box schedule",
+          "The names of the people attending",
+          "Words specific to glass-making"
+        ],
+        "answer_index": 3,
+        "explanation": "The facilitator asks for the technical glass-making terms to be checked."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "The local captioner can't start until half past one.",
+      "focus_phrase": "until half past one",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "follow your changes as you make them",
+      "focus_phrase": "your changes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Ask the captioner to check the glass-making terms before the session.",
+      "focus_phrase": "glass-making terms",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

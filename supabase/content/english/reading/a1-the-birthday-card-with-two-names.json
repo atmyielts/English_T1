@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a1-the-birthday-card-with-two-names",
+    "title": "The Birthday Card with Two Names",
+    "level": "A1",
+    "summary": "Two sisters find different ways to help make a birthday card.",
+    "content_markdown": "Safiya wants to make a birthday card for her cousin Noor. She draws a red boat on the front. Noor likes boats. Safiya’s little sister, Lila, wants to help. She can write her name, but she cannot draw a boat.\n\nSafiya gives Lila a yellow pencil. “Put a sun above the boat,” she says. Lila adds the sun. Then she draws three birds by the sun. Safiya looks at the birds and smiles.\n\nInside the card Safiya writes “Happy birthday, Noor!” Both girls write their names. They put the card in a white envelope. Safiya takes it to Noor’s house in the afternoon. When Noor opens it, she points to a bird and asks, “Who drew this?”",
+    "category": "Fiction",
+    "theme": "making a card together",
+    "tone": "sand",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 117
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What do the sisters do together?",
+        "options": [
+          "They make a birthday card for Noor.",
+          "They draw a new boat for Lila.",
+          "They buy a yellow envelope.",
+          "They visit Noor in the morning."
+        ],
+        "answer_index": 0,
+        "explanation": "Both sisters help make the birthday card and write their names inside it."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What colour is the boat on the card?",
+        "options": [
+          "Yellow",
+          "White",
+          "Red",
+          "Blue"
+        ],
+        "answer_index": 2,
+        "explanation": "Safiya draws a red boat on the front."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What does Lila draw after the sun?",
+        "options": [
+          "Three birds",
+          "A white house",
+          "A little boat",
+          "Noor’s name"
+        ],
+        "answer_index": 0,
+        "explanation": "After drawing the sun, Lila draws three birds."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Safiya give Lila the yellow pencil?",
+        "options": [
+          "Noor asked for a yellow boat.",
+          "Lila needs it to write Noor’s name.",
+          "Safiya wants Lila to colour the envelope.",
+          "Safiya wants Lila to add a sun to the picture."
+        ],
+        "answer_index": 3,
+        "explanation": "Safiya gives her the pencil and says, “Put a sun above the boat.”"
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Both girls write their names inside the card.",
+        "answer": "true",
+        "explanation": "The final paragraph says both girls write their names."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The girls put the card in a white ___.",
+        "answers": [
+          [
+            "envelope"
+          ]
+        ],
+        "word_bank": [
+          "boat",
+          "envelope",
+          "box"
+        ],
+        "explanation": "The last paragraph calls it a white envelope."
+      }
+    ]
+  },
+  "children": []
+}

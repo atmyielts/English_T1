@@ -1,0 +1,122 @@
+{
+  "item": {
+    "slug": "b1-report-a-docking-error",
+    "title": "Report a bicycle docking error",
+    "level": "B1",
+    "mission_type": "problem_solving",
+    "context_text": "A shared bicycle appears to be locked, but the app still shows an active trip. You are midway through an errand.",
+    "objective_text": "Report what happened and ask how to stop the trip charge.",
+    "target_vocabulary": [
+      "dock",
+      "receipt",
+      "trip",
+      "support",
+      "charge"
+    ],
+    "success_conditions": [
+      "Report what happened and ask how to stop the trip charge."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the information",
+      "instructions": "Read the note and use its details to answer both questions.",
+      "prompt_text": "BIKE SHARE HELP\nAfter you dock a bike, wait for a green light and check for an emailed trip receipt. If the light stays red or your trip remains open, keep the bike in the dock and send support the bike number, station name, and a photo of the display. If nobody replies within ten minutes, use the Help button by the map. The bike number is B241 at North Market. The green light is on and there is no receipt, but the app still says Trip active.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What still shows a problem?",
+          "options": [
+            "The station is marked closed",
+            "The app says the trip is active",
+            "The green light is off"
+          ],
+          "answer_index": 1,
+          "explanation": "The physical dock looks right, but the app shows the trip has not ended."
+        },
+        {
+          "prompt": "What should you do with the bicycle while asking for help?",
+          "options": [
+            "Unlock it and ride away",
+            "Move it to another station",
+            "Leave it in the dock"
+          ],
+          "answer_index": 2,
+          "explanation": "The notice says to keep the bicycle docked while support checks."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Message bike share support",
+      "prompt_text": "Support form: Tell us what happened.",
+      "instructions": "Include the bike number and station, describe the mismatch, and request the next step.",
+      "goal": "Give support enough information to identify the trip.",
+      "estimated_minutes": 5,
+      "min_words": 31,
+      "model_answer": "Hello, I returned bike B241 at North Market. The dock light turned green, but my trip is still active and I have not received a receipt. I attached a photo. Can you close my trip or tell me what to do next?",
+      "points": [
+        {
+          "label": "Identify B241 and the station",
+          "any": [
+            "B241",
+            "North Market"
+          ]
+        },
+        {
+          "label": "Explain that the trip is still open",
+          "any": [
+            "still active",
+            "trip active",
+            "trip is open",
+            "has not ended"
+          ]
+        },
+        {
+          "label": "Ask to close the trip or stop charges",
+          "any": [
+            "close",
+            "stop charging",
+            "end the trip",
+            "close my trip"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Summarise the problem by the map",
+      "prompt_text": "Phone agent: Can you give me a quick description?",
+      "instructions": "Give your location, then say what the light and app show.",
+      "goal": "Give a concise and accurate report.",
+      "estimated_minutes": 3,
+      "min_words": 20,
+      "model_answer": "I'm at North Market. The green light came on when I docked the bike, but the app shows my trip has not ended.",
+      "points": [
+        {
+          "label": "Name the station",
+          "any": [
+            "North Market"
+          ]
+        },
+        {
+          "label": "Say green light",
+          "any": [
+            "green light",
+            "light is green",
+            "light was green"
+          ]
+        },
+        {
+          "label": "Say the trip has not ended",
+          "any": [
+            "still active",
+            "trip active",
+            "has not ended"
+          ]
+        }
+      ]
+    }
+  ]
+}

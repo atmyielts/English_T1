@@ -1,0 +1,70 @@
+{
+  "item": {
+    "slug": "c2-a-play-uses-memory-without-idealising-it",
+    "title": "Reconsider a Review That Calls a Play Nostalgic",
+    "level": "C2",
+    "genre": "critical response",
+    "audience": "readers of a local theatre review",
+    "prompt_text": "A review says a play idealises an old neighbourhood because its characters often remember a closed laundrette. In the play, a former customer recalls long conversations while waiting for the washing. A former attendant remembers hours of unpaid closing work. In the last scene, the two use the laundrette keys to open a box of letters and choose which letters can be read aloud. Write a critical response that engages fairly with the review and uses the scene details to offer a different interpretation.",
+    "expected_length_min": 240,
+    "expected_length_max": 320,
+    "target_grammar": "Concession, qualification, parallel contrasts, and precise interpretation of dramatic action.",
+    "target_structure": "Represent the review fairly, compare the two memories, analyse the final action, and state a qualified interpretation.",
+    "target_vocabulary": [
+      "nostalgia",
+      "selective",
+      "attendant",
+      "unpaid",
+      "withheld",
+      "interpretation",
+      "remembrance"
+    ],
+    "sort_order": 305,
+    "checklist": [
+      {
+        "point": "Treat the reviewer’s reason for reading the play as nostalgic fairly.",
+        "keywords": [
+          "reviewer",
+          "nostalgia",
+          "nostalgic",
+          "remember",
+          "warmth"
+        ]
+      },
+      {
+        "point": "Explain what changes when the attendant's memory is considered.",
+        "keywords": [
+          "attendant",
+          "unpaid",
+          "closing",
+          "customer"
+        ]
+      },
+      {
+        "point": "Analyse the box of letters and the decision to read selectively.",
+        "keywords": [
+          "keys",
+          "letters",
+          "read aloud",
+          "withhold",
+          "box"
+        ]
+      },
+      {
+        "point": "Give a defensible alternative interpretation rather than an absolute claim.",
+        "keywords": [
+          "suggests",
+          "remembrance",
+          "selective",
+          "allows",
+          "i read",
+          "my reading"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    }
+  },
+  "children": []
+}

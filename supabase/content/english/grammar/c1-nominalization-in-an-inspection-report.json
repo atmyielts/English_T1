@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "c1-nominalization-in-an-inspection-report",
+    "level": "C1",
+    "focus_area": "nominalization-and-agency",
+    "title": "Nominalization and agency in an inspection report",
+    "tags": [
+      "nominalization",
+      "noun phrases",
+      "agency"
+    ],
+    "explanation_text": "A nominalization turns an action or process into a noun. “The crew inspected the bearings” can become “the crew’s inspection of the bearings”. The noun phrase lets a report refer to the whole event as the subject of a new sentence: “The crew’s inspection of the bearings revealed three faults.”\n\nCheck what the noun needs. Inspection can take an of phrase for the thing inspected. Decision can take a to-infinitive for the action agreed on: “the decision to close the lane”. Different nouns take different complements, so carry the meaning across and check the pattern.\n\nKeep the roles visible if they matter. In “the inspection of the pump by the contractor”, the pump was inspected and the contractor did the work. A possessive can also identify the doer when the meaning is clear. Choosing a noun can help a report connect ideas, but several vague noun phrases can bury the action and the responsible person. Read the finished sentence and check whether each role is still apparent.",
+    "contrast_text": "“The coordinator approved the schedule” directly states the action. “The coordinator’s approval of the schedule” names it and can serve as the subject of another statement, such as “The coordinator’s approval of the schedule came today.”",
+    "common_error_pattern": "A nominalization can hide the doer. Keep the person or team in a possessive or a by-phrase when accountability matters, and use the complement that fits the action noun.",
+    "examples": [
+      {
+        "bad": "The team’s inspection the lift took two hours.",
+        "good": "The team’s inspection of the lift took two hours."
+      },
+      {
+        "bad": "The committee’s decision to closing the lane was announced at noon.",
+        "good": "The committee’s decision to close the lane was announced at noon."
+      },
+      {
+        "bad": "The contractor’s removal of the old signs require an extra visit yesterday.",
+        "good": "The contractor’s removal of the old signs required an extra visit yesterday."
+      },
+      {
+        "bad": "The engineers’ evaluation the drainage plan took a week.",
+        "good": "The engineers’ evaluation of the drainage plan took a week."
+      }
+    ],
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The maintenance team inspected the roof. Its ___ of the roof revealed two leaks. (inspect)",
+      "instructions": "Use the event noun formed from the verb in brackets. Enter only the noun.",
+      "accepted_answers": [
+        "inspection"
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The committee decided to adjust the timetable. Its ___ to adjust the timetable affected only Fridays. (decide)",
+      "instructions": "Use the noun formed from decide. Enter only the noun.",
+      "accepted_answers": [
+        "decision"
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The crew removed the barriers. Its removal ___ the barriers took half an hour.",
+      "instructions": "Complete the noun phrase with the preposition that introduces the thing removed.",
+      "accepted_answers": [
+        "of"
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "An outside inspector approved the drawing. The approval of the drawing ___ the outside inspector allowed construction to begin.",
+      "instructions": "Write the preposition that identifies who gave the approval.",
+      "accepted_answers": [
+        "by"
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "The team assessed the pump’s condition. Its ___ of the pump’s condition will appear in the appendix. (assess)",
+      "instructions": "Use the event noun formed from the verb in brackets. Enter only the noun.",
+      "accepted_answers": [
+        "assessment"
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "The contractor’s assessment the ventilation system took three days.",
+      "instructions": "Rewrite the sentence. Add only the preposition of to connect assessment with the thing assessed.",
+      "accepted_answers": [
+        "The contractor’s assessment of the ventilation system took three days."
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "The team’s decision to replaced the damaged floor was approved yesterday.",
+      "instructions": "Rewrite the sentence. Change only replaced to the form that follows to in this pattern.",
+      "accepted_answers": [
+        "The team’s decision to replace the damaged floor was approved yesterday."
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "The contractor removed the ramp. The work caused a short delay.",
+      "instructions": "Join the ideas in one sentence beginning with “The contractor’s removal”. Use of before the thing removed, and end with “caused a short delay”.",
+      "accepted_answers": [
+        "The contractor’s removal of the ramp caused a short delay."
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "The board decided to extend the warranty. That mattered to the client.",
+      "instructions": "Begin with “The board’s decision”. Retain the exact phrase “to extend the warranty” and end with “mattered to the client”.",
+      "accepted_answers": [
+        "The board’s decision to extend the warranty mattered to the client."
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the words in order",
+      "prompt_text": "of the replacement cable / took place / The inspection / by the safety manager / on Monday.",
+      "instructions": "Use every tile once. Begin with “The inspection”, put the thing inspected before the doer, and end with the tile that has the period.",
+      "accepted_answers": [
+        "The inspection of the replacement cable by the safety manager took place on Monday."
+      ],
+      "target_skill_key": "grammar.nominalization-and-agency",
+      "status": "published"
+    }
+  ]
+}

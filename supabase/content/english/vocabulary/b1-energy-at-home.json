@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "b1-energy-at-home",
+    "level": "B1",
+    "topic": "household energy",
+    "title": "Using energy at home",
+    "description": "Learn how to describe equipment, heating and daily energy use in a home. Practice words for reading a display and turning devices on or off.",
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "word": "meter reading",
+      "part_of_speech": "noun phrase",
+      "definition": "The number shown or recorded on a device that measures how much of a service you have used.",
+      "example": "Take a photo of the meter reading before you move out.",
+      "translation_ru": "показание счётчика",
+      "translation_uz": "hisoblagich koʻrsatkichi",
+      "collocations": [
+        "take a meter reading",
+        "submit a meter reading"
+      ]
+    },
+    {
+      "word": "plug in",
+      "part_of_speech": "phrasal verb",
+      "definition": "To connect equipment to an electricity supply by putting its plug into a socket.",
+      "example": "I need to plug in the lamp before I can turn it on.",
+      "translation_ru": "подключать к розетке",
+      "translation_uz": "vilkani rozetkaga ulash",
+      "collocations": [
+        "plug in a lamp",
+        "plug in a charger"
+      ]
+    },
+    {
+      "word": "unplug",
+      "part_of_speech": "verb",
+      "definition": "To disconnect equipment by taking its plug out of a socket.",
+      "example": "I unplug the fan when I put it away for winter.",
+      "translation_ru": "вынимать вилку из розетки",
+      "translation_uz": "vilkani rozetkadan uzmoq",
+      "collocations": [
+        "unplug a device",
+        "unplug a charger"
+      ]
+    },
+    {
+      "word": "power strip",
+      "part_of_speech": "noun phrase",
+      "definition": "A row of electrical sockets that share one cable and plug.",
+      "example": "The phone chargers are plugged into a power strip under the desk.",
+      "translation_ru": "удлинитель с несколькими розетками",
+      "translation_uz": "bir nechta rozetkasi bor uzaytirgich",
+      "collocations": [
+        "use a power strip",
+        "a power strip under the desk"
+      ]
+    },
+    {
+      "word": "switch off",
+      "part_of_speech": "phrasal verb",
+      "definition": "To stop a device or the lights from working by using a control.",
+      "example": "Please switch off the hall light when you leave.",
+      "translation_ru": "выключать",
+      "translation_uz": "oʻchirmoq",
+      "collocations": [
+        "switch off the lights",
+        "switch off a device"
+      ]
+    },
+    {
+      "word": "socket",
+      "part_of_speech": "noun",
+      "definition": "A point in a wall or on a device where you connect an electrical plug.",
+      "example": "Is there a socket near the kitchen table?",
+      "translation_ru": "розетка",
+      "translation_uz": "rozetka",
+      "collocations": [
+        "a wall socket",
+        "an electrical socket"
+      ]
+    },
+    {
+      "word": "energy-saving",
+      "part_of_speech": "adjective",
+      "definition": "Designed to use less energy than an ordinary product doing the same job.",
+      "example": "We put an energy-saving bulb in the desk lamp.",
+      "translation_ru": "энергосберегающий",
+      "translation_uz": "energiya tejaydigan",
+      "collocations": [
+        "an energy-saving bulb",
+        "an energy-saving setting"
+      ]
+    },
+    {
+      "word": "standby",
+      "part_of_speech": "noun",
+      "definition": "A low-power state in which equipment stays ready to work again quickly.",
+      "example": "The screen is on standby, so it wakes when I move the mouse.",
+      "translation_ru": "режим ожидания",
+      "translation_uz": "kutish rejimi",
+      "collocations": [
+        "leave a screen on standby",
+        "switch to standby"
+      ]
+    },
+    {
+      "word": "electricity use",
+      "part_of_speech": "noun phrase",
+      "definition": "The amount of electrical energy used over a given time.",
+      "example": "The chart shows our electricity use in each month of the year.",
+      "translation_ru": "потребление электроэнергии",
+      "translation_uz": "elektr energiyasi sarfi",
+      "collocations": [
+        "track electricity use",
+        "reduce electricity use"
+      ]
+    },
+    {
+      "word": "smart meter",
+      "part_of_speech": "noun phrase",
+      "definition": "A digital device that records how much energy you use and can send the information automatically.",
+      "example": "The smart meter sends our electricity readings to the supplier.",
+      "translation_ru": "умный счётчик",
+      "translation_uz": "maʼlumotni avtomatik joʻnatadigan aqlli hisoblagich",
+      "collocations": [
+        "install a smart meter",
+        "read a smart meter"
+      ]
+    },
+    {
+      "word": "insulation",
+      "part_of_speech": "noun",
+      "definition": "Material that helps keep heat from passing into or out of a place.",
+      "example": "The new insulation helps the upstairs rooms stay warm for longer.",
+      "translation_ru": "теплоизоляция",
+      "translation_uz": "issiqlikni saqlaydigan izolyatsiya",
+      "collocations": [
+        "roof insulation",
+        "improve insulation"
+      ]
+    },
+    {
+      "word": "appliance",
+      "part_of_speech": "noun",
+      "definition": "A machine used for a job in the home, such as washing clothes or keeping food cold.",
+      "example": "The washing machine is the only appliance running right now.",
+      "translation_ru": "бытовой прибор",
+      "translation_uz": "maishiy jihoz",
+      "collocations": [
+        "a kitchen appliance",
+        "a household appliance"
+      ]
+    },
+    {
+      "word": "heating timer",
+      "part_of_speech": "noun phrase",
+      "definition": "A control that sets when the heating will start or stop.",
+      "example": "We set the heating timer to turn the heat on before we get up.",
+      "translation_ru": "таймер отопления",
+      "translation_uz": "isitish vaqtini belgilaydigan taymer",
+      "collocations": [
+        "set the heating timer",
+        "adjust the heating timer"
+      ]
+    },
+    {
+      "word": "radiator",
+      "part_of_speech": "noun",
+      "definition": "A device that gives out heat to warm the air in a room.",
+      "example": "The radiator near the window keeps the bedroom warm.",
+      "translation_ru": "радиатор отопления",
+      "translation_uz": "isitish radiatori",
+      "collocations": [
+        "turn down the radiator",
+        "a warm radiator"
+      ]
+    }
+  ]
+}

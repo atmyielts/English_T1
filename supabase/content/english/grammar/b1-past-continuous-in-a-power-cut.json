@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "b1-past-continuous-in-a-power-cut",
+    "level": "B1",
+    "focus_area": "past-continuous-and-past-simple",
+    "title": "Past continuous and past simple during a power cut",
+    "tags": [
+      "past continuous",
+      "past simple",
+      "background"
+    ],
+    "explanation_text": "Use was or were + verb-ing to show an action already in progress at a past time. At eight o’clock, the volunteers were packing food boxes. The packing is the activity we can picture at that moment. The sentence does not tell us exactly when they started or finished.\n\nUse the past simple for a completed event in the story. “The lights went out” describes a change. These patterns often appear together: “We were packing boxes when the lights went out.” The longer action provides the background, and the shorter event happens during it. It does not have to stop the longer action. “I was carrying a box when Maya waved” does not say that I put the box down.\n\nYou can put the background first with while: “While the caretaker was checking the hallway, a phone rang.” Look at the timeline first. Words such as when and while can help you see the relationship, but the meaning tells you which tense to choose.",
+    "contrast_text": "“At nine, I opened the hall” places the opening at nine. “At nine, I was opening the hall” shows me in the process of opening it around nine.",
+    "common_error_pattern": "Keep was or were before the -ing form. In a story, check which event is already in progress and which happens during it.",
+    "examples": [
+      {
+        "bad": "We were pack the boxes when the lights failed.",
+        "good": "We were packing the boxes when the lights failed."
+      },
+      {
+        "bad": "At eight, I were waiting by the door.",
+        "good": "At eight, I was waiting by the door."
+      },
+      {
+        "bad": "She was carrying the tray when the bell ringed.",
+        "good": "She was carrying the tray when the bell rang."
+      },
+      {
+        "bad": "While the volunteers stacking chairs, the caretaker opened the side door.",
+        "good": "While the volunteers were stacking chairs, the caretaker opened the side door."
+      }
+    ],
+    "status": "published",
+    "sort_order": 340
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "At eight, the volunteers ___ food boxes. They had started at half past seven. (pack)",
+      "instructions": "Use the past continuous of the verb in brackets.",
+      "accepted_answers": [
+        "were packing"
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "I ___ a list of names when the printer stopped. (check)",
+      "instructions": "Use the past continuous of the verb in brackets for the activity already in progress.",
+      "accepted_answers": [
+        "was checking"
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "While Kim was collecting cups, a phone ___. (ring)",
+      "instructions": "Use the past simple of the verb in brackets.",
+      "accepted_answers": [
+        "rang"
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "I was putting a chair away when the emergency lamp ___ on. (come)",
+      "instructions": "Use the past simple of the verb in brackets.",
+      "accepted_answers": [
+        "came"
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Fill the gap",
+      "prompt_text": "Two helpers started hanging signs before the doors opened. When the doors opened, they ___ signs in the lobby. (hang)",
+      "instructions": "Use the past continuous of the verb in brackets.",
+      "accepted_answers": [
+        "were hanging"
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "The volunteers was decorating the main hall when the power cut began.",
+      "instructions": "Change only was or were to match the subject “the volunteers”.",
+      "accepted_answers": [
+        "The volunteers were decorating the main hall when the power cut began."
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "prompt_text": "While we were clean the tables, the caretaker came in.",
+      "instructions": "Change only the form of clean to complete the past continuous.",
+      "accepted_answers": [
+        "While we were cleaning the tables, the caretaker came in."
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "Asha started counting chairs. The lights went out before she finished.",
+      "instructions": "Combine the events in one sentence. Start with “Asha was”, use count in the -ing form, and finish with “when the lights went out”. Keep chairs as the object.",
+      "accepted_answers": [
+        "Asha was counting chairs when the lights went out."
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Rewrite the sentence",
+      "prompt_text": "The volunteers talked in the hallway. A delivery arrived during their conversation.",
+      "instructions": "Combine the sentences. Start with “While the volunteers”, use the past continuous of talk, and keep “in the hallway” and “a delivery arrived”.",
+      "accepted_answers": [
+        "While the volunteers were talking in the hallway, a delivery arrived."
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the words in order",
+      "prompt_text": "the lights came back on. / was washing / when / My brother / his hands",
+      "instructions": "Use every tile once. Begin with “My brother” and end with the tile that includes the period.",
+      "accepted_answers": [
+        "My brother was washing his hands when the lights came back on."
+      ],
+      "target_skill_key": "grammar.past-continuous-and-past-simple",
+      "status": "published"
+    }
+  ]
+}

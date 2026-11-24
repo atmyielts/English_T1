@@ -1,0 +1,134 @@
+{
+  "item": {
+    "slug": "a2-the-key-in-the-blue-envelope",
+    "title": "The Key in the Blue Envelope",
+    "level": "A2",
+    "summary": "An evening arrival guide tells guests how to get into a small hostel and what to do in the morning.",
+    "content_markdown": "The office at Elmtree Hostel closes at seven in the evening. If you will arrive later, email the office before five on the day you travel. A member of staff will send you the number for the side door. The front door will be locked, so use the side door by the red bench.\n\nInside, there is a shelf with blue envelopes. Look for the one with your name on it. Your room key and a small map are inside. Do not take an envelope with a different name. If you cannot find yours, ring the bell beside the shelf. A member of staff can come down from upstairs to help.\n\nIn the morning, take the map and your booking email to the office. You can ask about places to have breakfast or leave your bag after you give back your key. You can keep your room until ten on the day you leave. If you want to stay another night, ask in the office before ten.",
+    "category": "Travel",
+    "theme": "hostel late check-in",
+    "tone": "sand",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "guest information",
+      "word_count": 167
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Who is the first paragraph mainly for?",
+        "options": [
+          "People who want to book a room for next week",
+          "Guests who want a different kind of room",
+          "Guests who will arrive after the office closes",
+          "Staff who are opening the office early"
+        ],
+        "answer_index": 2,
+        "explanation": "It tells guests arriving after seven how to get in when the office and front door are closed."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What must a late guest do before five?",
+        "options": [
+          "Take the room key to the office",
+          "Ring the bell at the hostel",
+          "Go to the front door",
+          "Email the hostel office"
+        ],
+        "answer_index": 3,
+        "explanation": "Late guests should email the office before five on the day they travel."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What should a late guest do if the only envelope on the shelf has another guest’s name?",
+        "options": [
+          "Wait by the red bench until morning.",
+          "Ring the bell beside the shelf.",
+          "Put it in the office.",
+          "Take it and check the key."
+        ],
+        "answer_index": 1,
+        "explanation": "Guests are told to leave envelopes with other names alone and ring the bell if they cannot find their own."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “give back your key” mean?",
+        "options": [
+          "Leave your key in your room",
+          "Ask a member of staff for a new key",
+          "Pick up your key from the office",
+          "Return your key to the staff"
+        ],
+        "answer_index": 3,
+        "explanation": "After a guest gives the key back, they can still ask to leave a bag at the hostel."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The hostel says its front door stays open after seven in the evening.",
+        "answer": "false",
+        "explanation": "The instructions tell late guests to use the side door because the front door will be locked."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The envelopes are on a ___. Inside each one guests can find a key and a ___.",
+        "answers": [
+          [
+            "shelf"
+          ],
+          [
+            "map"
+          ]
+        ],
+        "word_bank": [
+          "map",
+          "desk",
+          "bell",
+          "shelf"
+        ],
+        "explanation": "The second paragraph puts blue envelopes on a shelf and names a key and map as their contents."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "What to do after your first night",
+          "Picking up your room key",
+          "How to reach the hostel by bus",
+          "Getting in when the office is closed"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The first paragraph covers entry after closing, the second explains where to find the key, and the third describes the morning and checkout."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b1-a-broken-umbrella-on-stage",
+    "title": "Tell the Story of an Umbrella on Stage",
+    "level": "B1",
+    "prompt_type": "storytelling",
+    "task_type": "story",
+    "target_duration_seconds": 65,
+    "prompt_text": "A group planned to use a large piece of paper as the moon in a short play, but the paper tore. You found a broken umbrella and used it instead. Tell the story. Say what you changed, how the audience reacted, and one thing you would do differently next time.",
+    "target_grammar": "Past simple and past continuous; because and so for cause and effect; would for reflection.",
+    "fluency_objective": "Give the original plan quickly, slow down when the replacement appears, and leave time for the last reflection.",
+    "pronunciation_objective": "Stress tore, umbrella and moon to help the listener follow the change.",
+    "target_vocabulary": [
+      "curtain",
+      "tore",
+      "umbrella",
+      "frame",
+      "shadow",
+      "audience"
+    ],
+    "sort_order": 302,
+    "cues": [
+      {
+        "text": "Tell what the group planned and what went wrong.",
+        "keywords": [
+          "paper moon",
+          "paper tore",
+          "tore",
+          "planned to"
+        ]
+      },
+      {
+        "text": "Say how you used the broken umbrella instead.",
+        "keywords": [
+          "umbrella",
+          "frame",
+          "round shape",
+          "held it"
+        ]
+      },
+      {
+        "text": "Describe a specific reaction from the audience.",
+        "keywords": [
+          "audience",
+          "started laughing",
+          "a laugh",
+          "said they",
+          "pointed up"
+        ]
+      },
+      {
+        "text": "Say what you would change next time.",
+        "keywords": [
+          "next time",
+          "i would test",
+          "check the shadow",
+          "i'd try"
+        ]
+      }
+    ],
+    "model_opening": "We were getting ready for a short play, and I was supposed to hold up a paper moon behind a curtain.",
+    "model_answer": "We were getting ready for a short play, and I was supposed to hold up a paper moon behind a curtain. Just before the scene, the paper tore in two. I found a broken umbrella backstage and opened it halfway. A friend put a light behind it, and its frame made a round shadow on the curtain. The audience recognised it as the moon, although a few children laughed when they noticed the handle at the bottom. We used that laugh in the next line. Next time, I'd check the shadow from the middle of the room before the show, because it looked different from backstage."
+  },
+  "children": []
+}

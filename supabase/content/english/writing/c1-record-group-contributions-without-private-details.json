@@ -1,0 +1,69 @@
+{
+  "item": {
+    "slug": "c1-record-group-contributions-without-private-details",
+    "title": "Design a Fair Group Handover Record",
+    "level": "C1",
+    "genre": "department memo",
+    "audience": "the coordinator of a college project course",
+    "prompt_text": "In a group project course, tutors ask students to record who completed each handover and what was delayed. Reports sometimes include classmates' private reasons for missing a meeting, although tutors mainly need to know whether the next group received the work. Write a memo proposing what a handover record should contain, how an exception could be raised privately, and how tutors could use the record without treating it as a full account of a student's contribution.",
+    "expected_length_min": 195,
+    "expected_length_max": 270,
+    "target_grammar": "Nominalisation; concessive and conditional structures; careful distinctions between evidence and inference.",
+    "target_structure": "State the purpose, show a usable record, describe a private exception path, and define what the record can support.",
+    "target_vocabulary": [
+      "handover",
+      "completion",
+      "outstanding",
+      "verified",
+      "follow-up",
+      "exception",
+      "context"
+    ],
+    "sort_order": 304,
+    "checklist": [
+      {
+        "point": "Define the handover information a tutor actually needs.",
+        "keywords": [
+          "handover",
+          "received",
+          "outstanding",
+          "version",
+          "next step"
+        ]
+      },
+      {
+        "point": "Provide a concrete example of an entry.",
+        "keywords": [
+          "for example",
+          "received at",
+          "record that",
+          "entry could"
+        ]
+      },
+      {
+        "point": "Explain a private route for relevant exceptions.",
+        "keywords": [
+          "privately",
+          "personal details",
+          "contact the tutor",
+          "confidential"
+        ]
+      },
+      {
+        "point": "Explain why the record cannot determine total contribution by itself.",
+        "keywords": [
+          "full account",
+          "only shows",
+          "cannot establish",
+          "does not show",
+          "other evidence",
+          "separate"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    }
+  },
+  "children": []
+}

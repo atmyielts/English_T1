@@ -1,0 +1,94 @@
+{
+  "item": {
+    "slug": "c2-interpret-a-timebank-ledger",
+    "title": "Interpret a timebank ledger",
+    "level": "C2",
+    "summary": "Two organisers discuss whether a timebank ledger captures what members value.",
+    "transcript_text": "Chair: The timebank ledger shows far fewer exchanges this quarter. Do we conclude that members have stopped helping one another?\nTreasurer: Recorded exchanges have fallen, certainly. We recently asked volunteers to record only work that had been agreed in advance, because reimbursements depend on a clear booking. A neighbour who offers ten minutes of help on the spot is no longer counted.\nChair: Then any fall might tell us more about our rule than about demand.\nTreasurer: Some of it might. But what is absent from the ledger can still matter for planning. Advance bookings need staffing; informal help may be one reason people stay in the network. I would keep the ledger for reimbursements and ask a short, separate anonymous question about informal exchanges. Neither measure can carry both interpretations by itself.\nChair: So the issue isn't whether the ledger is reliable. It's whether we're asking it to answer the right question.",
+    "category": "Civic",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 60,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "civic",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Chair",
+        "Treasurer"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What general issue does the discussion illustrate?",
+        "options": [
+          "An incomplete but accurate record can be adequate for one decision and misleading for another",
+          "Values that cannot be measured should be excluded from planning",
+          "Financial records become less accurate when checked against interviews",
+          "Organisations need one comprehensive measure for every use"
+        ],
+        "answer_index": 0,
+        "explanation": "The ledger is fit for reimbursement, while a separate source is needed to learn about informal exchange."
+      },
+      {
+        "prompt": "Why is the comparison across quarters limited?",
+        "options": [
+          "The ledger no longer records the same range of activities",
+          "Volunteer reimbursements no longer use the ledger",
+          "The number of advance bookings was never recorded",
+          "Members consciously agreed to help less often"
+        ],
+        "answer_index": 0,
+        "explanation": "The inclusion rule changed to cover agreed work, so recorded exchanges need not track the same activity population across quarters."
+      },
+      {
+        "prompt": "What distinction matters to the treasurer?",
+        "options": [
+          "Reliable measures and unreliable measures",
+          "Neighbourhood help and all financial records",
+          "The purpose of operational records and the information needed to assess community activity",
+          "Advance arrangements and exchanges that require no labour"
+        ],
+        "answer_index": 2,
+        "explanation": "Reimbursements and organisational activity ask different questions. Informal assistance can matter even without a ledger entry."
+      },
+      {
+        "prompt": "How should the chair's final comment be understood?",
+        "options": [
+          "It questions the staff member's honesty",
+          "It rejects separate informal data collection",
+          "It calls for the ledger to cover every claim stakeholders make",
+          "It distinguishes accuracy within a purpose from adequacy for another purpose"
+        ],
+        "answer_index": 3,
+        "explanation": "A ledger may record its defined transactions accurately yet fail to measure informal help."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "reimbursements depend on a clear booking",
+      "focus_phrase": "a clear booking",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "what is absent from the ledger can still matter for planning",
+      "focus_phrase": "absent from the ledger",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Neither measure can carry both interpretations by itself.",
+      "focus_phrase": "both interpretations",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

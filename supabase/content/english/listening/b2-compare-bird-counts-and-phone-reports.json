@@ -1,0 +1,94 @@
+{
+  "item": {
+    "slug": "b2-compare-bird-counts-and-phone-reports",
+    "title": "Compare bird counts and phone reports",
+    "level": "B2",
+    "summary": "A local radio guest explains two different ways of observing spring migration.",
+    "transcript_text": "Host: This week's sightings map suggests the cranes have shifted east. Does it show a new migration route?\nEcologist: The map reflects reports people send from their phones. The new visitor centre opened to the east last month, so more observers are stopping there. Meanwhile, volunteers at our three regular watch points recorded almost the same distribution as last spring.\nHost: Should we set the phone reports aside?\nEcologist: They can highlight places worth checking. I'd use the reports to choose a few temporary watch points and count birds there at fixed times. Asking people to use both methods gives us a chance to distinguish a real route change from a change in where people are looking.\nHost: So the pattern is a lead, not a mapped route yet.",
+    "category": "Environment",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 134,
+    "duration_seconds": 56,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "environment",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Host",
+        "Ecologist"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Which question are the speakers trying to answer?",
+        "options": [
+          "Whether a change in reports reflects the birds' movement or the observers' behaviour",
+          "Whether the visitor centre should charge for a monitoring app",
+          "Whether volunteers can ask tourists to submit more reports",
+          "Whether the watch points have recorded a decline in every bird species"
+        ],
+        "answer_index": 0,
+        "explanation": "The ecologist separates a possible migration shift from increased reporting in the east."
+      },
+      {
+        "prompt": "What does the ecologist say may account for the map pattern?",
+        "options": [
+          "The regular watch points have moved east",
+          "More observers are now stopping in the east",
+          "The cranes no longer travel past the visitor centre",
+          "Phone users are counting more than one species"
+        ],
+        "answer_index": 1,
+        "explanation": "The new visitor centre can change where people look and report, independently of bird behaviour."
+      },
+      {
+        "prompt": "What useful role does the ecologist give the phone reports?",
+        "options": [
+          "Proving a permanent change",
+          "Replacing the volunteers' observations",
+          "Identifying where to run a follow-up count",
+          "Correcting last spring's distribution automatically"
+        ],
+        "answer_index": 2,
+        "explanation": "The proposed response uses reports to select temporary sites, then collects comparable counts."
+      },
+      {
+        "prompt": "What comparison would help resolve the question?",
+        "options": [
+          "Fixed-time bird observations alongside reports of varying coverage",
+          "Entries from before and after phones were invented",
+          "A count of visitor-centre tickets alone",
+          "Descriptions of how observers designed the screenshots"
+        ],
+        "answer_index": 0,
+        "explanation": "Regular observations make it possible to distinguish changing bird routes from changes in who observes where."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "reflects reports people send from their phones",
+      "focus_phrase": "reports people send",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "almost the same distribution as last spring",
+      "focus_phrase": "the same distribution",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "count birds there at fixed times",
+      "focus_phrase": "at fixed times",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

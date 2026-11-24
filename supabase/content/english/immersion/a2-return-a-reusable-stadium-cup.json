@@ -1,0 +1,101 @@
+{
+  "item": {
+    "slug": "a2-return-a-reusable-stadium-cup",
+    "title": "Return a reusable stadium cup",
+    "level": "A2",
+    "mission_type": "service",
+    "context_text": "You borrowed a cup at a match. You want to tell a friend where to return it and get the deposit back.",
+    "objective_text": "Find a return station and explain how the deposit works.",
+    "target_vocabulary": [
+      "cup",
+      "deposit",
+      "refund",
+      "ticket",
+      "exit"
+    ],
+    "success_conditions": [
+      "Find a return station and explain how the deposit works."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the information",
+      "instructions": "Read the note and use its details to answer both questions.",
+      "prompt_text": "STADIUM CUP RETURN\nA reusable cup costs a 10,000 som deposit. You get it back when you return the cup and show the small deposit ticket. Return booths beside Gates A and C are open until 21:30. After 21:00, Gate A is exit-only and staff direct visitors to the booth at Gate C. Your group will leave at 21:10.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which booth should your group use?",
+          "options": [
+            "Gate C",
+            "Gate A",
+            "Any gate without a return booth"
+          ],
+          "answer_index": 0,
+          "explanation": "After 21:00 visitors must use the Gate C booth. Your group leaves later."
+        },
+        {
+          "prompt": "What else should you show with the cup?",
+          "options": [
+            "A bank card",
+            "A photo of the match",
+            "The small deposit ticket"
+          ],
+          "answer_index": 2,
+          "explanation": "The rules require the deposit ticket along with the cup."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Explain the return to a friend",
+      "prompt_text": "Friend: Can I get my money back after the match?",
+      "instructions": "Name the gate and the document to show.",
+      "goal": "Give the return instructions.",
+      "estimated_minutes": 5,
+      "min_words": 17,
+      "model_answer": "Yes, take the cup to the booth at Gate C before half past nine. Keep the small deposit ticket to show them.",
+      "points": [
+        {
+          "label": "Use Gate C",
+          "any": [
+            "Gate C"
+          ]
+        },
+        {
+          "label": "Show the deposit ticket",
+          "any": [
+            "deposit ticket",
+            "small ticket"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Request the refund",
+      "prompt_text": "Worker: Good evening. What can I do for you?",
+      "instructions": "Hand back the cup and ask for the deposit.",
+      "goal": "Complete a simple transaction.",
+      "estimated_minutes": 3,
+      "min_words": 13,
+      "model_answer": "I am returning this cup and here is my ticket. Could I have my deposit back, please?",
+      "points": [
+        {
+          "label": "Return the cup",
+          "any": [
+            "cup"
+          ]
+        },
+        {
+          "label": "Ask for the deposit",
+          "any": [
+            "deposit",
+            "money back"
+          ]
+        }
+      ]
+    }
+  ]
+}

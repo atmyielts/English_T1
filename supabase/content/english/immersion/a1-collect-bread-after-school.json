@@ -1,0 +1,101 @@
+{
+  "item": {
+    "slug": "a1-collect-bread-after-school",
+    "title": "Collect bread after school",
+    "level": "A1",
+    "mission_type": "service",
+    "context_text": "Your father ordered two loaves. He asks you to collect them after school.",
+    "objective_text": "Find the collection time and give the order number.",
+    "target_vocabulary": [
+      "bread",
+      "loaf",
+      "collect",
+      "order"
+    ],
+    "success_conditions": [
+      "Find the collection time and give the order number."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the information",
+      "instructions": "Read the note and use its details to answer both questions.",
+      "prompt_text": "BAKERY MESSAGE\nOrder twelve is ready at four. Collect it at the back counter. The large bag has two loaves. The café counter only takes drink orders.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "When is order twelve ready?",
+          "options": [
+            "At three",
+            "At four",
+            "At six"
+          ],
+          "answer_index": 1,
+          "explanation": "The message says it is ready at four."
+        },
+        {
+          "prompt": "Where should you go for the order?",
+          "options": [
+            "The café counter",
+            "The front door",
+            "The back counter"
+          ],
+          "answer_index": 2,
+          "explanation": "The back counter is named for collection. The café counter serves drinks."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send your father a text",
+      "prompt_text": "Father: When will you go, and where?",
+      "instructions": "Include the time and which counter.",
+      "goal": "Confirm the collection details.",
+      "estimated_minutes": 5,
+      "min_words": 12,
+      "model_answer": "I will go at four after school. I will get the bread at the back counter.",
+      "points": [
+        {
+          "label": "Say four",
+          "any": [
+            "four",
+            "4 pm"
+          ]
+        },
+        {
+          "label": "Say back counter",
+          "any": [
+            "back counter"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask for the bag",
+      "prompt_text": "Worker: Hello, how can I help?",
+      "instructions": "Say what you want to collect and give the number.",
+      "goal": "Ask politely for your order.",
+      "estimated_minutes": 3,
+      "min_words": 8,
+      "model_answer": "Hello, I would like to collect the bread for order twelve, please.",
+      "points": [
+        {
+          "label": "Name bread or loaves",
+          "any": [
+            "bread",
+            "loaves"
+          ]
+        },
+        {
+          "label": "Give the order number",
+          "any": [
+            "twelve",
+            "12"
+          ]
+        }
+      ]
+    }
+  ]
+}

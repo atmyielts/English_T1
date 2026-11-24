@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b1-where-the-school-lunch-leftovers-go",
+    "title": "Where the School Lunch Leftovers Go",
+    "level": "B1",
+    "summary": "A school checks what goes into its lunch bins before deciding what to change.",
+    "content_markdown": "At Harrow Lane School, kitchen worker Meera Lark wanted to find out how much food went into the lunch bins. At the end of each lunch, she placed the full bags on a scale. The first week's figures looked very high. Then a pupil helping to clear the tables put three half-full drink bottles into one bag. She realised the weight included drinks and their containers, as well as food.\n\nFor the next week the team set out two labelled containers. Pupils could put fruit skins and other food into one and empty drink bottles into the other. A volunteer stood beside them for the first two days. Some pupils thought a paper cup could go with food because it was made from paper. The volunteer pointed out that the sign was about what had been eaten or prepared in the kitchen, rather than what a cup was made of.\n\nThe new figures could not be compared directly with the first week's total. The team had changed what it was weighing. Instead, it watched what happened from Monday to Friday under the same system. On two days the kitchen served fruit whole, and on the other days it offered the same kind of fruit cut into pieces. The days with pieces left less uneaten fruit, although the kitchen could not tell from one week whether the same pattern would continue.\n\nNext month the school will keep the two containers and repeat the check. The goal is to see which changes prevent waste before it reaches a bin. Showing pupils where to put leftovers solves a different problem. The team wants to work on both.",
+    "category": "Community",
+    "theme": "sorting lunch waste",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "school newsletter feature",
+      "word_count": 275
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why did the school change its way of weighing waste?",
+        "options": [
+          "Pupils put less food in the bins on the first day.",
+          "The first bags mixed food with items that the kitchen was not trying to measure.",
+          "The school wanted to count bottles of drinking water instead of food.",
+          "The kitchen discovered that its scale could not work after lunch."
+        ],
+        "answer_index": 1,
+        "explanation": "Meera noticed that half-full bottles in the bags increased the total, which had been read as a measure of food waste."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did some pupils think belonged with the food waste?",
+        "options": [
+          "Paper cups",
+          "A lunch plate from home",
+          "Drinks in glass bottles",
+          "Empty food tins"
+        ],
+        "answer_index": 0,
+        "explanation": "Some thought a paper cup belonged with food because it was made from paper."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the article say the two weekly totals cannot be compared directly?",
+        "options": [
+          "The kitchen used a different scale each Monday.",
+          "No volunteer was present in the second week.",
+          "The two totals describe different groups of waste.",
+          "The fruit pieces weighed more than the whole fruit."
+        ],
+        "answer_index": 2,
+        "explanation": "The old figure includes drinks and containers. The later checks use a separate food container."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “prevent waste” mean in this article?",
+        "options": [
+          "Stop edible food from being left over in the first place",
+          "Change the words on the signs",
+          "Find out who should move the bins",
+          "Put heavier rubbish into a different container"
+        ],
+        "answer_index": 0,
+        "explanation": "The kitchen wants to make choices that result in less food being left, before pupils sort it at the bins."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The team proved that cutting fruit will reduce waste in every future week.",
+        "answer": "false",
+        "explanation": "The team explicitly says that a single week was not enough to show whether the pattern would continue."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Full bags were first placed on a ___. In the second week food went into a separate ___.",
+        "answers": [
+          [
+            "scale"
+          ],
+          [
+            "container"
+          ]
+        ],
+        "word_bank": [
+          "scale",
+          "bottles",
+          "container",
+          "fruit"
+        ],
+        "explanation": "The first paragraph names the scale. The second explains the new containers for separate waste."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "The next check and what the school hopes to learn",
+          "Two groups of waste in one measurement",
+          "A clearer way to sort rubbish",
+          "Moving lunch to a different room",
+          "A possible food change that needs a further check"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The article moves from a misleading total, to better separation, to an observation about fruit, and then to the plans for another check."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,91 @@
+{
+  "item": {
+    "slug": "a1-watch-the-aquarium-feeding",
+    "title": "Watch the aquarium feeding",
+    "level": "A1",
+    "summary": "An aquarium announcement tells visitors when and where to watch the fish.",
+    "transcript_text": "Good morning. The fish feeding starts at eleven in the small room, next to the café. Please stand behind the yellow line. You can take photos, but please turn off the flash. There is another feeding at two. The café stays open until four.",
+    "category": "Leisure",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 100,
+    "duration_seconds": 27,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "leisure",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What is the message mainly about?",
+        "options": [
+          "Changes to the café menu",
+          "How to watch the fish feeding",
+          "Buying tickets for the shop",
+          "How to look after a fish at home"
+        ],
+        "answer_index": 1,
+        "explanation": "The speaker tells visitors about the feeding times, location and rules."
+      },
+      {
+        "prompt": "Where is the fish feeding?",
+        "options": [
+          "In the café",
+          "In the shop",
+          "In the small room next to the café",
+          "Outside the aquarium"
+        ],
+        "answer_index": 2,
+        "explanation": "The small room beside the café is the location. The café is a landmark."
+      },
+      {
+        "prompt": "When is the second feeding?",
+        "options": [
+          "At two",
+          "At eleven",
+          "At four",
+          "At twelve"
+        ],
+        "answer_index": 0,
+        "explanation": "Eleven is the first feeding and four is the café closing time. The second feeding is at two."
+      },
+      {
+        "prompt": "What should people do with their cameras?",
+        "options": [
+          "Put them in a bag",
+          "Only take pictures outside",
+          "Use them with the flash on",
+          "Turn the flash off"
+        ],
+        "answer_index": 3,
+        "explanation": "Photos are allowed as long as visitors turn off the flash."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "The fish feeding starts at eleven",
+      "focus_phrase": "starts at eleven",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please stand behind the yellow line.",
+      "focus_phrase": "behind the yellow line",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "please turn off the flash",
+      "focus_phrase": "turn off the flash",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}
