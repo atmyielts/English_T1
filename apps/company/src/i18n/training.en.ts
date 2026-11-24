@@ -202,6 +202,7 @@ const trainingBaseEn = {
   'training.roleplay.getFeedback': 'Get feedback',
   'training.roleplay.feedbackWorking': 'Preparing feedback…',
   'training.roleplay.feedback': 'Feedback',
+  'training.roleplay.modelReply': 'Example response',
   'training.roleplay.goalMet': 'Goal reached',
   'training.roleplay.goalNotMet': 'Goal not reached yet',
   'training.roleplay.good': 'You said well',

@@ -1,6 +1,7 @@
 import { loadBankQuestions } from './bank.ts';
 import { AttemptError, getAttemptResult, submitAttempt } from './completion.ts';
 import { readStartBody, startAttempt, startSelected } from './start.ts';
+import { listShortSets, startShortSet } from './short-sets.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createSatTutorHandler, generateTutorFeedback, type TutorMode } from "./tutor.ts";
@@ -178,6 +179,15 @@ serve(async (req) => {
       const byId = new Map(rows.map((q: any) => [q.id, q]));
       const history = Object.fromEntries(page.map(e => [e.id, e.status]));
       return json(200, { questions: ids.map(id => byId.get(id)).filter(Boolean).map(questionForLearner), total, offset: query.offset, limit: query.limit, facets, history, matching_history: matchingHistory });
+    }
+
+    if (req.method === "GET" && path === "/short-sets") {
+      return json(200, { sets: await listShortSets(sb, user.id) });
+    }
+
+    if (req.method === "POST" && path === "/short-sets/start") {
+      const result = await startShortSet(sb, user.id, await readStartBody(req));
+      return json(200, { ...result, questions: result.questions.map(questionForLearner) });
     }
 
     if (req.method === "POST" && path === "/attempts/start") {

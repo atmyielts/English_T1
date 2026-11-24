@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PracticeTopNav } from '../components/PracticeTopNav';
 import { QuestionCard } from '../components/QuestionCard';
 import { attemptStart, bankGet, type Facets, type QuestionStatus, type SatQuestion } from '../lib/api';
@@ -97,6 +97,7 @@ export const BankPage = () => {
             <p>{t('bank.lead')}</p>
           </div>
           <div className="bank-start">
+            <Link className="btn ghost" to="/short-sets">{t('shortSets.title')}</Link>
             <label>{t('bank.count')}
               <select value={count} onChange={event => setCount(Number(event.target.value))}>
                 {[5, 10, 15, 20].map(n => <option key={n} value={n}>{n}</option>)}

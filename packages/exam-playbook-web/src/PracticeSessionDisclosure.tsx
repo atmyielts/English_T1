@@ -6,19 +6,23 @@ const labels = {
   en: {
     next: 'Up next', started: 'In progress', openEarly: 'Open early', review: 'Review session', hide: 'Hide session',
     resume: 'Go to next session', hint: 'Follow the next session or open a later one early.',
+    checkpoint: 'Week {week} checkpoint',
   },
   uz: {
     next: 'Navbatdagi mashg‘ulot', started: 'Jarayonda', openEarly: 'Oldindan ochish', review: 'Mashg‘ulotni takrorlash', hide: 'Mashg‘ulotni yashirish',
     resume: 'Navbatdagi mashg‘ulotga o‘tish', hint: 'Navbatdagi mashg‘ulotni bajaring yoki keyingisini oldindan oching.',
+    checkpoint: '{week}-hafta nazorat mashqi',
   },
   ru: {
     next: 'Следующее занятие', started: 'В процессе', openEarly: 'Открыть раньше', review: 'Повторить занятие', hide: 'Скрыть занятие',
     resume: 'Перейти к следующему занятию', hint: 'Начните следующее занятие или откройте более позднее раньше.',
+    checkpoint: 'Проверка за неделю {week}',
   },
 } as const;
 
 export function usePracticeSessionLabels() {
-  return labels[useI18n().locale];
+  const copy = labels[useI18n().locale];
+  return { ...copy, checkpointFor: (week: number) => copy.checkpoint.replace('{week}', String(week)) };
 }
 
 export function PracticeSessionDisclosure({ state, title, buttonClassName, initiallyOpen = false, preview, children }: {

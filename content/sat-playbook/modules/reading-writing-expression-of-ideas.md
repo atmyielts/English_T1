@@ -472,3 +472,11 @@ Continue with the rest of the SAT Playbook:
 - [Pacing and adaptive modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules) explains how module 1 affects module 2 and how to plan your time.
 - [Score goals and study plans](https://playbook.sat.schood.online/score-goals-and-study-plans) helps you set a target and choose a plan.
 - [SAT essentials](https://playbook.sat.schood.online/sat-essentials) gives the full picture of the test if you are just starting.
+
+## Worked Example and Try It
+
+**Worked example.** A student has notes about two ferry routes. Both take 22 minutes; one has three docking points and the other has one. The writing goal is to emphasize shared travel time. “Both ferry routes take 22 minutes” addresses that goal directly. Bringing in docking points would shift attention to the difference.
+
+**Try it.** A volunteer group spent 6 hours cataloging photographs in April and 9 hours in May. It identified the years of 32 photographs in April and 36 in May. Write one sentence emphasizing the change in hours.
+
+**Check your work.** “The group spent three more hours cataloging photographs in May than in April.” The number of dated photographs answers a separate question about output.

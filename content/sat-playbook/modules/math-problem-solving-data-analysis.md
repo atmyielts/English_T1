@@ -359,3 +359,11 @@ About 5 to 7 across the whole Math section, according to College Board's specifi
 2. Strengthen the larger Math domains in [Algebra](https://playbook.sat.schood.online/math-algebra) and [Advanced Math](https://playbook.sat.schood.online/math-advanced-math).
 3. Complete the Math set with [Geometry and Trigonometry](https://playbook.sat.schood.online/math-geometry-trigonometry).
 4. The quantitative evidence questions in [Information and Ideas](https://playbook.sat.schood.online/reading-writing-information-ideas) use the same graph-reading skills.
+
+## Worked Example and Try It
+
+**Worked example.** At a library workshop, 12 of 20 first-time visitors finish a task, and 18 of 60 returning visitors finish it. To find the overall rate, combine the actual counts: (12 + 18)/(20 + 60) = 30/80 = 37.5%. Averaging 60% and 30% gives 45%, which weights the smaller group too heavily.
+
+**Try it.** A similar event has 15 successes out of 25 in its first group and 15 successes out of 75 in its second. What percentage of all attendees succeed?
+
+**Check your work.** There are 30 successes among 100 attendees, so the overall rate is 30%. Equal numbers of successes can come from groups with unequal rates.

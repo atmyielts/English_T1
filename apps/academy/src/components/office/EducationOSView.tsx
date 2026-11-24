@@ -3,6 +3,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import {AssignmentAudioPanel} from '../audio/AssignmentAudioPanel';
 import {OperationalPendingNotice} from './OperationalPendingNotice';
 import {pendingOperational} from '../../lib/operationalRequest';
+import { practiceAssignments } from '../../lib/assignmentPractice';
 import {
   teacherStudioAssignments,
   teacherStudioAttendance,
@@ -1727,6 +1728,14 @@ export const EducationOSView = ({
               <div className="panel">
                 <h3>{editingAssignmentId ? 'Edit assignment' : 'Create assignment'}</h3>
                 <form className="grid" onSubmit={submitAssignment}>
+                  {!editingAssignmentId ? <select className="input" aria-label={translate('Fill from practice material')} value=""
+                    onChange={(event) => {
+                      const practice = practiceAssignments.find((item) => item.id === event.currentTarget.value);
+                      if (practice) setAssignmentForm((previous) => ({ ...previous, title: practice.title, description: practice.description, assignment_type: practice.assignment_type }));
+                    }}>
+                    <option value="">{translate('Fill from practice material')}</option>
+                    {practiceAssignments.map((practice) => <option key={practice.id} value={practice.id}>{practice.level} · {practice.title}</option>)}
+                  </select> : null}
                   <input className="input" placeholder={translate("Assignment title")} value={assignmentForm.title} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, title: event.target.value }))} required />
                   <textarea className="input" placeholder={translate("Instructions")} value={assignmentForm.description} onChange={(event) => setAssignmentForm((prev) => ({ ...prev, description: event.target.value }))} />
                   <div className="grid three">

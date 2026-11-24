@@ -7,7 +7,7 @@ import { createSession } from '../services/persistence';
 import { useAccess } from '../lib/useAccess';
 import { useAppT, type AppKey } from '../i18n';
 import { is2026Metadata, resolveTaskParam, TASKS_BY_SECTION, type Toefl2026Task } from '../features/toefl2026/tasks';
-import { buildToeflPracticeCalendar, type ToeflPracticeSection } from '../features/toefl2026/practiceCalendar';
+import { buildToeflPracticeCalendar, toeflPracticeCheckpoints, type ToeflPracticeSection } from '../features/toefl2026/practiceCalendar';
 import { PracticeStudyCalendar } from '../features/toefl2026/PracticeStudyCalendar';
 
 type ExperienceRow = { id: string; name: string; display_order: number; is_active: boolean; metadata: Record<string, unknown> | null };
@@ -81,6 +81,7 @@ export const PracticePage: React.FC = () => {
   }, [banks, sectionsByExperience]);
   const legacy = useMemo(() => experiences.filter((e) => !is2026Metadata(e.metadata)), [experiences]);
   const weeks = useMemo(() => buildToeflPracticeCalendar(bankSections), [bankSections]);
+  const checkpoints = useMemo(() => toeflPracticeCheckpoints(bankSections), [bankSections]);
 
   useEffect(() => {
     let active = true;
@@ -198,7 +199,7 @@ export const PracticePage: React.FC = () => {
         {!loading && !calendar && !banks.length ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/75 p-6 text-[#475569]">{t('practice.none')}</div> : null}
 
         {calendar && !loading ? <>
-          <PracticeStudyCalendar weeks={weeks} completed={completed} starting={starting} onStart={section => void start(section.experience_id, section.id)} />
+          <PracticeStudyCalendar weeks={weeks} checkpoints={checkpoints} completed={completed} starting={starting} onStart={section => void start(section.experience_id, section.id)} />
           <section><h2 className="text-xl font-semibold text-[#0f172a]">{t('section.listening')}</h2><p className="text-sm text-[#475569]">{t('practice.listeningSoon')}</p></section>
         </> : null}
 

@@ -235,6 +235,24 @@ Deno.test('role-play feedback can be retried after the AI fails', async () => {
   assertEquals((await call('POST', `orgs/${ORG}/roleplay`, { user: EMPLOYEE, body: { scenario: 'nope' } })).status, 404);
 });
 
+Deno.test('workplace practice supplies an authored example after the learner finishes', async () => {
+  const { call } = setup({ ai: roleplayAi({}) });
+  const scenario = 'logistics-rp-missing-pallet-signature';
+  const list = await call('GET', `orgs/${ORG}/roleplay`, { user: EMPLOYEE });
+  const card = list.body.tracks.find((track: { code: string }) => track.code === 'logistics').scenarios
+    .find((entry: { code: string }) => entry.code === scenario);
+  assertEquals(card.title.en, 'Hand over an unsigned delivery');
+  assertEquals(card.model_reply, undefined);
+  const start = await call('POST', `orgs/${ORG}/roleplay`, { user: EMPLOYEE, body: { scenario } });
+  const id = start.body.session.id;
+  assertEquals(start.body.session.model_reply, undefined);
+  await call('POST', `orgs/${ORG}/roleplay/${id}/turn`, { user: EMPLOYEE, body: { text: 'Two pallets have a signature. Can you confirm receipt of pallet C in the morning?' } });
+  const finish = await call('POST', `orgs/${ORG}/roleplay/${id}/finish`, { user: EMPLOYEE });
+  assertEquals(finish.body.session.status, 'ended');
+  assert(finish.body.session.model_reply.includes('08:30'));
+  assert(finish.body.session.model_reply.includes('09:00'));
+});
+
 Deno.test('the writing checker corrects, stores for 90 days and keeps drafts on AI failure', async () => {
   let fail = false;
   const ai: AiCall = <T>(_request: unknown, fallback: T) => Promise.resolve(fail

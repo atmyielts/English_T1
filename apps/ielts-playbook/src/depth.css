@@ -27,6 +27,18 @@
 }
 .skip-link:focus { top: 12px; }
 
+.playbook-authored-exercise {
+  margin-block-start: 1.5rem;
+  padding-block-start: 1rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.playbook-authored-exercise summary {
+  cursor: pointer;
+  padding-block: 0.35rem;
+  font-weight: 600;
+}
+
 .chrome-topbar {
   display: flex;
   flex-wrap: wrap;

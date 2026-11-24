@@ -5,6 +5,8 @@ export const ru: Record<AppKey, string> = {
   'nav.practice': 'Практика',
   'nav.full_exam': 'Полный экзамен',
   'nav.review': 'Разбор',
+  'review.explanation': 'Почему этот ответ верен',
+  'review.model_response': 'Образец ответа с комментариями',
   'nav.stats': 'Статистика',
   'nav.playbook': 'TOEFL Playbook',
   'nav.schood_home': 'Главная Schood',

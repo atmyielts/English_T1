@@ -14,6 +14,7 @@ const TodaySessionPage = lazy(async () => ({ default: (await import('./pages/Tod
 const LabPage = lazy(async () => ({ default: (await import('./pages/LabPage')).LabPage }));
 const BankPage = lazy(async () => ({ default: (await import('./pages/BankPage')).BankPage }));
 const ModulesPage = lazy(async () => ({ default: (await import('./pages/ModulesPage')).ModulesPage }));
+const ShortSetsPage = lazy(async () => ({ default: (await import('./pages/ShortSetsPage')).ShortSetsPage }));
 const NotebookPage = lazy(async () => ({ default: (await import('./pages/NotebookPage')).NotebookPage }));
 const ReviewsDuePage = lazy(async () => ({ default: (await import('./pages/ReviewsDuePage')).ReviewsDuePage }));
 const SessionResultsPage = lazy(async () => ({ default: (await import('./pages/SessionResultsPage')).SessionResultsPage }));
@@ -47,6 +48,7 @@ function App() {
             <Route path="/lab/:attemptId" element={lazyPage(<LabPage />)} />
             <Route path="/bank" element={lazyPage(<BankPage />)} />
             <Route path="/modules" element={lazyPage(<ModulesPage />)} />
+            <Route path="/short-sets" element={lazyPage(<ShortSetsPage />)} />
             <Route path="/notebook" element={lazyPage(<NotebookPage />)} />
             <Route path="/reviews" element={lazyPage(<ReviewsDuePage />)} />
             <Route path="/results/:attemptId" element={lazyPage(<SessionResultsPage />)} />

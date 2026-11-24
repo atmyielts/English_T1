@@ -1,42 +1,53 @@
 {
   "schemaVersion": 1,
-  "releaseId": "exam-practice-catalogue-depth",
+  "releaseId": "practice-short-sets-and-worked-examples",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": ["ielts-practice", "toefl-ibt-simulator"],
-  "migrations": ["20261124130000_ielts_practice_library_progress.sql"],
-  "edgeFunctions": ["ielts-practice"],
+  "frontends": ["academy", "company", "ielts-playbook", "ielts-practice", "sat-practice", "toefl-ibt-simulator"],
+  "migrations": [
+    "20261124141000_sat_practice_short_set_scope.sql",
+    "20261124141100_sat_playbook_worked_examples.sql",
+    "20261124151000_english_hub_read_reply_speak.sql"
+  ],
+  "edgeFunctions": ["company", "review-session", "sat-practice"],
   "workers": [],
-  "requiredSecrets": ["IELTS_PRACTICE_SCORE_SESSION_FUNCTION", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "OPENROUTER_APP_NAME", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER"],
+  "sharedEdgeConsumers": ["sat-practice"],
+  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
   "rolloutOrder": [
     "pages",
-    "migration:20261124130000_ielts_practice_library_progress.sql",
-    "secret:IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
-    "secret:OPENAI_API_KEY",
+    "migration:20261124141000_sat_practice_short_set_scope.sql",
+    "migration:20261124141100_sat_playbook_worked_examples.sql",
+    "migration:20261124151000_english_hub_read_reply_speak.sql",
+    "secret:AI_ADDON_PRODUCT_ID",
     "secret:OPENROUTER_API_KEY",
-    "secret:OPENROUTER_APP_NAME",
     "secret:OPENROUTER_BASE_URL",
     "secret:OPENROUTER_MODEL",
-    "secret:OPENROUTER_REFERER",
-    "function:ielts-practice",
-    "content:verified-private-practice-supplements",
-    "verify:paid-learner-access"
+    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
+    "function:company",
+    "function:review-session",
+    "function:sat-practice",
+    "content:private-sat-short-sets",
+    "content:private-ielts-practice-and-playbook",
+    "content:private-toefl-playbook",
+    "content:toefl-2026-focused-wave5",
+    "verify:entitled-practice"
   ],
   "manualFollowUps": [
-    "Run supabase db push --linked with only the IELTS library progress migration in the release scope.",
-    "Run supabase functions deploy ielts-practice with its existing JWT and deployed media settings.",
-    "Preserve the existing Edge settings. Recovery commands, if needed, are supabase secrets set IELTS_PRACTICE_SCORE_SESSION_FUNCTION=<existing value>, supabase secrets set OPENAI_API_KEY=<existing value>, supabase secrets set OPENROUTER_API_KEY=<existing value>, supabase secrets set OPENROUTER_APP_NAME=<existing value>, supabase secrets set OPENROUTER_BASE_URL=<existing value>, supabase secrets set OPENROUTER_MODEL=<existing value>, and supabase secrets set OPENROUTER_REFERER=<existing value>.",
-    "Import the verified new content once the IELTS player can display typed Reading responses."
+    "After Pages, dry-run supabase db push --linked and apply only the listed content migrations. Use a migration directory restricted to applied versions and the release scope if the repository contains unrelated pending migrations.",
+    "Run supabase functions deploy company, supabase functions deploy review-session, and supabase functions deploy sat-practice against the linked Schood English project with each function's existing authentication settings.",
+    "Retain the existing paid AI configuration. If restoring configuration, use supabase secrets set AI_ADDON_PRODUCT_ID=<existing value>, supabase secrets set OPENROUTER_API_KEY=<existing value>, supabase secrets set OPENROUTER_BASE_URL=<existing value>, supabase secrets set OPENROUTER_MODEL=<existing value>, and supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=<existing value> as configured for Schood. The content release requires no new provider calls or credentials.",
+    "Apply the private, release-specific SAT Practice, IELTS Practice and Playbook, and TOEFL Playbook data files using the existing administrative content workflow. Keep the private data files and answer keys out of GitHub and use their exact release hashes. These data operations require no migration history entries.",
+    "Build and import only the TOEFL focused wave 5 experience through the native admin publisher. Validate the private review keys and paid catalogue before activating it. Keep the new Listening sources offline."
   ],
   "verification": [
-    "Verify that a paid IELTS learner can grade choices and typed responses, retry a set, and see the prior best score in the library.",
-    "Verify that mixed Reading sets only reach player versions with text-answer support.",
-    "Verify that TOEFL focused sets can be expanded and completed sets remain available.",
-    "Verify that paid learners can access the new private content, and the new Listening notices remain available without new audio."
+    "Verify Weeks 2, 4, 6, and 8 checkpoints and normal catalogue browsing in SAT, IELTS, and TOEFL Practice as an entitled learner.",
+    "Verify SAT and TOEFL answer feedback is available after completing the selected set, and verify IELTS models appear after self-review.",
+    "Verify the authored exercises in the SAT, IELTS, and TOEFL Playbooks and confirm that all eight English Hub immersion missions have a read, reply, and speak step.",
+    "Verify Academy teachers can assign the homework and follow-up separately, and a Company English learning seat can finish a scenario and compare the authored example."
   ],
   "rollback": {
-    "pages": "Restore the prior IELTS Practice and TOEFL Pages deployments after hiding any new sets whose question format needs this release.",
-    "edge": "Restore the prior IELTS Practice Edge bundle with its existing JWT and media settings.",
-    "content": "Unpublish the affected supplement by its release IDs if necessary. Leave the additive progress table in place."
+    "pages": "Revert the affected Pages projects to their last known good deployments.",
+    "edge": "Redeploy the prior company, review-session, and sat-practice functions with current runtime settings.",
+    "content": "Unpublish only affected new question and catalogue rows by their release-specific IDs. Archive English Hub missions if learners have attempts; restore the previous Playbook content blocks if needed. Preserve learner progress and existing question banks."
   }
 }

@@ -38,6 +38,7 @@ import { more as itSoftwareMore } from './more/it_software.ts';
 import { more as healthcareMore } from './more/healthcare.ts';
 import { more as logisticsMore } from './more/logistics.ts';
 import { more as managementMore } from './more/management.ts';
+import { workplacePractice } from './workplace-practice.ts';
 
 const byCode: Record<JobRole, Track> = {
   general: extendTrack(general, generalMore), customer_service: extendTrack(customerService, customerServiceMore), sales: extendTrack(sales, salesMore), hospitality: extendTrack(hospitality, hospitalityMore), banking_finance: extendTrack(bankingFinance, bankingFinanceMore), it_software: extendTrack(itSoftware, itSoftwareMore),
@@ -57,6 +58,10 @@ const byCode: Record<JobRole, Track> = {
   procurement,
   accounting_audit: accountingAudit,
 };
+for (const code of Object.keys(workplacePractice) as (keyof typeof workplacePractice)[]) {
+  const track = byCode[code];
+  byCode[code] = { ...track, scenarios: [...track.scenarios, workplacePractice[code]] };
+}
 export const TRACKS: Track[] = JOB_ROLES.map((code) => byCode[code]);
 
 const lessons = new Map<string, { track: Track; lesson: Lesson; index: number }>();

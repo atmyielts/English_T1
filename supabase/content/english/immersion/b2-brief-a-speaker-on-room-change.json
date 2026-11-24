@@ -1,0 +1,134 @@
+{
+  "item": {
+    "slug": "b2-brief-a-speaker-on-room-change",
+    "title": "Brief a guest speaker on a room change",
+    "level": "B2",
+    "mission_type": "workplace",
+    "context_text": "A public talk has moved to a different venue on the same campus. You coordinate with a guest who is arriving from out of town.",
+    "objective_text": "Communicate the venue and timing change and make the contingency clear.",
+    "target_grammar": "Sequencing with once and unless; signalling a change politely.",
+    "target_vocabulary": [
+      "venue",
+      "rehearsal",
+      "entrance",
+      "backup",
+      "step-free"
+    ],
+    "success_conditions": [
+      "Communicate the venue and timing change and make the contingency clear.",
+      "Name Studio 4",
+      "Confirm 17:50",
+      "Recommend sending or carrying the file",
+      "Give the new room",
+      "Give the west entrance",
+      "Give the 18:30 start"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "EVENT UPDATE\nThe 18:30 climate talk has moved from Hall A to Studio 4. Use the west entrance for step-free access. Sound check remains 17:50. Speakers may send slides by 16:00 or bring a local copy. Guest Wi-Fi works in the lobby only, so a link alone is not enough for the presentation.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What should a presenter with slides stored online do?",
+          "options": [
+            "Plan to load the link from Studio 4 during the talk.",
+            "Bring a local copy or send the slides by 16:00.",
+            "Present from the lobby so the slides can load."
+          ],
+          "answer_index": 1,
+          "explanation": "The presentation room lacks guest Wi-Fi. Sending the slides in advance or carrying a local copy gives the team access."
+        },
+        {
+          "prompt": "Which arrangement did the venue change leave in place?",
+          "options": [
+            "The previous hall",
+            "The entrance to the old venue",
+            "The sound check time"
+          ],
+          "answer_index": 2,
+          "explanation": "The notice says sound check remains at 17:50."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send an updated speaker brief",
+      "instructions": "Notify the speaker of the new room, confirm the sound check, and give one reliable option for slides.",
+      "prompt_text": "Speaker: I have the original Hall A invite. Could you confirm what I need to know?",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 6,
+      "goal": "Give the correct room, sound check and slide backup.",
+      "points": [
+        {
+          "label": "Name Studio 4",
+          "any": [
+            "Studio 4",
+            "Studio Four"
+          ]
+        },
+        {
+          "label": "Confirm 17:50",
+          "any": [
+            "17:50",
+            "5:50",
+            "ten to six"
+          ]
+        },
+        {
+          "label": "Recommend sending or carrying the file",
+          "any": [
+            "16:00",
+            "4 pm",
+            "local copy",
+            "USB",
+            "offline copy"
+          ]
+        }
+      ],
+      "model_answer": "Hi Farida, the talk has moved to Studio 4. Sound check is still at 17:50. Please send the slides by 16:00 or bring an offline copy because guest Wi-Fi doesn't reach the studio.",
+      "min_words": 32
+    },
+    {
+      "kind": "speak",
+      "title": "Guide a guest to the venue",
+      "instructions": "Give the step-free route and the talk time. Explain what has moved.",
+      "prompt_text": "Guest: Is the talk still in Hall A? I need a step-free route.",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 4,
+      "goal": "Redirect the guest using the west entrance and confirm the start.",
+      "points": [
+        {
+          "label": "Give the new room",
+          "any": [
+            "Studio 4",
+            "Studio Four"
+          ]
+        },
+        {
+          "label": "Give the west entrance",
+          "any": [
+            "west entrance",
+            "west doors",
+            "west side"
+          ]
+        },
+        {
+          "label": "Give the 18:30 start",
+          "any": [
+            "18:30",
+            "6:30",
+            "half past six",
+            "six thirty"
+          ]
+        }
+      ],
+      "model_answer": "It's now in Studio 4. Go in through the west entrance for step-free access. The talk still starts at 6:30.",
+      "min_words": 18
+    }
+  ]
+}

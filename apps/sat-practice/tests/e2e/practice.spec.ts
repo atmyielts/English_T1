@@ -62,6 +62,19 @@ async function mock(page: Page, state: State) {
     if (path === '/sat-practice/plans/week') return json(route, state.plan ?? week);
     if (path === '/sat-practice/goals' && method === 'GET') return json(route, { goals: dashboard.goals, goals_set: false });
     if (path === '/sat-practice/goals' && method === 'PATCH') return state.goalsError ? json(route, { error: 'Choose a test date that has not passed yet.', code: 'past_test_date' }, 400) : json(route, { ok: true, goals: dashboard.goals, plan_updated: true });
+    if (path === '/sat-practice/short-sets') return json(route, { sets: [
+      { slug: 'paired-01', title: 'Compare interpretations', category: 'paired', question_count: 4 },
+      { slug: 'timed-02', title: 'Words, evidence and quantities', category: 'timed', question_count: 4, checkpoint_week: 6, time_limit_seconds: 360 },
+    ] });
+    if (path === '/sat-practice/short-sets/start') {
+      const body = route.request().postDataJSON();
+      expect(body.slug).toBe('timed-02');
+      expect(body.request_id).toMatch(/^[0-9a-f-]{36}$/);
+      const list = [questions.rw, questions.mcq, questions.spr, { ...questions.rw, id: id(4) }];
+      const a = attempt(body.request_id, list, { mode: 'drill', time_limit_seconds: 360, requested_count: 4 });
+      state.attempts.set(a.id, { attempt: a, questions: list });
+      return json(route, { attempt: a, questions: list });
+    }
     if (path === '/sat-practice/bank') return json(route, { questions: [questions.mcq, questions.spr, questions.rw], total: 3, offset: 0, limit: 12, facets, history: { [id(1)]: 'unseen', [id(2)]: 'missed', [id(3)]: 'correct' } });
     if (path === '/sat-practice/attempts/start' || path.startsWith('/sat-practice/plans/items/')) {
       const body = route.request().postDataJSON();
@@ -199,6 +212,7 @@ test('weekly plan shows progress and starts a plan item on the server', async ({
   await page.getByText('A study routine for eight weeks', { exact: true }).click();
   await expect(page.getByText(/Weeks 7–8/)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Open unseen questions' })).toHaveAttribute('href', '/bank?status=unseen');
+  await expect(page.getByRole('link', { name: 'Week 8 checkpoint' })).toHaveAttribute('href', '/short-sets?set=timed-03');
   await expect(page.getByText('1 of 3 tasks done')).toBeVisible();
   await expect(page.getByText('Nothing to review right now, so this task is marked done.')).toBeVisible();
   await expect(page.getByText('Math module, timed')).toBeVisible();
@@ -259,4 +273,22 @@ test('language switcher translates the interface while content stays English', a
   await expect(page.getByText('Which choice most logically completes the text', { exact: false })).toBeVisible();
   await page.getByLabel('Язык').first().selectOption('uz');
   await expect(page.getByRole('heading', { name: 'Rasmiy SAT yo‘nalishi va ko‘nikmasi bo‘yicha mashq qiling' })).toBeVisible();
+});
+
+test('a linked checkpoint shows only its set, starts a timed drill, and survives a reload', async ({ page }) => {
+  const state = freshState();
+  await signIn(page); await mock(page, state);
+  await page.goto('/short-sets?set=timed-02');
+  await expect(page.getByText('Week 6', { exact: true })).toBeVisible();
+  await expect(page.getByText('Compare interpretations', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('4 questions · 6 minutes')).toBeVisible();
+  await page.getByRole('button', { name: 'Start Words, evidence and quantities' }).click();
+  await expect(page).toHaveURL(/\/lab\//);
+  await expect(page.getByRole('timer')).toBeVisible();
+  await expect(page.getByText('Question 1 of 4', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Next' }).click();
+  await expect(page.getByText('Question 2 of 4', { exact: true }).first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Question 2 of 4', { exact: true }).first()).toBeVisible();
+  expect(state.calls.filter(call => call.split('?')[0] === 'POST /sat-practice/short-sets/start')).toHaveLength(1);
 });

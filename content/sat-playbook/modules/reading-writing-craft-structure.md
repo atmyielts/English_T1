@@ -421,3 +421,11 @@ Official free practice is also available as full-length adaptive tests in the Bl
 - Plan your pace across the whole section with [Pacing and Adaptive Modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
 - Set a realistic target with [Score Goals and Study Plans](https://playbook.sat.schood.online/score-goals-and-study-plans).
 - New to the test? Start with [SAT Essentials](https://playbook.sat.schood.online/sat-essentials).
+
+## Worked Example and Try It
+
+**Worked example.** One composer attributes the popularity of a short concert series to its early evening start. A venue manager accepts that attendance grew but notes that the venue added a bus stop before the same season. The manager would question the proposed explanation. Both accounts accept the attendance result.
+
+**Try it.** Text 1 argues that an orchard guide's handwritten notes show readers used it on outdoor walks. Text 2 agrees that the notes record practical observations but points out that entries were copied from a separate survey. What claim from Text 1 would the author of Text 2 most likely challenge?
+
+**Check your work.** Challenge the inference about where readers used the guide. The notes' practical content is common ground. [Practice comparing paired passages](https://practice.sat.schood.online/short-sets?set=paired-01).

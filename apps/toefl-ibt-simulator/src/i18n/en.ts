@@ -5,6 +5,8 @@ export const en = {
   'nav.practice': 'Practice',
   'nav.full_exam': 'Full exam',
   'nav.review': 'Review',
+  'review.explanation': 'Why this answer works',
+  'review.model_response': 'Annotated sample response',
   'nav.stats': 'Stats',
   'nav.playbook': 'TOEFL Playbook',
   'nav.schood_home': 'Schood home',

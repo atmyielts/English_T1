@@ -19,6 +19,7 @@ interface Session {
   id: string; track_code: string; status: 'active' | 'ended'; turns: Turn[]; learner_turns: number; max_turns: number;
   feedback: Feedback | null; score: number | null; minutes: number; created_at: string; ended_at: string | null; scenario: ScenarioView | null;
   difficulty?: Difficulty | null; hints?: number; max_hints?: number; replay_of?: string | null; custom?: boolean;
+  model_reply?: string;
 }
 type Difficulty = 'easy' | 'medium' | 'hard';
 interface ScoreHistory { code: string; title: Localized | null; attempts: { id: string; score: number; difficulty: Difficulty | null; created_at: string }[]; best: number; last: number; first: number }
@@ -355,6 +356,11 @@ export function RoleplaySession({ id }: { id: string }) {
     </section>
 
     {locked && <SeatLocked reason={seatGone ?? data?.seat_reason}/>}
+
+    {session.model_reply && <section className="training-card" aria-labelledby="training-model-reply">
+      <h2 id="training-model-reply">{t('training.roleplay.modelReply')}</h2>
+      <p lang="en">{session.model_reply}</p>
+    </section>}
 
     {session.feedback && <section className="training-card training-feedback" aria-labelledby="training-feedback" ref={feedbackRef} tabIndex={-1}>
       <h2 id="training-feedback">{t('training.roleplay.feedback')}</h2>

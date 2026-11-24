@@ -38,8 +38,13 @@ export function startRequestId(body: Record<string, unknown>): string {
   return typeof body.request_id === 'string' ? body.request_id.toLowerCase() : crypto.randomUUID();
 }
 
-export async function callStart(sb: any, userId: string, requestId: string, filters: Record<string, unknown>) {
-  const { data, error } = await sb.rpc('start_sat_practice_attempt', {
+type StartProcedure = 'start_sat_practice_attempt' | 'start_sat_practice_short_set_attempt';
+
+export async function callStart(
+  sb: any, userId: string, requestId: string, filters: Record<string, unknown>,
+  procedure: StartProcedure = 'start_sat_practice_attempt',
+) {
+  const { data, error } = await sb.rpc(procedure, {
     p_user_id: userId, p_request_id: requestId, p_filters: filters,
   });
   if (error) {
@@ -73,15 +78,18 @@ export type Selection = { ids: string[]; meta: Record<string, unknown> };
  * official-taxonomy bank filters). A replayed request reuses the filters saved
  * with the original start, so a lost response never selects a different drill.
  */
-export async function startSelected(sb: any, userId: string, body: Record<string, unknown>, select: () => Promise<Selection>) {
+export async function startSelected(
+  sb: any, userId: string, body: Record<string, unknown>, select: () => Promise<Selection>,
+  procedure?: StartProcedure,
+) {
   const requestId = startRequestId(body);
   const { data: existing, error } = await sb.from('sat_practice_attempt_sources').select('filters_used')
     .eq('attempt_id', requestId).eq('user_id', userId).maybeSingle();
   if (error) throw new AttemptError(503, 'The drill start could not be confirmed. Retry with the same selection.', 'start_unconfirmed');
   if (existing?.filters_used && typeof existing.filters_used === 'object') {
-    return callStart(sb, userId, requestId, existing.filters_used);
+    return callStart(sb, userId, requestId, existing.filters_used, procedure);
   }
   const { ids, meta } = await select();
   if (!ids.length) throw new AttemptError(409, 'No questions match this drill yet. Try different filters in the question bank.', 'no_questions');
-  return callStart(sb, userId, requestId, { ...meta, question_ids: ids, limit: ids.length });
+  return callStart(sb, userId, requestId, { ...meta, question_ids: ids, limit: ids.length }, procedure);
 }

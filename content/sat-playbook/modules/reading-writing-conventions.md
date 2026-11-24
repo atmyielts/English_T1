@@ -506,3 +506,11 @@ Continue with the rest of the SAT Playbook:
 - [Pacing and adaptive modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules) shows how to plan time across a module.
 - [Test-day guide](https://playbook.sat.schood.online/test-day-guide) explains Bluebook tools such as the option eliminator and question menu.
 - [SAT essentials](https://playbook.sat.schood.online/sat-essentials) gives the full picture of the test.
+
+## Worked Example and Try It
+
+**Worked example.** “The files from the older recorder, along with a written list of their dates, **were** sent to the archive.” Cross out the removable phrase _along with a written list of their dates_. The subject is still the plural noun _files_, so _were_ is the correct verb.
+
+**Try it.** “The map of the shoreline, with two newer sketches attached, ___ on the inside cover.” Choose _appears_ or _appear_.
+
+**Check your work.** Choose _appears_. The subject is _map_. _Shoreline_ belongs to the _of_ phrase, and _sketches_ belongs to the inserted _with_ phrase.

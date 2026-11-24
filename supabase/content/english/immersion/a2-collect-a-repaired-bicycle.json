@@ -1,0 +1,111 @@
+{
+  "item": {
+    "slug": "a2-collect-a-repaired-bicycle",
+    "title": "Collect a repaired bicycle",
+    "level": "A2",
+    "mission_type": "service",
+    "context_text": "A shop has fixed the back brake on your bicycle. You need to arrange collection without missing work.",
+    "objective_text": "Explain who will collect the bicycle and how they can identify it.",
+    "target_grammar": "Will for arrangements. Could I for a polite question.",
+    "target_vocabulary": [
+      "brake",
+      "collect",
+      "receipt",
+      "repair",
+      "counter"
+    ],
+    "success_conditions": [
+      "Explain who will collect the bicycle and how they can identify it.",
+      "Give repair number 284",
+      "Give the 75,000 som balance",
+      "Identify the repair",
+      "Ask about the back brake"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "CYCLE WORKSHOP\nYour bicycle is ready. Collection on Friday is from noon to 6 pm. Saturday collection is before 11 am. Someone else can collect it for you with the repair number. Your number is 284. Please pay the 75,000 som balance at the counter.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What does your brother need to collect the bicycle for you?",
+          "options": [
+            "Your old ticket for the bus",
+            "The bicycle's colour",
+            "Repair number 284"
+          ],
+          "answer_index": 2,
+          "explanation": "The notice says a different person can collect it using the repair number, which is 284."
+        },
+        {
+          "prompt": "Which time works if your brother can go only on Saturday?",
+          "options": [
+            "10:30 am",
+            "11:30 am",
+            "5:00 pm"
+          ],
+          "answer_index": 0,
+          "explanation": "The Saturday window ends at 11 am. The Friday hours do not apply."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the collection details",
+      "instructions": "Ask your brother to collect it on Saturday. Give him the number and confirm the amount to pay.",
+      "prompt_text": "Brother: I can go first thing on Saturday. What do I need?",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 4,
+      "goal": "Send the repair number and the balance.",
+      "points": [
+        {
+          "label": "Give repair number 284",
+          "any": [
+            "284",
+            "two eight four"
+          ]
+        },
+        {
+          "label": "Give the 75,000 som balance",
+          "any": [
+            "75,000",
+            "75000",
+            "75 000",
+            "seventy-five thousand"
+          ]
+        }
+      ],
+      "model_answer": "Thanks! Can you get my bike before 11 on Saturday? The repair number is 284. There is 75,000 som to pay at the counter."
+    },
+    {
+      "kind": "speak",
+      "title": "Check which brake was repaired",
+      "instructions": "You are at the counter. Give the repair number and ask whether the back brake was fixed.",
+      "prompt_text": "Mechanic: What can I do for you?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 3,
+      "goal": "Identify the bicycle and check the completed work.",
+      "points": [
+        {
+          "label": "Identify the repair",
+          "any": [
+            "284",
+            "two eight four"
+          ]
+        },
+        {
+          "label": "Ask about the back brake",
+          "any": [
+            "back brake",
+            "rear brake"
+          ]
+        }
+      ],
+      "model_answer": "I'm collecting the bike for repair number 284. Could you tell me if you fixed the back brake?"
+    }
+  ]
+}

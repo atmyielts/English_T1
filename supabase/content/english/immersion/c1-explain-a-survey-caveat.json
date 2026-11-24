@@ -1,0 +1,131 @@
+{
+  "item": {
+    "slug": "c1-explain-a-survey-caveat",
+    "title": "Explain a survey caveat",
+    "level": "C1",
+    "mission_type": "study",
+    "context_text": "Your student research team surveyed commuters after its university moved several classes online. A committee wants to use the findings to make a campus policy.",
+    "objective_text": "Distinguish a useful finding from a finding the survey cannot support.",
+    "target_grammar": "Concession and hedging with while, suggests, and cannot establish.",
+    "target_vocabulary": [
+      "self-selection",
+      "representative",
+      "response rate",
+      "commute",
+      "comparison"
+    ],
+    "success_conditions": [
+      "Distinguish a useful finding from a finding the survey cannot support.",
+      "Attribute the finding to respondents",
+      "Give the supported amount",
+      "Flag the limited recruitment or coverage",
+      "Propose wider recruitment",
+      "Include students outside the online group"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "SURVEY BRIEF\nOf 120 volunteers who answered an open survey, 72 said they spent less time commuting than last term. The invitation was shared through an online-student mailing list. There is no record of how many students saw the invitation and no matched comparison group from the previous term. The committee is deciding whether to keep one weekly online class.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which statement is directly supported?",
+          "options": [
+            "Most university students spent less time commuting.",
+            "Moving classes online cut commuting time by 60%.",
+            "Sixty per cent of the volunteers reported spending less time commuting."
+          ],
+          "answer_index": 2,
+          "explanation": "72 out of 120 respondents is 60%. That percentage describes respondents, and the survey does not measure a 60% reduction in travel time."
+        },
+        {
+          "prompt": "What would a second survey most need to address before generalising to all students?",
+          "options": [
+            "Recruitment limited to an online-student mailing list",
+            "The committee's name",
+            "Whether there were exactly 120 volunteers"
+          ],
+          "answer_index": 0,
+          "explanation": "The recruitment channel may leave out or underrepresent students whose classes are mostly in person."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write a two-sentence methods note",
+      "instructions": "State the finding precisely, then give one limitation and its implication for the policy decision.",
+      "prompt_text": "Committee: Please send wording we can quote accurately.",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 6,
+      "goal": "Report the finding and constrain the generalisation.",
+      "points": [
+        {
+          "label": "Attribute the finding to respondents",
+          "any": [
+            "respondent*",
+            "volunteer*",
+            "surveyed"
+          ]
+        },
+        {
+          "label": "Give the supported amount",
+          "any": [
+            "60%",
+            "60 per cent",
+            "72 of 120",
+            "72 out of 120",
+            "sixty per cent"
+          ]
+        },
+        {
+          "label": "Flag the limited recruitment or coverage",
+          "any": [
+            "mailing list",
+            "self-selection",
+            "self selection",
+            "representativ*",
+            "online students"
+          ]
+        }
+      ],
+      "model_answer": "Sixty per cent of the volunteers reported spending less time commuting than last term. Because recruitment relied on an online-student mailing list, the result provides a reason to investigate the policy but cannot establish a university-wide effect.",
+      "min_words": 35
+    },
+    {
+      "kind": "speak",
+      "title": "Defend a better next step",
+      "instructions": "Respond diplomatically. Suggest one way to improve coverage and explain why it helps.",
+      "prompt_text": "Committee member: Why don't we treat these responses as sufficient evidence?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 4,
+      "goal": "Propose wider recruitment and connect it to the limitation.",
+      "points": [
+        {
+          "label": "Propose wider recruitment",
+          "any": [
+            "sample",
+            "recruit",
+            "invite",
+            "reach",
+            "survey across"
+          ]
+        },
+        {
+          "label": "Include students outside the online group",
+          "any": [
+            "in-person",
+            "in person",
+            "campus-based",
+            "all faculties",
+            "different programmes"
+          ]
+        }
+      ],
+      "model_answer": "The responses are informative, but they mainly capture students we could reach through the online list. I'd recruit students from both online and in-person classes and compare the results before assuming the whole campus benefited."
+    }
+  ]
+}

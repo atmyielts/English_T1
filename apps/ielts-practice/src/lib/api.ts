@@ -318,18 +318,22 @@ export type LibrarySet = {
   progress?: { reviewed_at: string; best_correct: number | null; question_total: number | null } | null;
 };
 export type LibraryAnswer = string | number;
+export type LibraryTable = { headers: string[]; rows: (string | number)[][] };
 export type LibraryContent = {
   passage?: string;
   questions?: { prompt: string; options: string[] | null }[];
   prompt?: string;
   minimum_words?: number;
-  table?: { headers: string[]; rows: (string | number)[][] } | null;
+  table?: LibraryTable | null;
   part1?: string[]; part2?: { cue: string; points: string[] }; part3?: string[];
 };
 export type LibraryReview = {
   score?: number; total?: number;
   items?: { correct: boolean; key: number | string[]; explanation: string; evidence: string }[];
   model?: string; notes?: string[]; planning?: string[];
+  revision?: { before: string; after: string; why: string[] };
+  retry?: { prompt: string; minimum_words: number; table?: LibraryTable; checks: string[] };
+  follow_ups?: { prompt: string; model: string; note: string }[];
 };
 
 const libraryUrl = '/ielts-practice/library';

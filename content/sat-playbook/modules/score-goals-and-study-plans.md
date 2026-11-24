@@ -335,3 +335,11 @@ No. Plans tell you what to do each week; the domain modules teach the skills the
 2. Open the plan template that fits your timeline, starting with the [eight-week standard plan](https://playbook.sat.schood.online/plans/eight-week-standard) if you are unsure.
 3. Read the domain module for your weakest domain, starting from [SAT Essentials](https://playbook.sat.schood.online/sat-essentials) if you need the overview.
 4. Decide your first and backup test dates with [Retake and Superscore Strategy](https://playbook.sat.schood.online/retake-and-superscore-strategy).
+
+## Worked Example and Try It
+
+**Worked example.** Rae sees three recent errors on quantitative evidence and two on transition questions. She has 45 minutes this week. She schedules an 18-minute evidence drill, a 12-minute transition drill, and a 15-minute mixed check on another day. At the check she records one comparison rule and one transition relationship she can apply again.
+
+**Try it.** You have 40 minutes. Your last two drills showed three misses on two-variable equations, one on circles, and several unfinished questions. Assign two practice blocks and a brief outcome check.
+
+**Check your work.** One workable split is 18 minutes on two-variable equations, 12 minutes on a timed mixed drill, and 10 minutes reviewing missed or unfinished questions. One circle miss is worth logging, but the repeated equation and timing issues guide this week's allocation.

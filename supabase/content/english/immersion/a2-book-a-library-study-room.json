@@ -1,0 +1,112 @@
+{
+  "item": {
+    "slug": "a2-book-a-library-study-room",
+    "title": "Book a library study room",
+    "level": "A2",
+    "mission_type": "study",
+    "context_text": "You and two friends need a room to practise for a presentation. Check the library's rules and message your group.",
+    "objective_text": "Choose a time that works and explain how to keep the booking.",
+    "target_grammar": "Can for rules and requests. Before and after for times.",
+    "target_vocabulary": [
+      "booking",
+      "desk",
+      "available",
+      "cancel",
+      "library card"
+    ],
+    "success_conditions": [
+      "Choose a time that works and explain how to keep the booking.",
+      "Give the 4:30 time",
+      "Mention the library card",
+      "Say there are three people",
+      "Request the 4:30 slot"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "LIBRARY STUDY ROOM\nThursday slots: 3:00–3:45 or 4:30–5:15. A room holds up to four people. Book at the desk with your library card. If you are ten minutes late, staff may give your room to another group. The three of you finish class at 4:00.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which slot fits the group's schedule?",
+          "options": [
+            "3:00–3:45",
+            "4:30–5:15",
+            "4:00–4:45"
+          ],
+          "answer_index": 1,
+          "explanation": "The group finishes class at 4:00. Of the two listed slots, only 4:30 starts after class."
+        },
+        {
+          "prompt": "By what time should the group arrive to avoid losing the 4:30 booking?",
+          "options": [
+            "After 5:15",
+            "By 4:45",
+            "Before 4:40"
+          ],
+          "answer_index": 2,
+          "explanation": "Staff may give the room away when a group is ten minutes late, so arrive before 4:40."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Message your group",
+      "instructions": "Send a group message with the time and the item you need at the desk.",
+      "prompt_text": "Nodira: Can we still book a room after class?",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 4,
+      "goal": "Confirm the slot and tell the group what to bring.",
+      "points": [
+        {
+          "label": "Give the 4:30 time",
+          "any": [
+            "4:30",
+            "half past four",
+            "four thirty"
+          ]
+        },
+        {
+          "label": "Mention the library card",
+          "any": [
+            "library card",
+            "library cards"
+          ]
+        }
+      ],
+      "model_answer": "Yes! We can book the room at 4:30 on Thursday. I'll bring my library card so we can book it at the desk."
+    },
+    {
+      "kind": "speak",
+      "title": "Ask the librarian to book it",
+      "instructions": "Make a polite request and give your group size and preferred slot.",
+      "prompt_text": "Librarian: Hello! How can I help?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 3,
+      "goal": "Request the correct booking for three people.",
+      "points": [
+        {
+          "label": "Say there are three people",
+          "any": [
+            "three",
+            "3 people",
+            "three of us"
+          ]
+        },
+        {
+          "label": "Request the 4:30 slot",
+          "any": [
+            "4:30",
+            "half past four",
+            "four thirty"
+          ]
+        }
+      ],
+      "model_answer": "Could I book the study room for three people at 4:30 on Thursday, please?"
+    }
+  ]
+}

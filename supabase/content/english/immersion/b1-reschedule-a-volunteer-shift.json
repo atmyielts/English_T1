@@ -1,0 +1,122 @@
+{
+  "item": {
+    "slug": "b1-reschedule-a-volunteer-shift",
+    "title": "Reschedule a volunteer shift",
+    "level": "B1",
+    "mission_type": "social",
+    "context_text": "You are helping at a neighbourhood book exchange. An exam trip now conflicts with your volunteer shift.",
+    "objective_text": "Ask for a workable swap and explain what the new volunteer must do.",
+    "target_grammar": "Polite conditionals and requests with would and could.",
+    "target_vocabulary": [
+      "shift",
+      "sign in",
+      "leftovers",
+      "swap",
+      "coordinator"
+    ],
+    "success_conditions": [
+      "Ask for a workable swap and explain what the new volunteer must do.",
+      "Name Madina as your replacement",
+      "Offer set-up or the 9 am slot",
+      "Say the shift starts at noon",
+      "Mention counting the books",
+      "Mention moving boxes indoors"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "SATURDAY BOOK EXCHANGE\nSet-up 09:00–10:00: label boxes and put signs outdoors. Desk 10:00–12:00: sign in donations. Pack-up 12:00–13:00: count leftover books and take boxes inside. For a swap, email the coordinator by Thursday afternoon with your replacement's name. Madina can only help at noon. You can arrive at 9:00 but must leave at 10:30.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which full shift could Madina take?",
+          "options": [
+            "Set-up",
+            "Pack-up",
+            "The donations desk"
+          ],
+          "answer_index": 1,
+          "explanation": "Madina is available from noon. Pack-up starts at noon and lasts until 1 pm."
+        },
+        {
+          "prompt": "What must the coordinator receive by Thursday afternoon?",
+          "options": [
+            "The name of the replacement",
+            "An estimate of leftover books",
+            "A copy of your exam schedule"
+          ],
+          "answer_index": 0,
+          "explanation": "The instructions ask for an email with the replacement's name."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write to the coordinator",
+      "instructions": "Your original shift is pack-up. Request the swap and offer to cover the full set-up slot instead.",
+      "prompt_text": "Coordinator: Please email me your replacement's name and what you can cover.",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 5,
+      "goal": "Identify the replacement and offer the 9 am set-up slot.",
+      "points": [
+        {
+          "label": "Name Madina as your replacement",
+          "any": [
+            "Madina"
+          ]
+        },
+        {
+          "label": "Offer set-up or the 9 am slot",
+          "any": [
+            "set-up",
+            "set up",
+            "9:00",
+            "9 am",
+            "nine"
+          ]
+        }
+      ],
+      "model_answer": "Hi Dilshod, could Madina cover my pack-up shift on Saturday? I need to leave by 10:30, but I can cover the complete 9:00–10:00 set-up slot. Would that work?"
+    },
+    {
+      "kind": "speak",
+      "title": "Brief your replacement",
+      "instructions": "Tell Madina when to arrive and explain the two jobs at pack-up.",
+      "prompt_text": "Madina: What do I need to do when I get there?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 3,
+      "goal": "Explain the timing and duties.",
+      "points": [
+        {
+          "label": "Say the shift starts at noon",
+          "any": [
+            "noon",
+            "12:00",
+            "midday",
+            "twelve"
+          ]
+        },
+        {
+          "label": "Mention counting the books",
+          "any": [
+            "count",
+            "counting",
+            "check how many"
+          ]
+        },
+        {
+          "label": "Mention moving boxes indoors",
+          "any": [
+            "inside",
+            "indoors"
+          ]
+        }
+      ],
+      "model_answer": "Please arrive at noon. First count the leftover books and write down the total. Then take the boxes inside so the courtyard is clear."
+    }
+  ]
+}

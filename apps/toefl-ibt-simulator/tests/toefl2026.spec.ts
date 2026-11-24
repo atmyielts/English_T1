@@ -186,6 +186,8 @@ const mockBackend = async (page: Page, focusedCount = 0, studyPlan = false): Pro
     if (table === 'sections') {
       return json(route, [
         ...TASKS.map((task, i) => ({ id: `bank-${task}`, experience_id: BANK_ID, name: task, display_order: i + 1, metadata: { type: SECTION_OF[task], format: 'toefl-2026', practice_task: task, duration_seconds: 600, item_sets: 10 } })),
+        ...(studyPlan ? [{ id: 'study-w8-checkpoint', experience_id: 'focused-bank', name: 'Week eight discussion', display_order: 0,
+          metadata: { type: 'writing', format: 'toefl-2026', practice_task: 'write_academic_discussion', practice_checkpoint_week: 8, practice_short_set: true, duration_seconds: 600, item_sets: 1 } }] : []),
         ...(studyPlan ? TASKS.filter(task => !task.startsWith('listen_')).flatMap(task => Array.from({ length: 35 }, (_, index) => ({
           id: `study-${task}-${index + 1}`, experience_id: 'focused-bank', name: `Study ${task} ${index + 1}`, display_order: index + 1,
           metadata: { type: SECTION_OF[task], format: 'toefl-2026', practice_task: task, practice_short_set: true, duration_seconds: 360, item_sets: 4 },
@@ -264,9 +266,13 @@ test('the study plan opens week eight and launches the assigned focused set', as
   const week = page.getByLabel('Choose a week');
   await expect(week.locator('option')).toHaveCount(8);
   await expect(page.getByText(/Up next/)).toBeVisible();
+  await expect(page.getByText('Week eight discussion', { exact: true })).toHaveCount(0);
   await week.selectOption('8');
-  await expect(page.getByRole('heading', { name: 'Week 8' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Week 8', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: /^Session / })).toHaveCount(5);
+  const checkpoint = page.getByRole('region', { name: 'Week 8 checkpoint' });
+  await expect(checkpoint.getByRole('button', { name: /Week eight discussion$/ })).toBeVisible();
+  await expect(page.getByText('Week eight discussion', { exact: true })).toHaveCount(1);
   await expect(page.getByText('New Listening sets are coming soon.', { exact: false })).toBeVisible();
   const exercise = page.getByRole('button', { name: /Study complete_the_words 29$/ });
   await expect(exercise).toHaveCount(0);
@@ -277,7 +283,13 @@ test('the study plan opens week eight and launches the assigned focused set', as
     mode: 'practice', allowed_section_ids: ['study-complete_the_words-29'], practice_calendar: '8-weeks',
   } });
   await page.goto(`/session/${SESSION_ID}/results`);
-  await expect(page.getByRole('link', { name: 'Eight-week study plan' })).toHaveAttribute('href', '/practice?plan=8-weeks');
+  const planLink = page.getByRole('link', { name: 'Eight-week study plan' });
+  await expect(planLink).toHaveAttribute('href', '/practice?plan=8-weeks');
+  await planLink.click();
+  await week.selectOption('8');
+  await checkpoint.getByRole('button', { name: /Week eight discussion$/ }).click();
+  await expect.poll(() => calls.starts.length).toBe(2);
+  expect(calls.starts[1]).toMatchObject({ metadata: { mode: 'practice', allowed_section_ids: ['study-w8-checkpoint'] } });
 });
 
 test('reading: Complete the Words inputs stay inline and save letters; daily life and passage screens', async ({ page }) => {

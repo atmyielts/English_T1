@@ -3,7 +3,7 @@ import { nextPracticeSession, practiceSessionState, selectPracticeWeek } from '.
 import { PracticeSessionDisclosure, usePracticeSessionLabels } from '../../../../packages/exam-playbook-web/src/PracticeSessionDisclosure';
 import { useAppT } from '../i18n';
 import type { LibrarySet } from '../lib/api';
-import { buildLibraryCalendar, libraryDayMinutes } from '../lib/libraryCalendar';
+import { buildLibraryCalendar, libraryCheckpointWeek, libraryDayMinutes } from '../lib/libraryCalendar';
 
 export function LibraryStudyCalendar({ sets }: { sets: readonly LibrarySet[] }) {
   const t = useAppT();
@@ -43,16 +43,19 @@ export function LibraryStudyCalendar({ sets }: { sets: readonly LibrarySet[] }) 
           const title = t('library.calendarDay', { number: index + 1 });
           const status = state === 'next' || state === 'started' ? labels[state] : state === 'complete' ? t('library.reviewed') : null;
           const skills = [...new Set(day.map(set => t(`section.${set.skill}`)))].join(' · ');
+          const hasCheckpoint = day.some(set => libraryCheckpointWeek(set.slug) === week);
           const query = `?${new URLSearchParams({ plan: '8-weeks', track, ...(state === 'next' ? {} : { week: String(week), session }) })}`;
           return <li key={`${track}-${week}-${session}`} data-session-state={state}>
             <h3>{title}</h3>
             <p>{t('library.minutes', { count: libraryDayMinutes(day) })}{status ? ` · ${status}` : ''}</p>
+            {hasCheckpoint ? <p>{t('library.checkpoint', { week })}</p> : null}
             <PracticeSessionDisclosure state={state} title={title} buttonClassName="btn ghost"
               initiallyOpen={params.get('session') === session} preview={<p>{skills}</p>}>
               <ul className="library-sets">
                 {day.map(set => <li key={set.slug}>
                   <Link to={`/library/${set.slug}${query}`}>{set.title}</Link>
                   <span>{t(`section.${set.skill}`)} · {t('library.minutes', { count: set.minutes })}{reviewed(set) ? ` · ${t('library.reviewed')}` : ''}</span>
+                  {libraryCheckpointWeek(set.slug) === week ? <span>{t('library.checkpointTryFresh')}</span> : null}
                 </li>)}
               </ul>
               {day.every(set => set.skill !== 'writing') ? <p>{t('library.calendarCheck')}</p> : null}

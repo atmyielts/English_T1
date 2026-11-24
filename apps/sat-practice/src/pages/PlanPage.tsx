@@ -15,6 +15,7 @@ import { PracticeSessionDisclosure, usePracticeSessionLabels } from '../../../..
 const utcDate = (iso: string) => `${iso}T00:00:00Z`;
 const finished = (item: PlanItem) => item.status === 'completed' || item.status === 'skipped';
 const started = (item: PlanItem) => item.status === 'completed' || item.status === 'in_progress';
+const checkpoints = [[2, 'evidence-03'], [4, 'timed-01'], [6, 'timed-02'], [8, 'timed-03']] as const;
 
 export const PlanPage = () => {
   const t = useAppT();
@@ -81,6 +82,11 @@ export const PlanPage = () => {
             <Link className="btn ghost compact" to="/bank?status=unseen">{t('plan.eightWeeksUnseen')}</Link>
             <Link className="btn ghost compact" to="/modules">{t('plan.eightWeeksModules')}</Link>
           </div>
+          <ul className="row-actions" style={{ listStyle: 'none', padding: 0 }}>
+            {checkpoints.map(([weekNumber, set]) => <li key={set}>
+              <Link className="btn ghost compact" to={`/short-sets?set=${set}`}>{labels.checkpointFor(weekNumber)}</Link>
+            </li>)}
+          </ul>
         </details>
         {week ? <section className="panel">
           <p>{t('plan.progress', { done: week.progress.completed, total: week.progress.total, minutes: week.progress.minutes_completed, planned: week.progress.minutes_planned })}</p>

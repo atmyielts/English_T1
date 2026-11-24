@@ -5,6 +5,8 @@ export const uz: Record<AppKey, string> = {
   'nav.practice': 'Mashq',
   'nav.full_exam': 'To‘liq imtihon',
   'nav.review': 'Tahlil',
+  'review.explanation': 'Nega bu javob to‘g‘ri',
+  'review.model_response': 'Izohli namunaviy javob',
   'nav.stats': 'Statistika',
   'nav.playbook': 'TOEFL Playbook',
   'nav.schood_home': 'Schood bosh sahifasi',

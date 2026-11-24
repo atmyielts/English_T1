@@ -183,6 +183,8 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
         ...toList(content.points),
         ...toList(content.bullets),
       ];
+      const exercise = content.exercise as Record<string, unknown> | undefined;
+      const hasExercise = typeof exercise?.prompt === 'string' && typeof exercise?.answer === 'string';
 
       const renderProseString = (text: string, key: string) =>
         looksLikeMarkdown(text)
@@ -210,6 +212,14 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
               ))}
             </ul>
           ) : null}
+          {hasExercise ? <div className="playbook-authored-exercise">
+            <h3>{t('blocks.tryIt')}</h3>
+            <ProseMarkdown source={String(exercise.prompt)} />
+            <details>
+              <summary>{t('blocks.showWorkedAnswer')}</summary>
+              <ProseMarkdown source={String(exercise.answer)} />
+            </details>
+          </div> : null}
           {coach}
         </section>
       );

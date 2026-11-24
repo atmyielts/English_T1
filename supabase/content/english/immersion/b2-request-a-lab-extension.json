@@ -1,0 +1,133 @@
+{
+  "item": {
+    "slug": "b2-request-a-lab-extension",
+    "title": "Request a lab report extension",
+    "level": "B2",
+    "mission_type": "study",
+    "context_text": "A shared plant-growth experiment lost a day of readings after a lab closure. Your group needs to submit clear work with a limited set of observations.",
+    "objective_text": "Request a specific extension and accurately explain which evidence is missing.",
+    "target_grammar": "Although, because, and if for clear concessions and realistic alternatives.",
+    "target_vocabulary": [
+      "observation",
+      "closure",
+      "extension",
+      "partial data",
+      "limitation"
+    ],
+    "success_conditions": [
+      "Request a specific extension and accurately explain which evidence is missing.",
+      "Identify the missing Wednesday observations",
+      "Ask for Monday",
+      "Describe a concrete completion step",
+      "Keep the Friday deadline",
+      "Report available readings",
+      "Disclose missing data"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "COURSE ANNOUNCEMENT\nThe plant-growth report is due Friday at 17:00. Keskin Lab was closed on Wednesday; results from other days are still available. A group may submit available observations with one paragraph on the missing data. To request until Monday at 17:00, contact the tutor before Thursday at noon with a reason and a schedule for completing the report.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which statement about the evidence is justified?",
+          "options": [
+            "Wednesday's observations are missing; other days can still be analysed.",
+            "The closure invalidates the observations collected before Wednesday.",
+            "The group must estimate Wednesday's values and report them as measured."
+          ],
+          "answer_index": 0,
+          "explanation": "The announcement says only Wednesday was affected and allows the group to report the remaining observations."
+        },
+        {
+          "prompt": "What will make the extension request complete?",
+          "options": [
+            "Contact the lab after Friday with a copy of the report.",
+            "Email the tutor before Thursday noon with the reason and a completion plan.",
+            "Wait until Monday to present a full set of observations."
+          ],
+          "answer_index": 1,
+          "explanation": "The tutor needs both a reason and a schedule before the Thursday cutoff."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Make a specific request",
+      "instructions": "Write to the tutor. Say what was lost, request the stated new deadline, and give one practical next step.",
+      "prompt_text": "Tutor: Please describe why your group needs extra time and how you will use it.",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 6,
+      "goal": "Request Monday at 17:00 with an accurate reason and timeline.",
+      "points": [
+        {
+          "label": "Identify the missing Wednesday observations",
+          "any": [
+            "Wednesday",
+            "midweek readings"
+          ]
+        },
+        {
+          "label": "Ask for Monday",
+          "any": [
+            "Monday"
+          ]
+        },
+        {
+          "label": "Describe a concrete completion step",
+          "any": [
+            "analyse",
+            "analyze",
+            "draft",
+            "review",
+            "compare",
+            "write up"
+          ]
+        }
+      ],
+      "model_answer": "Dear Dr Aliyeva, could we submit the report by 17:00 on Monday? We have no readings from Wednesday because the lab was closed. Our group will analyse the remaining data by Saturday and review the limitations paragraph together on Sunday. Thank you for considering our request."
+    },
+    {
+      "kind": "speak",
+      "title": "Agree on a fallback plan",
+      "instructions": "Explain what the group should submit if the request is declined. Clarify how you will handle the gap.",
+      "prompt_text": "Teammate: What should we do if the tutor says no?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 4,
+      "goal": "Explain how to submit on Friday without overstating the evidence.",
+      "points": [
+        {
+          "label": "Keep the Friday deadline",
+          "any": [
+            "Friday",
+            "original deadline"
+          ]
+        },
+        {
+          "label": "Report available readings",
+          "any": [
+            "available",
+            "remaining",
+            "other days",
+            "what we collected"
+          ]
+        },
+        {
+          "label": "Disclose missing data",
+          "any": [
+            "missing",
+            "gap",
+            "limitation",
+            "Wednesday"
+          ]
+        }
+      ],
+      "model_answer": "We'll submit on Friday using the readings we actually collected. We should explain the Wednesday gap and say that our comparison is based on the remaining days.",
+      "min_words": 24
+    }
+  ]
+}

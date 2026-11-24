@@ -18,10 +18,23 @@ type StudySection = { metadata: Record<string, unknown> | null };
 export type ToeflPracticeSection = StudySection & { id: string; experience_id: string; name: string; display_order: number };
 
 export const TOEFL_REVIEW_MINUTES = 10;
+const checkpointWeek = (section: StudySection) => section.metadata?.practice_checkpoint_week;
 
 export function buildToeflPracticeCalendar<Item extends StudySection>(bank: ReadonlyMap<string, readonly Item[]>) {
-  const pools = Object.fromEntries(tasks.map(task => [task, (bank.get(task) ?? []).filter(section => section.metadata?.practice_short_set === true)]));
+  const pools = Object.fromEntries(tasks.map(task => [task, (bank.get(task) ?? []).filter(section =>
+    section.metadata?.practice_short_set === true && checkpointWeek(section) == null)]));
   return buildPracticeCalendar<StudyTask, Item>(pools, weeklyPattern);
+}
+
+export function toeflPracticeCheckpoints<Item extends StudySection>(bank: ReadonlyMap<string, readonly Item[]>) {
+  const checkpoints = new Map<number, Item>();
+  for (const sections of bank.values()) {
+    for (const section of sections) {
+      const week = checkpointWeek(section);
+      if ((week === 2 || week === 4 || week === 6 || week === 8) && !checkpoints.has(week)) checkpoints.set(week, section);
+    }
+  }
+  return checkpoints;
 }
 
 export const toeflDayMinutes = (sets: readonly StudySection[]) => TOEFL_REVIEW_MINUTES

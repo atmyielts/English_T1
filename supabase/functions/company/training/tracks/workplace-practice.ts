@@ -1,0 +1,53 @@
+import type { Scenario } from '../content.ts';
+import { loc } from './_compact.ts';
+
+export const workplacePractice = {
+  customer_service: {
+    code: 'customer_service-rp-warranty-serial-mismatch',
+    title: loc(['A warranty claim with the wrong serial number', 'Гарантийная заявка с неверным серийным номером', 'Seriya raqami xato kiritilgan kafolat arizasi']),
+    persona: 'A commuter who depends on a folding bicycle and has already sent the shop a photo and receipt. Your claim was declined because the shop record has one incorrect serial digit. You want a repair date and are reluctant to send the same documents again.',
+    learnerRole: 'A customer-service adviser with access to the case record. You can compare the photo and receipt, reopen the claim, and request a review within two business days; the service centre sets repair dates.',
+    setting: 'The customer is calling from work and has five minutes. Case 3127 contains the attachments. The shop entry ends in 9, but the photo and receipt end in 6.',
+    goal: loc(['Confirm which digit is wrong, explain the review, and agree on a reliable update.', 'Уточните ошибочную цифру, объясните порядок проверки и договоритесь об уведомлении.', 'Qaysi raqam xato ekanini aniqlang, tekshiruvni tushuntiring va javob berish muddatini kelishing.']),
+    difficulty: 'medium',
+    opening: 'Your email said the serial number doesn’t match. I already sent you a photo. Am I supposed to start over?',
+    checklist: ['Acknowledge the inconvenience and use the documents already on file.', 'Identify the discrepancy and explain what you will do about it.', 'Agree a channel and a time for the next update without promising a repair date.'],
+    modelReply: 'I can see why this is frustrating, especially when you already supplied the documents. Both attachments end in six, while our record ends in nine. I’ll correct that and reopen case 3127. May I email you within two business days with the outcome of the review? The service centre will confirm the repair date after that.',
+  },
+  logistics: {
+    code: 'logistics-rp-missing-pallet-signature',
+    title: loc(['Hand over an unsigned delivery', 'Передача смены по доставке без подписи', 'Imzosiz yetkazmani keyingi smenaga topshirish']),
+    persona: 'The incoming shift coordinator. A warehouse manager is waiting for this delivery to be closed. You want to know which pallets were received and exactly who should follow up.',
+    learnerRole: 'The outgoing shift coordinator. You can pass on the manifest, flag the outstanding signature and assign follow-up to the incoming shift but cannot certify receipt yourself.',
+    setting: 'At 17:45, the receiver has signed for two of three pallets. The driver photographed pallet C in the receiving bay but did not get a signature. The receiver is back at 08:30. Dispatch needs a status update by 09:00.',
+    goal: loc(['Give a handover that identifies the confirmed delivery, the missing evidence and the next owner.', 'Передайте смену: укажите, что подтверждено, какого документа не хватает и кто отвечает за проверку.', 'Tasdiqlangan yetkazmani, yetishmayotgan dalilni va navbatdagi mas’ulni aniq ayting.']),
+    difficulty: 'medium',
+    opening: 'Dispatch wants me to close that delivery first thing. Has the receiver signed for all three pallets?',
+    checklist: ['Distinguish the two confirmed pallets from the one with only a photo.', 'Keep the delivery open until receipt is confirmed.', 'Assign a specific follow-up after 08:30 and an update before 09:00.'],
+    modelReply: 'The receiver signed for two pallets. Pallet C is in the bay photo, but there’s no signed receipt for it, so please keep the delivery open. Could you ask the receiver to check pallet C when they return at 08:30? Please update dispatch before 09:00, even if the signature is still outstanding.',
+  },
+  management: {
+    code: 'management-rp-protect-pilot-scope',
+    title: loc(['Give a project update when scope changes', 'Отчёт о проекте при изменении объёма работ', 'Ish ko‘lami o‘zgarganda loyiha holatini tushuntirish']),
+    persona: 'An operations sponsor who promised a pilot to two branches. You want the export function at launch but need enough confidence to schedule staff. You will accept an explicit trade-off if it safeguards commitments to staff.',
+    learnerRole: 'The project lead. You can recommend what to pilot and when to review outstanding work, but only the sponsor can decide whether to reschedule a branch.',
+    setting: 'Branch A can pilot case entry and search on Monday. Branch B requires a PDF export whose large-report test failed. Thursday is the earliest retest. Staff at Branch B need two working days’ notice before their pilot.',
+    goal: loc(['Explain the options, recommend a decision, and ask the sponsor to confirm it.', 'Объясните варианты, предложите решение и попросите руководителя его подтвердить.', 'Variantlarni tushuntiring, yechim tavsiya qiling va homiydan tasdiqlashni so‘rang.']),
+    difficulty: 'hard',
+    opening: 'Both teams have set aside staff time. What can they actually use on Monday, and what do you need me to decide?',
+    checklist: ['Separate the verified pilot functions from the export dependency.', 'Give a workable recommendation and the trade-off for Branch B.', 'Ask for a decision and set a clear next update.'],
+    modelReply: 'Branch A can start Monday with case entry and search. Branch B needs PDF export, and the large-report test failed. I recommend keeping Branch A on Monday and moving Branch B once the export passes, with two working days’ notice. Can you confirm the split rollout today? I’ll send both branches an update after Thursday’s retest.',
+  },
+  office_admin: {
+    code: 'office_admin-rp-missing-interpreter',
+    title: loc(['Replan a briefing when the interpreter is unavailable', 'Перенос брифинга из-за отсутствия переводчика', 'Tarjimon kelolmaganda brifingni qayta rejalash']),
+    persona: 'The visiting team’s coordinator. Two guests need interpretation for the safety briefing and their train leaves at 17:00. You want them to see as much as possible without being rushed.',
+    learnerRole: 'The office coordinator. You can change the briefing order and offer a call with the interpreter but cannot waive the requirement to complete the briefing before entering the work area.',
+    setting: 'The original interpreter is unavailable. Remote interpretation is available at 14:15 and the briefing takes 25 minutes. A non-restricted display room is available at 13:30. The visitor team needs to leave the office by 16:15 for the train.',
+    goal: loc(['Offer a clear schedule that preserves the interpreted briefing and the departure time.', 'Предложите расписание, в котором есть инструктаж с переводом и учтено время отъезда.', 'Tarjimali yo‘riqnoma va jo‘nash vaqtini hisobga olgan aniq jadval taklif qiling.']),
+    difficulty: 'medium',
+    opening: 'If we can’t get an interpreter now, can the group go straight to the work area and do the briefing later?',
+    checklist: ['Explain that the interpreted briefing comes before work-area access.', 'Offer a useful activity while waiting and state the new briefing time.', 'Confirm when visitors need to leave the office and check agreement.'],
+    modelReply: 'Everyone needs the interpreted briefing before we enter the work area. We can start in the display room at 13:30, then join the interpreter at 14:15 for 25 minutes. That still leaves time for a short visit before you leave at 16:15. Does that work for your group?',
+  },
+} satisfies Record<string, Scenario>;

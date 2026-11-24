@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { signStorageRef } from "../_shared/media-storage.ts";
 import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
 import { toefl2026TierFilterFor } from "../_shared/toefl-2026-session.ts";
-import { productIdsGrantingAccess } from "../_shared/product-bundles.ts";
+import { productIdsGrantingAccess, TOEFL_SIMULATOR_PRODUCT_ID } from "../_shared/product-bundles.ts";
 import { SAT_SIMULATOR_PRODUCT_ID, satNumericAnswerMatches } from "../_shared/sat-numeric-answer.ts";
 
 type Json = Record<string, unknown>;
@@ -11,7 +11,7 @@ type Json = Record<string, unknown>;
 type SectionRow = { id: string; name: string; display_order: number; metadata: Json | null };
 type PartRow = { id: string; section_id: string; name: string; display_order: number };
 type UnitRow = { id: string; part_id: string; type: string; data: Json; display_order: number; metadata: Json | null };
-type KeyRow = { content_unit_id: string; correct: any };
+type KeyRow = { content_unit_id: string; correct: any; metadata: Json | null };
 type ResponseRow = { content_unit_id: string; data: any; submitted_at: string };
 
 const corsHeaders: Record<string, string> = {
@@ -327,7 +327,7 @@ serve(async (req) => {
 
     const { data: sessionRow, error: sessionError } = await supabase
       .from("sessions")
-      .select("id, user_id, experience_id, status, started_at, completed_at, created_at, token_id")
+      .select("id, user_id, experience_id, status, started_at, completed_at, created_at, token_id, metadata")
       .eq("id", sessionId)
       .maybeSingle();
 
@@ -461,10 +461,16 @@ serve(async (req) => {
       });
     }
 
-    const sectionRows = (sections ?? []) as SectionRow[];
+    const isToeflPractice = productId === TOEFL_SIMULATOR_PRODUCT_ID &&
+      experienceRow.metadata?.catalog === "practice_bank_2026";
+    const practiceScope = sessionRow.metadata?.allowed_section_ids;
+    const allSections = (sections ?? []) as SectionRow[];
+    const sectionRows = isToeflPractice && Array.isArray(practiceScope)
+      ? allSections.filter((section) => practiceScope.includes(section.id))
+      : allSections;
     const selectedSectionIds = onlySectionId ? [onlySectionId] : sectionRows.map((s) => s.id);
 
-    if (onlySectionId && !sectionRows.some((s) => s.id === onlySectionId)) {
+    if (selectedSectionIds.length === 0 || (onlySectionId && !sectionRows.some((s) => s.id === onlySectionId))) {
       return new Response(JSON.stringify({ error: "section_id not found for experience" }), {
         status: 404,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -579,7 +585,7 @@ serve(async (req) => {
 
     const { data: keys, error: keysError } = await supabase
       .from('answer_keys')
-      .select('content_unit_id, correct')
+      .select('content_unit_id, correct, metadata')
       .in('content_unit_id', unitIds);
 
     if (keysError) {
@@ -590,7 +596,7 @@ serve(async (req) => {
     }
 
     const keyRows = (keys ?? []) as KeyRow[];
-    const keyByUnitId = new Map(keyRows.map((k) => [k.content_unit_id, k.correct]));
+    const keyByUnitId = new Map(keyRows.map((k) => [k.content_unit_id, k]));
 
     const satMathSections = new Set(productId === SAT_SIMULATOR_PRODUCT_ID
       ? sectionRows.filter((section) => section.metadata?.type === "math").map((section) => section.id)
@@ -598,7 +604,11 @@ serve(async (req) => {
     const reviewUnits = resolvedUnitRows.map((u) => {
       const section_id = partToSectionId.get(u.part_id) ?? "";
       const answer = latestAnswers[u.id] ?? null;
-      const correct = (keyByUnitId.has(u.id) ? keyByUnitId.get(u.id) : null) as Json | null;
+      const key = keyByUnitId.get(u.id);
+      const correct = (key?.correct ?? null) as Json | null;
+      const feedback = isToeflPractice && u.metadata?.toefl_task
+        ? key?.metadata?.feedback
+        : undefined;
       const scored = correct ? scoreUnit(u.type, correct, answer, satMathSections.has(section_id)) : null;
       const score = scored ? scored.score : null;
       const max_score = scored ? scored.max : null;
@@ -616,6 +626,7 @@ serve(async (req) => {
         metadata: u.metadata ?? {},
         answer,
         correct,
+        ...(feedback && typeof feedback === "object" && !Array.isArray(feedback) ? { review_feedback: feedback } : {}),
         is_correct,
         score,
         max_score,

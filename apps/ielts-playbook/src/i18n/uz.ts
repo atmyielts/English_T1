@@ -89,6 +89,8 @@ export const uz: Record<keyof typeof en, string> = {
   'blocks.nextStep': 'Keyingi qadam',
   'blocks.open': 'Ochish',
   'blocks.learnMore': 'Batafsil',
+  'blocks.tryIt': 'Bajarib ko‘ring',
+  'blocks.showWorkedAnswer': 'Javob tahlilini ko‘rish',
   'blocks.important': 'Muhim',
 
   'coach.askAbout': '“{heading}” haqida so‘rash',

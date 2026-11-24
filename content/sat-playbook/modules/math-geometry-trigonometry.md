@@ -351,3 +351,11 @@ About 5 to 7 across the whole Math section, according to College Board's specifi
 2. Strengthen [Algebra](https://playbook.sat.schood.online/math-algebra) and [Advanced Math](https://playbook.sat.schood.online/math-advanced-math), which carry most of the Math section.
 3. Review data skills in [Problem-Solving and Data Analysis](https://playbook.sat.schood.online/math-problem-solving-data-analysis).
 4. Put it together with [Pacing and Adaptive Modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
+
+## Worked Example and Try It
+
+**Worked example.** A circular sign insert has radius 9 centimeters and a central angle of 80°. Its curved edge is 80/360 = 2/9 of the circumference, so its arc is (2/9)(18π) = 4π centimeters. The full border also includes two radius edges and is 18 + 4π centimeters.
+
+**Try it.** A circular-sector panel has radius 12 centimeters and a 45° central angle. How much longer is its complete border than its curved edge?
+
+**Check your work.** The two straight edges are each a radius. The full border is 24 centimeters longer. No arc calculation is needed for this difference.
