@@ -5,7 +5,7 @@
 //                       only the updates the coaches use (message, callback_query, poll_answer);
 //   setMyCommands       the pack's commands, in English (default), Uzbek and Russian;
 //   setMyName / setMyDescription / setMyShortDescription   from the pack manifest;
-//   setChatMenuButton   a Mini App button opening https://ai.schood.online/coach/<pack>.
+//   setChatMenuButton   a short "Open" Mini App button opening https://ai.schood.online/coach/<pack>.
 //
 // Dry run (default, no network):
 //   deno run --no-lock --allow-read --allow-env workers/schood-coach-bots/scripts/setup-webhooks.ts ielts
@@ -15,7 +15,7 @@
 // Tokens and secrets are read from the environment and never printed.
 import { pick, type CoachPack, type Locale } from '../../../packages/coach-packs/src/mod.ts';
 import { loadPacks } from '../../../packages/coach-packs/src/registry.ts';
-import { envKey } from '../src/worker.ts';
+import { envKey, MENU_BUTTON_TEXT } from '../src/worker.ts';
 
 const WORKER = 'https://coach-bots.schood.online';
 const APP = 'https://ai.schood.online';
@@ -39,7 +39,7 @@ export function setupCalls(pack: CoachPack, webhookSecret: string, options: { wo
     calls.push({ method: 'setMyDescription', body: { description: pick(pack.manifest.description, locale).slice(0, 512), ...scope } });
     calls.push({ method: 'setMyShortDescription', body: { short_description: pick(pack.manifest.tagline, locale).slice(0, 120), ...scope } });
   }
-  calls.push({ method: 'setChatMenuButton', body: { menu_button: { type: 'web_app', text: pick(pack.manifest.name, 'en').slice(0, 64), web_app: { url: `${app}/coach/${id}` } } } });
+  calls.push({ method: 'setChatMenuButton', body: { menu_button: { type: 'web_app', text: MENU_BUTTON_TEXT, web_app: { url: `${app}/coach/${id}` } } } });
   return calls;
 }
 

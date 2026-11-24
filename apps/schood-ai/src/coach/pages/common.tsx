@@ -15,7 +15,7 @@ export function useTelegramLink() {
 export function SignedOut({ pack }: { pack?: string }) {
   const t = useT(), link = useTelegramLink();
   if (insideTelegram()) {
-    if (link.state === 'failed') return <Card><h2 className="m-0 font-display text-xl font-bold">{t('coach.signin.failedTitle')}</h2><p className="mb-0 text-sm text-gray-700">{t(link.code === 'session_unavailable' ? 'coach.signin.useWeb' : 'coach.signin.failed')}</p></Card>;
+    if (link.state === 'failed') return <Card><h2 className="m-0 font-display text-xl font-bold">{t('coach.signin.failedTitle')}</h2><p className="mb-0 text-sm text-gray-700">{t(link.code === 'session_unavailable' || link.code === 'session_not_allowed' ? 'coach.signin.useWeb' : 'coach.signin.failed')}</p></Card>;
     return <Card className="flex flex-col gap-3">
       <h2 className="m-0 font-display text-xl font-bold">{t('coach.link.title')}</h2>
       <p className="m-0 text-sm leading-6 text-gray-700">{t('coach.link.lead')}</p>
