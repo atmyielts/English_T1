@@ -7,9 +7,11 @@ import { createSession } from '../services/persistence';
 import { useAccess } from '../lib/useAccess';
 import { useAppT, type AppKey } from '../i18n';
 import { is2026Metadata, resolveTaskParam, TASKS_BY_SECTION, type Toefl2026Task } from '../features/toefl2026/tasks';
+import { buildToeflPracticeCalendar, toeflPracticeCheckpoints, type ToeflPracticeSection } from '../features/toefl2026/practiceCalendar';
+import { PracticeStudyCalendar } from '../features/toefl2026/PracticeStudyCalendar';
 
 type ExperienceRow = { id: string; name: string; display_order: number; is_active: boolean; metadata: Record<string, unknown> | null };
-type SectionRow = { id: string; experience_id: string; name: string; display_order: number; metadata: Record<string, unknown> | null };
+type SectionRow = ToeflPracticeSection;
 
 const sectionType = (s: SectionRow): string => String((s.metadata as any)?.type ?? 'unknown');
 
@@ -18,6 +20,7 @@ export const PracticePage: React.FC = () => {
   const t = useAppT();
   const [params] = useSearchParams();
   const selectedTask = resolveTaskParam(params.get('task'));
+  const calendar = params.get('plan') === '8-weeks';
   const { userId, accessToken } = useAccess();
 
   const [loading, setLoading] = useState(true);
@@ -46,13 +49,18 @@ export const PracticePage: React.FC = () => {
       }
       const exps = (expRows ?? []) as ExperienceRow[];
       setExperiences(exps);
-      const expIds = exps.map((e) => e.id);
+      const expIds = exps.filter(e => !is2026Metadata(e.metadata) || e.metadata?.catalog === 'practice_bank_2026').map(e => e.id);
       if (expIds.length > 0) {
-        const { data: secRows } = await supabase
+        const { data: secRows, error: sectionsError } = await supabase
           .from('sections')
           .select('id,experience_id,name,display_order,metadata')
           .in('experience_id', expIds)
-          .order('display_order', { ascending: true });
+          .order('display_order', { ascending: true }).order('id', { ascending: true });
+        if (sectionsError) {
+          setError(t('errors.load_failed'));
+          setLoading(false);
+          return;
+        }
         const by: Record<string, SectionRow[]> = {};
         for (const s of (secRows ?? []) as SectionRow[]) (by[s.experience_id] ??= []).push(s);
         setSectionsByExperience(by);
@@ -72,6 +80,8 @@ export const PracticePage: React.FC = () => {
     return out;
   }, [banks, sectionsByExperience]);
   const legacy = useMemo(() => experiences.filter((e) => !is2026Metadata(e.metadata)), [experiences]);
+  const weeks = useMemo(() => buildToeflPracticeCalendar(bankSections), [bankSections]);
+  const checkpoints = useMemo(() => toeflPracticeCheckpoints(bankSections), [bankSections]);
 
   useEffect(() => {
     let active = true;
@@ -102,7 +112,9 @@ export const PracticePage: React.FC = () => {
       return;
     }
     setStarting(sectionId);
-    const result = await createSession(accessToken, experienceId, { mode: 'practice', allowed_section_ids: [sectionId] });
+    const result = await createSession(accessToken, experienceId, {
+      mode: 'practice', allowed_section_ids: [sectionId], ...(calendar ? { practice_calendar: '8-weeks' } : {}),
+    });
     setStarting(null);
     if (!result.sessionId) {
       if (result.code === 'usage_limit_reached') setError(result.capabilityKey === 'writing_submissions' ? t('errors.writing_limit') : t('errors.usage_limit'));
@@ -173,31 +185,38 @@ export const PracticePage: React.FC = () => {
     <MainLayout>
       <div className="space-y-8 max-w-7xl mx-auto" data-testid="practice-page">
         <div>
+          {calendar ? <Link className="text-sm font-semibold underline" to="/practice">{t('practice.heading')}</Link> : null}
           <div className="text-xs uppercase tracking-[0.12em] text-[#64748b] font-semibold">{t('format.2026')}</div>
-          <h1 className="text-3xl md:text-4xl font-semibold text-[#0f172a] mt-2">{t('practice.heading')}</h1>
-          <p className="text-[#475569] mt-2">{t('practice.intro')}</p>
+          <h1 className="text-3xl md:text-4xl font-semibold text-[#0f172a] mt-2">{t(calendar ? 'practice.calendarTitle' : 'practice.heading')}</h1>
+          <p className="text-[#475569] mt-2">{t(calendar ? 'practice.calendarIntro' : 'practice.intro')}</p>
           <p className="text-sm text-[#64748b] mt-1">{t('practice.ai_note')}</p>
+          {!calendar && weeks.length ? <Link to="/practice?plan=8-weeks" className="mt-3 min-h-[44px] inline-flex items-center rounded-full border border-[#151d2b]/15 bg-white px-4 font-semibold">{t('practice.calendarTitle')}</Link> : null}
         </div>
 
         {loading ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/70 px-4 py-3 text-[#475569]">{t('common.loading')}</div> : null}
         {error ? <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-2xl p-3">{error}</div> : null}
 
-        {!loading && !banks.length ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/75 p-6 text-[#475569]">{t('practice.none')}</div> : null}
+        {!loading && !calendar && !banks.length ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/75 p-6 text-[#475569]">{t('practice.none')}</div> : null}
 
-        {TASKS_BY_SECTION.map(({ section, tasks }) => (
+        {calendar && !loading ? <>
+          <PracticeStudyCalendar weeks={weeks} checkpoints={checkpoints} completed={completed} starting={starting} onStart={section => void start(section.experience_id, section.id)} />
+          <section><h2 className="text-xl font-semibold text-[#0f172a]">{t('section.listening')}</h2><p className="text-sm text-[#475569]">{t('practice.listeningSoon')}</p></section>
+        </> : null}
+
+        {!calendar ? TASKS_BY_SECTION.map(({ section, tasks }) => (
           <section key={section}>
             <h2 className="text-xl font-semibold text-[#0f172a] mb-3">{t(`section.${section}` as AppKey)}</h2>
             {section === 'listening' ? <p className="mb-3 text-sm text-[#475569]">{t('practice.listeningSoon')}</p> : null}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">{tasks.map(taskCard)}</div>
           </section>
-        ))}
+        )) : null}
 
         <div className="rounded-[22px] border border-[#151d2b]/12 bg-white/75 p-5 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
           <p className="text-[#334155]">{t('practice.full_test_cta')}</p>
           <Link to="/full-exam" className="min-h-[44px] inline-flex items-center justify-center px-4 py-2 rounded-full border border-[#151d2b]/15 bg-white font-semibold">{t('practice.open_full_exam')}</Link>
         </div>
 
-        {legacy.length > 0 ? (
+        {!calendar && legacy.length > 0 ? (
           <details className="rounded-[22px] border border-[#151d2b]/12 bg-white/60 p-5" data-testid="legacy-archive">
             <summary className="cursor-pointer font-semibold text-[#0f172a] min-h-[44px] flex items-center">{t('format.legacy_archive')}</summary>
             <p className="text-sm text-[#64748b] mt-2">{t('format.legacy_archive_note')}</p>

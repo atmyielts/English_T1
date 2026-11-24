@@ -122,7 +122,7 @@ type Calls = { responses: Array<Record<string, unknown>>; starts: Array<Record<s
 
 const json = (route: Route, body: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
-const mockBackend = async (page: Page, focusedCount = 0): Promise<Calls> => {
+const mockBackend = async (page: Page, focusedCount = 0, studyPlan = false): Promise<Calls> => {
   const calls: Calls = { responses: [], starts: [], completed: false };
   await page.context().addCookies([{ name: 'schood-auth', value: encodeURIComponent(JSON.stringify(session)), domain: '127.0.0.1', path: '/', httpOnly: false, sameSite: 'Lax' }]);
   await page.addInitScript(() => {
@@ -153,7 +153,9 @@ const mockBackend = async (page: Page, focusedCount = 0): Promise<Calls> => {
     if (fn === 'exam-state') return json(route, STATE(url.searchParams.get('section_id') ?? 'r1'));
     if (fn === 'start-session') { calls.starts.push(route.request().postDataJSON()); return json(route, { session_id: SESSION_ID }); }
     if (fn === 'audio-playback') return json(route, { ok: true, locked: false, playback: null });
-    if (fn === 'score-session') return json(route, RESULT_2026);
+    if (fn === 'score-session') return json(route, studyPlan
+      ? { ...RESULT_2026, session: { ...RESULT_2026.session, metadata: { practice_calendar: '8-weeks' } } }
+      : RESULT_2026);
     if (fn === 'grade-writing' || fn === 'toefl-speaking') return json(route, { evaluation: { id: 'e', method: 'ai', status: 'completed', result: { tasks: [], items: [] }, evaluated_at: '2026-10-28T10:31:00Z' } });
     return json(route, {});
   });
@@ -177,18 +179,23 @@ const mockBackend = async (page: Page, focusedCount = 0): Promise<Calls> => {
       return json(route, [
         { id: EXP_ID, name: 'TOEFL iBT Practice Test 1 (2026 format)', display_order: 0, is_active: true, metadata: { format: 'toefl-2026', catalog: 'full_test' } },
         { id: BANK_ID, name: 'TOEFL iBT 2026 Task Practice', display_order: 30, is_active: true, metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026' } },
-        ...(focusedCount ? [{ id: 'focused-bank', name: 'Focused Practice Sets', display_order: 31, is_active: true, metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026' } }] : []),
+        ...(focusedCount || studyPlan ? [{ id: 'focused-bank', name: 'Focused Practice Sets', display_order: 31, is_active: true, metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026' } }] : []),
         { id: LEGACY_ID, name: 'TOEFL RLW Full Test 1', display_order: 1, is_active: true, metadata: { catalog: 'full_test' } },
       ]);
     }
     if (table === 'sections') {
       return json(route, [
         ...TASKS.map((task, i) => ({ id: `bank-${task}`, experience_id: BANK_ID, name: task, display_order: i + 1, metadata: { type: SECTION_OF[task], format: 'toefl-2026', practice_task: task, duration_seconds: 600, item_sets: 10 } })),
-        ...Array.from({ length: focusedCount }, (_, index) => ({
+        ...(studyPlan ? [{ id: 'study-w8-checkpoint', experience_id: 'focused-bank', name: 'Week eight discussion', display_order: 0,
+          metadata: { type: 'writing', format: 'toefl-2026', practice_task: 'write_academic_discussion', practice_checkpoint_week: 8, practice_short_set: true, duration_seconds: 600, item_sets: 1 } }] : []),
+        ...(studyPlan ? TASKS.filter(task => !task.startsWith('listen_')).flatMap(task => Array.from({ length: 35 }, (_, index) => ({
+          id: `study-${task}-${index + 1}`, experience_id: 'focused-bank', name: `Study ${task} ${index + 1}`, display_order: index + 1,
+          metadata: { type: SECTION_OF[task], format: 'toefl-2026', practice_task: task, practice_short_set: true, duration_seconds: 360, item_sets: 4 },
+        }))) : Array.from({ length: focusedCount }, (_, index) => ({
           id: `focused-academic-${index + 1}`, experience_id: 'focused-bank',
           name: index === 0 ? 'Reading a repair report' : `Academic reading set ${index + 1}`, display_order: index + 1,
           metadata: { type: 'reading', format: 'toefl-2026', practice_task: 'read_academic_passage', practice_short_set: true, duration_seconds: 240, item_sets: 4 },
-        })),
+        }))),
         { id: 'legacy-r', experience_id: LEGACY_ID, name: 'Reading', display_order: 1, metadata: { type: 'reading' } },
       ]);
     }
@@ -250,6 +257,39 @@ test('focus practice puts uncompleted sets first and expands the rest for review
   await expect(academic.getByText('Reading a repair report')).toBeVisible();
   await expect(academic.getByText('Completed', { exact: true })).toBeVisible();
   await expect(academic.getByRole('button', { name: 'Show fewer sets' })).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('the study plan opens week eight and launches the assigned focused set', async ({ page }) => {
+  const calls = await mockBackend(page, 0, true);
+  await page.goto('/practice');
+  await page.getByRole('link', { name: 'Eight-week study plan' }).click();
+  const week = page.getByLabel('Choose a week');
+  await expect(week.locator('option')).toHaveCount(8);
+  await expect(page.getByText(/Up next/)).toBeVisible();
+  await expect(page.getByText('Week eight discussion', { exact: true })).toHaveCount(0);
+  await week.selectOption('8');
+  await expect(page.getByRole('heading', { name: 'Week 8', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Session / })).toHaveCount(5);
+  const checkpoint = page.getByRole('region', { name: 'Week 8 checkpoint' });
+  await expect(checkpoint.getByRole('button', { name: /Week eight discussion$/ })).toBeVisible();
+  await expect(page.getByText('Week eight discussion', { exact: true })).toHaveCount(1);
+  await expect(page.getByText('New Listening sets are coming soon.', { exact: false })).toBeVisible();
+  const exercise = page.getByRole('button', { name: /Study complete_the_words 29$/ });
+  await expect(exercise).toHaveCount(0);
+  await page.getByRole('button', { name: 'Open early · Session 1' }).click();
+  await exercise.click();
+  await expect.poll(() => calls.starts.length).toBe(1);
+  expect(calls.starts[0]).toMatchObject({ experience_id: 'focused-bank', metadata: {
+    mode: 'practice', allowed_section_ids: ['study-complete_the_words-29'], practice_calendar: '8-weeks',
+  } });
+  await page.goto(`/session/${SESSION_ID}/results`);
+  const planLink = page.getByRole('link', { name: 'Eight-week study plan' });
+  await expect(planLink).toHaveAttribute('href', '/practice?plan=8-weeks');
+  await planLink.click();
+  await week.selectOption('8');
+  await checkpoint.getByRole('button', { name: /Week eight discussion$/ }).click();
+  await expect.poll(() => calls.starts.length).toBe(2);
+  expect(calls.starts[1]).toMatchObject({ metadata: { mode: 'practice', allowed_section_ids: ['study-w8-checkpoint'] } });
 });
 
 test('reading: Complete the Words inputs stay inline and save letters; daily life and passage screens', async ({ page }) => {

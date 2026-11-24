@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PracticeShell } from '../components/PracticeShell';
 import { EmptyCatalogueCard } from '../components/PracticeContextBanner';
 import { sectionLabel, useAppT, useErrorText } from '../i18n';
@@ -212,6 +212,7 @@ export const PlanPage = () => {
           <p className="muted">{t('plan.lead')}</p>
         </div>
         <div className="inline-actions">
+          <Link className="btn ghost compact" to="/library?plan=8-weeks">{t('library.calendarTitle')}</Link>
           <a className="btn ghost compact" href={`${PLAYBOOK_URL}/study-plans?source=practice`}>{t('plan.playbook')}</a>
           <button className="btn solid compact" type="button" onClick={() => void regenerate()} disabled={saving}>
             {saving ? t('plan.working') : t('plan.regenerate')}

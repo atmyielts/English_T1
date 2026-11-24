@@ -1,0 +1,141 @@
+{
+  "item": {
+    "slug": "c1-negotiate-a-delayed-prototype",
+    "title": "Negotiate a delayed prototype",
+    "level": "C1",
+    "mission_type": "workplace",
+    "context_text": "Your team builds a classroom booking tool. A supplier has missed a deadline, and a partner school expects a demonstration this week.",
+    "objective_text": "Protect the relationship by distinguishing the usable demonstration from the unverified feature.",
+    "target_grammar": "Making conditional commitments and acknowledging a setback without overpromising.",
+    "target_vocabulary": [
+      "prototype",
+      "integration",
+      "workaround",
+      "verification",
+      "handover"
+    ],
+    "success_conditions": [
+      "Protect the relationship by distinguishing the usable demonstration from the unverified feature.",
+      "Offer the demo with prepared accounts",
+      "Identify live sign-in as outstanding",
+      "Tie the trial to verification",
+      "Acknowledge their need",
+      "Keep verification before live use",
+      "Offer a safe interim activity"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "PROJECT UPDATE\nThe Friday demo can show booking and cancellation using prepared, fictional accounts. The supplier has not provided the live authentication connector. Production sign-in cannot be tested until the connector arrives. It is expected Tuesday, and the technical lead needs two working days after receipt for verification. The partner wants to decide whether to schedule a staff trial.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which promise is supported by the project update?",
+          "options": [
+            "The team can demonstrate booking with fictional accounts on Friday.",
+            "The school can use live sign-in during Friday's demo.",
+            "The trial can definitely start on Wednesday."
+          ],
+          "answer_index": 0,
+          "explanation": "The prepared demo remains possible. The connector is still outstanding and verification must follow its arrival."
+        },
+        {
+          "prompt": "Why should Thursday be described as provisional?",
+          "options": [
+            "The demo must be repeated every Thursday.",
+            "Verification has no planned duration.",
+            "Verification starts after receipt, which is expected but not guaranteed on Tuesday."
+          ],
+          "answer_index": 2,
+          "explanation": "Both the expected delivery and successful verification affect the live start date."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a transparent project update",
+      "instructions": "Offer Friday's demo, name the outstanding dependency, and give a conditional plan for the trial.",
+      "prompt_text": "Partner: Can staff try the tool after Friday's demonstration?",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 6,
+      "goal": "Set expectations and offer a concrete next step.",
+      "points": [
+        {
+          "label": "Offer the demo with prepared accounts",
+          "any": [
+            "fictional",
+            "demo accounts",
+            "test accounts",
+            "prepared accounts"
+          ]
+        },
+        {
+          "label": "Identify live sign-in as outstanding",
+          "any": [
+            "connector",
+            "authentication",
+            "live sign-in",
+            "live sign in"
+          ]
+        },
+        {
+          "label": "Tie the trial to verification",
+          "any": [
+            "verify",
+            "verified",
+            "verification",
+            "once tested",
+            "after testing"
+          ]
+        }
+      ],
+      "model_answer": "We can still demonstrate booking and cancellation on Friday using test accounts. Staff sign-in depends on the supplier's connector, which is expected Tuesday. If it arrives on schedule and passes two days of verification, I'll confirm a trial date on Thursday.",
+      "min_words": 38
+    },
+    {
+      "kind": "speak",
+      "title": "Respond to an earlier trial request",
+      "instructions": "Acknowledge the partner's need, keep the safety condition, and suggest a useful interim activity.",
+      "prompt_text": "Partner: Can we let two real employees sign in on Wednesday just to see what happens?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 4,
+      "goal": "Explain the verification condition and propose a test-account walkthrough.",
+      "points": [
+        {
+          "label": "Acknowledge their need",
+          "any": [
+            "understand",
+            "appreciate",
+            "see why",
+            "makes sense"
+          ]
+        },
+        {
+          "label": "Keep verification before live use",
+          "any": [
+            "verification",
+            "verify",
+            "tested",
+            "passes testing"
+          ]
+        },
+        {
+          "label": "Offer a safe interim activity",
+          "any": [
+            "test accounts",
+            "fictional",
+            "walkthrough",
+            "recorded demo",
+            "sandbox"
+          ]
+        }
+      ],
+      "model_answer": "I understand you'd like staff input early. Let's run a walkthrough with test accounts on Wednesday. We can use real accounts once verification confirms that sign-in and cancellation both work as intended.",
+      "min_words": 30
+    }
+  ]
+}

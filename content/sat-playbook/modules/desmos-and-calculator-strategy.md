@@ -352,3 +352,11 @@ Compare it with the answer choices, which may be in exact form. For student-prod
 2. Use regressions and lists with [Problem-Solving and Data Analysis](https://playbook.sat.schood.online/math-problem-solving-data-analysis).
 3. Check angle modes and circles with [Geometry and Trigonometry](https://playbook.sat.schood.online/math-geometry-trigonometry).
 4. Build Desmos into your timing plan with [Pacing and Adaptive Modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
+
+## Worked Example and Try It
+
+**Worked example.** Consider x² − 13x + 40 = 0 with the restriction x > 6. A graph of `y=x^2-13x+40` crosses the x-axis at 5 and 8. Apply the written restriction after using the graph: the only allowed root is 8. Substitution gives 64 − 104 + 40 = 0.
+
+**Try it.** Graph `y=(x-2)(x-7)`. A task asks for the zero that is at least 6, then asks for twice that zero. What do you enter?
+
+**Check your work.** The roots are 2 and 7. The restriction leaves 7 and twice 7 is 14. The calculator supplies the roots, while the prompt determines the final entry.

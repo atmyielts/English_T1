@@ -525,3 +525,11 @@ If you are routed to the harder second module, its questions are on average more
 - Plan your time across modules with [Pacing and adaptive modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
 - Set a realistic target in [Score goals and study plans](https://playbook.sat.schood.online/score-goals-and-study-plans).
 - If you are new to the test, start with [SAT essentials](https://playbook.sat.schood.online/sat-essentials).
+
+## Worked Example and Try It
+
+**Worked example.** A printing service charges 14 dollars per file and subtracts one 8-dollar credit from the bill. The bill for a group of files is 62 dollars. For f files, 14f − 8 = 62, so 14f = 70 and f = 5. Substitution checks the result: 70 − 8 = 62.
+
+**Try it.** A second service charges 11 dollars per file and adds a one-time 7-dollar setup charge. For how many files would both services give the same bill, assuming the first service still applies its credit?
+
+**Check your work.** Set 14f − 8 = 11f + 7. Then 3f = 15, so f = 5. Both bills are 62 dollars. Keep one-time adjustments outside the per-file multiplication.

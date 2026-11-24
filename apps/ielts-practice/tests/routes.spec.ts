@@ -68,7 +68,22 @@ const labPayload = {
   }],
 };
 
-type Options = { emptyPlan?: boolean; simulatorAccess?: boolean };
+type Options = { emptyPlan?: boolean; simulatorAccess?: boolean; studyPlan?: boolean };
+
+function libraryFixture() {
+  const sets = [];
+  for (const track of ['academic', 'general', 'both'] as const) {
+    const templates = track === 'both' ? [['speaking', 14, 24, 3]] as const : [['reading', 15, 24, 3], ['writing', 20, 16, 2], ['writing', 40, 8, 1]] as const;
+    for (const [skill, minutes, count, done] of templates) {
+      for (let index = 0; index < count; index += 1) {
+        const slug = `${track}-${skill}-${minutes}-${index + 1}`;
+        const progress = track !== 'general' && index < done ? { best_correct: null, question_total: null, reviewed_at: '2026-11-01T12:00:00Z' } : null;
+        sets.push({ slug, title: slug, skill, track, minutes, progress });
+      }
+    }
+  }
+  return sets;
+}
 
 const json = (route: Route, body: unknown, status = 200) =>
   route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
@@ -92,6 +107,11 @@ const mockBackend = async (page: Page, options: Options = {}) => {
 
     if (path === '/me') return json(route, { user: { id: 'practice-user', email: session.user.email }, entitlements: [{ id: 'e1', resource_type: 'product', resource_id: PRACTICE_ID, starts_at: null, ends_at: null, value: null }] });
     if (path === '/access-effective') return json(route, { effective_product_ids: options.simulatorAccess ? [PRACTICE_ID, SIMULATOR_ID] : [PRACTICE_ID] });
+    if (options.studyPlan && path === '/ielts-practice/library') return json(route, { sets: libraryFixture() });
+    if (options.studyPlan && path.startsWith('/ielts-practice/library/')) {
+      const set = libraryFixture().find(item => item.slug === path.split('/').at(-1));
+      return json(route, { set: { ...set, learner_content: { passage: 'A passage to review.' } } });
+    }
     if (path === '/ielts-srs') return json(route, method === 'GET'
       ? { items: [{ id: 'srs-1', section_type: 'reading', question_type: 'question_true_false_not_given', leitner_box: 2, next_review_at: '2026-10-26T00:00:00Z', last_accuracy_ratio: 0.5, rolling_accuracy_ratio: 0.5, review_count: 1, correct_count: 0, incorrect_count: 1, is_archived: false }], summary: { due: 1, mastered: 0, total: 1 } }
       : { ok: true, item: {} });
@@ -238,6 +258,39 @@ test.describe('IELTS Practice layout with a wide fallback font', () => {
 });
 
 test.describe('IELTS Practice behaviour', () => {
+  test('the library study plan resumes, switches tracks and links to its exercises', async ({ page }) => {
+    await mockBackend(page, { studyPlan: true });
+    await page.setViewportSize({ width: 375, height: 780 });
+    await page.goto('/library');
+    await page.getByRole('link', { name: 'Eight-week study plan' }).click();
+    const week = page.getByLabel('Choose a week');
+    await expect(week.locator('option')).toHaveCount(8);
+    await expect(week).toHaveValue('2');
+    await expect(page.getByText(/Up next/)).toBeVisible();
+    await week.selectOption('1');
+    const review = page.getByRole('button', { name: 'Review session · Session 1' });
+    await expect(review).toHaveAttribute('aria-expanded', 'false');
+    await review.click();
+    await expect(page.getByRole('button', { name: 'Hide session · Session 1' })).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('button', { name: 'Go to next session' }).click();
+    await expect(week).toHaveValue('2');
+    await page.getByLabel('Test type').selectOption('general');
+    await expect(week).toHaveValue('1');
+    await week.selectOption('8');
+    await expect(page.getByRole('heading', { name: 'Week 8' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Session / })).toHaveCount(5);
+    await expect(page.getByText('New Listening sets are coming soon.', { exact: false })).toBeVisible();
+    const exercise = page.getByRole('link', { name: 'general-reading-15-22' });
+    await expect(exercise).toHaveCount(0);
+    await page.getByRole('button', { name: 'Open early · Session 1' }).click();
+    await exercise.click();
+    await expect(page.getByRole('heading', { name: 'general-reading-15-22' })).toBeVisible();
+    await page.getByRole('link', { name: 'Eight-week study plan' }).click();
+    await expect(page.getByLabel('Test type')).toHaveValue('general');
+    await expect(week).toHaveValue('8');
+    await expect(exercise).toBeVisible();
+  });
+
   test('shell has Schood home, Account, sign-out state, language and Playbook links', async ({ page }) => {
     await mockBackend(page);
     await page.goto('/today');

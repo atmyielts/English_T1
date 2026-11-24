@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { PracticeShell } from '../components/PracticeShell';
+import { LibraryStudyCalendar } from '../components/LibraryStudyCalendar';
 import { useAppT } from '../i18n';
-import { getPracticeLibrary, getPracticeLibrarySet, reviewPracticeLibrarySet, type LibraryAnswer, type LibraryContent, type LibraryReview, type LibrarySet } from '../lib/api';
+import { getPracticeLibrary, getPracticeLibrarySet, reviewPracticeLibrarySet, type LibraryAnswer, type LibraryContent, type LibraryReview, type LibrarySet, type LibraryTable } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 
 const skills = ['reading', 'writing', 'speaking'] as const;
@@ -24,6 +25,7 @@ export function PracticeLibraryPage() {
   const selectedProgress = params.get('progress');
   const progress = selectedProgress === 'new' || selectedProgress === 'reviewed' ? selectedProgress : 'any';
   const query = params.size ? `?${params}` : '';
+  const calendar = params.get('plan') === '8-weeks';
 
   const changeFilter = (name: string, value: string, defaultValue: string) => {
     setShown({});
@@ -52,13 +54,16 @@ export function PracticeLibraryPage() {
 
   return <PracticeShell><main className="practice-library">
     <header className="glass dashboard-card">
-      {slug ? <Link to={`/library${query}`}>{t('library.title')}</Link> : null}
-      <h1>{current?.slug === slug && current ? current.title : t('library.title')}</h1>
-      {!slug ? <p>{t('library.intro')}</p> : null}
+      {slug ? <Link to={`/library${query}`}>{t(calendar ? 'library.calendarTitle' : 'library.title')}</Link> : null}
+      {!slug && calendar ? <Link to={`/library?track=${track === 'general' ? 'general' : 'academic'}`}>{t('library.title')}</Link> : null}
+      <h1>{current?.slug === slug && current ? current.title : t(calendar ? 'library.calendarTitle' : 'library.title')}</h1>
+      {!slug ? <p>{t(calendar ? 'library.calendarIntro' : 'library.intro')}</p> : null}
+      {!slug && !calendar ? <Link className="btn ghost" to={`/library?plan=8-weeks&track=${track === 'general' ? 'general' : 'academic'}`}>{t('library.calendarTitle')}</Link> : null}
     </header>
     {loading ? <p role="status">{t('shell.loadingPage')}</p> : null}
     {error ? <div className="glass dashboard-card" role="alert"><p>{t('common.error.generic')}</p><button type="button" className="btn ghost" onClick={() => setRetry(n => n + 1)}>{t('common.retry')}</button></div> : null}
-    {!slug && !loading && !error ? <>
+    {!slug && !loading && !error && calendar ? <LibraryStudyCalendar sets={sets} /> : null}
+    {!slug && !loading && !error && !calendar ? <>
       <div className="glass dashboard-card library-filters">
         <label>{t('library.track')}
           <select value={track} onChange={event => changeFilter('track', event.currentTarget.value, 'both')}>
@@ -103,6 +108,7 @@ function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: 
   const [answers, setAnswers] = useState<Record<number, LibraryAnswer>>({});
   const [response, setResponse] = useState('');
   const [review, setReview] = useState<LibraryReview | null>(null);
+  const [retryResponse, setRetryResponse] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const content = set.learner_content;
@@ -139,14 +145,8 @@ function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: 
       </fieldset>;
     })}
     {content.prompt ? <p style={{ whiteSpace: 'pre-wrap' }}>{content.prompt}</p> : null}
-    {content.table ? <div className="library-table"><table aria-label={set.title}>
-      <thead><tr>{content.table.headers.map(cell => <th key={cell} scope="col">{cell}</th>)}</tr></thead>
-      <tbody>{content.table.rows.map((row, index) => <tr key={index}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>)}</tbody>
-    </table></div> : null}
-    {set.skill === 'writing' ? <label>{t('library.yourResponse')}
-      <textarea rows={8} value={response} onChange={event => setResponse(event.currentTarget.value)} />
-      <span>{t('library.words', { count: response.trim().split(/\s+/).filter(Boolean).length, minimum: content.minimum_words ?? 0 })}</span>
-    </label> : null}
+    {content.table ? <PracticeTable table={content.table} label={set.title} /> : null}
+    {set.skill === 'writing' ? <WritingResponse value={response} onChange={setResponse} minimum={content.minimum_words ?? 0} /> : null}
     {content.part1 ? <><h2>Part 1</h2><ol>{content.part1.map(item => <li key={item}>{item}</li>)}</ol></> : null}
     {content.part2 ? <><h2>Part 2</h2><p>{t('library.partTwoTiming')}</p><p>{content.part2.cue}</p><ul>{content.part2.points.map(point => <li key={point}>{point}</li>)}</ul></> : null}
     {content.part3 ? <><h2>Part 3</h2><ol>{content.part3.map(item => <li key={item}>{item}</li>)}</ol></> : null}
@@ -157,7 +157,51 @@ function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: 
       {review.score != null ? <button className="btn ghost" type="button" onClick={() => { setAnswers({}); setReview(null); }}>{t('library.tryAgain')}</button> : null}
       {review.model ? <><h2>{t('library.modelTitle')}</h2><div style={{ whiteSpace: 'pre-wrap' }}>{review.model}</div></> : null}
       {[review.planning, review.notes].map((note, index) => note?.length ? <ul key={index}>{note.map(item => <li key={item}>{item}</li>)}</ul> : null)}
+      {set.skill === 'writing' && review.revision ? <section>
+        <h2>{t('library.revision')}</h2>
+        <h3>{t('library.revisionBefore')}</h3>
+        <p>{review.revision.before}</p>
+        <h3>{t('library.revisionAfter')}</h3>
+        <p>{review.revision.after}</p>
+        <ul>{review.revision.why.map(reason => <li key={reason}>{reason}</li>)}</ul>
+      </section> : null}
+      {set.skill === 'writing' && review.retry ? <details>
+        <summary>{t('library.freshRetry')}</summary>
+        <p style={{ whiteSpace: 'pre-wrap' }}>{review.retry.prompt}</p>
+        {review.retry.table ? <PracticeTable table={review.retry.table} label={t('library.freshRetry')} /> : null}
+        <WritingResponse value={retryResponse} onChange={setRetryResponse} minimum={review.retry.minimum_words} label={t('library.retryResponse')} />
+        <details>
+          <summary>{t('library.retryChecks')}</summary>
+          <ul>{review.retry.checks.map(check => <li key={check}>{check}</li>)}</ul>
+        </details>
+      </details> : null}
+      {set.skill === 'speaking' && review.follow_ups?.length ? <section>
+        <h2>{t('library.followUps')}</h2>
+        {review.follow_ups.map(followUp => <details key={followUp.prompt}>
+          <summary>{followUp.prompt}</summary>
+          <p>{followUp.note}</p>
+          <details>
+            <summary>{t('library.model')}</summary>
+            <p>{followUp.model}</p>
+          </details>
+        </details>)}
+      </section> : null}
     </section>}
     {error ? <p role="alert">{t('common.error.generic')}</p> : null}
   </section>;
+}
+
+function PracticeTable({ table, label }: { table: LibraryTable; label: string }) {
+  return <div className="library-table"><table aria-label={label}>
+    <thead><tr>{table.headers.map(cell => <th key={cell} scope="col">{cell}</th>)}</tr></thead>
+    <tbody>{table.rows.map((row, index) => <tr key={index}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>)}</tbody>
+  </table></div>;
+}
+
+function WritingResponse({ value, onChange, minimum, label }: { value: string; onChange: (value: string) => void; minimum: number; label?: string }) {
+  const t = useAppT();
+  return <label>{label ?? t('library.yourResponse')}
+    <textarea rows={8} value={value} onChange={event => onChange(event.currentTarget.value)} />
+    <span>{t('library.words', { count: value.trim().split(/\s+/).filter(Boolean).length, minimum })}</span>
+  </label>;
 }

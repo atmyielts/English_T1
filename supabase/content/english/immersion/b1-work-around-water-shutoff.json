@@ -1,0 +1,135 @@
+{
+  "item": {
+    "slug": "b1-work-around-water-shutoff",
+    "title": "Work around a water shutoff",
+    "level": "B1",
+    "mission_type": "problem_solving",
+    "context_text": "Your building will have a planned water shutoff. Your housemate works nights and has not seen the notice.",
+    "objective_text": "Explain the change and negotiate access to the flat for a separate repair.",
+    "target_grammar": "From and until for a time range. Could you and would it be possible for requests.",
+    "target_vocabulary": [
+      "shutoff",
+      "valve",
+      "pressure",
+      "access",
+      "caretaker"
+    ],
+    "success_conditions": [
+      "Explain the change and negotiate access to the flat for a separate repair.",
+      "Give the start time",
+      "Give the end time",
+      "Say to fill something before the shutoff",
+      "Request Wednesday",
+      "Request 9 am",
+      "Confirm a resident will be home"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Check the details",
+      "instructions": "Read the message and use its details to answer the questions.",
+      "prompt_text": "BUILDING NOTICE\nWater will be off from 1 pm to 4 pm on Tuesday while a main valve is replaced. Fill any containers before 1 pm. Pressure may be low for half an hour after service returns. The caretaker can check a separate leak in flat 14 only with a resident present. Available appointments: Tuesday 2 pm or Wednesday 9 am.",
+      "target_skill_key": "reading.detail",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Why might the shower still run slowly at 4:15 pm on Tuesday?",
+          "options": [
+            "The flat's leak checks finish at 4:15.",
+            "The water shutoff actually starts at 4 pm.",
+            "Pressure may stay low for a short time after 4 pm."
+          ],
+          "answer_index": 2,
+          "explanation": "The notice allows another half-hour of low pressure after the scheduled restoration at 4 pm."
+        },
+        {
+          "prompt": "What is required for the check in flat 14?",
+          "options": [
+            "A resident needs to be there.",
+            "The main valve must still be off.",
+            "The caretaker needs a written leak report."
+          ],
+          "answer_index": 0,
+          "explanation": "The notice explicitly requires a resident to be present for access."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Warn your housemate",
+      "instructions": "Tell your housemate the shutoff hours and suggest a practical step for before the work.",
+      "prompt_text": "Housemate: Will there be water when I get home on Tuesday?",
+      "target_skill_key": "writing.task_completion",
+      "estimated_minutes": 5,
+      "goal": "Give the window and suggest preparing water in advance.",
+      "points": [
+        {
+          "label": "Give the start time",
+          "any": [
+            "1 pm",
+            "1:00",
+            "13:00",
+            "one"
+          ]
+        },
+        {
+          "label": "Give the end time",
+          "any": [
+            "4 pm",
+            "4:00",
+            "16:00",
+            "four"
+          ]
+        },
+        {
+          "label": "Say to fill something before the shutoff",
+          "any": [
+            "fill",
+            "filled",
+            "store some water",
+            "save some water"
+          ]
+        }
+      ],
+      "model_answer": "It will be off from 1 pm until 4 pm on Tuesday. Can you fill a bottle before 1? The pressure may still be low for a little while after four."
+    },
+    {
+      "kind": "speak",
+      "title": "Book the leak check",
+      "instructions": "You cannot be home on Tuesday. Request Wednesday at 9 and confirm that you can give the caretaker access.",
+      "prompt_text": "Caretaker: Which appointment would suit you?",
+      "target_skill_key": "speaking.task_completion",
+      "estimated_minutes": 3,
+      "goal": "Make an appointment and confirm access.",
+      "points": [
+        {
+          "label": "Request Wednesday",
+          "any": [
+            "Wednesday",
+            "the next morning"
+          ]
+        },
+        {
+          "label": "Request 9 am",
+          "any": [
+            "9 am",
+            "9:00",
+            "nine"
+          ]
+        },
+        {
+          "label": "Confirm a resident will be home",
+          "any": [
+            "I'll be home",
+            "I will be home",
+            "I'll be there",
+            "I will be there",
+            "let you in"
+          ]
+        }
+      ],
+      "model_answer": "Could we do Wednesday at nine, please? I'll be home to let you in and show you where the leak is."
+    }
+  ]
+}

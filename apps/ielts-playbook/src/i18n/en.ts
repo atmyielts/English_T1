@@ -87,6 +87,8 @@ export const en = {
   'blocks.nextStep': 'Next step',
   'blocks.open': 'Open',
   'blocks.learnMore': 'Learn more',
+  'blocks.tryIt': 'Try it',
+  'blocks.showWorkedAnswer': 'Show worked answer',
   'blocks.important': 'Important',
 
   'coach.askAbout': 'Ask about “{heading}”',

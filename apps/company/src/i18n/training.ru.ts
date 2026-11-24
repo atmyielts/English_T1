@@ -204,6 +204,7 @@ export const trainingRu: Record<TrainingKey, string> = {
   'training.roleplay.getFeedback': 'Получить отзыв',
   'training.roleplay.feedbackWorking': 'Готовим отзыв…',
   'training.roleplay.feedback': 'Отзыв',
+  'training.roleplay.modelReply': 'Пример ответа',
   'training.roleplay.goalMet': 'Цель достигнута',
   'training.roleplay.goalNotMet': 'Цель пока не достигнута',
   'training.roleplay.good': 'Удачные фразы',

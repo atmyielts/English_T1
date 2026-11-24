@@ -523,3 +523,11 @@ Check your typing first: missing parentheses around exponents or denominators is
 - Review linear foundations in [Math: Algebra](https://playbook.sat.schood.online/math-algebra).
 - Continue to [Math: Problem-Solving and Data Analysis](https://playbook.sat.schood.online/math-problem-solving-data-analysis) and [Math: Geometry and Trigonometry](https://playbook.sat.schood.online/math-geometry-trigonometry).
 - Plan your timing with [Pacing and adaptive modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
+
+## Worked Example and Try It
+
+**Worked example.** Find the nonnegative x for which (x² + 1)² = 25. Taking square roots gives x² + 1 = 5 or x² + 1 = −5. The expression x² + 1 is positive for all real x, so only the first equation is possible. It gives x² = 4 and x = 2 in the stated domain.
+
+**Try it.** How many real numbers x satisfy (x² − 6)² = 4?
+
+**Check your work.** Here both branches can occur: x² − 6 = 2 or x² − 6 = −2. These yield x² = 8 or x² = 4, each with two real roots. The answer is four.

@@ -988,6 +988,11 @@ export type ReviewSessionResponse = {
     metadata: Json;
     answer: unknown | null;
     correct: Json | null;
+    review_feedback?: {
+      explanation?: string;
+      model_response?: string;
+      annotations?: Array<{ point: string; excerpt: string; note: string }>;
+    };
     is_correct: boolean | null;
     score: number | null;
     max_score: number | null;

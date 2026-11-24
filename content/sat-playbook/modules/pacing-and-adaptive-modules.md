@@ -329,3 +329,11 @@ Bluebook is designed so that work is saved and, if your device needs to restart,
 2. Learn the calculator shortcuts that save the most time in [Desmos and Calculator Strategy](https://playbook.sat.schood.online/desmos-and-calculator-strategy).
 3. Put your pacing plan into a schedule with [Score Goals and Study Plans](https://playbook.sat.schood.online/score-goals-and-study-plans).
 4. Rehearse the whole day with the [Test Day Guide](https://playbook.sat.schood.online/test-day-guide).
+
+## Worked Example and Try It
+
+**Worked example.** With 4 minutes left, Tessa sees two unanswered questions and one flagged question with an answer already entered. She estimates that one unanswered item will take 35 seconds and the other could take 2 minutes. She takes the quick item first, then starts the longer one. She leaves time to enter a final answer and returns to the flagged choice if time remains.
+
+**Try it.** You have 2 minutes left. One problem is still blank and your last attempt to set it up stalled. Another is flagged because you suspect a sign error and already have the equation written. What do you do first?
+
+**Check your work.** Enter a best guess for the blank problem, then check the known sign in the flagged one. Return to the harder setup if you have time. A blank is avoidable even when the full reasoning takes longer.

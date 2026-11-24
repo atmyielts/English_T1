@@ -506,9 +506,10 @@ if (depthArgument !== -1) {
     }));
   };
   const supported = ['complete_the_words','read_daily_life','read_academic_passage','build_sentence','write_email','write_academic_discussion','take_interview'];
+  const checkpointWeeks = new Set();
   for (const task of PRACTICE_TASKS.filter(task => supported.includes(task.task))) {
     const items = (newReading[task.task] ?? newWs[task.task]);
-    if (!Array.isArray(items) || !items.length) throw new Error(`Empty TOEFL family: ${task.task}`);
+    if (!Array.isArray(items)) throw new Error(`Missing TOEFL family array: ${task.task}`);
     for (const item of items) {
       if (item.use !== 'practice' || !/^pd-nov26-[a-z0-9-]+$/.test(item.slug) || seen.has(item.slug)) problem(item.slug, 'invalid or non-unique supplement slug');
       seen.add(item.slug);
@@ -518,6 +519,13 @@ if (depthArgument !== -1) {
       : items.map(item => [item]);
     for (const group of groups) {
       const [item] = group;
+      const checkpointWeek = item.checkpoint_week;
+      if (checkpointWeek !== undefined) {
+        if (![2, 4, 6, 8].includes(checkpointWeek) || checkpointWeeks.has(checkpointWeek)) {
+          problem(item.slug, 'checkpoint_week must be a unique guided week: 2, 4, 6, or 8');
+        }
+        checkpointWeeks.add(checkpointWeek);
+      }
       const title = typeof item.title === 'string' && item.title ? item.title : `${task.name} · ${sections.filter(section => section.metadata.practice_task === task.task).length + 1}`;
       const id = uuid(`${collection}:section:${item.slug}`);
       const partId = uuid(`${collection}:part:${item.slug}`);
@@ -526,17 +534,31 @@ if (depthArgument !== -1) {
         : task.task === 'write_email' ? [emailUnit(item)]
         : task.task === 'write_academic_discussion' ? [discussionUnit(item)]
         : textInterview(item);
+      if (item.review !== undefined && ['write_email', 'write_academic_discussion'].includes(task.task)) {
+        const { model_response, annotations } = item.review ?? {};
+        const nonempty = value => typeof value === 'string' && !!value.trim();
+        if (!nonempty(model_response) || !Array.isArray(annotations) || annotations.length !== 3 ||
+            annotations.some(annotation => !annotation || !nonempty(annotation.point) || !nonempty(annotation.note) ||
+              !nonempty(annotation.excerpt) || !model_response.includes(annotation.excerpt))) {
+          problem(item.slug, 'writing review needs a model and three annotations anchored to its text');
+        } else {
+          units[0].correct = {};
+          units[0].keyMeta = { feedback: { model_response, annotations } };
+        }
+      }
       const duration = task.task === 'write_email' ? 420 : task.task === 'write_academic_discussion' ? 600
         : task.task === 'take_interview' ? 240 : task.task === 'build_sentence' ? units.length * 75 : Math.max(180, countItems([{ units }]) * 60);
       sections.push({ id, name: title, display_order: sections.length + 1, metadata: {
         format: 'toefl-2026', type: task.type, practice_task: task.task, duration_seconds: duration,
         duration_mode: 'fixed', item_sets: countItems([{ units }]), practice_short_set: true,
+        ...(checkpointWeek === undefined ? {} : { practice_checkpoint_week: checkpointWeek }),
       }, parts: [{ id: partId, name: title, display_order: 1, metadata: { toefl_task: task.task }, content_units: units.map((unit, index) => ({
         id: uuid(`unit:${unit.key}`), type: unit.type, display_order: index + 1, data: unit.data, metadata: unit.metadata ?? {},
         ...(unit.correct === undefined ? {} : { answer_key: { correct: unit.correct, metadata: { source: SOURCE, ...unit.keyMeta } } }),
       })) }] });
     }
   }
+  if (!sections.length) throw new Error('TOEFL practice collection contains no sets');
   if (problems.length) throw new Error(problems.join('\n'));
   console.log(JSON.stringify({ experience: { id: exp, product_id: PRODUCT_ID, name: 'TOEFL iBT 2026 Focused Practice Sets', version: 1,
     display_order: collection === defaultCollection ? 31 : 32, is_active: false,

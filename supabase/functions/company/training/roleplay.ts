@@ -52,6 +52,7 @@ function sessionView(row: SessionRow) {
     id: row.id, track_code: row.track_code, status: row.status, turns: row.turns ?? [], learner_turns: row.learner_turns, max_turns: MAX_TURNS,
     feedback: row.feedback, score: row.score, minutes: row.minutes, created_at: row.created_at, ended_at: row.ended_at,
     scenario: scenario ? scenarioView(scenario) : null, difficulty: row.difficulty ?? scenario?.difficulty ?? null,
+    ...(row.status === 'ended' && scenario?.modelReply ? { model_reply: scenario.modelReply } : {}),
     hints: row.hints ?? 0, max_hints: MAX_HINTS, replay_of: row.replay_of ?? null, custom: Boolean(scenarioIdOf(row.scenario_code)),
   };
 }

@@ -204,6 +204,7 @@ export const trainingUz: Record<TrainingKey, string> = {
   'training.roleplay.getFeedback': 'Fikr-mulohaza olish',
   'training.roleplay.feedbackWorking': 'Fikr-mulohaza tayyorlanmoqda…',
   'training.roleplay.feedback': 'Fikr-mulohaza',
+  'training.roleplay.modelReply': 'Namuna javob',
   'training.roleplay.goalMet': 'Maqsadga erishildi',
   'training.roleplay.goalNotMet': 'Maqsadga hali erishilmadi',
   'training.roleplay.good': 'Yaxshi aytilgan iboralar',

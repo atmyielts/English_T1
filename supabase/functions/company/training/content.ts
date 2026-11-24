@@ -80,6 +80,8 @@ export interface Scenario {
   opening: string;
   /** 2–4 things the learner should do, in English, used for feedback. */
   checklist: string[];
+  /** An authored comparison response shown after a learner completes the scenario. */
+  modelReply?: string;
 }
 
 /** A writing task: the learner writes a work email or message and the AI checks it. */

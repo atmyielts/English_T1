@@ -300,6 +300,17 @@ export const attemptStart = (
 export const moduleStart = (accessToken: string, body: { section: 'math' | 'reading_writing'; profile: 'standard' | 'harder' }): Promise<StartResponse> =>
   durableStart(accessToken, '/sat-practice/modules/start', body);
 
+export type ShortSet = {
+  slug: string; title: string; category: 'paired' | 'evidence' | 'hard-math' | 'timed';
+  question_count: number; time_limit_seconds?: number; checkpoint_week?: 2 | 4 | 6 | 8;
+};
+
+export const shortSetsGet = (accessToken: string): Promise<{ sets: ShortSet[] }> =>
+  call(accessToken, '/sat-practice/short-sets');
+
+export const shortSetStart = (accessToken: string, slug: string): Promise<StartResponse> =>
+  durableStart(accessToken, '/sat-practice/short-sets/start', { slug });
+
 export const planItemStart = (accessToken: string, itemId: string): Promise<StartResponse & { completed?: boolean }> =>
   durableStart(accessToken, '/sat-practice/plans/items/' + encodeURIComponent(itemId) + '/start', {}) as Promise<StartResponse & { completed?: boolean }>;
 

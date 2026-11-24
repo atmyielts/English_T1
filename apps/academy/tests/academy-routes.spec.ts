@@ -3923,6 +3923,33 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     expect(captures).toHaveLength(2);
   });
 
+  test("teachers can assign practice material and its separate follow-up quiz", async ({ page }) => {
+    await seedSessionCookie(page, "teacher-user");
+    await mockAcademyEdge(page, "teacher");
+    const requests: Record<string, unknown>[] = [];
+    await page.route('**/functions/v1/academy', async (route) => {
+      const body = route.request().postDataJSON() as Record<string, unknown>;
+      if (body.action !== 'create_assignment') return route.fallback();
+      requests.push(body);
+      return route.fulfill(json({ assignment: { ...assignment, title: body.title, description: body.description } }));
+    });
+    await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
+    await page.getByRole('button', { name: 'Learning', exact: true }).click();
+    const material = page.getByRole('combobox', { name: 'Fill from practice material' });
+    const form = page.getByRole('button', { name: 'Create assignment', exact: true });
+    await material.selectOption('b2-compare-change');
+    await expect(page.getByPlaceholder('Assignment title')).toHaveValue('Homework · Compare change in a table');
+    await form.click();
+    await expect.poll(() => requests.length).toBe(1);
+    expect(requests[0]).toMatchObject({ classroom_id: classroomId, assignment_type: 'writing', description: expect.stringContaining('South Campus') });
+    await expect(page.getByPlaceholder('Assignment title')).toHaveValue('');
+    await material.selectOption('b2-compare-change-check');
+    await expect(page.getByPlaceholder('Assignment title')).toHaveValue('Follow-up quiz · Describe survey figures');
+    await form.click();
+    await expect.poll(() => requests.length).toBe(2);
+    expect(requests[1]).toMatchObject({ classroom_id: classroomId, assignment_type: 'test', description: expect.stringContaining('Hill district') });
+  });
+
   test("classroom work loads without waiting for Academy reports", async ({ page }) => {
     await seedSessionCookie(page, "teacher-user");
     const actionLog: string[] = [];

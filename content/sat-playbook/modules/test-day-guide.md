@@ -332,3 +332,11 @@ Use Bluebook's built-in Desmos calculator, which is available for the whole Math
 2. Make the calculator automatic with [Desmos and Calculator Strategy](https://playbook.sat.schood.online/desmos-and-calculator-strategy).
 3. Plan your next sitting and score sends with [Retake and Superscore Strategy](https://playbook.sat.schood.online/retake-and-superscore-strategy).
 4. Revisit [SAT Essentials](https://playbook.sat.schood.online/sat-essentials) for a final review of the format.
+
+## Worked Example and Try It
+
+**Worked example.** A student has rehearsed with one device and an external mouse. During a practice module, the mouse stops working. The student continues with the trackpad and discovers that dragging the on-screen calculator feels different. Before the next rehearsal, the student repeats three familiar problems with the trackpad to build a fallback routine.
+
+**Try it.** Pick one tool you tend to rely on. During an untimed practice question, rehearse continuing without that tool. What part takes longer, and what can you prepare before test day?
+
+**Check your work.** Record a specific fallback, such as typing an equation into the calculator instead of dragging a graph, or flagging a question and returning to it. Practice that action once during your next timed module.

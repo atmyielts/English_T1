@@ -349,3 +349,11 @@ Bluebook includes full-length practice tests. College Board also partners with K
 2. Take a diagnostic, then open the module for your weakest domain: [Information and Ideas](https://playbook.sat.schood.online/reading-writing-information-ideas), [Craft and Structure](https://playbook.sat.schood.online/reading-writing-craft-structure), [Expression of Ideas](https://playbook.sat.schood.online/reading-writing-expression-of-ideas), [Conventions](https://playbook.sat.schood.online/reading-writing-conventions), [Algebra](https://playbook.sat.schood.online/math-algebra), [Advanced Math](https://playbook.sat.schood.online/math-advanced-math), [Problem-Solving and Data Analysis](https://playbook.sat.schood.online/math-problem-solving-data-analysis) or [Geometry and Trigonometry](https://playbook.sat.schood.online/math-geometry-trigonometry).
 3. Set a target in [Score Goals and Study Plans](https://playbook.sat.schood.online/score-goals-and-study-plans).
 4. When your date is close, read the [Test Day Guide](https://playbook.sat.schood.online/test-day-guide).
+
+## Worked Example and Try It
+
+**Worked example.** Nora has 25 minutes on a school day. Her last practice log shows three mistakes on boundary questions and one guessed Math question she got right. She spends 12 minutes on a boundary drill, 8 minutes solving the guessed Math problem without options, and 5 minutes recording the rules she used. The two parts of the log call for different work: repair a recurring error and verify a lucky answer.
+
+**Try it.** Eli has 20 minutes. On his last drill, he got two easy slope questions wrong and solved a difficult geometry question correctly after slow work. Which should he practice first, and what should he save from the geometry question?
+
+**Check your work.** Start with slope because the same gap cost two accessible points. Save the geometry setup or a shorter method to rehearse during a timed session.

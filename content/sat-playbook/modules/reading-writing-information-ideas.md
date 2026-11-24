@@ -434,3 +434,11 @@ Official free practice is also available as full-length adaptive tests in the Bl
 - Learn how module 1 performance affects module 2 in [Pacing and Adaptive Modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
 - Set a realistic target with [Score Goals and Study Plans](https://playbook.sat.schood.online/score-goals-and-study-plans).
 - New to the test? Start with [SAT Essentials](https://playbook.sat.schood.online/sat-essentials).
+
+## Worked Example and Try It
+
+**Worked example.** An archive tests two labels for audio clips. With Label A, 18 of 30 listeners identify the clip's source. With Label B, 25 of 50 do. A researcher says the higher share identifies the source with Label A. Compare 18/30 = 60% and 25/50 = 50%. The larger number of successful listeners comes from Label B, but the claim compares shares.
+
+**Try it.** In a second test, 28 of 40 listeners succeed with Label A and 33 of 60 succeed with Label B. Which single sentence reports the evidence for the claim accurately?
+
+**Check your work.** “A higher percentage succeeded with Label A (70%) than with Label B (55%).” Calling the difference 5 points would compare counts in place of percentages. [Practice with evidence charts](https://practice.sat.schood.online/short-sets?set=evidence-01).

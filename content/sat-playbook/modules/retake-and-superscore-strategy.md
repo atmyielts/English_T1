@@ -299,3 +299,11 @@ Use free sends when you are confident, or when your colleges superscore or requi
 2. If timing was the problem, read [Pacing and Adaptive Modules](https://playbook.sat.schood.online/pacing-and-adaptive-modules).
 3. Open the domain module for the weakest bar on your score report, beginning with [SAT Essentials](https://playbook.sat.schood.online/sat-essentials) for the domain list.
 4. Before the retake, review the [Test Day Guide](https://playbook.sat.schood.online/test-day-guide).
+
+## Worked Example and Try It
+
+**Worked example.** A student earns 680 in Reading and Writing and 720 in Math on one sitting, then 710 in Reading and Writing and 700 in Math on another. An institution that accepts superscores could use 710 + 720 = 1430. The two single-sitting totals are 1400 and 1410.
+
+**Try it.** A student earns 730 and 650 on the first sitting, then 710 and 690 on the second. What are the best single-sitting total and the superscore, assuming the institution accepts it?
+
+**Check your work.** The single-sitting totals are 1380 and 1400, so the best is 1400. The highest section scores are 730 and 690, which add to 1420. The institution's current policy determines which calculation applies.

@@ -3759,6 +3759,8 @@ audio.practice-audio {
 .practice-library { display: grid; gap: 1rem; max-width: 64rem; margin-inline: auto; }
 .practice-library .dashboard-card { padding: clamp(1rem, 3vw, 1.75rem); }
 .practice-library textarea { width: 100%; display: block; }
+.practice-library details { margin-block: 0.75rem; }
+.practice-library summary { cursor: pointer; padding-block: 0.35rem; font-weight: 600; }
 .practice-library fieldset { margin-block: 1rem; }
 .practice-library .library-option { display: block; padding: 0.35rem 0; }
 .practice-library .library-option input[type='text'] { display: block; width: min(100%, 24rem); margin-top: 0.5rem; }
@@ -3767,5 +3769,9 @@ audio.practice-audio {
 .practice-library .library-sets { list-style: none; padding: 0; }
 .practice-library .library-sets li { display: grid; gap: 0.25rem; padding: 0.75rem 0; border-bottom: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 16%, transparent); }
 .practice-library .library-sets li span { font-size: 0.875rem; }
+.practice-library .library-study-days { display: grid; gap: 1rem; padding: 0; list-style: none; }
+.practice-library .library-study-days > li { padding: 1rem; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 1rem; }
+.practice-library .library-study-days > li[data-session-state="next"] { border-color: color-mix(in srgb, var(--accent, #0e4955) 55%, transparent); }
+.practice-library .library-study-days h3 { margin: 0; }
 .practice-library .library-table { overflow: auto; margin-block: 1rem; }
 .practice-library td, .practice-library th { padding: 0.5rem; text-align: left; }

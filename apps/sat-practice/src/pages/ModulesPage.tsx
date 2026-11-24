@@ -1,6 +1,6 @@
 import { Calculator, Clock } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PracticeTopNav } from '../components/PracticeTopNav';
 import { moduleStart } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
@@ -40,6 +40,7 @@ export const ModulesPage = () => {
             <h1>{t('modules.title')}</h1>
             <p>{t('modules.lead')}</p>
           </div>
+          <Link className="btn ghost" to="/short-sets">{t('shortSets.title')}</Link>
         </header>
         {error ? <div className="alert error" role="alert">{errorText(error)}</div> : null}
         <fieldset className="panel profile-choice">

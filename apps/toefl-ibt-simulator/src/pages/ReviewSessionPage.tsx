@@ -8,6 +8,7 @@ import '../features/toefl2026/toefl2026.css';
 import { TOEFL_IBT_PRODUCT_ID } from '../lib/constants';
 import { getReviewSession, type ReviewSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
+import { useAppT } from '../i18n';
 
 type UnitRow = ReviewSessionResponse['units'][number];
 type SectionRow = ReviewSessionResponse['sections'][number];
@@ -16,6 +17,35 @@ const sectionType = (s: SectionRow | null): string => String((s?.metadata as any
 const isQuestionUnit = (u: Pick<UnitRow, 'type'>): boolean => String(u.type).startsWith('question_');
 
 type QuestionRange = { start: number; end: number };
+
+function ItemFeedback({ feedback }: { feedback: UnitRow['review_feedback'] }) {
+  const t = useAppT();
+  if (!feedback) return null;
+  return (
+    <div className="mt-3" data-testid="toefl-item-feedback">
+      {feedback.explanation ? (
+        <p><span className="font-semibold">{t('review.explanation')}</span> {feedback.explanation}</p>
+      ) : null}
+      {feedback.model_response ? (
+        <details className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <summary className="cursor-pointer font-semibold">{t('review.model_response')}</summary>
+          <p className="mt-3 whitespace-pre-wrap">{feedback.model_response}</p>
+          {feedback.annotations?.length ? (
+            <ul className="mt-3 space-y-2 border-t border-gray-200 pt-3">
+              {feedback.annotations.map(annotation => (
+                <li key={annotation.point}>
+                  <p className="font-semibold">{annotation.point}</p>
+                  <p className="italic">“{annotation.excerpt}”</p>
+                  <p>{annotation.note}</p>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </details>
+      ) : null}
+    </div>
+  );
+}
 
 const extractPlaceholders = (text: string): string[] => {
   const ids: string[] = [];
@@ -492,6 +522,7 @@ export const ReviewSessionPage: React.FC = () => {
                           <span className="font-semibold text-gray-900">Correct:</span> {correctSummary(u)}
                         </div>
                       ) : null}
+                      <ItemFeedback feedback={u.review_feedback} />
                       {u.is_correct === false ? <div className="mt-2"><AskSchoodAI page="explain" source="toefl" session={data.session.id} item={u.id}/></div> : null}
                     </div>
                   ) : null}
@@ -547,6 +578,7 @@ export const ReviewSessionPage: React.FC = () => {
                         <span className="font-semibold text-gray-900">Correct:</span> {correctSummary(u)}
                       </div>
                     ) : null}
+                    <ItemFeedback feedback={u.review_feedback} />
                       {u.is_correct === false ? <div className="mt-2"><AskSchoodAI page="explain" source="toefl" session={data.session.id} item={u.id}/></div> : null}
                   </div>
                 ) : null}

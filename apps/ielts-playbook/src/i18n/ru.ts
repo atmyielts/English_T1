@@ -88,6 +88,8 @@ export const ru: Record<keyof typeof en, string> = {
   'blocks.nextStep': 'Следующий шаг',
   'blocks.open': 'Открыть',
   'blocks.learnMore': 'Подробнее',
+  'blocks.tryIt': 'Попробуйте сами',
+  'blocks.showWorkedAnswer': 'Показать разбор ответа',
   'blocks.important': 'Важно',
 
   'coach.askAbout': 'Спросить про «{heading}»',
