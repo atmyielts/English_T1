@@ -1,44 +1,25 @@
-import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { useEnglish } from '../../app/EnglishContext';
 import { useT } from '../../i18n';
+import { useResource } from '../../lib/useResource';
+import { ErrorState, Panel } from '../../ui/kit';
 import { SkillHome } from '../SkillHome';
 import { ListeningActivity } from './Activity';
+import { getRecordedSlugs } from './api';
 import './listening.css';
 
-const DictationDrillCard = lazy(() => import('../../components/AIIter4Cards').then((m) => ({ default: m.DictationDrillCard })));
-const ShadowingPracticeCard = lazy(() => import('../../components/AIIter6Cards').then((m) => ({ default: m.ShadowingPracticeCard })));
-
-const ListeningApp = () => {
+const ListeningHome = () => {
   const t = useT();
-  const { accessToken } = useEnglish();
-  return (
-    <Routes>
-      <Route
-        index
-        element={(
-          <SkillHome
-            skill="listening"
-            tools={[
-              {
-                id: 'dictation',
-                title: t('listening.tool.dictation'),
-                hint: t('listening.tool.dictationHint'),
-                render: () => <DictationDrillCard accessToken={accessToken} />,
-              },
-              {
-                id: 'shadowing',
-                title: t('listening.tool.shadowing'),
-                hint: t('listening.tool.shadowingHint'),
-                render: () => <ShadowingPracticeCard accessToken={accessToken} />,
-              },
-            ]}
-          />
-        )}
-      />
-      <Route path=":slug" element={<ListeningActivity />} />
-    </Routes>
-  );
+  const recordings = useResource(getRecordedSlugs, []);
+  const notice = recordings.error ? <ErrorState error={recordings.error} onRetry={recordings.reload} />
+    : recordings.data && !recordings.data.slugs.length ? <Panel title={t('intensive.audioSoon')}><p>{t('intensive.audioSoonBody')}</p></Panel> : null;
+  return <SkillHome skill="listening" readyItems={new Set(recordings.data?.slugs ?? [])} extra={notice} />;
 };
+
+const ListeningApp = () => (
+  <Routes>
+    <Route index element={<ListeningHome />} />
+    <Route path=":slug" element={<ListeningActivity />} />
+  </Routes>
+);
 
 export default ListeningApp;

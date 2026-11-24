@@ -1,0 +1,448 @@
+{
+  "slug": "checking-the-shared-fridge",
+  "title": "Checking the shared fridge",
+  "level": "A1",
+  "summary": "You help at a building games evening. Read the fridge rules and a setup checklist. Work out how to get enough labels. Use some and any to talk about boxes, lids and paper labels. Then make a new shelf plan when the top shelf is full.",
+  "documents": [
+    {
+      "title": "Fridge Label Key",
+      "text": "There are three shelves in the shared fridge. The top shelf is for blue boxes. The middle shelf is for green boxes. The bottom shelf is for white boxes. Write the person's name on every paper label. For a closed box, put the paper label on the lid. For an open box, put the paper label on the front. The name must be easy to see. One person can have two boxes. Make one label for each box. If you move a box to a new shelf, move the box with its label. The label stays on the box."
+    },
+    {
+      "title": "Friday Setup Checklist",
+      "text": "Games evening starts at 7:00. At 6:00, bring the four boxes from the big table by the window to the small table by the fridge. Ana has two blue boxes. One is open and one is closed. Ben has one closed green box. Jo has one open white box. Count the paper labels before you start. Put the labels on the boxes first. Then put the boxes on their shelves. At 6:20, look for loose lids on the table. Put loose lids in the yellow box under the sink. It says LOST LIDS on the front. The yellow box stays under the sink. At 6:30, check that you can read the name on each of the four labels."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Maya's Message",
+      "text": "Hi, it's Maya. I'm in the games room now. The fridge is next to the door. I put two paper labels on the small table by the fridge. They are blank. There aren't any more labels on that table. There is a pen next to the labels. The four boxes for tonight are on the big table by the window now. At six, take them to the small table by the fridge so you can label them. I can help you with the blue boxes then. I have to leave the games room at six ten. If you need me, come to the big table before I leave."
+    },
+    {
+      "title": "Leo at the Desk",
+      "text": "Hi, I'm Leo. This is the welcome desk in the hall. Are you here for the games evening? I have some extra paper labels in the desk drawer. There are six. Would you like some labels? You can take two now. I need the other four for the games tables. I can also bring your two labels to the fridge at six fifteen. Just tell me which you want. There aren't any spare pens at this desk. There is a pen in a blue cup here. Please leave it in the cup. It's for people who write their names when they come in."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In Fridge Label Key, where do green boxes go?",
+      "options": [
+        "On the top shelf",
+        "On the bottom shelf",
+        "On the middle shelf",
+        "On the table by the fridge"
+      ],
+      "answer": 2,
+      "explanation": "The key says the middle shelf is for green boxes."
+    },
+    {
+      "prompt": "In Fridge Label Key, what do you write on every label?",
+      "options": [
+        "The person's name",
+        "The colour of the box",
+        "The shelf number",
+        "The time of the games"
+      ],
+      "answer": 0,
+      "explanation": "The key asks you to write the person's name on every paper label."
+    },
+    {
+      "prompt": "Use Fridge Label Key. Sam has two white boxes. One is open and one is closed. Where do you put the labels?",
+      "options": [
+        "Both on the fronts",
+        "Both on the lids",
+        "One on the shelf and one on a lid",
+        "One on the open box's front and one on the closed box's lid"
+      ],
+      "answer": 3,
+      "explanation": "Each box gets a label, and the key gives a different place for open and closed boxes."
+    },
+    {
+      "prompt": "In Fridge Label Key, which rule helps you if a box goes to another shelf?",
+      "options": [
+        "Write a new name each time.",
+        "Keep the label on the box.",
+        "Leave the label on the old shelf.",
+        "Put the old label on the table."
+      ],
+      "answer": 1,
+      "explanation": "The last rule says the label stays on the box when it moves."
+    },
+    {
+      "prompt": "Use Friday Setup Checklist. Which box does Jo have?",
+      "options": [
+        "An open blue box",
+        "A closed green box",
+        "A closed white box",
+        "An open white box"
+      ],
+      "answer": 3,
+      "explanation": "The checklist says Jo has one white box and it is open."
+    },
+    {
+      "prompt": "In Friday Setup Checklist, what do you do just before you put the boxes on their shelves?",
+      "options": [
+        "Check that all four names are easy to read.",
+        "Look for loose lids on the table.",
+        "Put the labels on the boxes.",
+        "Put the yellow box under the sink."
+      ],
+      "answer": 2,
+      "explanation": "The checklist says to put the labels on first and then put the boxes on their shelves."
+    },
+    {
+      "prompt": "Use Friday Setup Checklist. At 6:20 you find a lid on the table. You do not know whose it is. Where does it go?",
+      "options": [
+        "In the yellow box under the sink",
+        "On Ana's open blue box",
+        "On the bottom fridge shelf",
+        "In Jo's white box"
+      ],
+      "answer": 0,
+      "explanation": "At 6:20 you look for loose lids and put them in the yellow box under the sink."
+    },
+    {
+      "prompt": "In Friday Setup Checklist, what is the 6:30 check for?",
+      "options": [
+        "To see if the games have started",
+        "To see if you can read the names",
+        "To see if the paper labels are blank",
+        "To see if there are loose lids on the table"
+      ],
+      "answer": 1,
+      "explanation": "At 6:30, the checklist asks you to read the name on each of the four labels."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Maya's Message. Where are the two blank labels?",
+      "options": [
+        "On the big table by the window",
+        "In the fridge by the door",
+        "In a drawer at the welcome desk",
+        "On the small table by the fridge"
+      ],
+      "answer": 3,
+      "explanation": "Maya says she put two blank paper labels on the small table by the fridge."
+    },
+    {
+      "prompt": "Listen to Maya's Message. You want to take the four boxes to the fridge at six. Where do you get them?",
+      "options": [
+        "From the small table by the fridge",
+        "From the big table by the window",
+        "From the bottom fridge shelf",
+        "From under the sink"
+      ],
+      "answer": 1,
+      "explanation": "Maya says the four boxes are on the big table by the window before you move them."
+    },
+    {
+      "prompt": "In Maya's Message, why does Maya tell you to come to the big table before 6:10 if you need her?",
+      "options": [
+        "The games start there at 6:10.",
+        "She brings more labels at 6:10.",
+        "She leaves the games room at 6:10.",
+        "The fridge opens at 6:10."
+      ],
+      "answer": 2,
+      "explanation": "Maya says she has to leave the games room at 6:10."
+    },
+    {
+      "prompt": "Listen to Maya's Message. Which job does Maya offer to help with?",
+      "options": [
+        "Working with the blue boxes",
+        "Looking for loose lids",
+        "Writing names at the desk",
+        "Bringing extra labels from the hall"
+      ],
+      "answer": 0,
+      "explanation": "Maya says she can help you with the blue boxes at six."
+    },
+    {
+      "prompt": "Listen to Leo at the Desk. How many labels can you take from Leo now?",
+      "options": [
+        "One",
+        "Two",
+        "Four",
+        "Six"
+      ],
+      "answer": 1,
+      "explanation": "Leo has six labels and says you can take two now."
+    },
+    {
+      "prompt": "Use Leo at the Desk. You want Leo to bring the labels. Where and when can he bring them?",
+      "options": [
+        "To the welcome desk at 6:15",
+        "To the fridge at 6:00",
+        "To the window at 6:10",
+        "To the fridge at 6:15"
+      ],
+      "answer": 3,
+      "explanation": "Leo offers to bring your two labels to the fridge at 6:15."
+    },
+    {
+      "prompt": "In Leo at the Desk, why does Leo need four of the six labels?",
+      "options": [
+        "They are for the games tables.",
+        "They are for the fridge boxes.",
+        "They are for the cups at the desk.",
+        "They are for the doors in the hall."
+      ],
+      "answer": 0,
+      "explanation": "Leo says you can have two and the other four are for the games tables."
+    },
+    {
+      "prompt": "Use Leo at the Desk. You need a pen for the fridge. What does Leo say to do with the pen in the blue cup?",
+      "options": [
+        "Take it with the labels.",
+        "Put it in the desk drawer.",
+        "Leave it in the cup.",
+        "Bring it to the fridge at 6:15."
+      ],
+      "answer": 2,
+      "explanation": "Leo asks you to leave the pen in the cup because people use it at the desk."
+    }
+  ],
+  "grammar": {
+    "focus": "Some and any with labels, boxes and pens",
+    "explanation": "Use some when you say you have things, but you do not say how many. Say, 'I have some labels.' Use any when you ask if things are there. Say, 'Are there any labels on the table?' You can answer, 'Yes, there are some.' If there are zero, use not and any. Say, 'There aren't any labels on the table.' Use some when you offer things to someone. Say, 'Would you like some labels?' You have labels and you want to give them. Read the offer, question and negative examples above aloud. Circle some or any in each one.",
+    "examples": [
+      {
+        "before": "I have any pens in my bag.",
+        "after": "I have some pens in my bag.",
+        "why": "You say there are pens in your bag."
+      },
+      {
+        "before": "Are there some boxes under the table?",
+        "after": "Are there any boxes under the table?",
+        "why": "You do not know if there are boxes there. This is a check."
+      },
+      {
+        "before": "There aren't some lids on the table.",
+        "after": "There aren't any lids on the table.",
+        "why": "There are zero lids on the table. Use any with aren't."
+      },
+      {
+        "before": "Would you like any paper labels?",
+        "after": "Would you like some paper labels?",
+        "why": "You have labels in your hand and you are offering them."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "You see three spare pens in your bag. Tell your team what you have.",
+        "options": [
+          "I don't have any spare pens.",
+          "Do I have any spare pens?",
+          "I have some spare pens.",
+          "I have any spare pens."
+        ],
+        "answer": 2,
+        "explanation": "You have spare pens, so use some to tell the team."
+      },
+      {
+        "prompt": "You cannot see inside the box. Ask if there are labels inside.",
+        "options": [
+          "Are there any labels in the box?",
+          "There aren't any labels in the box.",
+          "Would you like some labels from the box?",
+          "There are some labels in the box."
+        ],
+        "answer": 0,
+        "explanation": "Use any to ask whether the box has labels inside."
+      },
+      {
+        "prompt": "Your bag is empty. Tell Leo about the paper in your bag.",
+        "options": [
+          "I have some paper in my bag.",
+          "Do you have any paper in your bag?",
+          "Would you like some paper from my bag?",
+          "I don't have any paper in my bag."
+        ],
+        "answer": 3,
+        "explanation": "The bag is empty, so use don't have any paper."
+      },
+      {
+        "prompt": "You have spare erasers in your hand. Offer them to a volunteer.",
+        "options": [
+          "Do you have any erasers?",
+          "Would you like some erasers?",
+          "You don't have any erasers.",
+          "I don't have any erasers."
+        ],
+        "answer": 1,
+        "explanation": "Would you like some is a way to offer things you have."
+      },
+      {
+        "prompt": "Maya asks, 'Are there any chairs in the hall?' You see five chairs there. Choose the answer.",
+        "options": [
+          "No, there aren't any.",
+          "Would you like some?",
+          "Yes, there are some.",
+          "Are there any in the hall?"
+        ],
+        "answer": 2,
+        "explanation": "You see chairs in the hall, so answer yes and use some."
+      },
+      {
+        "prompt": "There are zero cups on the desk. Things may be in the drawer, but you can't see inside. What can you say about the desk?",
+        "options": [
+          "There are some cups on the desk.",
+          "There aren't any cups in the drawer.",
+          "There aren't some cups on the desk.",
+          "There aren't any cups on the desk."
+        ],
+        "answer": 3,
+        "explanation": "Zero cups on the desk means there aren't any there."
+      },
+      {
+        "prompt": "You have blank cards. You don't know if Leo has tape. Which two lines tell him about the cards and ask about the tape?",
+        "options": [
+          "I have some blank cards. Do you have any tape?",
+          "I have any blank cards. Do you have any tape?",
+          "I don't have any cards. Would you like some tape?",
+          "Do you have any cards? I have some tape."
+        ],
+        "answer": 0,
+        "explanation": "Use some for the cards you have and any to ask about tape."
+      },
+      {
+        "prompt": "You have a few clips to give away. There are zero rubber bands in your bag. Which two lines offer the clips and tell Leo about the rubber bands?",
+        "options": [
+          "Are there any clips? I have some rubber bands.",
+          "Would you like some clips? I don't have any rubber bands.",
+          "Would you like some rubber bands? I don't have any clips.",
+          "I don't have any clips. Do you have any rubber bands?"
+        ],
+        "answer": 1,
+        "explanation": "Use some to offer the clips and don't have any for the missing rubber bands."
+      }
+    ],
+    "transfer": "You are at the games table. You have three spare score sheets and zero pencils. You do not know if there are clips in the drawer. Write an offer, a line about the pencils and a question about the clips. Read them aloud. Check that some is in your offer and any is in your question and your negative line."
+  },
+  "vocabulary": [
+    {
+      "word": "shared",
+      "meaning": "for more than one person to use",
+      "example": "We use a shared washing machine.",
+      "pair": "a shared kitchen"
+    },
+    {
+      "word": "shelf",
+      "meaning": "a flat place where you put things",
+      "example": "My books are on a shelf near the bed.",
+      "pair": "the middle shelf"
+    },
+    {
+      "word": "lid",
+      "meaning": "the top that covers a box or pot",
+      "example": "I put the lid on the pot.",
+      "pair": "a jar lid"
+    },
+    {
+      "word": "label",
+      "meaning": "a small piece of paper that tells you what something is or whose it is",
+      "example": "The label on my bag says Kim.",
+      "pair": "a name label"
+    },
+    {
+      "word": "blank",
+      "meaning": "with nothing written or drawn on it",
+      "example": "Please draw your house on this blank page.",
+      "pair": "a blank card"
+    },
+    {
+      "word": "closed",
+      "meaning": "shut or not open",
+      "example": "The window is closed today.",
+      "pair": "a closed drawer"
+    },
+    {
+      "word": "loose",
+      "meaning": "free and easy to move",
+      "example": "I found a loose button in my coat pocket.",
+      "pair": "a loose lid"
+    },
+    {
+      "word": "under",
+      "meaning": "below something",
+      "example": "My shoes are under the bed.",
+      "pair": "under the table"
+    },
+    {
+      "word": "drawer",
+      "meaning": "a box in a desk or cupboard that you pull out",
+      "example": "I keep my keys in the kitchen drawer.",
+      "pair": "open a drawer"
+    },
+    {
+      "word": "spare",
+      "meaning": "extra and ready to use if needed",
+      "example": "I carry a spare key in my bag.",
+      "pair": "a spare pen"
+    },
+    {
+      "word": "bring",
+      "meaning": "take something to the person or place you are going to",
+      "example": "Please bring your cup to the table.",
+      "pair": "bring a chair"
+    },
+    {
+      "word": "easy to see",
+      "meaning": "clear when you look at it",
+      "example": "The big black numbers are easy to see from the door.",
+      "pair": "make the sign easy to see"
+    }
+  ],
+  "speaking": {
+    "audience": "Leo, the volunteer at the welcome desk",
+    "first": "Maya left two blank labels and a pen on the small table by the fridge. Leo has six spare labels in the desk drawer. You can take two now, or he can bring two to the fridge at 6:15. Read the Friday Setup Checklist and the Fridge Label Key. Make a note of how many labels you have and how many you need for the four boxes. Play both parts or record your lines with a pause after each one. Say where you found the labels. Ask, 'Do you have any spare labels?' Then use Leo's offer to ask him to bring two. Finish by saying which box you can label first and where the label goes.",
+    "change": "Leo has two labels for you, but he must stay at the desk at 6:15. He can bring the two paper labels to the small table by the fridge at 6:25.",
+    "second": "Do the talk again in short turns. When Leo gives the new time, say the new time and place back to him. Keep your request for two labels and your line about the first box. End by saying how many boxes can have names before Leo comes.",
+    "checklist": [
+      "I ask about spare labels with any.",
+      "I ask Leo to bring exactly two paper labels.",
+      "In my second talk, I say 6:25 and the small table by the fridge.",
+      "I say where the label goes on my first box.",
+      "I say that I can label two boxes before Leo comes."
+    ]
+  },
+  "writing": {
+    "audience": "Maya, who helps at first, and Leo, who takes over at 6:15",
+    "first": "Read Fridge Label Key and Friday Setup Checklist. Make four paper name labels, one for each box. On your screen, write each name on its own line and add a placement note beside it. Use short cues such as 'open blue box, front, top shelf'. Write one more line for loose lids. Aim for 25–45 words across the five lines.",
+    "change": "At 6:10, a bag of games takes up the whole top shelf. The middle shelf has room for Ben's box and both blue boxes. Jo's space on the bottom shelf is free.",
+    "second": "Write your five lines again for Leo. Change the shelf in both of Ana's placement notes. Keep all four names, the box colours and the places where you put the labels on the boxes. Keep the loose-lid line. Read just your new lines and check that Leo can place every box.",
+    "checklist": [
+      "I have five lines and 25–45 words.",
+      "I have two lines for Ana, one for Ben and one for Jo.",
+      "Open boxes have labels on the front and closed boxes have labels on the lid.",
+      "The new note puts both blue boxes and the green box on the middle shelf.",
+      "Jo's box goes on the bottom shelf and loose lids go in the yellow box under the sink."
+    ]
+  },
+  "immersion": {
+    "role": "The fridge volunteer on a new games evening",
+    "goal": "Get four boxes ready by 6:30. Make a shelf plan, write four paper name labels and leave a short note so the next volunteer can find the boxes and the lost lids.",
+    "constraints": [
+      "Use the same four boxes from Friday Setup Checklist. Sort them by colour and by open or closed before you write.",
+      "Start with the shelf colours in Fridge Label Key. Write a first plan with one line for each shelf.",
+      "You have one pen and four blank paper labels on the small table by the fridge.",
+      "Write only the person's name on each label. On your screen, show where each label goes beside the name.",
+      "At 6:20 you find one loose lid on the table. Put it in the yellow LOST LIDS box under the sink."
+    ],
+    "change": "At 6:12, a games bag fills the top shelf. The middle shelf has room for two boxes in all. The bottom shelf also has room for two boxes in all. Ben's green box and Jo's white box must stay on their usual shelves. Both blue boxes need new places.",
+    "deliverables": [
+      "Write a new three-line shelf plan. Give the colour and name for every box on the middle and bottom shelves. Say what is on the top shelf. Use open or closed to show which blue box goes where.",
+      "Write four label entries with the name and a separate placement note for each. Put the two Ana entries in the same order as in your new shelf plan.",
+      "Leave a three-line note for the next volunteer. Say there aren't any boxes on the top shelf, say where the two blue boxes are, and say where you put the loose lid."
+    ],
+    "checklist": [
+      "My first plan uses the original shelf colours.",
+      "My new plan has two boxes on the middle shelf and two on the bottom shelf.",
+      "Ben is on the middle shelf and Jo is on the bottom shelf in the new plan.",
+      "I can point to one blue box on each shelf with space and tell which blue box is open.",
+      "Each label name matches its box, and I use the front for open boxes and the lid for closed boxes.",
+      "My note uses aren't any and gives the yellow box location under the sink."
+    ]
+  }
+}

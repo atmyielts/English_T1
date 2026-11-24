@@ -1,0 +1,394 @@
+{
+  "slug": "c1-the-wall-for-people-passing",
+  "title": "The Wall for People Passing",
+  "level": "C1",
+  "summary": "Compare two mural designs for a route visible to someone inside a slow tram and someone walking beside the wall.\n\nReading: Sketch what one path user and one tram passenger see first, second and third. Match each view with evidence in the commission or illustrator’s response. Offer a label or visual link that makes one earlier guess revisable.\n\nVocabulary: Use six terms to label the same motif from a seat, on foot and from an impossible central viewpoint. Remove the position phrases and reconstruct them by matching the collocations to each loose sketch.",
+  "documents": [
+    {
+      "title": "Commission brief to local painters",
+      "text": "The wall beside the old tram stop is to carry a mural of the riverside mills. Its highest part can be seen between two window pillars on a tram. The lower part faces a path people use to reach the pedestrian bridge. A surviving machine drawing shows the parts of a loom, with the shuttle clearly separated. The committee would like painters to include this drawing, the names of two mills and one recognisable form from the river. Each artist may choose how to arrange them.\n\nFor the tender image, we asked painters to show the whole wall from a position opposite its centre. That makes individual proposals easy to compare on paper. It is not a position any visitor can use because the tram tracks run between the wall and the nearest pavement on that side. Someone approaches from the west and discovers the wall in sections. Someone inside a tram sees more of it but looks down through gaps.\n\nMake a small proposal for one route on foot and either a set of frames or a continuous sketch of the tram view. The committee will judge whether the different views still feel like parts of a related work."
+    },
+    {
+      "title": "Reply from a local illustrator",
+      "text": "One design puts the drawing of the loom low on the left. It stretches a blue line from the shuttle to the river, so a pedestrian following that line may discover how the two shapes are related. A seated tram passenger will see several parts of its course but lose the shuttle behind the bottom of the window. The committee's image still gives a strong result because it has corrected for that view without saying so. That is one reason our first printed preference may change.\n\nThe alternative raises the navy outline of the shuttle into an arch. The river then crosses it at the top. For a person approaching on the path, an unexplained wide arch may appear a long time before the parts of the machine. That could make the scene interesting, if somebody can check what they have seen later. If one end is blocked by a parked barrow, the little part they need might be the only thing they miss.\n\nI would choose a plausible partial reading for each route. A loom part and a river do not need to be visible at the same moment. Give the viewer a later opportunity to connect them."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two painters walk the print-out along the path",
+      "text": "Ona: This first sheet says ‘machine’ in pencil. We have left out the mill names altogether because the bottom window frame hides them when we sit in the tram.\n\nJem: The bank in the drawing had a sign on it. That makes sense if somebody has already seen the two buildings in the next panel. On the footpath the two buildings come much later.\n\nOna: So I need a first moment when a curved thing could be a river or a piece of metal. If the person notices the mill name later, either start might work.\n\nJem: A strong blue band can link the first and third views. Do not put the main label behind the parked carts, even though the photography from the tram makes that mean a larger blank patch.\n\nOna: Could we put the names halfway up? The tram group would see one name as the other disappears.\n\nJem: Perhaps. Ask them to say which shape they think the name goes with. A correct spelling is not the same thing as a good link.\n\nOna: I’ll put tracing paper on two copies, with a wider band on one and raised names on the other. We can see which view actually changes."
+    },
+    {
+      "title": "Representative reports from a tram test",
+      "text": "We printed four views of the selected design and met when the first car of the day was not busy. A volunteer put each print against the bottom corner of a window. I thought that would help two people imagine the painted wall. It helped less than I expected. Somebody stood behind us for half of the test and saw only the top of the phone photograph we were meant to compare. I thought she would get the same impression from a standing position as we did from the seats. She did not.\n\nShe noticed the two blue curves and thought they were two rivers. After leaving the tram she saw the full shuttle from the path. I would not score the initial guess as an error in itself. I do want to know whether the person found a reason to connect the earlier view with the later one. When I asked whether she would recognise the arch on her next journey, she pointed to the river in the wrong panel.\n\nI suggest testing the raised outline without telling people the word ‘loom’ in advance. Ask them to sketch what has stayed the same across the two views."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What minimum elements does the brief request?",
+      "options": [
+        "A loom drawing, two mill names and a recognisable river form",
+        "Two views of a tram wheel and the number of a bridge",
+        "All names of woodworkers and the route number",
+        "A cross-section of the river and one announcement"
+      ],
+      "answer": 0,
+      "explanation": "The opening lists the machine drawing, named mills and a river form."
+    },
+    {
+      "prompt": "What is artificial about the tender image?",
+      "options": [
+        "It removes the old mills from the river.",
+        "It makes colours darker than painters can reproduce.",
+        "It shows only the lower footpath section.",
+        "It uses an uninterrupted view unavailable to actual visitors."
+      ],
+      "answer": 3,
+      "explanation": "Tracks separate the wall from the viewing point used in the drawing."
+    },
+    {
+      "prompt": "What observation weakens the paper preference for the first design?",
+      "options": [
+        "A pedestrian can see the whole mural without moving.",
+        "The tram window hides the low shuttle required to interpret the line.",
+        "The best printed design leaves both mill names out.",
+        "The tram passes the wall from a direction never used."
+      ],
+      "answer": 1,
+      "explanation": "The printing shows everything at once; a seated traveller cannot see the low reference point."
+    },
+    {
+      "prompt": "What concern applies to the higher alternative?",
+      "options": [
+        "The named mills are all on the other side of the tram line.",
+        "A path user may initially see an unexplained arch.",
+        "The raised shuttle leaves no paintable space below.",
+        "The top river can only be seen from directly opposite."
+      ],
+      "answer": 1,
+      "explanation": "An arch can appear long before the machine context on foot."
+    },
+    {
+      "prompt": "What does the illustrator mean by a plausible partial reading?",
+      "options": [
+        "A meaningful early view that can be related to details seen later.",
+        "A deliberately unrelated second design.",
+        "A design that makes separate audiences draw identical pictures.",
+        "A complete account of the entire mural based on one section."
+      ],
+      "answer": 0,
+      "explanation": "Different routes can give different first impressions that later connect."
+    },
+    {
+      "prompt": "Which aim do both written sources retain?",
+      "options": [
+        "Require every person to start from the west end.",
+        "Provide one position from which it is always fully visible.",
+        "Keep a single work intelligible across different routes and partial views.",
+        "Replace tram views with a single high-quality photograph."
+      ],
+      "answer": 2,
+      "explanation": "Both accept incomplete views and seek meaningful relationships across them."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What concern do the painters have about the current bank sign?",
+      "options": [
+        "Other passengers will remove the sign.",
+        "It is drawn in a colour people mistake for black.",
+        "It can appear before the buildings that explain it.",
+        "It refers to a second river not present in the picture."
+      ],
+      "answer": 2,
+      "explanation": "An element referring to the mills might precede the necessary contextual panel on foot."
+    },
+    {
+      "prompt": "What could link separate views for a walker?",
+      "options": [
+        "A blue band running through more than one section",
+        "A reflection from the far bank",
+        "Calling out the name as the tram passes",
+        "Raised lettering on the old tram itself"
+      ],
+      "answer": 0,
+      "explanation": "Jem proposes a strong band connecting the first and third views."
+    },
+    {
+      "prompt": "What does Jem want test users to explain about the mill name?",
+      "options": [
+        "Who they think painted the line",
+        "How quickly they can spell it",
+        "Which shape they associate it with",
+        "Which window they prefer sitting behind"
+      ],
+      "answer": 2,
+      "explanation": "Knowing the name does not suffice if it is applied to the wrong part."
+    },
+    {
+      "prompt": "What difference did the representative overlook?",
+      "options": [
+        "The only visitor had already heard the word loom.",
+        "A standing passenger had a different and interrupted view.",
+        "A volunteer did not know whose tram it was.",
+        "The printed board was made with the incorrect paint."
+      ],
+      "answer": 1,
+      "explanation": "The observer could not see the same amount from behind."
+    },
+    {
+      "prompt": "Why was the passenger's early river interpretation allowed?",
+      "options": [
+        "She had already decoded both mill names.",
+        "The directors had permanently changed the machine drawing.",
+        "The committee wanted both shapes to look like rivers in every view.",
+        "An early guess may be revised when evidence later connects the shapes."
+      ],
+      "answer": 3,
+      "explanation": "The speaker distinguishes provisional partial understanding from an unrepairable mismatch."
+    },
+    {
+      "prompt": "How would the final test reduce prompting?",
+      "options": [
+        "Give the audience a published answer key on the tram.",
+        "Have users sketch persistent features without first identifying the loom for them.",
+        "Tell every traveller which shape is the shuttle before observing them.",
+        "Ask an artist to stand beneath the intended label."
+      ],
+      "answer": 1,
+      "explanation": "The last suggestion avoids presenting the term that would determine the initial answer."
+    }
+  ],
+  "grammar": {
+    "focus": "Adverbials of place, route and viewpoint",
+    "explanation": "A viewpoint phrase tells the reader where an observer is. A route phrase tells them how someone or something moves. Across can span a surface, through describes a path in an opening, and along follows an extended line. Link a dependent phrase to a clear subject when a physical view matters.",
+    "examples": [
+      {
+        "before": "The shuttle looks higher by a passenger.",
+        "after": "The shuttle looks higher from a passenger’s seat.",
+        "why": "From supplies the point from which the view is taken."
+      },
+      {
+        "before": "A person walks across beside the wall.",
+        "after": "A person walks along the wall.",
+        "why": "Along describes a route following its length."
+      },
+      {
+        "before": "Looking through the window, the work disappeared behind a pillar.",
+        "after": "As we looked through the window, part of the work disappeared behind a pillar.",
+        "why": "The finite clause assigns the looking to people rather than the work."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which identifies a viewpoint rather than a route?",
+        "options": [
+          "Across the ramp, the heavy cart reached the quay.",
+          "Along the pavement, the runner went from west to east.",
+          "Through the opening, the bus moved towards the bridge.",
+          "From the front seat, only the top of the arch is visible."
+        ],
+        "answer": 3,
+        "explanation": "The first phrase gives the station from which they can see."
+      },
+      {
+        "prompt": "Which describes lettering extending from one side of a section to the other?",
+        "options": [
+          "The lettering stands from the starting point.",
+          "The lettering shifts towards the painter.",
+          "The lettering is seen through an open gate.",
+          "The lettering runs across the panel."
+        ],
+        "answer": 3,
+        "explanation": "Across describes span over a surface."
+      },
+      {
+        "prompt": "Which means a person follows the wall rather than crossing it?",
+        "options": [
+          "The test visitor stood above the wall.",
+          "The test visitor moved along the wall.",
+          "The test visitor crossed the wall.",
+          "The test visitor went through the wall."
+        ],
+        "answer": 1,
+        "explanation": "Along follows the extended length."
+      },
+      {
+        "prompt": "What observation do readers attribute to whom in ‘Looking from the path, I could see the river first’?",
+        "options": [
+          "The first panel looked from the path.",
+          "Somebody else looked before me.",
+          "I looked from the path.",
+          "The river looked from the path."
+        ],
+        "answer": 2,
+        "explanation": "The introductory phrase shares its subject with I could see."
+      },
+      {
+        "prompt": "Which keeps an obstacle separate from the viewing position?",
+        "options": [
+          "The cart was painted behind the looking path.",
+          "The painted name was hidden from a cart behind which we watched the path.",
+          "The painted name was hidden behind a cart when we looked from the path.",
+          "The name hid because it looked through the carts."
+        ],
+        "answer": 2,
+        "explanation": "Behind places the cart in the relevant line of sight; from identifies where the people stood."
+      },
+      {
+        "prompt": "Which sentence has two distinct observers with different positions?",
+        "options": [
+          "While I watched from the path, Jem looked through the tram window.",
+          "Watching from the path, the tram window obscured my view of Jem.",
+          "Through the path, Jem and I looked under the undecided wall.",
+          "The tram window watched us from above the path."
+        ],
+        "answer": 0,
+        "explanation": "The two clauses use separate subjects and viewpoint phrases."
+      },
+      {
+        "prompt": "Which marks a move that creates a new vantage point?",
+        "options": [
+          "After we stepped onto the platform, we could see the mill sign from above.",
+          "We stepped from the platform and also remained below it.",
+          "We saw the platform from the sign which we had not painted.",
+          "We walked above the sign without gaining or losing any height in the view."
+        ],
+        "answer": 0,
+        "explanation": "Onto marks reaching the platform and from above specifies the resulting view."
+      },
+      {
+        "prompt": "Which interpretation is forced by ‘towards the bridge’ alone?",
+        "options": [
+          "Movement directly down from the bridge",
+          "Movement in the bridge’s direction, with no guarantee of arrival",
+          "Movement that necessarily ends under the bridge",
+          "Arrival at the bridge and crossing it"
+        ],
+        "answer": 1,
+        "explanation": "Towards gives direction without an endpoint guarantee."
+      }
+    ],
+    "transfer": "Plan a sequence of four sketches from one spot and then along a route. Write directions that let somebody reproduce the exact position and route without seeing your sketches first."
+  },
+  "vocabulary": [
+    {
+      "word": "vantage",
+      "meaning": "place or position offering a particular view",
+      "example": "The upper deck offered a better vantage.",
+      "pair": "vantage point"
+    },
+    {
+      "word": "span",
+      "meaning": "extend from one point to another",
+      "example": "The curve spans the next panel as well.",
+      "pair": "span a section"
+    },
+    {
+      "word": "prominent",
+      "meaning": "easy to notice",
+      "example": "The raised arch is the prominent feature in this view.",
+      "pair": "prominent feature"
+    },
+    {
+      "word": "occlude",
+      "meaning": "screen or block from sight",
+      "example": "A pillar occludes the centre briefly.",
+      "pair": "partly occlude"
+    },
+    {
+      "word": "continuous",
+      "meaning": "extending without a break",
+      "example": "We drew the same object in a continuous strip.",
+      "pair": "continuous line"
+    },
+    {
+      "word": "silhouette",
+      "meaning": "dark or simple outline of a shape",
+      "example": "The shuttle's silhouette becomes clear later.",
+      "pair": "distinctive silhouette"
+    },
+    {
+      "word": "align",
+      "meaning": "position along the same line",
+      "example": "One name should align with its building.",
+      "pair": "align with a feature"
+    },
+    {
+      "word": "perspective",
+      "meaning": "view of how objects look from a position",
+      "example": "The higher perspective alters the grouping.",
+      "pair": "seated perspective"
+    },
+    {
+      "word": "commission",
+      "meaning": "formally request a creative work",
+      "example": "The group commissioned a mural last summer.",
+      "pair": "mural commission"
+    },
+    {
+      "word": "motif",
+      "meaning": "a design or form repeated through a work",
+      "example": "The blue motif joins views from opposite ends.",
+      "pair": "recurring motif"
+    },
+    {
+      "word": "foreground",
+      "meaning": "nearest visible part of a view or place of emphasis",
+      "example": "The cart is in the foreground of the test.",
+      "pair": "in the foreground"
+    },
+    {
+      "word": "disjointed",
+      "meaning": "lacking a clear relationship between parts",
+      "example": "The sections looked disjointed in the early mock-up.",
+      "pair": "disjointed sequence"
+    }
+  ],
+  "speaking": {
+    "audience": "Painters, a transport worker and a visitor arriving on foot",
+    "first": "Pitch one layout using four numbered views, then speak as if you were the visitor moving through each. Describe what a central illustrated preview would leave out.",
+    "change": "A new timetable means a typical tram will stop against the central pillar, and a group approaches the path from the east instead.",
+    "second": "Deliver a revised visual tour and defend the new order of information. Ask the audience to give the association they now make between two details.",
+    "checklist": [
+      "Locate the observer before describing what appears.",
+      "Keep two travel directions distinguishable.",
+      "Explain one incomplete view without treating it as a failure.",
+      "State what links two encountered shapes."
+    ]
+  },
+  "writing": {
+    "audience": "Public arts committee that has seen only full-wall mock-ups",
+    "first": "Write a 370-word recommendation with two annotated viewpoint sketches. Use details from both documents and propose a test for a misleading initial interpretation.",
+    "change": "The central wall image must be used in the arts brochure before the mural is built.",
+    "second": "Write a new brochure caption and a test script for first-time viewers. Preserve a truthful preview while clarifying how the work is actually seen.",
+    "checklist": [
+      "Say what viewers can see from each place.",
+      "Link the proposed change to a concrete route.",
+      "Describe one intended re-reading.",
+      "Avoid suggesting a view travellers cannot take."
+    ]
+  },
+  "immersion": {
+    "role": "Mural consultation designer",
+    "goal": "Prototype the work as an experience along two routes and show the gaps honestly.",
+    "constraints": [
+      "A person cannot stand at the printed model’s viewpoint.",
+      "At least one part disappears behind a window frame.",
+      "The mural may be read in either direction on foot.",
+      "A test should not tell viewers the motif before they look."
+    ],
+    "change": "A new sign post blocks the middle of the path just before the mill names become visible.",
+    "deliverables": [
+      "Draw six matched observation frames with captions.",
+      "Write a short evidence note about who saw a linked design and how.",
+      "Present and revise a fresh model for the opposite direction."
+    ],
+    "checklist": [
+      "Give each frame a reason for being in the test.",
+      "Identify interruption without imposing exact first guesses.",
+      "Compare seats and standing positions.",
+      "Keep a final clue available to both routes."
+    ]
+  }
+}

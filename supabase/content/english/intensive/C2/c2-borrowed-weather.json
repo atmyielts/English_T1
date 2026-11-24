@@ -1,0 +1,394 @@
+{
+  "slug": "c2-borrowed-weather",
+  "title": "Borrowed Weather",
+  "level": "C2",
+  "summary": "Interpret and extend a speculative story about a device that lends an isolated sensation but cannot bring back the world around it.\n\nReading: Write a literal and a personal reading of Iona’s last question in the first extract. Trace the moment at which the notebook supports or changes each one. Quote two different observations that allow a revising reader to retain both accounts.\n\nVocabulary: Contrast a description of the mechanism with a description of one sibling’s internal response. Place six target terms between the two versions, and explain which vocabulary commits you to an interpretation rather than a sensory observation.",
+  "documents": [
+    {
+      "title": "Fiction extract: the first visit to the weather kiosk",
+      "text": "By the time the council sold the telephone boxes, somebody had installed a nozzle and a padded switch in one on the harbour road. You could press the switch and borrow as much weather as would fit round both shoulders. The instructions said it was a municipal demonstration and nobody should remain inside for more than a minute. I went seven Thursdays in a row. I borrowed only one thing. The inside of each elbow cooled, then my coat began to feel too warm. It was what happened in our previous house when the sea wind started before a storm.\n\nMy sister Iona came at the end of the seventh visit. I mentioned our kitchen and she looked past me towards the road as if a particular bus might be coming. She asked which summer I meant. I named the one in which the water reached the wheel of the car. She remembered that summer as the year our mother stopped letting us sleep with the windows open.\n\nYears earlier Iona had called the same wind clean. Now she would not press the switch. I thought she was refusing a memory they were trying to sell us. Then she asked how many people could stand inside the box when it was working."
+    },
+    {
+      "title": "Fiction extract: a page from Iona’s notebook",
+      "text": "I know the air in the box does not carry seawater. The little gauge on the nozzle shows pressure and temperature. There is no reason to believe it has any opinion about a past summer. I would probably have used it if my brother had said, ‘Feel how quickly that cools your hands.’ He said, ‘You’ll remember.’ He had already decided what the next minute was meant to put in my mind.\n\nAt the old house I used to come down to the kitchen and wait on the step while our mother counted the windows. While she did this I turned the key in the back door. I would count too, though I did not know which side of the house she had started from. When we left, I still remembered the counting long after I stopped feeling the weather in the old way.\n\nThe kiosk closes on its own. My brother was enjoying a sensation he had come to curate for himself. I would have liked somebody to stand beside me for a particular minute under those circumstances. I did not know whether there was room. I wasn't asking him to prove that the weather belonged to me as well."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Story editor and reader talk about the switch",
+      "text": "Editor: Some readers thought Iona was resisting a trick. I expected that; he talks as if the machine is selling something and assumes she sees through it.\n\nReader: She knows what the nozzle does. Her objection is partly to his instructions. He starts a sentence for her that she has to finish from her own past.\n\nEditor: Could we simply say at the end that she wants him in the box with her?\n\nReader: Her question is how many can stand inside. I'd keep it as a question. He can answer with the dimensions without knowing what she wants. Good stories sometimes let a small mechanical problem carry a second one.\n\nEditor: The inside is large enough for two if neither carries a bag. Is it important to supply that fact?\n\nReader: If you do, put it somewhere outside the scene, as a line on the faded notice. He has been seven times and still hasn't considered sharing. Do not give him a grand speech about the meaning of companionship before he has made room to turn.\n\nEditor: We can let the edges of the two coats touch while it starts. He can notice that before he knows how to talk about it."
+    },
+    {
+      "title": "Fiction extract: the attendant's demonstration",
+      "text": "The boy asked if we had fog. I told him we could cool the side of his face but nothing would come out visibly. He was disappointed. His grandfather had brought him down for a sensation the grandfather had once known on the cliffs. The boy had a football tucked under his arm. He left it with me so that he could enter without getting stuck. For a minute he stood with his eyes shut. His grandfather watched the little control panel as if it might report a success.\n\n“What did you see?” he asked when the boy stepped out.\n\n“Nothing, but it was cold by my ear,” the boy said. He took the ball. He had given a perfectly good account of something that was available to him. I thought the old man might ask him to try again. Instead he told him how it felt to walk in fog with a dog that kept a few feet ahead and then disappeared. The boy put the ball between his grandfather’s shoes to show how far. The box was shut by then. They were still talking about the distance when I went in to switch it off."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What part of the past does the narrator initially associate with the borrowed weather?",
+      "options": [
+        "The moment a dog disappeared into fog",
+        "The day he first tested the council instrument",
+        "A physical feeling associated with a sea wind before storms",
+        "The sound of his mother closing the back door"
+      ],
+      "answer": 2,
+      "explanation": "He associates cooling at the elbows and warm clothing with the onset of a remembered wind."
+    },
+    {
+      "prompt": "Why does Iona's refusal initially puzzle him?",
+      "options": [
+        "He remembers Iona calling that wind clean.",
+        "She had long wanted to sell their house.",
+        "The kiosk has only enough space for one person at a time.",
+        "He saw her use the machine in the summer before."
+      ],
+      "answer": 0,
+      "explanation": "Her earlier approving term leads him to a mistaken expectation."
+    },
+    {
+      "prompt": "What difference does the notebook identify?",
+      "options": [
+        "The brother prescribed a memory before Iona could form her own association.",
+        "Iona doubts that the machine changes temperature.",
+        "The air contains seawater that Iona recognises visually.",
+        "The demonstration asks both people to remember the exact same event at once."
+      ],
+      "answer": 0,
+      "explanation": "‘You’ll remember’ suggests the discovery has already been decided for Iona."
+    },
+    {
+      "prompt": "What is the function of the mother's counting in the notebook?",
+      "options": [
+        "It establishes the exact dates of the water damage.",
+        "It gives the numerical code used by the council device.",
+        "It confirms she knew how to enter the kiosk with another person.",
+        "It shows Iona’s memory is organised around shared activity as well as sensation."
+      ],
+      "answer": 3,
+      "explanation": "She recalls coordinated acts with her mother after the weather itself has faded."
+    },
+    {
+      "prompt": "Why isn't Iona's final question a rejection of the device?",
+      "options": [
+        "She thinks the device should remain permanently switched off.",
+        "She is considering having someone with her when she tries it.",
+        "She intends to demonstrate the nozzle to her brother outside.",
+        "She already knows a neighbour who can repair it."
+      ],
+      "answer": 1,
+      "explanation": "The second extract reveals a desire for another person's presence."
+    },
+    {
+      "prompt": "What distinction becomes visible by reading both sources?",
+      "options": [
+        "One narrator knows no weather-related memories.",
+        "The same physical stimulus can invite different accounts of its significance.",
+        "Both siblings fear the kiosk will run out of power.",
+        "The event both remember takes place in a borrowed house."
+      ],
+      "answer": 1,
+      "explanation": "The narrator expects shared association, whereas Iona remembers a particular relationship and has a different possible use for the kiosk."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why keep Iona’s concern in the form of a question?",
+      "options": [
+        "It prevents the story from giving any facts about the box.",
+        "It lets the reader disregard both witnesses’ earlier accounts.",
+        "It makes Iona stop understanding the nozzle’s effect.",
+        "It can express a practical and a more personal concern without directly declaring the latter."
+      ],
+      "answer": 3,
+      "explanation": "The reader says the literal capacity question can also carry a concern about company."
+    },
+    {
+      "prompt": "What change does the reader prefer to a speech explaining everything?",
+      "options": [
+        "A small physical gesture that can suggest accommodation",
+        "An account of everybody who used the box",
+        "A report of a conversation with the council",
+        "A scientific explanation of fog settings"
+      ],
+      "answer": 0,
+      "explanation": "Making space and noticing touching coats can bear meaning without a speech."
+    },
+    {
+      "prompt": "Why might dimensions appear on the notice rather than in a dialogue?",
+      "options": [
+        "The size would be an ordinary fact without resolving what Iona meant.",
+        "The editor has discarded that detail entirely.",
+        "The editor wants the girl to see the box collapse.",
+        "The story must hide how many people ever entered."
+      ],
+      "answer": 0,
+      "explanation": "A factual sign can make the physical option available without assigning motive."
+    },
+    {
+      "prompt": "Why does the grandfather bring the child?",
+      "options": [
+        "He plans to buy the disused telephone box.",
+        "He hopes to share an experience he associates with the cliffs.",
+        "He wants the boy to repair a switch.",
+        "He needs the boy’s ball to see how far a dog can run."
+      ],
+      "answer": 1,
+      "explanation": "He brings him for a sensation he once knew."
+    },
+    {
+      "prompt": "How does the attendant interpret the child's response?",
+      "options": [
+        "The child gives a deliberately wrong response to please his grandfather.",
+        "The child was not paying enough attention inside the device.",
+        "The child reports accurately what was possible for him to experience.",
+        "The grandfather has to explain what the nozzle did mechanically."
+      ],
+      "answer": 2,
+      "explanation": "The narrator explicitly calls the account perfectly good even though no fog was seen."
+    },
+    {
+      "prompt": "What change happens once the child leaves the box?",
+      "options": [
+        "The grandfather persuades the boy to return under a different setting.",
+        "The boy uses the ball to keep the door from closing.",
+        "Both people create a way to discuss an experience the device did not reproduce.",
+        "The attendant asks them to perform another test to verify the result."
+      ],
+      "answer": 2,
+      "explanation": "The older person tells a story and the ball makes its scale tangible."
+    }
+  ],
+  "grammar": {
+    "focus": "Free indirect style and shifting viewpoint",
+    "explanation": "Free indirect style can keep third-person narration while allowing a character’s language or judgement into it without quotation marks. Pronouns and tense usually fit the narrative frame. The wording attributed to a character can remain partial or mistaken. A neutral report or a direct quotation uses different signals.",
+    "examples": [
+      {
+        "before": "He wondered, ‘Why is she still outside?’",
+        "after": "Why was she still outside? He could have fitted both bags.",
+        "why": "The sentence keeps the narrative tense while its question follows the character’s concern."
+      },
+      {
+        "before": "She was deliberately insulting him, the narrator stated.",
+        "after": "She would not even try the switch. Couldn’t she see he had come to help?",
+        "why": "A character’s loaded reading can emerge without making an omniscient claim."
+      },
+      {
+        "before": "She thought, ‘I don’t need to see fog.’",
+        "after": "She didn’t need to see fog. She knew how air felt at the cliff.",
+        "why": "The third-person, past-tense wording retains the immediacy of her evaluation."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which passage most clearly uses free indirect style?",
+        "options": [
+          "The caller recorded Iona’s refusal to enter.",
+          "Iona said, ‘Why should it tell me what counts as remembering?’",
+          "Iona asked whether the machine could tell her what to remember.",
+          "Iona stayed outside. Why did a little machine have to tell her what counted as remembering?"
+        ],
+        "answer": 3,
+        "explanation": "The close question takes Iona's concern while keeping third-person narration and past tense."
+      },
+      {
+        "prompt": "What can ‘Of course he had left again’ convey in a scene centred on Iona?",
+        "options": [
+          "A confirmed record from a security log.",
+          "A hypothetical condition triggered next week.",
+          "A verbatim present-tense interview.",
+          "Her interpretation rather than an independently guaranteed fact."
+        ],
+        "answer": 3,
+        "explanation": "Of course can signal the viewpoint’s expectation or irritation."
+      },
+      {
+        "prompt": "Which rewrites a direct thought into close third person without committing the narrator to its truth?",
+        "options": [
+          "‘He expects me to remember,’ she thought.",
+          "She reported that he expected her to remember.",
+          "Could he really expect her to remember that summer the same way?",
+          "He demanded that the truth be permanently recorded."
+        ],
+        "answer": 2,
+        "explanation": "The question is untagged but retains the character’s concern and the third-person frame."
+      },
+      {
+        "prompt": "Which line most clearly changes the point-of-view character?",
+        "options": [
+          "His sister left. Behind the glass, the attendant wondered whether she had seen the nozzle.",
+          "His sister left and did not turn to talk to him.",
+          "His sister left, the narrator reported later.",
+          "His sister left. Why did she never give him a reason?"
+        ],
+        "answer": 0,
+        "explanation": "The attendant’s thought establishes a second viewpoint beyond the brother’s."
+      },
+      {
+        "prompt": "Which answer describes the role of ‘here’ in ‘Now she could stand here with him’?",
+        "options": [
+          "It necessarily refers to wherever the later reader lives.",
+          "It prevents the scene being narrated in the past.",
+          "It can locate the place from within the current character’s perspective.",
+          "It always signals an unsupported quotation."
+        ],
+        "answer": 2,
+        "explanation": "Deictic terms can use the character’s now and location even in a past-tense story."
+      },
+      {
+        "prompt": "Which phrase keeps an observed action distinct from a possibly biased reading?",
+        "options": [
+          "She told him she needed him to stay; later he denied hearing it.",
+          "She touched the switch. Surely that meant she wanted him to stay.",
+          "She had always wanted him to stay, the official records confirmed.",
+          "She wrote in the register that he ought to stay."
+        ],
+        "answer": 1,
+        "explanation": "The action is given first; surely signals the viewing character’s inference."
+      },
+      {
+        "prompt": "Which does the sentence ‘Did she have to ruin everything?’ strongly cue in close narration?",
+        "options": [
+          "An accusation understood from somebody's viewpoint",
+          "A condition for using the machine past closing",
+          "An exact transcript of a literal question necessarily spoken aloud",
+          "A professionally verified statement"
+        ],
+        "answer": 0,
+        "explanation": "An evaluative question can carry subjective language without being spoken."
+      },
+      {
+        "prompt": "Which asks the reader to reassess an earlier inference without contradicting an observed action?",
+        "options": [
+          "She stayed outside because she had definitively rejected the weather.",
+          "She had stepped back, yes. She was reaching for space for both of them.",
+          "She never stepped back; every record of it was false.",
+          "She never raised a question about space."
+        ],
+        "answer": 1,
+        "explanation": "The step stays a fact; the new viewpoint gives an alternative motive."
+      }
+    ],
+    "transfer": "Rewrite a thirty-second episode twice: as a close third-person account from each sibling. Circle three words in each version that cannot be attributed to a neutral narrator alone."
+  },
+  "vocabulary": [
+    {
+      "word": "evocation",
+      "meaning": "suggestion that brings a place or experience to mind",
+      "example": "The cold air produced an evocation of the coast.",
+      "pair": "evocation of memory"
+    },
+    {
+      "word": "curate",
+      "meaning": "select and shape for a purpose",
+      "example": "He curated a repeatable sensation for himself.",
+      "pair": "curate an experience"
+    },
+    {
+      "word": "deictic",
+      "meaning": "dependent on a speaker’s time, place or viewpoint",
+      "example": "‘Here’ is a deictic expression.",
+      "pair": "deictic expression"
+    },
+    {
+      "word": "counterpart",
+      "meaning": "similar item with a corresponding role",
+      "example": "The boy's anecdote has no exact counterpart in the grandfather's memory.",
+      "pair": "rough counterpart"
+    },
+    {
+      "word": "distil",
+      "meaning": "draw out the essential part of something",
+      "example": "The machine distils a change of temperature from a complicated day.",
+      "pair": "distil a sensation"
+    },
+    {
+      "word": "solitary",
+      "meaning": "done alone",
+      "example": "The regular visits had become a solitary routine.",
+      "pair": "solitary ritual"
+    },
+    {
+      "word": "implicit",
+      "meaning": "understood but not directly stated",
+      "example": "The question carried an implicit invitation.",
+      "pair": "implicit invitation"
+    },
+    {
+      "word": "reticence",
+      "meaning": "reluctance to speak fully",
+      "example": "Her reticence is mistaken for indifference.",
+      "pair": "habitual reticence"
+    },
+    {
+      "word": "recollection",
+      "meaning": "a memory of an earlier event",
+      "example": "The wind prompted a recollection.",
+      "pair": "vivid recollection"
+    },
+    {
+      "word": "surrogate",
+      "meaning": "substitute that stands in for something else",
+      "example": "The nozzle is a poor surrogate for the relationship he remembers.",
+      "pair": "surrogate experience"
+    },
+    {
+      "word": "interiority",
+      "meaning": "a story’s representation of inner experience",
+      "example": "The book gives each speaker a distinct interiority.",
+      "pair": "narrative interiority"
+    },
+    {
+      "word": "impose",
+      "meaning": "make somebody accept a condition, idea or view",
+      "example": "He imposed a memory on a neutral event.",
+      "pair": "impose an interpretation"
+    }
+  ],
+  "speaking": {
+    "audience": "A reading group debating Iona’s first question",
+    "first": "Present two defensible ways to read the question after the first extract. Quote the evidence that favours each at that point, then explain what the notebook changes. Read your own three-line continuation.",
+    "change": "The audience hears the notebook first and expects a direct declaration from Iona later.",
+    "second": "Perform a new opening in that order and hold a short discussion. Use an action instead of a declaration and explain why this alters the audience’s expectation.",
+    "checklist": [
+      "Preserve both literal and other plausible meanings.",
+      "Explain the point-of-view shift precisely.",
+      "Distinguish text evidence from your added detail.",
+      "Respond to an interpretation you cannot completely exclude."
+    ]
+  },
+  "writing": {
+    "audience": "Editor of a speculative fiction collection",
+    "first": "Write a 430-word continuation and a note explaining which sensation, memory and relationship your story treats as available. Give Iona an independent action.",
+    "change": "The ending must involve a person who has no shared memory with either sibling.",
+    "second": "Write a second ending with a new observer, and compare the two endings' choices about which detail remains unexplained.",
+    "checklist": [
+      "Use at least one deliberate shift of viewpoint.",
+      "Avoid making the device supply a memory.",
+      "Keep observed action distinct from a character's assumption.",
+      "Use the new person's experience to change the story's movement."
+    ]
+  },
+  "immersion": {
+    "role": "Workshop leader designing a reading experience around an uncertain request",
+    "goal": "Create a miniature scene and evidence trail that allow audiences to revise one inference.",
+    "constraints": [
+      "The device changes physical sensations only.",
+      "No character can access another person’s memories.",
+      "The siblings should make independent decisions.",
+      "At least one interpretation from the opening should remain plausible until the next voice."
+    ],
+    "change": "An actor wants the capacity notice read aloud before the scene, making the pragmatic sense of the last question more prominent.",
+    "deliverables": [
+      "Design a timed, two-order reading with a short performance or full script.",
+      "Create an evidence map distinguishing intention, observation and later confirmation.",
+      "Invite a listener to report their first interpretation and revise the second version using that account."
+    ],
+    "checklist": [
+      "Use real details rather than generic ambiguity.",
+      "Leave re-reading possible.",
+      "Make the order change produce a different inference.",
+      "Preserve a concrete event that both accounts can agree on."
+    ]
+  }
+}

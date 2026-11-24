@@ -1,0 +1,425 @@
+{
+  "slug": "the-stop-after-the-library",
+  "title": "The stop after the library",
+  "level": "A1",
+  "summary": "The Route 6 bus has a new stop for one Saturday. Read a paper and a sign to find the right bus and help people find a place to wait. Use there is and there are to say what is at each place.",
+  "documents": [
+    {
+      "title": "Park Road News",
+      "text": "Route 6 has a new stop this Saturday. Workers are fixing the road by the park. From 9 in the morning to 2 in the afternoon, buses to the market use the blue shelter on Mill Street. The shelter is just after the library. The bus to the station still stops by the park. From the front of the library, go down the steps and turn right. Go through the open side gate. There is a short path from the gate to the shelter. After 2 in the afternoon, both buses use their usual stops again."
+    },
+    {
+      "title": "Sign at the Blue Shelter",
+      "text": "Route 6 to the market stops here this Saturday from 9 a.m. to 2 p.m. There is a blue bench inside this shelter. There are two seats on the bench. There is also a low wall next to the shelter. You can put your bags on the wall while you wait. Please keep the path in front of the shelter clear. Look for MARKET on the front of your bus. For Route 6 to the station, use the usual stop by the park. The library steps are a meeting place. The market bus does not stop at the steps."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Route 6 Bus Announcement",
+      "text": "This is the Route 6 bus to the market. Our next stop today is the blue shelter on Mill Street. We go past the library first. We do not stop at the library steps. If you want the library, get off at the blue shelter and walk back to the steps. After the shelter, this bus goes to the market. If you want the station, get off at the shelter and walk back past the library to the usual stop by the park. The bus at that stop says STATION on the front."
+    },
+    {
+      "title": "Nina's Voice Message",
+      "text": "Hi, Jo. It's Nina. Let's meet at the library steps at ten twenty. My bag is heavy, so I'll sit on the bottom step with it. Our bus leaves the blue shelter at ten forty. At the steps, turn right with me. We can walk through the side gate to the shelter. There is a bench there. If you get to the steps after ten thirty, go straight to the blue shelter. I'll wait on the bench. Look for me next to the yellow bag. We want the Route 6 bus with MARKET on the front. See you soon!"
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read the titles, then read both texts. In \"Park Road News\", why is there a new stop?",
+      "options": [
+        "The market opens early.",
+        "Workers are fixing the road by the park.",
+        "The library steps are closed.",
+        "The bus to the station has a new number."
+      ],
+      "answer": 1,
+      "explanation": "The news says workers are fixing the road by the park."
+    },
+    {
+      "prompt": "Read \"Park Road News\" again. Make two short notes, one for each bus direction. Where do you wait for the station bus at 11 a.m. on Saturday?",
+      "options": [
+        "At the blue shelter",
+        "On the library steps",
+        "At the side gate",
+        "At the usual stop by the park"
+      ],
+      "answer": 3,
+      "explanation": "The news says the station bus still stops by the park."
+    },
+    {
+      "prompt": "In \"Park Road News\", which directions take you from the front of the library to the blue shelter?",
+      "options": [
+        "Go down the steps, turn right, and go through the side gate.",
+        "Go down the steps, turn left, and walk to the park.",
+        "Go through the side gate, turn left, and go up the steps.",
+        "Go down the steps and wait at the usual stop by the park."
+      ],
+      "answer": 0,
+      "explanation": "The news puts the right turn after the steps and before the gate."
+    },
+    {
+      "prompt": "In Park Road News, what happens after 2 p.m.?",
+      "options": [
+        "Both buses stop at the blue shelter.",
+        "The station bus moves to the blue shelter.",
+        "Both buses go back to their usual stops.",
+        "The market bus starts to use the blue shelter."
+      ],
+      "answer": 2,
+      "explanation": "The last sentence says both buses use their usual stops after two."
+    },
+    {
+      "prompt": "Read \"Sign at the Blue Shelter\" again. You have a bag and want to keep the path clear. Where can you put the bag?",
+      "options": [
+        "On the path in front of the shelter",
+        "On the low wall next to the shelter",
+        "In front of the side gate",
+        "On the library steps"
+      ],
+      "answer": 1,
+      "explanation": "The sign says you can put bags on the low wall."
+    },
+    {
+      "prompt": "In \"Sign at the Blue Shelter\", what does the last part tell you about the library steps?",
+      "options": [
+        "You can meet someone there.",
+        "You can catch the market bus there.",
+        "There are two seats there.",
+        "The station bus stops there."
+      ],
+      "answer": 0,
+      "explanation": "The sign calls the steps a meeting place for people."
+    },
+    {
+      "prompt": "Use \"Sign at the Blue Shelter\" to check your notes. You are at the shelter at noon on Saturday and want to go to the market. What do you look for?",
+      "options": [
+        "PARK on the back of the bus",
+        "LIBRARY on the shelter bench",
+        "STATION on the front of the bus",
+        "MARKET on the front of the bus"
+      ],
+      "answer": 3,
+      "explanation": "The sign tells market passengers to look for MARKET on the front."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to \"Route 6 Bus Announcement\" once. Write the place the bus is going to. What is the announcement mainly for?",
+      "options": [
+        "To ask people to meet at the library",
+        "To tell people when the market opens",
+        "To tell people the next stop and where to go from it",
+        "To tell people where to put their bags"
+      ],
+      "answer": 2,
+      "explanation": "The announcement names the next stop and gives directions from it."
+    },
+    {
+      "prompt": "In Route 6 Bus Announcement, what does the bus go past before it stops at the blue shelter?",
+      "options": [
+        "The park",
+        "The market",
+        "The station",
+        "The library"
+      ],
+      "answer": 3,
+      "explanation": "The driver says the bus goes past the library first."
+    },
+    {
+      "prompt": "In \"Route 6 Bus Announcement\", you are on the bus and want to go to the library. What does the driver tell you to do?",
+      "options": [
+        "Get off at the blue shelter and walk back to the steps.",
+        "Get off at the library steps and wait there.",
+        "Stay on the bus to the market and walk from there.",
+        "Get off by the park and look for the station bus."
+      ],
+      "answer": 0,
+      "explanation": "The driver tells library passengers to get off at the shelter and walk back."
+    },
+    {
+      "prompt": "Listen to the end of \"Route 6 Bus Announcement\". Where do you go to catch the bus to the station?",
+      "options": [
+        "The library steps",
+        "The usual stop by the park",
+        "The blue shelter",
+        "The market"
+      ],
+      "answer": 1,
+      "explanation": "The driver says to walk back past the library to the stop by the park."
+    },
+    {
+      "prompt": "Listen to \"Nina's Voice Message\". Make two notes, one for the meeting time and one for the time the bus leaves. What happens at 10:40?",
+      "options": [
+        "Nina plans to sit down on the bottom step.",
+        "Nina and Jo plan to meet at the steps.",
+        "The bus leaves the blue shelter.",
+        "Jo needs to go straight to the shelter if running late."
+      ],
+      "answer": 2,
+      "explanation": "Nina says their bus leaves the blue shelter at ten forty."
+    },
+    {
+      "prompt": "Listen again to \"Nina's Voice Message\". Jo gets to the steps at 10:35. Where should Jo look for Nina?",
+      "options": [
+        "On the bottom step",
+        "At the side gate",
+        "At the usual stop by the park",
+        "On the bench at the blue shelter"
+      ],
+      "answer": 3,
+      "explanation": "Nina says she will wait on the shelter bench after ten thirty."
+    },
+    {
+      "prompt": "Use \"Nina's Voice Message\" to check your notes. What does Nina tell Jo to look for next to her?",
+      "options": [
+        "A blue bag",
+        "A yellow bag",
+        "A paper sign",
+        "A market bus ticket"
+      ],
+      "answer": 1,
+      "explanation": "Nina tells Jo to look for her next to the yellow bag."
+    }
+  ],
+  "grammar": {
+    "focus": "There is and there are for places to wait",
+    "explanation": "Use there is or there are to tell someone what is in a place. Use there is with one thing. Say 'There is a bench by the door.' Use there are with two or more things. Say 'There are two seats on the bench.' Look at the thing you name first. In 'There is a sign by the steps,' a sign is one thing. The steps tell you where it is. Use there isn't a or there isn't an when a place has no example of the thing, as in 'There isn't a bench by the door.' Use there aren't any when there are zero things you can count, as in 'There aren't any seats.' Read the shelter sign again. Copy one example with is and one with are. Underline the thing or things in each example.",
+    "examples": [
+      {
+        "before": "There are a bench inside the shelter.",
+        "after": "There is a bench inside the shelter.",
+        "why": "Use is because the sentence names one bench."
+      },
+      {
+        "before": "There is two bags on the wall.",
+        "after": "There are two bags on the wall.",
+        "why": "Use are because the sentence names two bags."
+      },
+      {
+        "before": "There aren't any sign at the gate.",
+        "after": "There isn't a sign at the gate.",
+        "why": "Use isn't a with one thing that is missing."
+      },
+      {
+        "before": "There is a seats near the door.",
+        "after": "There are seats near the door.",
+        "why": "Seats names more than one thing. Use are and leave out a."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Write a note about one sign next to the chairs. Which sentence matches?",
+        "options": [
+          "There are a sign next to the chairs.",
+          "There are signs next to the chairs.",
+          "There is a sign next to the chairs.",
+          "There isn't a sign next to the chairs."
+        ],
+        "answer": 2,
+        "explanation": "Use there is a because the note is about one sign."
+      },
+      {
+        "prompt": "You see three chairs by the window. Which note is correct?",
+        "options": [
+          "There are three chairs by the window.",
+          "There is three chairs by the window.",
+          "There are three chair by the window.",
+          "There aren't any chairs by the window."
+        ],
+        "answer": 0,
+        "explanation": "Use there are and the plural chairs for three things."
+      },
+      {
+        "prompt": "The old note says 'There is a table by the door.' The table is gone now. Which new note keeps the same place?",
+        "options": [
+          "There are tables by the door.",
+          "There is a table by the window.",
+          "There isn't a door by the table.",
+          "There isn't a table by the door."
+        ],
+        "answer": 3,
+        "explanation": "There isn't a table says the one table is now gone."
+      },
+      {
+        "prompt": "There are zero seats in the small shelter. Which note tells people this?",
+        "options": [
+          "There isn't any seats in the small shelter.",
+          "There aren't any seats in the small shelter.",
+          "There are two seats in the small shelter.",
+          "There aren't any shelves in the small shelter."
+        ],
+        "answer": 1,
+        "explanation": "Use there aren't any with the plural seats to mean zero seats."
+      },
+      {
+        "prompt": "Help someone find one open gate between two shops. Which sentence is correct?",
+        "options": [
+          "There are an open gate between the shops.",
+          "There are two open gates between the shops.",
+          "There is an open gate between the shops.",
+          "There is an open shop between the gates."
+        ],
+        "answer": 2,
+        "explanation": "The sentence names one gate, so use there is an open gate."
+      },
+      {
+        "prompt": "The table has two boxes under it. Which sentence tells a friend where the boxes are?",
+        "options": [
+          "There is two boxes under the table.",
+          "There are two boxes on the table.",
+          "There is a box under the table.",
+          "There are two boxes under the table."
+        ],
+        "answer": 3,
+        "explanation": "Two boxes needs there are, and under the table names the right place."
+      },
+      {
+        "prompt": "You wrote 'There are two benches by the wall.' Now you see one bench. How do you fix the note?",
+        "options": [
+          "There is a bench by the wall.",
+          "There are one bench by the wall.",
+          "There is a wall by the benches.",
+          "There isn't a bench by the wall."
+        ],
+        "answer": 0,
+        "explanation": "Change there are two benches to there is a bench for one."
+      },
+      {
+        "prompt": "The first room has one chair. The next room has four chairs. Which line tells a friend about the next room?",
+        "options": [
+          "There is a chair in the first room.",
+          "There aren't any chairs in the next room.",
+          "There are four chairs in the next room.",
+          "There is four chairs in the next room."
+        ],
+        "answer": 2,
+        "explanation": "Four chairs is more than one, so use there are."
+      }
+    ],
+    "transfer": "Make a note for a small room where people wait. It has one table by the door and two chairs by the window. Write two sentences. Then move both chairs to the door and take the table away. Write two new sentences. Circle is, are, or isn't. Check the number and the place in each line."
+  },
+  "vocabulary": [
+    {
+      "word": "steps",
+      "meaning": "the flat parts you walk up or down",
+      "example": "I sit on the steps outside my flat.",
+      "pair": "go down the steps"
+    },
+    {
+      "word": "shelter",
+      "meaning": "a place with a roof where you can wait",
+      "example": "We eat our lunch in the shelter when it rains.",
+      "pair": "bus shelter"
+    },
+    {
+      "word": "side gate",
+      "meaning": "a gate at the side of a place",
+      "example": "I take my bike out through the side gate.",
+      "pair": "lock the side gate"
+    },
+    {
+      "word": "path",
+      "meaning": "a narrow way for people to walk",
+      "example": "There is a path behind our house.",
+      "pair": "follow the path"
+    },
+    {
+      "word": "bench",
+      "meaning": "a long seat for two or more people",
+      "example": "I read my book on a bench in the park.",
+      "pair": "sit on a bench"
+    },
+    {
+      "word": "low wall",
+      "meaning": "a wall that is not high",
+      "example": "The cat jumps over the low wall.",
+      "pair": "a low brick wall"
+    },
+    {
+      "word": "keep clear",
+      "meaning": "leave a place free so people can use it",
+      "example": "Please keep the door clear. Put your shoes under the chair.",
+      "pair": "keep the entrance clear"
+    },
+    {
+      "word": "get off",
+      "meaning": "leave a bus or train",
+      "example": "I get off the train near my office.",
+      "pair": "get off at the next stop"
+    },
+    {
+      "word": "walk back",
+      "meaning": "go back to a place on foot",
+      "example": "I walk back to the shop for my keys.",
+      "pair": "walk back home"
+    },
+    {
+      "word": "go past",
+      "meaning": "move by a place and keep going",
+      "example": "Go past the bank. My flat is next to the café.",
+      "pair": "go past the shops"
+    },
+    {
+      "word": "usual stop",
+      "meaning": "the place where the bus stops on most days",
+      "example": "My usual stop is outside the food shop.",
+      "pair": "wait at your usual stop"
+    },
+    {
+      "word": "crossing",
+      "meaning": "a place where people can go across the road",
+      "example": "The crossing is between the bank and the café.",
+      "pair": "use the crossing"
+    }
+  ],
+  "speaking": {
+    "audience": "Your friend Nina, who has a heavy bag and wants the market bus",
+    "first": "Nina has a heavy bag. Meet her at the library steps at 10:20. Your bus leaves the blue shelter at 10:40. Use Park Road News and the sign at the shelter to plan the walk and the place for her bag. Make four short notes for these questions from Nina. 'Where do we meet?' 'How do I get to the shelter?' 'Where can I put my bag?' 'What bus do we take?' Say one or two short sentences for each reply. Use there is or there are once or twice. Say your replies aloud again with only your notes.",
+    "change": "At 10:20 on Saturday, the side gate is shut. Start at the library steps and turn left. Walk to the signed crossing by the corner shop. Cross there, turn right, and follow the path to the blue shelter. The bus still leaves at 10:40.",
+    "second": "Change your route note and keep your meeting, bag, and bus notes. Say the short replies again. Then answer two more questions from Nina. 'Can I use the side gate?' and 'Where do I cross?' Listen to your own words as you speak. Check the first turn, the place to cross, and the time the bus leaves.",
+    "checklist": [
+      "I say we meet at the library steps at 10:20.",
+      "I give the route through the open gate in my first take.",
+      "In my second take I say to turn left at the steps and cross at the signed crossing by the corner shop.",
+      "I tell Nina where she can put her bag and use there is or there are once or twice.",
+      "I say Route 6 to the market leaves the blue shelter at 10:40."
+    ]
+  },
+  "writing": {
+    "audience": "Route 6 market passengers who arrive at the library steps on Saturday",
+    "first": "Make a small sign to put at the library steps. Read the paper and the shelter sign. Sort the facts into three groups: bus, way to the stop, and place to wait. Pick one or two facts from each group. Write 25–45 words on four to six short lines. Start with the bus number and direction. Give the Saturday hours, a place people can see on the way, and one fact about the shelter.",
+    "change": "The side gate shut at 10:20 a.m. on Saturday. At 11 a.m., you need to put up a new sign. There is a signed crossing by the corner shop. From the library steps, turn left to the shop, cross at the signed crossing, then turn right to the blue shelter. The bus uses the shelter until 2 p.m.",
+    "second": "Write a new sign for people who arrive from 11 a.m. to 2 p.m. Keep Route 6, MARKET, the blue shelter, and your fact about the waiting area. Change the hours and the way to the stop. Name the corner shop so people can find the crossing. Read your new lines in order, as if you are standing at the steps.",
+    "checklist": [
+      "Each sign has 25–45 words on four to six short lines.",
+      "The first sign gives the 9 a.m. to 2 p.m. hours and the way through the side gate.",
+      "The new sign gives the 11 a.m. to 2 p.m. hours and the way across at the signed crossing by the corner shop.",
+      "Both signs name Route 6 to the market and the blue shelter.",
+      "Both signs use there is or there are for a fact about the waiting area."
+    ]
+  },
+  "immersion": {
+    "role": "You help two adults find places to wait at the blue shelter on Saturday.",
+    "goal": "Make a small waiting plan and a short message for Ana and Sam. Help each person put a bag down or sit while they wait, and help both people find the right bus.",
+    "constraints": [
+      "Ana needs a seat. Sam can stand and needs a place to put a big bag.",
+      "It is 11:50 a.m. now. Their Route 6 bus to the market leaves the blue shelter at 12:05 p.m.",
+      "Use the sign to find a place for Ana and a place for Sam's bag. Keep the path in front of the shelter clear.",
+      "Ana has a small bag too. It can stay on her lap when she sits.",
+      "Use the front of the bus to check the direction before they get on."
+    ],
+    "change": "At 11:55 a.m., someone puts a wet paint sign on the low wall. Keep both bags off the wall. One of the two bench seats is free. There is a dry shelf inside the shelter, next to the bench. The big bag fits on the shelf. The bus still leaves at 12:05 p.m.",
+    "deliverables": [
+      "Make a first waiting plan with three short lines. Give a place for Ana, a place for Sam's big bag, and a note about the path.",
+      "Make a new three-line waiting plan after the change. Say where Ana can sit, where Sam's big bag goes, and where Ana keeps her small bag.",
+      "Write and say a new message to Ana and Sam in three or four short sentences. Give the new bag place, the time the bus leaves, and the word to look for on the front."
+    ],
+    "checklist": [
+      "My first plan uses the bench and the low wall and keeps the path clear.",
+      "My new plan gives the free seat to Ana and puts her small bag on her lap.",
+      "My new plan puts Sam's big bag on the dry shelf and keeps both bags off the wet wall.",
+      "I use there is or there are in a plan or in my message and check the number of things.",
+      "My message says the bus leaves at 12:05 p.m. and tells both people to look for MARKET."
+    ]
+  }
+}

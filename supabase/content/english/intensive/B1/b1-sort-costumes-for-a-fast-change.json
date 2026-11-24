@@ -1,0 +1,391 @@
+{
+  "slug": "b1-sort-costumes-for-a-fast-change",
+  "title": "A Costume Rack for a Fast Change",
+  "level": "B1",
+  "summary": "Organise clothes so performers can find the correct item without calling across the stage.",
+  "documents": [
+    {
+      "title": "Costume room instructions",
+      "text": "The afternoon performance has three short scenes. After scene one, five performers have to change coats in less than two minutes. Each coat has a coloured ribbon on its hanger. The colour tells you which scene needs the coat, not who wears it. Look at the name card tied to the rack before putting a coat away. Some performers have two coats in the same scene.\n\nSet out the coats in the order in which people leave the stage. Put the name cards where a person can read them while standing in the doorway. The spare coat rail stays beside the mirror, because it is not part of the usual change. If someone collects a spare, write its number beside the performer's name. When the rehearsal finishes, check the rack against the list on the desk. Leave the six coats for the final scene in position until the director says you can put them away."
+    },
+    {
+      "title": "The rehearsal observer's note",
+      "text": "Most people reached the rack at the correct time. Miro and Jana stopped at the doorway because they both saw a blue ribbon first. Jana was looking for the coat for scene two, which was on that hanger. Miro needed a different blue one just behind it. In the dark, neither person could see the small white name card at the back of the rack. Once the lamp was on, both names were clear.\n\nI suggest moving the cards to the front edge. That will let the dresser see both names before the performers reach the rack. Keep the same colour ribbons for now. They help us check what is needed for scene two while we prepare at the desk. We could add a large first initial in a different shape to guide the performers. Do not use an extra colour to mark their names. The same piece of information should have the same sign in the dressing room and at the desk."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A dresser asks about a spare coat",
+      "text": "Dresser: I have a spare with a green ribbon. Can we use it for Jana in scene two?\n\nAssistant: Look at the spare rail numbers first. That green ribbon is from a different show. Number seven is about the right length for Jana. We need to record it if she takes it.\n\nDresser: Do we put a blue ribbon on number seven now?\n\nAssistant: Yes, if we decide to use it for scene two. Ask Jana to check that she can close the coat over her costume. If it fits, write seven next to her name and move the spare to her position on the main rack.\n\nDresser: What happens to the coat she had before?\n\nAssistant: Keep it on the back rail with a note to say why it was replaced. Don't move its name card onto the spare rail. The new coat needs its own short card so the desk can tell which one went onto the stage."
+    },
+    {
+      "title": "An announcement before the first scene",
+      "text": "Stage manager: The usual dressing room door will be closed until after the interval. There is a delivery in the hall. Performers can come to the rack from behind the stage instead. The rack is facing the wrong way for that route.\n\nDresser: Should I turn it round or move the name cards?\n\nStage manager: Turn it round if there is room. Keep the names in the same order for changing. We don't want the people leaving the stage to find their coats in reverse order. Check the first two positions by walking the actual route once.\n\nDresser: It will fit if I move the spare rail closer to the mirror.\n\nStage manager: Good. Leave a clear way past it. Ask Miro to try the route with me when he is ready. Then show the next dresser the new direction so the rack stays in the right place until the end of the interval. Tell the performers before the first scene ends."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What does a ribbon colour tell you?",
+      "options": [
+        "Which person wears the coat",
+        "How quickly it should be collected",
+        "Which scene needs the coat",
+        "Which doorway to use"
+      ],
+      "answer": 2,
+      "explanation": "The notice distinguishes scene colour from performer name."
+    },
+    {
+      "prompt": "1. In what order should the coats be placed?",
+      "options": [
+        "The sizes from smallest to largest",
+        "The order they were brought to the room",
+        "The order of ribbon colours",
+        "The order in which people leave the stage"
+      ],
+      "answer": 3,
+      "explanation": "The order of arrival helps during a quick change."
+    },
+    {
+      "prompt": "1. Why record the number of a spare?",
+      "options": [
+        "So it can be washed during the interval",
+        "So the number replaces the ribbon colour",
+        "So the desk knows which one a performer took",
+        "So the director can remove all six coats"
+      ],
+      "answer": 2,
+      "explanation": "The number links the alternate coat to a person."
+    },
+    {
+      "prompt": "2. What caused the stop at the doorway?",
+      "options": [
+        "Small names were hard to see in low light.",
+        "Two people had identical name cards.",
+        "The blue ribbons had been removed.",
+        "The rack had been turned around."
+      ],
+      "answer": 0,
+      "explanation": "They saw the same colour but could not see the names."
+    },
+    {
+      "prompt": "2. Why retain the ribbons?",
+      "options": [
+        "They let performers identify their names.",
+        "They show which items are spares.",
+        "They help staff prepare by scene.",
+        "They record the order of arrivals."
+      ],
+      "answer": 2,
+      "explanation": "The ribbons already serve a separate stage-planning role."
+    },
+    {
+      "prompt": "2. What should volunteers avoid doing?",
+      "options": [
+        "Moving the name cards to the front",
+        "Using another colour to represent names",
+        "Adding an initial of a different shape",
+        "Checking the signs from the doorway"
+      ],
+      "answer": 1,
+      "explanation": "The last paragraph asks for a non-colour distinction for names."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Why is the green ribbon not enough to choose the spare?",
+      "options": [
+        "Jana may already be wearing green.",
+        "The spare rail is too close to the mirror.",
+        "It comes from a different show.",
+        "Green means the coat is damaged."
+      ],
+      "answer": 2,
+      "explanation": "The assistant says the existing ribbon doesn't apply to this performance."
+    },
+    {
+      "prompt": "1. What must Jana check?",
+      "options": [
+        "Whether the ribbon is tied on tightly",
+        "Whether she can see number seven from the door",
+        "Whether the director wants it for the final scene",
+        "Whether the coat closes over her costume"
+      ],
+      "answer": 3,
+      "explanation": "The assistant asks for a practical fitting check before recording the change."
+    },
+    {
+      "prompt": "1. Where does the replaced coat go?",
+      "options": [
+        "Onto the stage for scene two",
+        "On the back rail with a note",
+        "To the dressing room desk with no card",
+        "Onto the spare rail beside the mirror"
+      ],
+      "answer": 1,
+      "explanation": "It stays on the back rail with an explanatory note."
+    },
+    {
+      "prompt": "2. Why must people use a different route?",
+      "options": [
+        "The next scene needs a larger rack.",
+        "The director has started the interval.",
+        "A delivery is blocking the usual hall.",
+        "The room lamp cannot be turned on."
+      ],
+      "answer": 2,
+      "explanation": "The stage manager describes a temporarily closed doorway during a delivery."
+    },
+    {
+      "prompt": "2. What must stay the same when turning the rack?",
+      "options": [
+        "The position of the spare rail",
+        "The changing order for the performers",
+        "The original route into the room",
+        "The amount of space beside the mirror"
+      ],
+      "answer": 1,
+      "explanation": "The stage manager wants the first two positions checked from the new approach."
+    },
+    {
+      "prompt": "2. Who should be told about the new direction?",
+      "options": [
+        "The delivery worker",
+        "The next dresser",
+        "The person who made the ribbons",
+        "The person collecting the number-seven spare"
+      ],
+      "answer": 1,
+      "explanation": "The handover prevents the rack being turned back too soon."
+    }
+  ],
+  "grammar": {
+    "focus": "Relative clauses for identifying details",
+    "explanation": "Use who for people and which or that for things. A defining clause identifies the exact person or object. Use where for a place and avoid repeating the same subject inside the clause.",
+    "examples": [
+      {
+        "before": "The performer which uses seven arrives first.",
+        "after": "The performer who uses seven arrives first.",
+        "why": "Use who for a person."
+      },
+      {
+        "before": "The coat that it has a blue ribbon goes here.",
+        "after": "The coat that has a blue ribbon goes here.",
+        "why": "That is the subject of has already."
+      },
+      {
+        "before": "That is the rail which we keep spare coats.",
+        "after": "That is the rail where we keep spare coats.",
+        "why": "Where links the place to the activity that happens there."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The dresser _____ manages the spares is at the mirror.",
+        "options": [
+          "where",
+          "when",
+          "who",
+          "whose the"
+        ],
+        "answer": 2,
+        "explanation": "Who identifies a person."
+      },
+      {
+        "prompt": "Use the rail _____ we put coats after the final scene.",
+        "options": [
+          "who",
+          "where",
+          "whose",
+          "which it"
+        ],
+        "answer": 1,
+        "explanation": "Where introduces a place in the main clause."
+      },
+      {
+        "prompt": "Choose the sentence without a repeated subject.",
+        "options": [
+          "The card that it shows Jana's name goes at the front.",
+          "The card that shows Jana's name goes at the front.",
+          "The card who shows Jana's name goes at the front.",
+          "The card that it show Jana's name goes at the front."
+        ],
+        "answer": 1,
+        "explanation": "That itself works as the subject of shows."
+      },
+      {
+        "prompt": "This is the ribbon _____ we used in rehearsal.",
+        "options": [
+          "where",
+          "whose",
+          "who it",
+          "that"
+        ],
+        "answer": 3,
+        "explanation": "That can stand for an object after used."
+      },
+      {
+        "prompt": "Which label identifies the right coat?",
+        "options": [
+          "The coat who its card is blue",
+          "The coat where Miro wears after",
+          "The coat that Miro wears in scene two",
+          "The coat that he wears it in scene two"
+        ],
+        "answer": 2,
+        "explanation": "The defining clause tells which coat without repeating its object."
+      },
+      {
+        "prompt": "The person _____ name is beside seven took the spare.",
+        "options": [
+          "whose",
+          "who has the",
+          "which",
+          "that his"
+        ],
+        "answer": 0,
+        "explanation": "Whose connects a person's name to the number."
+      },
+      {
+        "prompt": "Move the box _____ the old cards are kept.",
+        "options": [
+          "where",
+          "who",
+          "whose it",
+          "which they"
+        ],
+        "answer": 0,
+        "explanation": "Where tells the place in which the cards are kept."
+      },
+      {
+        "prompt": "Which question asks for the exact route with a relative clause?",
+        "options": [
+          "Which way leads to the door that is open now?",
+          "Which way leads to the door where is open now?",
+          "Which way leads to the door that it is open now?",
+          "Which way leads to the door who is open now?"
+        ],
+        "answer": 0,
+        "explanation": "That identifies the correct door and is the subject of is open."
+      }
+    ],
+    "transfer": "Write labels that identify the performer, coat, rail and door without any colour words. Swap labels with a partner and see if they can select the correct objects."
+  },
+  "vocabulary": [
+    {
+      "word": "hanger",
+      "meaning": "a shaped object for hanging clothes",
+      "example": "Put the coat back on its hanger.",
+      "pair": "coat hanger"
+    },
+    {
+      "word": "ribbon",
+      "meaning": "a narrow strip of fabric",
+      "example": "The blue ribbon is for scene two.",
+      "pair": "tie a ribbon"
+    },
+    {
+      "word": "rail",
+      "meaning": "a long bar used for hanging things",
+      "example": "The spare rail is near the mirror.",
+      "pair": "clothes rail"
+    },
+    {
+      "word": "spare",
+      "meaning": "an extra item kept in case it is needed",
+      "example": "We used a spare coat.",
+      "pair": "spare coat"
+    },
+    {
+      "word": "interval",
+      "meaning": "a break between parts of a performance",
+      "example": "Return after the interval.",
+      "pair": "during the interval"
+    },
+    {
+      "word": "replace",
+      "meaning": "put another thing in an existing place",
+      "example": "Number seven replaced the old coat.",
+      "pair": "replace an item"
+    },
+    {
+      "word": "dresser",
+      "meaning": "a person helping performers with costumes",
+      "example": "Tell the next dresser the new route.",
+      "pair": "costume dresser"
+    },
+    {
+      "word": "fasten",
+      "meaning": "close or fix something in place",
+      "example": "Make sure she can fasten the coat.",
+      "pair": "fasten a coat"
+    },
+    {
+      "word": "position",
+      "meaning": "where something or somebody is placed",
+      "example": "Check the first position.",
+      "pair": "starting position"
+    },
+    {
+      "word": "initial",
+      "meaning": "the first letter of a person's name",
+      "example": "Write a large initial on the card.",
+      "pair": "first initial"
+    },
+    {
+      "word": "reverse",
+      "meaning": "change to the opposite order or direction",
+      "example": "Do not reverse the order.",
+      "pair": "reverse the order"
+    },
+    {
+      "word": "fitting",
+      "meaning": "a check of how clothes fit on someone",
+      "example": "The spare needs a fitting.",
+      "pair": "arrange a fitting"
+    }
+  ],
+  "speaking": {
+    "audience": "A new dresser",
+    "first": "Give a two-minute handover using the two documents and this update: Jana may wear spare coat seven if she can close it over her costume. Keep her original coat on the back rail with a note. Explain how colours and names differ, give the fitting check, and say what to record if she changes coats.",
+    "change": "The usual door closes while a delivery comes through.",
+    "second": "Record another handover that gives specific instructions for two people approaching the relocated rack.",
+    "checklist": [
+      "Explains the two meanings of the labels",
+      "Gives a practical fitting instruction",
+      "Says what doesn't change on the new route"
+    ]
+  },
+  "writing": {
+    "audience": "Performers and the next dresser",
+    "first": "Write a 130–170 word information sheet on collecting a coat. Use a box for a spare-coat decision and another for putting things back.",
+    "change": "The name cards are moved because they cannot be seen in the dark.",
+    "second": "Write a revised one-page version with label details a helper can read from the entrance. Underline relative clauses that identify items.",
+    "checklist": [
+      "Rules for extras stay clear",
+      "The revision reflects actual access",
+      "Colour still has only one meaning"
+    ]
+  },
+  "immersion": {
+    "role": "Costume change lead",
+    "goal": "Prepare and test a handover for the two-minute change between scenes.",
+    "constraints": [
+      "Use two kinds of identifier",
+      "Keep the first two places accessible",
+      "Do not remove final-scene coats"
+    ],
+    "change": "A helper leaves a green ribbon on the newly approved spare.",
+    "deliverables": [
+      "Rack diagram",
+      "Revised coat and name cards",
+      "A log entry for the spare",
+      "A timed walk-through script and correction note"
+    ],
+    "checklist": [
+      "The two kinds of identifier are visibly distinct",
+      "The spare can be traced to a performer",
+      "The revised route preserves the order"
+    ]
+  }
+}

@@ -1,0 +1,398 @@
+{
+  "slug": "water-turns-in-the-allotment",
+  "title": "Water turns in the allotment",
+  "level": "A2",
+  "summary": "Read a morning rota and a shed sign for a shared allotment. Work out which jobs are required and which are optional. Practise have to, don't have to and can't, brief a substitute, and revise a one-page rota and two messages when a tap is off.",
+  "documents": [
+    {
+      "title": "Tuesday morning rota",
+      "text": "Tuesday watering rota\nEarly slot, 8:00–8:30. North tap. Mina waters beds 1 and 2. Leo waters bed 3. Mina arrives at 8:00 and has to leave at 8:15 for work. Leo can stay until 8:30. Mina fills her can first.\nLate slot, 9:00–9:30. South tap. Ana waters bed 4. Jo waters beds 5 and 6. Ana arrives at 9:10 and has to leave at 9:25. Jo arrives at 9:00 and can stay until 9:30. Jo can start at 9:00, but Ana takes the next turn at the tap when she arrives.\nPick up a can from the shed during your own slot. The red and blue cans can both be used at either tap."
+    },
+    {
+      "title": "Sign inside the shed",
+      "text": "Watering cans and taps\nUse the tap on the rota for your slot. If a tap is off, use the other tap only if the rota gives a new place. You can't use a hose. The red and blue cans are for everyone, but take only one at a time. Write your name beside the colour on the board before you take a can. You don't have to write down when you take it. If both cans are out, wait by the shed. If a gardener with an early leaving time is waiting at the tap, let that person fill next. You have to empty your can and return it to the shed before you leave."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A quick talk by the shed",
+      "text": "Leo: Mina, sorry to interrupt. Can I take the blue can now? My name's beside it on the board.\nMina: Yes, you can. I've got the red one. Could you hold the shed door for me, please? My hands are full.\nLeo: Of course. There you go. Shall I fill my can first while you're there?\nMina: Please let me fill first. I have to leave at quarter past eight for work. I still have two beds to water.\nLeo: That's fine. I'll take my can to bed three while you fill yours. Then I'll come back to the north tap.\nMina: Thanks. I'll tell you when the tap is free."
+    },
+    {
+      "title": "Ana's voice message for Jo",
+      "text": "Hi Jo, it's Ana. I'm leaving this message before our Tuesday slot. I'll get there at ten past nine, and I need to leave at twenty-five past nine. You can start watering before I get there. When I arrive, could you let me fill my can next, please? If you're already filling your can, finish first. I can pick up my can and meet you at the south tap. I only have bed four, so one can of water is enough. Could you also tell me where to find the board? I know it's in the shed. Is it still next to the door? Thanks. See you on Tuesday."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read Tuesday morning rota once to find the two slots. Read the early slot again. Which beds are Mina's job?",
+      "options": [
+        "Bed 3",
+        "Beds 1 and 2",
+        "Bed 4",
+        "Beds 5 and 6"
+      ],
+      "answer": 1,
+      "explanation": "The early slot lists Mina for beds 1 and 2 and Leo for bed 3."
+    },
+    {
+      "prompt": "In Tuesday morning rota, how is the information about people and beds organised?",
+      "options": [
+        "By the colour of each person's can",
+        "By bed number from 1 to 6 in a single list",
+        "By who leaves first across the whole morning",
+        "By watering slot, with a tap and jobs for each slot"
+      ],
+      "answer": 3,
+      "explanation": "The rota has an early slot and a late slot, each with its own tap and bed jobs."
+    },
+    {
+      "prompt": "Read Tuesday morning rota again and note Jo's and Ana's arrival times. Jo has finished filling at 9:10, just as Ana arrives. Who should fill next?",
+      "options": [
+        "Ana, because the rota gives her the next turn when she arrives",
+        "Jo, because he arrived at the start of the slot",
+        "Leo, because he can use either can",
+        "Mina, because she fills first in the early slot"
+      ],
+      "answer": 0,
+      "explanation": "Jo can start at 9:00, and the rota gives Ana the next turn when she arrives."
+    },
+    {
+      "prompt": "Skim Sign inside the shed. What is the main job of this sign?",
+      "options": [
+        "To show which beds belong to each gardener",
+        "To list the people who can open the shed",
+        "To explain how to share the taps and cans",
+        "To show the hours when each tap is open"
+      ],
+      "answer": 2,
+      "explanation": "The sign explains which tap to use, how to take a can, and who fills next."
+    },
+    {
+      "prompt": "Reread Sign inside the shed. The blue can is there and you want to use it. What do you have to put on the board before you take it?",
+      "options": [
+        "The number of your bed",
+        "Your name beside the can colour",
+        "Your arrival and leaving times",
+        "The name of the tap on your rota"
+      ],
+      "answer": 1,
+      "explanation": "The sign says to write your name beside the colour before taking a can."
+    },
+    {
+      "prompt": "Use Sign inside the shed to make a short leaving checklist. What must you do with your can before you leave?",
+      "options": [
+        "Fill it and put it by the tap",
+        "Leave it by your bed for the next gardener",
+        "Give it to someone who is waiting by the tap",
+        "Empty it and put it back in the shed"
+      ],
+      "answer": 3,
+      "explanation": "The last sentence tells gardeners to empty their cans and return them to the shed before leaving."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to A quick talk by the shed once. What do Leo and Mina sort out?",
+      "options": [
+        "Who will change the rota for the late slot",
+        "When they will come back to water on another day",
+        "Which can Leo can take and who will fill first",
+        "Which beds they will ask Jo to water"
+      ],
+      "answer": 2,
+      "explanation": "Mina says Leo can take the blue can and asks him to let her fill first."
+    },
+    {
+      "prompt": "Listen again to A quick talk by the shed. After Leo asks if he can take the blue can, what does Mina ask him to do for her?",
+      "options": [
+        "Hold the shed door",
+        "Bring her the blue can",
+        "Write her name on the board",
+        "Fill the red can"
+      ],
+      "answer": 0,
+      "explanation": "Mina asks Leo to hold the shed door because both her hands are full."
+    },
+    {
+      "prompt": "In A quick talk by the shed, note Leo's plan in order. Where will he take his can while Mina fills hers?",
+      "options": [
+        "To the south tap",
+        "Back inside the shed",
+        "To bed 2",
+        "To bed 3"
+      ],
+      "answer": 3,
+      "explanation": "Leo says he will take his can to bed three, then come back to the north tap."
+    },
+    {
+      "prompt": "Listen to Ana's voice message for Jo and note two times. When will Ana get to the allotment?",
+      "options": [
+        "9:00",
+        "9:10",
+        "9:25",
+        "9:30"
+      ],
+      "answer": 1,
+      "explanation": "Ana says she will get there at ten past nine and leave at twenty-five past nine."
+    },
+    {
+      "prompt": "Listen again to Ana's voice message for Jo. Jo is still filling his can when Ana arrives. What does Ana ask him to do?",
+      "options": [
+        "Stop filling and let Ana use the tap straight away",
+        "Fill Ana's can and carry it to bed 4",
+        "Finish filling his own can, then let Ana fill next",
+        "Go to the other tap to finish filling"
+      ],
+      "answer": 2,
+      "explanation": "Ana asks to fill next and tells Jo to finish first if he is already filling."
+    },
+    {
+      "prompt": "In Ana's voice message for Jo, Ana asks for a turn at the tap and one piece of information. What does she want Jo to tell her?",
+      "options": [
+        "Whether the board is still next to the shed door",
+        "Whether the south tap will open at 9:00",
+        "Whether she needs a second can for bed 4",
+        "Whether he can stay until the end of the slot"
+      ],
+      "answer": 0,
+      "explanation": "Ana knows the board is in the shed and asks if it is still next to the door."
+    }
+  ],
+  "grammar": {
+    "focus": "Have to, don't have to and can't in posted rules",
+    "explanation": "Use have to when a rule says you must do something. Use don't have to when you can choose. If you don't have to write the time, you can leave it blank. Use can't when a rule says an action is forbidden. If you can't use a hose, leave it in the shed. With you or we, use the base form of the verb after have to, don't have to or can't, as in 'You can't use a hose.' Write in three columns: Required, Your choice and Forbidden. Read the shed sign again and put one rule in each column. Check which actions a gardener can choose to do.",
+    "examples": [
+      {
+        "before": "Rule note: Everyone must close the gate after entering.",
+        "after": "You have to close the gate after you come in.",
+        "why": "Closing the gate is required every time you come in."
+      },
+      {
+        "before": "Rule note: A phone number is welcome. You can leave the space empty.",
+        "after": "You don't have to give your phone number.",
+        "why": "Giving a phone number is a choice, and an empty space is fine."
+      },
+      {
+        "before": "Rule note: Keep bicycles outside the shed.",
+        "after": "You can't bring a bicycle into the shed.",
+        "why": "The rule forbids bringing a bicycle inside the shed."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "A notice says the west path is closed for repairs. Which line gives visitors the rule?",
+        "options": [
+          "You have to walk along the west path.",
+          "You don't have to use the west path.",
+          "You have to stop at the end of the west path.",
+          "You can't use the west path."
+        ],
+        "answer": 3,
+        "explanation": "The path is closed for repairs, so walking along it is forbidden."
+      },
+      {
+        "prompt": "For a seed swap, people must write their names on their seed bags. The date is a choice. Which line matches both rules?",
+        "options": [
+          "You have to write your name, but you don't have to add the date.",
+          "You can't write your name, but you have to add the date.",
+          "You don't have to write your name, but you have to add the date.",
+          "You have to write your name, but you can't add the date."
+        ],
+        "answer": 0,
+        "explanation": "A name is required on each bag, and adding the date is optional."
+      },
+      {
+        "prompt": "The greenhouse opens at 10:00. Everyone must stay outside before then. Which rule matches?",
+        "options": [
+          "You don't have to wait until 10:00 to go inside.",
+          "You have to go inside before 10:00.",
+          "You can't go inside before 10:00.",
+          "You have to leave the garden at 10:00."
+        ],
+        "answer": 2,
+        "explanation": "The greenhouse stays closed until 10:00, and everyone must wait outside until then."
+      },
+      {
+        "prompt": "The shared gloves are clean and ready to use. Gardeners can also bring their own. Which rule makes clear that bringing gloves is a choice?",
+        "options": [
+          "You have to bring your own gloves.",
+          "You don't have to bring your own gloves.",
+          "You can't bring your own gloves.",
+          "You have to leave your gloves in the shed."
+        ],
+        "answer": 1,
+        "explanation": "Gardeners can use the shared gloves, so they can come without their own."
+      },
+      {
+        "prompt": "A rule says, 'You can't put stones in the green bin.' A volunteer has a small stone. What does the rule mean?",
+        "options": [
+          "The volunteer must put it in the green bin.",
+          "The volunteer may put it in the green bin.",
+          "The volunteer may use the green bin if the stone is clean.",
+          "The volunteer must keep the stone out of the green bin."
+        ],
+        "answer": 3,
+        "explanation": "The rule forbids stones in the green bin and gives no exception for small ones."
+      },
+      {
+        "prompt": "The key must go back in the box after use. Writing a note is optional. Which sign gives the two rules?",
+        "options": [
+          "You have to put the key back and write a note.",
+          "You don't have to put the key back, but you have to write a note.",
+          "You have to put the key back. You don't have to write a note.",
+          "You have to put the key back. You can't write a note."
+        ],
+        "answer": 2,
+        "explanation": "The key must go back in the box, and writing a note is a choice."
+      },
+      {
+        "prompt": "The tool list says, 'You have to count the spades before you close the shed.' What must happen first?",
+        "options": [
+          "Count the spades.",
+          "Close the shed.",
+          "Count the watering cans.",
+          "Take the spades outside."
+        ],
+        "answer": 0,
+        "explanation": "The words 'have to' make counting required, and 'before' puts it ahead of closing."
+      },
+      {
+        "prompt": "The quiet area has two rules. Leave bikes outside, and bring a chair if you want one. Which sign matches?",
+        "options": [
+          "You can bring a bike, but you can't bring a chair.",
+          "You can't bring a bike in. You don't have to bring a chair.",
+          "You can't bring a bike in. You have to bring a chair.",
+          "You don't have to leave your bike outside. You can't bring a chair."
+        ],
+        "answer": 1,
+        "explanation": "Bikes must stay outside, and each person can decide whether to bring a chair."
+      }
+    ],
+    "transfer": "Write three lines for a box of shared tools. Everyone must put tools back in the box, they can leave a note if they want to, and wet tools must stay out of the box. Use one target form in each line. Read your sign back and mark each action as required, a choice or forbidden. Rewrite any line that gives the wrong message."
+  },
+  "vocabulary": [
+    {
+      "word": "allotment",
+      "meaning": "a piece of land where people can grow plants or vegetables",
+      "example": "My sister grows beans on her allotment.",
+      "pair": "rent an allotment"
+    },
+    {
+      "word": "bed",
+      "meaning": "a part of a garden where plants grow",
+      "example": "We planted carrots in the bed by the wall.",
+      "pair": "flower bed"
+    },
+    {
+      "word": "rota",
+      "meaning": "a list that shows who does each job and when",
+      "example": "Our kitchen rota says I wash the dishes on Fridays.",
+      "pair": "check the rota"
+    },
+    {
+      "word": "slot",
+      "meaning": "a set time for doing something",
+      "example": "I booked the ten o'clock slot for my visit.",
+      "pair": "book a slot"
+    },
+    {
+      "word": "tap",
+      "meaning": "something you turn to start or stop water",
+      "example": "Nora turned off the tap after washing the cups.",
+      "pair": "turn off the tap"
+    },
+    {
+      "word": "watering can",
+      "meaning": "a container with a handle that you use to water plants",
+      "example": "I filled my watering can before I went onto the balcony.",
+      "pair": "fill a watering can"
+    },
+    {
+      "word": "shed",
+      "meaning": "a small building for keeping tools or other things",
+      "example": "I keep my bike in the shed behind the house.",
+      "pair": "garden shed"
+    },
+    {
+      "word": "take a turn",
+      "meaning": "do something when it is your time to do it",
+      "example": "Eva took a turn at washing the dishes.",
+      "pair": "take a turn at the till"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go and get something",
+      "example": "I'll pick up my keys from my brother's flat.",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "borrow",
+      "meaning": "use something for a short time and give it back",
+      "example": "Can I borrow your umbrella for the walk home?",
+      "pair": "borrow a book"
+    },
+    {
+      "word": "interrupt",
+      "meaning": "stop someone for a moment while they are speaking or working",
+      "example": "Sorry to interrupt you, but the phone is for you.",
+      "pair": "interrupt a meeting"
+    },
+    {
+      "word": "hands are full",
+      "meaning": "someone is holding things and cannot take anything else",
+      "example": "Can you open the car door? My hands are full.",
+      "pair": "hands are full of shopping"
+    }
+  ],
+  "speaking": {
+    "audience": "Sam, a substitute gardener taking Jo's late slot on Tuesday",
+    "first": "Sam arrives at 9:00. Both cans are in the shed. Use the rota and shed sign to make three short notes for Sam: where to go, what to water, and what to do when Ana arrives. Give Sam a short spoken briefing. Then answer two questions aloud as separate turns: 'Can I take the red can?' and 'Could you tell me what to do before I leave?' Use one or two of the rule forms across your briefing and answers.",
+    "change": "Sam now gets to the shed at 9:12 on Tuesday. Ana took the red can at 9:10 and is filling it at the south tap. The blue can is in the shed.",
+    "second": "Give the briefing again. Change Sam's arrival time, say which can Sam can take, and explain what Sam should do while Ana fills. Keep Jo's beds, the south tap, the 9:30 finish and the usual return rule. Answer the two questions again. This time give a reason in your answer about the red can.",
+    "checklist": [
+      "I gave Sam two or three connected sentences at a time and paused between turns.",
+      "I answered the question about the red can as a question about permission.",
+      "I answered the second question by giving Sam the information requested.",
+      "In my second briefing I gave 9:12, the blue can and Ana's turn in the right order.",
+      "I kept beds 5 and 6, the south tap and the 9:30 finish, and used one or two target rule forms accurately."
+    ]
+  },
+  "writing": {
+    "audience": "Mina, Leo, Ana and Jo, who use the shed rota and read short updates before watering",
+    "first": "Make a one-page Tuesday rota of about 50–90 words. Use two clear rows or blocks. Put each slot's hours, tap, names, beds and filling order together. Show when Mina leaves and when Ana arrives and leaves. Add a short line about taking and returning a can. Read the page as Jo and check that you can tell when to start and when to let Ana fill. Draft two short messages, one to Mina and one to Leo, confirming their early-slot plans.",
+    "change": "On Tuesday the north tap will be off from 8:00 to 8:30. The south tap is free for the early slot. Both cans are still in the shed. Mina still leaves at 8:15, and both gardeners can get to the south tap by 8:00. Leo still goes to bed 3 while Mina fills.",
+    "second": "Update your one-page rota to give the early group the south tap. Keep Mina first, keep all four bed jobs and keep the late slot details. Rewrite both messages. Tell Mina where to fill first and tell Leo where to wait and when to fill. Use a rule form in at least one message and check that both messages agree with the rota.",
+    "checklist": [
+      "The rota fits one page and shows both slot times and all six beds.",
+      "The revised early row names the south tap and gives Mina the first fill before her 8:15 departure.",
+      "The late row shows Ana arriving at 9:10, filling next and leaving at 9:25.",
+      "The message to Mina gives her tap and priority, and the message to Leo gives his waiting place and turn.",
+      "The rota and both messages give the same early-slot plan."
+    ]
+  },
+  "immersion": {
+    "role": "Tuesday morning volunteer at the shed",
+    "goal": "Manage a problem with a shared can during the late slot. Give Ana time to water her bed before she leaves, and make a simple handover plan so Jo can finish both beds by 9:30.",
+    "constraints": [
+      "Use the south tap for the 9:00–9:30 slot.",
+      "Ana arrives at 9:10, needs one full can for bed 4 and leaves at 9:25.",
+      "Jo needs one full can for bed 5 and one full can for bed 6. Jo takes about five minutes to fill one can and water one bed.",
+      "Each gardener writes their name beside the colour on the board before taking a can.",
+      "Return each can to the shed empty before leaving. Any handover happens at the shed."
+    ],
+    "change": "At 9:00 Jo finds a crack in the red can. It stays in the shed. Jo can take the blue can at 9:00. Ana can fill it, water bed 4 and bring it back to the shed by 9:20 if she gets it at 9:10.",
+    "deliverables": [
+      "Make a three-row handover card for 9:00, 9:10 and 9:20. Give the gardener, bed number and action in each row.",
+      "Write a two-line note for the shed board that says which can is available and where to leave it for the next person.",
+      "Say or record a three- or four-sentence update for Jo. State what Jo has to do by 9:10 and when Jo can take the blue can again. Use have to or can't once or twice."
+    ],
+    "checklist": [
+      "My card gives Jo enough time to water one bed before Ana arrives and the other after she returns the can.",
+      "The blue can is back at the shed at 9:10 for Ana.",
+      "Ana's row shows bed 4 and the return by 9:20.",
+      "My note and spoken update use the same can, place and handover times as the card.",
+      "My plan includes the board rule and ends with the blue can empty in the shed by 9:30."
+    ]
+  }
+}

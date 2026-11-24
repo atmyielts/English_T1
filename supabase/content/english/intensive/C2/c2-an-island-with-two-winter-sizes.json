@@ -1,0 +1,394 @@
+{
+  "slug": "c2-an-island-with-two-winter-sizes",
+  "title": "An Island with Two Winter Sizes",
+  "level": "C2",
+  "summary": "Resolve a dispute over the boundary of a seasonal island with a defensible account of competing measurements.\n\nReading: Construct a two-purpose decision register for the reserve and the ferry slip. Identify the section where a historical comparison is possible, and explain which inference remains unsupported despite a valid present-day contour.\n\nVocabulary: Sort the unit words into spatial description, strength of inference and formal authority. Use five distinct words in two captions: one correcting a claim of measured loss and one giving a defensible operational boundary.",
+  "documents": [
+    {
+      "title": "Surveyor’s note to the conservation board",
+      "text": "Beller Island is separated from the estuary bank by a channel used to reach a ferry slip. A recent digital survey puts its area at forty hectares. The previous paper survey gave fifty-one. Several local accounts have treated the discrepancy as a loss of eleven hectares, sometimes adding that the change must have occurred in the last ten years. This is more than our records warrant. The older team drew the edge at a continuous line of rushes. Its field book also notes several strips of intermittently exposed mud on the channel side. Nobody was asked to calculate the area of those strips.\n\nOur commission required the area that remained above water at a specified winter water level. We have supplied a contour that reproduces that rule; we have not attempted to infer the older team’s intention from a clean copy of its drawing. A direct comparison will require reconstructing the conditions under which each edge was marked, or choosing a common rule and applying it to both sets of evidence. The second approach is possible over most of the northern bank. It is not currently possible on the south, where a copied chart is the only surviving historical record."
+    },
+    {
+      "title": "Letter from the ferry cooperative",
+      "text": "The board intends to use the new number to calculate how much of the winter reserve is closed to foot traffic for nesting. If forty is a consistent denominator for that decision, the cooperative has no reason to challenge it. What concerns us is the board’s second proposal: to use the same boundary when pricing access to the slip. At the tide we usually operate on, the ramp is dry for most of its length. An elevated survey contour would put its last metres inside the proposed reserve boundary. A lower line would put them outside it.\n\nWe are not suggesting that a customary practice establishes a permanent right to cross. We are asking the board to state which pattern of use it intends either to continue or to end. If the board wishes to limit departures when mud is exposed, it can say so and describe the tide conditions in the permit. Cutting the island down to one figure has a certain administrative appeal. It becomes expensive when we have to argue later about whether the figure first measured habitat, the operation of a ramp, or the extent of the board’s authority."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two analysts prepare the public chart",
+      "text": "Eva: I can draw both outlines. One is dashed to indicate that the southern stretch cannot be compared. But a visitor will still see the large blue area between them and take it as lost ground.\n\nArun: Could you make the chart about what we know at each point, instead of putting one large shape over the other?\n\nEva: In the north I can show what happens when I apply the continuous-rush rule to both sets of records. On the south I have to mark that the chart only shows the older team’s copied boundary. There are no observations I can recalculate.\n\nArun: What if somebody then thinks you haven't surveyed the south at all?\n\nEva: The new survey is fine across the island. The deficiency is in its older counterpart. We will need two signs for those distinctly different claims.\n\nArun: And if the board needs one line for the reserve next month?\n\nEva: We can make a map for that purpose, with the winter level and decision on it. Just do not label it as a twelve-year change map.\n\nArun: That will be two maps, then. I can already hear somebody asking which one is the official one. I would like the caption to answer, ‘Official for doing what?’"
+    },
+    {
+      "title": "Witness at a permit workshop",
+      "text": "We took an older volunteer and two new ferry workers out to the slip at the same tide. I asked them to tell me when they were actually on the island. The volunteer pointed to a raised edge under the reeds and said this was where the landing used to feel firm underfoot. The new workers used the steel end of the ramp because it was where their job finished. One of them added that on a busy morning we handle luggage farther along, after everybody has moved up past the wet patch.\n\nThe exercise did not give us a new surveyed edge. It told us how a rule about the edge might cause trouble from different points of view. One person was describing the ground, two were describing what they were employed to do, and the last example described what happens when the normal order of tasks is interrupted. Our manager now wants a single sign, but I would first like a short trial of two phrases: one that tells people where to wait, and one that tells workers when to delay a departure. Ask the staff to report when they need something to happen without being able to tell from the sign what it is."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Why does the surveyor resist calling the difference a loss?",
+      "options": [
+        "The surveys use different rules for what counts as the island.",
+        "The older survey measured only intermittently exposed strips.",
+        "A calculation of forty hectares does not include the north.",
+        "The loss took place before the older survey."
+      ],
+      "answer": 0,
+      "explanation": "The earlier rush line and the fixed winter contour do not classify the same surface in the same conditions."
+    },
+    {
+      "prompt": "Where can a historical common-rule comparison be made?",
+      "options": [
+        "Only the intermittently exposed strips",
+        "Most of the northern bank",
+        "The entire south from its copied chart",
+        "Everywhere the new survey reached"
+      ],
+      "answer": 1,
+      "explanation": "The north has more usable historical evidence; the south retains only a copy."
+    },
+    {
+      "prompt": "What use of the winter number does the cooperative accept?",
+      "options": [
+        "Delineating all rights of ferry workers",
+        "Setting fares for departures during winter",
+        "Determining the terms of ramp access",
+        "Calculating a share of reserve closed to walking"
+      ],
+      "answer": 3,
+      "explanation": "The opening of its letter accepts the figure as a consistent denominator for reserve administration."
+    },
+    {
+      "prompt": "What is the cooperative’s alternative if the board wants to restrict departures?",
+      "options": [
+        "Put every metre of ramp permanently outside the reserve.",
+        "Specify the applicable tide conditions in the permit.",
+        "Abandon the use of a winter reserve boundary altogether.",
+        "Grant a right based on custom."
+      ],
+      "answer": 1,
+      "explanation": "A permit can say when an operational restriction applies explicitly."
+    },
+    {
+      "prompt": "How do the two written sources differ in emphasis?",
+      "options": [
+        "One questions the new data’s accuracy; the other repeats the original survey rule.",
+        "Both disagree only about which measurement was made first.",
+        "One questions comparability across time; the other questions reuse across purposes.",
+        "One defends current access by custom; the other disproves customary access."
+      ],
+      "answer": 2,
+      "explanation": "The survey note makes an evidentiary distinction; the letter makes an administrative one."
+    },
+    {
+      "prompt": "Which sentence fits both sources?",
+      "options": [
+        "A higher coast line always gives a larger area.",
+        "The northern shore is the only section people can lawfully use.",
+        "An unlabelled figure can carry conclusions its underlying rule cannot support.",
+        "Once revisited, the old chart should settle the modern permit."
+      ],
+      "answer": 2,
+      "explanation": "Both insist the purpose and procedure be explicit before an inference is made."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why is showing outlined shapes together risky?",
+      "options": [
+        "Viewers could read a difference in delimitation as land that disappeared.",
+        "The artists could be thought to favour the conservation board.",
+        "The newer outline cannot be drawn on the south.",
+        "Viewers would miss every change along the northern shore."
+      ],
+      "answer": 0,
+      "explanation": "Eva fears the space between the outlines will read visually as lost ground."
+    },
+    {
+      "prompt": "Which statement should the public chart distinguish from missing old evidence?",
+      "options": [
+        "A lack of coverage in the new survey",
+        "Absence of winter contour conventions",
+        "A ferry trip with too much luggage",
+        "The copying of the newer roll into the records"
+      ],
+      "answer": 0,
+      "explanation": "Arun raises the mistaken inference, and Eva says the current survey is complete."
+    },
+    {
+      "prompt": "Why does Arun want the caption to ask ‘Official for doing what?’",
+      "options": [
+        "The surveyor has been misrepresenting who commissioned the work.",
+        "A duplicated chart can no longer have an official status.",
+        "A valid official map can be specific to an authorised purpose.",
+        "The reserve map will be used only for the public talk."
+      ],
+      "answer": 2,
+      "explanation": "Two maps may have distinct authorities and neither answers every question."
+    },
+    {
+      "prompt": "What does the volunteer’s marker reflect?",
+      "options": [
+        "Where passengers wait when the ramp is crowded",
+        "Where workers finish their duty",
+        "The boundary for a higher permit fee",
+        "A physical sensation underfoot"
+      ],
+      "answer": 3,
+      "explanation": "She identifies a raised edge where the landing used to feel firm."
+    },
+    {
+      "prompt": "What did the trip establish?",
+      "options": [
+        "The new survey must put the landing next to the reeds.",
+        "People may use different practical criteria for the same boundary question.",
+        "Busy conditions can be captured in one surveyed contour.",
+        "New workers measure fewer metres on every trip."
+      ],
+      "answer": 1,
+      "explanation": "The witness disclaims a surveyed edge and identifies distinct work and physical reference points."
+    },
+    {
+      "prompt": "Why did the witness ask staff to report specific uncertainties?",
+      "options": [
+        "To replace public signs with private tide measurements",
+        "To discover who was disregarding the manager's authority",
+        "To learn whether instructions cover real operational decisions",
+        "To ask staff to reopen the original field records"
+      ],
+      "answer": 2,
+      "explanation": "The proposed test reveals tasks workers need to perform when the wording gives no usable action."
+    }
+  ],
+  "grammar": {
+    "focus": "Nominalisation and explicit agency",
+    "explanation": "A noun such as determination can help connect ideas across sentences, but it erases the subject and often the time or status of the act. Choose whether to restore an agent, separate recommendations from decisions, or retain the noun when the actor really is irrelevant.",
+    "examples": [
+      {
+        "before": "The application of the boundary affected users.",
+        "after": "The board applied the winter boundary to foot traffic permits.",
+        "why": "Restoring an actor and object identifies who did what."
+      },
+      {
+        "before": "The verification of change is impossible in the south.",
+        "after": "We cannot verify historical change in the south from the copied chart alone.",
+        "why": "The active clause specifies the evidence constraint and avoids universal impossibility."
+      },
+      {
+        "before": "The protection of areas above this level begins in June.",
+        "after": "Protection of habitat above the winter contour begins in June.",
+        "why": "Here the start date and protection category are in focus. An institution may be named elsewhere."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which revision identifies an actor and confirms a completed act?",
+        "options": [
+          "The northern segment is eligible for approval.",
+          "The panel approved the northern segment on Monday.",
+          "Approval of the northern segment is likely on Monday.",
+          "Approving the northern segment may take until Monday."
+        ],
+        "answer": 1,
+        "explanation": "The panel is the explicit agent and approved is a completed act."
+      },
+      {
+        "prompt": "Which wording preserves a recommendation as a recommendation?",
+        "options": [
+          "The specification of the tide condition has been completed.",
+          "The ferry cooperative recommends that the board specify a tide condition.",
+          "The board specifies the tide condition.",
+          "The cooperative's specification binds the board."
+        ],
+        "answer": 1,
+        "explanation": "The source proposes action but does not say anyone enacted it."
+      },
+      {
+        "prompt": "Which sentence avoids hiding the difference between expectation and result?",
+        "options": [
+          "The boundary change produced a shorter crossing.",
+          "Shorter crossings followed the expected boundary change.",
+          "The tested reduction in crossing time requires a boundary change.",
+          "We expect the boundary change to shorten the crossing; the pilot has not tested it."
+        ],
+        "answer": 3,
+        "explanation": "The first clause forecasts, and the second explains the absence of results."
+      },
+      {
+        "prompt": "Which version best foregrounds a date when the responsible institution has already been named?",
+        "options": [
+          "The institution’s institution of the closure starts on 4 June.",
+          "The closing of the reserve began, by the institution, on 4 June.",
+          "The reserve’s closure begins on 4 June.",
+          "The reserve might close unless the institution begins it on 4 June."
+        ],
+        "answer": 2,
+        "explanation": "The clean nominalisation closure makes the date easy to grasp while preserving the intended tense."
+      },
+      {
+        "prompt": "What changes when ‘The chart enables verification’ becomes ‘The board verified the claim using the chart’?",
+        "options": [
+          "An asserted result becomes a hypothetical procedure.",
+          "The evidential status is unchanged.",
+          "The board’s role becomes less visible.",
+          "A possibility becomes an asserted event with a stated actor."
+        ],
+        "answer": 3,
+        "explanation": "The active past-tense clause commits to something the first sentence merely enables."
+      },
+      {
+        "prompt": "Which sentence restores the missing agent and the relevant evidence limit?",
+        "options": [
+          "The analysts could not compare the southern bank because the copied chart lacked field observations.",
+          "Southern bank verification was refused by the ferry cooperative.",
+          "The unavailability of comparison was a result of the southern bank.",
+          "A comparison of the southern bank could not be arranged."
+        ],
+        "answer": 0,
+        "explanation": "The repair names who could not do what and ties it to the actual limitation."
+      },
+      {
+        "prompt": "Which version preserves the distinction between drawing a line and granting permission?",
+        "options": [
+          "The surveyor drew the contour. The board will separately decide whether to permit crossings.",
+          "Drawing the contour granted the crossing in advance of a decision.",
+          "Permission is the application of the surveyor’s contour.",
+          "The surveyor drew permission for crossings at the contour."
+        ],
+        "answer": 0,
+        "explanation": "Two independent verbs and actors prevent the survey from being treated as an authorisation."
+      },
+      {
+        "prompt": "Which wording makes a completed process the subject for the next sentence?",
+        "options": [
+          "The elevation's calculation was common, so the explanation was recalculated.",
+          "Once the elevation will have recalculated the difference, something remains.",
+          "The recalculation used a common elevation, so the remaining discrepancy requires explanation.",
+          "While recalculation may be attempted, the required discrepancy should be explained."
+        ],
+        "answer": 2,
+        "explanation": "An appropriately chosen noun keeps the completed work visible as the argument moves on."
+      }
+    ],
+    "transfer": "Take two claims written as noun phrases in your own policy memo. Restore a person or institution where responsibility matters, and keep a concise nominal form where chronology or linkage matters more."
+  },
+  "vocabulary": [
+    {
+      "word": "denominator",
+      "meaning": "quantity against which a share is measured",
+      "example": "The trial uses nights of operation as its denominator.",
+      "pair": "common denominator"
+    },
+    {
+      "word": "delimit",
+      "meaning": "establish the boundary of",
+      "example": "The permit delimits the area covered by the agreement.",
+      "pair": "delimit an area"
+    },
+    {
+      "word": "contour",
+      "meaning": "line connecting equal values such as elevations",
+      "example": "The red contour marks the chosen winter level.",
+      "pair": "contour line"
+    },
+    {
+      "word": "reconstruct",
+      "meaning": "derive a past arrangement from surviving evidence",
+      "example": "We reconstructed the layout from the plan and the photographs.",
+      "pair": "reconstruct a sequence"
+    },
+    {
+      "word": "counterpart",
+      "meaning": "thing with a corresponding role",
+      "example": "The digital note has no historical counterpart.",
+      "pair": "historical counterpart"
+    },
+    {
+      "word": "intermittent",
+      "meaning": "starting and stopping at intervals",
+      "example": "The site receives intermittent deliveries.",
+      "pair": "intermittent access"
+    },
+    {
+      "word": "warrant",
+      "meaning": "justify or provide grounds for",
+      "example": "The data do not warrant a claim about the whole season.",
+      "pair": "warrant a conclusion"
+    },
+    {
+      "word": "jurisdiction",
+      "meaning": "range of official authority",
+      "example": "The operator asked whether the site fell within its jurisdiction.",
+      "pair": "within its jurisdiction"
+    },
+    {
+      "word": "corroborate",
+      "meaning": "support a claim with independent evidence",
+      "example": "Repeated field notes corroborate the earlier observation.",
+      "pair": "corroborate an account"
+    },
+    {
+      "word": "conflate",
+      "meaning": "treat distinct ideas as if they were one",
+      "example": "The map conflates access with ownership.",
+      "pair": "conflate two issues"
+    },
+    {
+      "word": "commensurable",
+      "meaning": "measurable on a common basis",
+      "example": "The periods are only commensurable after standardisation.",
+      "pair": "commensurable measures"
+    },
+    {
+      "word": "provisional",
+      "meaning": "valid for the present pending review",
+      "example": "A provisional boundary applies during the trial.",
+      "pair": "provisional agreement"
+    }
+  ],
+  "speaking": {
+    "audience": "A conservation board and ferry workers with two minutes for follow-ups",
+    "first": "Give a six-minute map briefing. Use two imagined captions, distinguish the winter reserve from a change estimate, and furnish a separate recommendation on ramp use.",
+    "change": "A board member says a map without one bold island outline cannot be displayed. She will accept a second small inset.",
+    "second": "Brief a public audience again. Say what the large outline means, add a caption that immunises against the likely misreading, and use the inset to identify where comparison is possible.",
+    "checklist": [
+      "Explain each chart’s purpose.",
+      "Separate coverage from validity of old evidence.",
+      "Answer one question about workers' role in designing a sign.",
+      "Concede a real cost of your display choice."
+    ]
+  },
+  "writing": {
+    "audience": "A permit panel with responsibility for reserve access and ferry operation",
+    "first": "Write a 450-word dual decision note with headings for evidence and operations. Present a fair case for one boundary and propose a rule for the slip.",
+    "change": "The cooperative can use the permit immediately but sees no budget for two separate signs. Board officials still need to describe both actions.",
+    "second": "Write a new one-page permit insert. Using one notice, give both audiences a reliable instruction and offer a feasible test that can reveal the limits of your wording.",
+    "checklist": [
+      "State whose authority each action uses.",
+      "Keep one rule tied to tide and purpose.",
+      "Make two actions easy to distinguish on one notice.",
+      "Add an indicator that discovers unknown failure modes."
+    ]
+  },
+  "immersion": {
+    "role": "Adviser to a seasonal access hearing",
+    "goal": "Produce a hard-to-misread dossier and route evidence questions to their proper authorities.",
+    "constraints": [
+      "Only northern historical observations can be recalculated.",
+      "The ferry speaks to operational use but cannot settle prior legal rights.",
+      "A public chart must be usable without an oral briefing.",
+      "A closure decision is due before a full repeat survey can be commissioned."
+    ],
+    "change": "The recovered southern original repeats the copied line but includes no observation sheets or surveyed height.",
+    "deliverables": [
+      "Submit a two-map storyboard with complete captions.",
+      "Record your ruling on what newly recovered evidence changes and what it cannot establish.",
+      "Prepare a brief announcement for the slip with an accompanying staff interview guide."
+    ],
+    "checklist": [
+      "Separate stronger provenance from stronger measurement.",
+      "Publish why you chose each boundary.",
+      "Use the workshop testimony only within its evidentiary scope.",
+      "Give an operator two actions with observable triggers."
+    ]
+  }
+}

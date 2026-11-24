@@ -1,0 +1,394 @@
+{
+  "slug": "c2-listed-twice",
+  "title": "Listed Twice",
+  "level": "C2",
+  "summary": "Design a bilingual literature festival index that preserves both access routes and an author’s choices about their name.\n\nReading: Draw three cases: two names for one person, identical names for two people, and an approved page heading. Give direct evidence from the authors for each route and record any assumption a designer would need to test.\n\nVocabulary: Use six terms to write a compact record rule and a plain reader’s guide to the same record. Separate typographic status from navigation and explain why stable identity and preferred display call for different words.",
+  "documents": [
+    {
+      "title": "Catalogue editor’s proposal",
+      "text": "The spring festival lists sixty-four writers in a printed booklet. The English alphabetical index has previously used names supplied by the writers’ publishers. This year four contributors have submitted two forms of their name: one they use on books in English and one that appears on publications in another language. We proposed printing one primary entry for each writer and providing a cross-reference from the second spelling. A visitor searching by either form could eventually get to the same page. We would print the author’s preferred form as the primary entry.\n\nThe difficulty became apparent while making a mock-up. A references panel sends readers at once to profiles containing a photograph and a location. A cross-reference says ‘see’ and supplies another name. Testing shows that experienced readers follow it; readers unfamiliar with festival indexes frequently assume the writer is absent or has been recorded under a wrong name. Adding a tiny page number to the second name would help. It would also leave the typographic distinction between a primary identity and a secondary route unchanged.\n\nWe want names to be findable without suggesting that editors know which name ought to count as the real one. This can be separated from the profile decision, where an individual contributor may have a clear preference about the heading."
+    },
+    {
+      "title": "An author’s reply to the proposed proof",
+      "text": "On interviews and on the cover of my English stories, I use the name Lina Radan. The editors have put that form in bold at the top of my festival page. I am content with the heading. In an interview I may be speaking to somebody who knows one book and wants to know where to find that book’s title. The matter is different if a reader has already held the other book and arrives knowing me as Alina Radane. That reader need not be instructed to transfer allegiance to whichever title my English publisher puts on a cover.\n\nI would give both index entries the page number, without applying the larger type to the one I use in introductions. I would also give a visitor something to check after they arrive. On the page, identify the two widely circulated books beside their actual credited names, so that anybody with a copy can match what they hold. The index cannot correct the history of how either book reached print; it can welcome a reader who comes from either history.\n\nPlease keep the heading that I approved. I am asking for a difference between the authority to introduce me and the evidence a reader can use to find me."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A meeting between the production lead and a bookseller",
+      "text": "Tariq: Assigning both names page forty is easier than our first index. But the digital version treats any two entries with the same profile number as a mistake. It automatically takes one out.\n\nJo: Then what do your test searches tell you? Do both names lead to the same profile only if staff use a different route?\n\nTariq: We can type either into the search box in our preview. There is a separate alphabet page, and only one name appears there. The omission does not break the direct search.\n\nJo: On the bookstall I wouldn't assume every visitor can type the name from memory. Somebody who remembers roughly where it belongs can start with a letter and skim names much faster.\n\nTariq: I can stop removing duplicates at display time, but there are writers with the same printed names who are different people. We mustn't collapse their profiles in a different part of the programme.\n\nJo: Give the person a permanent record number, and the readable names a purpose. Keep punctuation and variant forms searchable, but respect the heading each person approved.\n\nTariq: I need a test case for both failure modes. One writer with two entries. Then two writers whose entries look identical but cannot point to the same record."
+    },
+    {
+      "title": "A festival volunteer retraces two visitors’ steps",
+      "text": "During the Saturday evening rehearsal I gave a trial booklet to one visitor and took another to the tablet. The first held a French version of a book. She had brought it for a friend and was surprised when the author’s credited name was absent from the collapsed list. Because the publisher’s name on the cover did appear somewhere else in the booklet, she thought she had been given a list of imprints.\n\nThe second visitor knew a writer only by the name his teacher had pronounced. He browsed to the profile under a similar name. I could not tell from the portrait alone that he had taken the wrong route. Then he asked where to find the long poem the author had read about school meals. The similar name was correct for another visiting poet. The book title and a little text about the food poem would have made the mismatch easy to spot.\n\nWe could test a new index by simply counting visits to the profile containing the desired person. I would add a check for how the visitor establishes they have reached the right place. A smooth navigation score is less reassuring if it counts a confident wrong arrival as a success."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Why does the editor reconsider the initial cross-reference?",
+      "options": [
+        "Some readers treat it as evidence of an absence or error.",
+        "Profiles cannot contain photographs.",
+        "Most experienced readers cannot follow a cross-reference.",
+        "Page numbers disappear in print."
+      ],
+      "answer": 0,
+      "explanation": "The mock-up shows unequal usability, especially for inexperienced index users."
+    },
+    {
+      "prompt": "What policy change is the editor considering?",
+      "options": [
+        "Requiring publishers to change covers",
+        "Selecting one spelling for every writer's books",
+        "Distinguishing equal access routes from the chosen profile heading",
+        "Giving both names different biographical records"
+      ],
+      "answer": 2,
+      "explanation": "The editor explicitly separates findability from how an author is introduced."
+    },
+    {
+      "prompt": "Why does Lina accept a single main heading?",
+      "options": [
+        "Only the English publisher supplies a recognised record.",
+        "The heading is the only place her first book can be listed.",
+        "She wants every reader to switch to the English name.",
+        "She approved the form for introducing her in that context."
+      ],
+      "answer": 3,
+      "explanation": "She approves the heading while contesting its use as a rule for entry."
+    },
+    {
+      "prompt": "What evidence does Lina want on the profile page?",
+      "options": [
+        "The books with the names actually credited on them",
+        "Information about the other author with the same name",
+        "The original spellings of every library catalogue",
+        "Competing accounts of which name appeared first"
+      ],
+      "answer": 0,
+      "explanation": "A reader can compare a known work and the credited name against the entry."
+    },
+    {
+      "prompt": "Where do both writers draw a boundary?",
+      "options": [
+        "The heading identifies the publisher through which visitors should search.",
+        "Finding the person need not prescribe how that person is introduced.",
+        "A profile does not need facts other than the writer’s preferred introduction.",
+        "An author should be indexed only under a single approved name."
+      ],
+      "answer": 1,
+      "explanation": "Both distinguish indexing as access from the heading as a context-specific introduction."
+    },
+    {
+      "prompt": "What unresolved problem does the article’s passage about tiny page numbers show?",
+      "options": [
+        "Providing a page number prevents people using the main entry.",
+        "Equal navigational destinations need not give entries equal status in the reader’s eyes.",
+        "The staff cannot mark the difference between a heading and an index.",
+        "Readers want each spelling to have a separate profile page."
+      ],
+      "answer": 1,
+      "explanation": "An added number would not remove the typographic hierarchy that readers may interpret as a ranking."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Which digital route hides one name in the mock-up?",
+      "options": [
+        "Browsing the alphabet page",
+        "Entering either name into the search box",
+        "Opening the named profile",
+        "Checking a credited work on its cover"
+      ],
+      "answer": 0,
+      "explanation": "Search accepts both variants; alphabet browsing displays one."
+    },
+    {
+      "prompt": "What would Tariq's second test use?",
+      "options": [
+        "A bookstall with no printed index",
+        "A profile reached by a typed query and a browsing route",
+        "Two different writers whose entries look the same",
+        "The same writer with two different book cover credits"
+      ],
+      "answer": 2,
+      "explanation": "He asks for a case where matching visible names must not collapse separate people."
+    },
+    {
+      "prompt": "Why does Jo argue for permanent record numbers?",
+      "options": [
+        "They let visitors avoid identifying the books.",
+        "They separate identity links from the ways names appear to readers.",
+        "They prove a visitor took the right route.",
+        "They supply a pronunciation for each name."
+      ],
+      "answer": 1,
+      "explanation": "Stable records support both cases of correspondence and distinction."
+    },
+    {
+      "prompt": "What helped the volunteer detect a near-name mismatch?",
+      "options": [
+        "The portrait did not match his description.",
+        "The teacher’s spelling was printed on an imprint.",
+        "The visitor mentioned the poem he expected.",
+        "The bookseller had hidden a duplicate."
+      ],
+      "answer": 2,
+      "explanation": "The question about the poem disclosed the desired author’s work."
+    },
+    {
+      "prompt": "Why was the first visitor confused?",
+      "options": [
+        "An English translation listed both author names in bold.",
+        "She was instructed to browse by page number.",
+        "The tablet screen showed only a photograph.",
+        "A known credited name was absent, and she recognised the publisher elsewhere."
+      ],
+      "answer": 3,
+      "explanation": "Missing identification plus a recognised publisher led her to misclassify the list."
+    },
+    {
+      "prompt": "What further measure does the volunteer recommend?",
+      "options": [
+        "How users confirm an arrival is the correct one",
+        "How often a document contains French typography",
+        "Whether the same search is faster the second time",
+        "Whether a writer enters their own reading time"
+      ],
+      "answer": 0,
+      "explanation": "Reaching a profile is insufficient if the user confidently reached the wrong one."
+    }
+  ],
+  "grammar": {
+    "focus": "Scope of negation and quantifiers",
+    "explanation": "Not every excludes at least one case; it does not deny all cases. Every writer does not can be ambiguous. Only marks the part of a sentence made exclusive, so place it near that constituent. Neither applies to both members of a pair and fits different agreement patterns across registers.",
+    "examples": [
+      {
+        "before": "Both names did not appear on the alphabet page.",
+        "after": "The alphabet page omitted one of the two names.",
+        "why": "The revision states exactly what was missing."
+      },
+      {
+        "before": "Only the booklet shows both names on page forty.",
+        "after": "The booklet shows both names only on page forty.",
+        "why": "Moving only changes what is exclusive: location within the booklet, no longer the medium itself."
+      },
+      {
+        "before": "All visitors did not fail to follow the reference.",
+        "after": "Not all visitors failed to follow the reference.",
+        "why": "Placing not before the quantifier clarifies that at least one visitor succeeded."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which sentence entails that at least one participant succeeded?",
+        "options": [
+          "None of the participants noticed the name.",
+          "No participant succeeded in locating the name.",
+          "Every participant missed the name.",
+          "Not every participant missed the name."
+        ],
+        "answer": 3,
+        "explanation": "Not every person missing the name entails at least one did not miss it."
+      },
+      {
+        "prompt": "Which imposes a restriction specifically on the number of profiles?",
+        "options": [
+          "Visitors can match only these two names to a profile.",
+          "Visitors can match these two names to only one profile.",
+          "Only visitors can match these two names to one profile.",
+          "Visitors only search; staff match the names to a profile."
+        ],
+        "answer": 1,
+        "explanation": "Only one specifies the number of profiles rather than users, name set or action."
+      },
+      {
+        "prompt": "Which phrase distinguishes one failing route from two?",
+        "options": [
+          "Neither route worked.",
+          "Both browsing routes failed.",
+          "Exactly one browsing route failed.",
+          "Not a single route worked."
+        ],
+        "answer": 2,
+        "explanation": "Exactly one excludes both zero and two."
+      },
+      {
+        "prompt": "Which correctly limits a change to the paper list?",
+        "options": [
+          "We corrected only the printed index.",
+          "We only printed the corrected index.",
+          "The index had only one correction.",
+          "Only we corrected the printed index."
+        ],
+        "answer": 0,
+        "explanation": "Only adjacent to the printed index limits the object of the correction."
+      },
+      {
+        "prompt": "Which means neither of the two indexes displays the approved form?",
+        "options": [
+          "The approved form appears in neither index.",
+          "The approved form does not appear in both indexes.",
+          "The approved form appears in only one index.",
+          "Not both indexes use the approved form."
+        ],
+        "answer": 0,
+        "explanation": "Neither denies the appearance in each of the two indexes."
+      },
+      {
+        "prompt": "What follows from ‘only Jo checked the profile heading’?",
+        "options": [
+          "Jo did nothing except check headings.",
+          "Nobody other than Jo checked that heading.",
+          "The heading alone was checked by multiple people.",
+          "Jo checked nothing except the heading."
+        ],
+        "answer": 1,
+        "explanation": "Only Jo makes the identity of the checker exclusive."
+      },
+      {
+        "prompt": "Which wording leaves open whether all participants had a problem?",
+        "options": [
+          "No reader failed to recognise the right profile.",
+          "All but one recognised the right profile.",
+          "At least one reader did not recognise the right profile.",
+          "Exactly one reader did not recognise the right profile."
+        ],
+        "answer": 2,
+        "explanation": "At least one sets a lower bound rather than an exact count or upper bound."
+      },
+      {
+        "prompt": "Which statement supports equal routes without claiming identical names?",
+        "options": [
+          "Both routes link to a profile only when the names are identical.",
+          "Only one name links to both profiles.",
+          "Every route is different because neither name matches anything.",
+          "Both names link to the same profile; neither is designated a secondary route."
+        ],
+        "answer": 3,
+        "explanation": "Both specifies link coverage and neither excludes hierarchical naming for both routes."
+      }
+    ],
+    "transfer": "Revise a draft festival policy with four potentially ambiguous examples. Use a visitor’s likely counterexample to check the scope of only, neither, not every and exactly one."
+  },
+  "vocabulary": [
+    {
+      "word": "cross-reference",
+      "meaning": "pointer to information under another entry",
+      "example": "The index uses a cross-reference for an older phrase.",
+      "pair": "follow a cross-reference"
+    },
+    {
+      "word": "credited",
+      "meaning": "identified publicly as author or contributor",
+      "example": "The credited photographer changed between editions.",
+      "pair": "credited name"
+    },
+    {
+      "word": "allegiance",
+      "meaning": "loyalty or commitment to one side",
+      "example": "A festival heading need not demand allegiance to one spelling.",
+      "pair": "transfer allegiance"
+    },
+    {
+      "word": "imprint",
+      "meaning": "publisher name under which a book appears",
+      "example": "The series moved to a new imprint.",
+      "pair": "publishing imprint"
+    },
+    {
+      "word": "typographic",
+      "meaning": "relating to printed or displayed letter forms",
+      "example": "Weight created an unintended typographic hierarchy.",
+      "pair": "typographic distinction"
+    },
+    {
+      "word": "distinctive",
+      "meaning": "easy to recognise as different",
+      "example": "A distinctive title helped readers identify the right book.",
+      "pair": "distinctive title"
+    },
+    {
+      "word": "collapse",
+      "meaning": "combine separate records into one display item",
+      "example": "The page wrongly collapsed two entries.",
+      "pair": "collapse duplicates"
+    },
+    {
+      "word": "variant",
+      "meaning": "differing form of the same thing",
+      "example": "Search was extended to recognise a punctuation variant.",
+      "pair": "spelling variant"
+    },
+    {
+      "word": "authoritative",
+      "meaning": "accepted as reliable or official",
+      "example": "We recorded an authoritative spelling for the title page.",
+      "pair": "authoritative record"
+    },
+    {
+      "word": "attest",
+      "meaning": "provide evidence for something",
+      "example": "The cover attests which form was credited.",
+      "pair": "attest to usage"
+    },
+    {
+      "word": "affiliation",
+      "meaning": "formal relationship to an organisation",
+      "example": "The profile gave the poet’s affiliation.",
+      "pair": "state an affiliation"
+    },
+    {
+      "word": "disambiguate",
+      "meaning": "make the meanings of similar things clear",
+      "example": "Add a title to disambiguate identical entries.",
+      "pair": "disambiguate names"
+    }
+  ],
+  "speaking": {
+    "audience": "An author, typesetter and bookseller reviewing proof",
+    "first": "Explain an indexing policy using three cases: two names for one writer, two writers with identical visible names, and a single chosen heading. Invite objections in each case.",
+    "change": "An author asks that a former credited name never appear in the festival material.",
+    "second": "Lead a separate meeting about the exception. Offer ways to verify a person’s endorsed works without publishing the requested omission and acknowledge what discoverability is lost.",
+    "checklist": [
+      "State who has consent for each display.",
+      "Preserve a distinct case for two different people.",
+      "Explain a scope restriction in unambiguous language.",
+      "Propose a user test beyond clicks."
+    ]
+  },
+  "writing": {
+    "audience": "Production team responsible for both paper and digital editions",
+    "first": "Write a 450-word specification with a rendered example of each entry type. Define which aspects are driven by author preference and which serve navigation.",
+    "change": "Alphabet browsing can update tonight but printed sheets have already been folded.",
+    "second": "Draft two independent correction instructions and a small verification sheet for tomorrow's staffed desk.",
+    "checklist": [
+      "Distinguish the timing of the fixes.",
+      "Keep an identity record separate from an index entry.",
+      "Make your exclusions unambiguous.",
+      "Preserve a confirmable route in both media."
+    ]
+  },
+  "immersion": {
+    "role": "Festival catalogue steward",
+    "goal": "Resolve indexing, display and verification for the next edition.",
+    "constraints": [
+      "A six-page print budget stays fixed.",
+      "The digital interface must support both typed search and alphabet browsing.",
+      "The heading requires approval from the author.",
+      "A visitor may remember a title or a partial name."
+    ],
+    "change": "An incoming batch of profiles arrives with repeated display names and three title credits written in an unsupported script.",
+    "deliverables": [
+      "Produce a small index prototype including same-writer and different-writer collisions.",
+      "Define a verification test with a printed book as evidence and an incorrect but plausible destination.",
+      "Draft the next change notice and explain the remaining access risk orally."
+    ],
+    "checklist": [
+      "State a consent rule for name variants.",
+      "Separate accessibility from canonical status.",
+      "Test browsing as well as search.",
+      "Provide evidence for a correct arrival rather than treating a click as sufficient."
+    ]
+  }
+}

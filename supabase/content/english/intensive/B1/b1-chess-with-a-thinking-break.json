@@ -1,0 +1,394 @@
+{
+  "slug": "b1-chess-with-a-thinking-break",
+  "title": "Chess With a Thinking Break",
+  "level": "B1",
+  "summary": "Help first-time chess club visitors use a beginner session and choose when to move toward a timed match.",
+  "documents": [
+    {
+      "title": "Beginners' table card",
+      "text": "Welcome to the first Saturday of our chess club. If you know little about the game, go to Table Three near the window. You do not have to finish a game there. First, one player reads a small card that says which pieces to put on the board. The other player puts the pieces in place. Change jobs for the next card. Each position gives you only a few pieces, so you can concentrate on the problem. Ask for a thinking break at any point. Both players stop moving pieces during the break. When you are ready to carry on, tell your partner before you touch a piece. We do not use a timer at Table Three. At Table Four, both players have ten minutes each. A helper can show you how to use the timer when your first game starts. If Table Three is full, do not join a timed game just because a seat is free. Put your name on the board by the window, and a helper will tell you when a place opens."
+    },
+    {
+      "title": "Lucy explains the practice card",
+      "text": "Our first card asks the player with the dark pieces to make one move and then explain what the other player could do. You do not have to know the name of the move. You can point to the piece and say which square it will go to. If you want help, take one small blue card from the desk. The blue card does not give you the answer. It asks you to look again at one part of the board. There is a separate answer sheet in the drawer, but check it after you and your partner have each suggested a move. Last week we found that some people copied the answer and could not remember the reason later. One more tip: if someone moves a piece to explain a possible answer, return it to its first square before the other player has a go. Otherwise you are working on a new problem with the old instructions."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A first round with a new partner",
+      "text": "Ben: I think this is my first turn. I read the card while you place the pieces, is that right?\n\nRina: Yes. Can you say the second square again? I heard D, but I didn't hear the number.\n\nBen: D five. That's where the white piece goes. The dark piece starts one row below.\n\nRina: Like this? Good. Now I should suggest the first move. I'm going to take a thinking break, if that's okay.\n\nBen: Of course. I won't touch the board. Do you want the blue card?\n\nRina: Maybe in a minute. First, I'm checking what your white piece can do if I move the dark one. Okay, I'm ready now. I want to move this one here.\n\nBen: And I could move across like this. Wait, I'll put mine back so you can tell me your other idea.\n\nRina: Thanks. I can explain it without moving the piece this time. Can you point to the square I mean when I say it?"
+    },
+    {
+      "title": "Choosing the next table",
+      "text": "Helper: I saw you finish two cards. Do you want a third, or would you like to try the timer at Table Four?\n\nBen: I'd like to see how the timer works. I don't know if I want to play a whole game with it yet.\n\nHelper: You can watch this pair finish first. Notice how they press the button only after they finish moving the piece.\n\nBen: Could I try pressing it with a practice card? Rina doesn't want a timed match today.\n\nHelper: Yes. At two, there is a short demonstration before the next game. You can have a go then. You should keep taking cards at Table Three until it is announced. Oh, there's another name waiting to sit with Rina if you decide to move tables.\n\nBen: I'll stay with her for this round, then speak to the helper by the window. I don't want to leave the dark pieces in the wrong places for the next pair."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. At the beginners' table, when do partners exchange jobs?",
+      "options": [
+        "After a player touches a piece",
+        "Before anyone can take a break",
+        "When Table Four has a free chair",
+        "When they start a new card"
+      ],
+      "answer": 3,
+      "explanation": "The instructions ask players to switch the set-up and reading roles with each card."
+    },
+    {
+      "prompt": "1. What does the other player do during a thinking break?",
+      "options": [
+        "Stops moving pieces too",
+        "Turns the timer over",
+        "Checks the answer independently",
+        "Begins to play with a third person"
+      ],
+      "answer": 0,
+      "explanation": "Both players leave the board unchanged during a break."
+    },
+    {
+      "prompt": "1. What should a beginner do when Table Three has no space?",
+      "options": [
+        "Start a game at Table Four immediately.",
+        "Put a name on the board by the window.",
+        "Take home an answer sheet and return later.",
+        "Move a timed game to the window."
+      ],
+      "answer": 1,
+      "explanation": "The notice says to join the waiting list rather than take an unrelated free seat."
+    },
+    {
+      "prompt": "2. What kind of help does a blue card give?",
+      "options": [
+        "It directs attention to part of the board.",
+        "It tells both players the correct move.",
+        "It gives the exact name of the move.",
+        "It changes which player moves first."
+      ],
+      "answer": 0,
+      "explanation": "The clue guides a second look, while answers are in a different place."
+    },
+    {
+      "prompt": "2. When should players use the full answer sheet?",
+      "options": [
+        "Whenever the white player moves first",
+        "After both have offered a move",
+        "As soon as either one takes a blue card",
+        "Only once the room gets too full"
+      ],
+      "answer": 1,
+      "explanation": "The author wants everyone to propose a move before checking."
+    },
+    {
+      "prompt": "2. Why should someone undo a move made to explain an idea?",
+      "options": [
+        "The timer will not work after a first move.",
+        "The other player should start with the same positions.",
+        "The answer sheet needs to be removed.",
+        "There are only enough pieces for one card."
+      ],
+      "answer": 1,
+      "explanation": "Otherwise the instructions still refer to the previous board layout."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What does Rina need Ben to repeat?",
+      "options": [
+        "The color of the piece",
+        "The number of the square",
+        "The instructions for a thinking break",
+        "The details on the clue card"
+      ],
+      "answer": 1,
+      "explanation": "She heard the letter D but missed the number five."
+    },
+    {
+      "prompt": "1. What is Rina doing during the thinking break?",
+      "options": [
+        "Looking for the answer in the drawer",
+        "Deciding whether to change tables",
+        "Checking what the blue card says",
+        "Considering what Ben could do next"
+      ],
+      "answer": 3,
+      "explanation": "She postpones the blue hint to consider the reply first."
+    },
+    {
+      "prompt": "1. What does Ben do after showing a reply move?",
+      "options": [
+        "Replaces the card with the next puzzle",
+        "Puts his piece back to its original square",
+        "Asks to take the timer",
+        "Tells Rina to start over from the window"
+      ],
+      "answer": 1,
+      "explanation": "He resets his piece to let Rina give another idea."
+    },
+    {
+      "prompt": "2. What does Ben want to do before playing a timed game?",
+      "options": [
+        "Finish a game with the helper",
+        "See and try the timer",
+        "Change seats with Rina",
+        "Read the full answer to the third card"
+      ],
+      "answer": 1,
+      "explanation": "He is interested in the timer but is unsure about committing to a full match."
+    },
+    {
+      "prompt": "2. When can Ben have a go at pressing it?",
+      "options": [
+        "Immediately, during the current pair's game",
+        "During a brief demonstration at two",
+        "After finding the answer sheet",
+        "When the beginner board is full again"
+      ],
+      "answer": 1,
+      "explanation": "The helper says the demo starts at two."
+    },
+    {
+      "prompt": "2. Why might Rina still be able to play if Ben changes tables?",
+      "options": [
+        "The helper will cancel the timed game.",
+        "Another player is waiting.",
+        "She is taking the dark pieces home.",
+        "She plans to wait for Ben to finish."
+      ],
+      "answer": 1,
+      "explanation": "The helper has another name waiting for a place."
+    }
+  ],
+  "grammar": {
+    "focus": "Verb patterns for game instructions",
+    "explanation": "Use stop + -ing to say an action ends. Use stop + to + verb when someone pauses one action in order to do another. Need, want and decide often take a to-infinitive. Finish and avoid take an -ing form.",
+    "examples": [
+      {
+        "before": "Please stop to move pieces during the break.",
+        "after": "Please stop moving pieces during the break.",
+        "why": "Players should end the action of moving pieces."
+      },
+      {
+        "before": "He stopped checking the number before he placed the piece.",
+        "after": "He stopped to check the number before he placed the piece.",
+        "why": "The revised version shows that he paused in order to check."
+      },
+      {
+        "before": "We finished to set up the board.",
+        "after": "We finished setting up the board.",
+        "why": "Finish takes an -ing form."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "They wanted ___ the timer without starting a full match.",
+        "options": [
+          "to try",
+          "trying",
+          "tried",
+          "to trying"
+        ],
+        "answer": 0,
+        "explanation": "Want takes a to-infinitive here."
+      },
+      {
+        "prompt": "I avoid ___ an answer until both players have a go.",
+        "options": [
+          "to check",
+          "checked",
+          "checking",
+          "to checking"
+        ],
+        "answer": 2,
+        "explanation": "Avoid takes checking, the -ing form."
+      },
+      {
+        "prompt": "I need you ___ the letter and number slowly.",
+        "options": [
+          "saying",
+          "said",
+          "to say",
+          "say"
+        ],
+        "answer": 2,
+        "explanation": "Need plus an object can take a to-infinitive."
+      },
+      {
+        "prompt": "Rina finished ___ the pieces before she read the clue.",
+        "options": [
+          "to place",
+          "to placing",
+          "placed",
+          "placing"
+        ],
+        "answer": 3,
+        "explanation": "Finish takes the -ing form."
+      },
+      {
+        "prompt": "Which explains that Rina paused because she wanted to think?",
+        "options": [
+          "Rina stopped to think.",
+          "Rina stopped thinking.",
+          "Rina avoided to think.",
+          "Rina finished to think."
+        ],
+        "answer": 0,
+        "explanation": "Stop to think gives the purpose of the pause."
+      },
+      {
+        "prompt": "Do you enjoy ___ without a timer?",
+        "options": [
+          "playing",
+          "to playing",
+          "played",
+          "play"
+        ],
+        "answer": 0,
+        "explanation": "Enjoy takes -ing after it."
+      },
+      {
+        "prompt": "The partners decided ___ a third card.",
+        "options": [
+          "to try",
+          "trying",
+          "to trying",
+          "tried"
+        ],
+        "answer": 0,
+        "explanation": "Decide takes a to-infinitive."
+      },
+      {
+        "prompt": "Which means Ben no longer touched the pieces?",
+        "options": [
+          "Ben stopped to move the pieces.",
+          "Ben moved the pieces to stop.",
+          "Ben stopped moving the pieces.",
+          "Ben decided moving the pieces."
+        ],
+        "answer": 2,
+        "explanation": "Stop plus moving means that he ended that action."
+      }
+    ],
+    "transfer": "Write a paragraph about a new pair. Use stop to check once, stop moving with a different meaning, plus need to, finish -ing and avoid -ing. Read it aloud and ask where each participant pauses or resumes."
+  },
+  "vocabulary": [
+    {
+      "word": "square",
+      "meaning": "one small box on the board",
+      "example": "The white piece starts on the middle square.",
+      "pair": "an empty square"
+    },
+    {
+      "word": "timer",
+      "meaning": "a device that measures the time available",
+      "example": "The players have a different button on each side of the timer.",
+      "pair": "set a timer"
+    },
+    {
+      "word": "piece",
+      "meaning": "one of the objects moved in a board game",
+      "example": "Put the dark piece on the next line.",
+      "pair": "move a piece"
+    },
+    {
+      "word": "set up",
+      "meaning": "make something ready to use",
+      "example": "We set up the board while Lucy read the card.",
+      "pair": "set up the board"
+    },
+    {
+      "word": "position",
+      "meaning": "the arrangement or place of the pieces",
+      "example": "Put the pieces back in the starting position.",
+      "pair": "a starting position"
+    },
+    {
+      "word": "suggest",
+      "meaning": "offer an idea for someone to consider",
+      "example": "Can you suggest a move for the other player?",
+      "pair": "suggest a move"
+    },
+    {
+      "word": "take a break",
+      "meaning": "stop an activity for a short time",
+      "example": "I need to take a thinking break.",
+      "pair": "take a short break"
+    },
+    {
+      "word": "clue",
+      "meaning": "a piece of information that can help you find an answer",
+      "example": "The card gives a clue about one square.",
+      "pair": "give a clue"
+    },
+    {
+      "word": "go",
+      "meaning": "one person's attempt or turn",
+      "example": "Have a go after your partner tries.",
+      "pair": "have a go"
+    },
+    {
+      "word": "announce",
+      "meaning": "tell a group something out loud or publicly",
+      "example": "They will announce the demo before the game begins.",
+      "pair": "announce a change"
+    },
+    {
+      "word": "concentrate",
+      "meaning": "give your attention to something",
+      "example": "I can concentrate with fewer pieces on the board.",
+      "pair": "concentrate on the problem"
+    },
+    {
+      "word": "timed",
+      "meaning": "limited by a set period on a clock",
+      "example": "She would rather watch a timed match first.",
+      "pair": "a timed match"
+    }
+  ],
+  "speaking": {
+    "audience": "A new participant and their partner at Table Three",
+    "first": "Give a two-minute introduction and then act out the first three exchanges. Explain reading and placing roles, make the thinking break rule clear, and point out the difference between the clue and the answer.",
+    "change": "The new participant says a countdown makes them nervous. They would still like to see the clock used before they leave.",
+    "second": "Make a second take for the same pair. Explain what they can watch, where they can continue, and how to change tables without leaving their partner alone.",
+    "checklist": [
+      "Tell both people their first role",
+      "Model a polite request to pause",
+      "Explain when to use the answer sheet",
+      "Offer the demo without pushing a full match"
+    ]
+  },
+  "writing": {
+    "audience": "The club helper's replacement",
+    "first": "Write 125–155 words explaining how to welcome a waiting beginner, start a card and introduce the clock demo. Include what to do after a piece was moved to show an idea.",
+    "change": "The demo is delayed by twenty minutes while two players finish a match. Several people waiting by the window missed the announcement.",
+    "second": "Write a short update for the window board and a 60–80 word note to the new helper, with what to offer while people wait.",
+    "checklist": [
+      "Choose the right information for each audience",
+      "Use clear time and sequence words",
+      "Describe the clue system correctly",
+      "Explain one step after the delay"
+    ]
+  },
+  "immersion": {
+    "role": "Beginner table helper",
+    "goal": "Make a short onboarding kit that lets two newcomers practice without needing to know a full game's rules.",
+    "constraints": [
+      "No clock at Table Three",
+      "Both learners suggest moves before checking",
+      "Any demonstrated move must be reset"
+    ],
+    "change": "Only one blue clue card is available for the whole room, and three pairs want help at once.",
+    "deliverables": [
+      "Draw a simple grid with labeled practice squares and two movable markers",
+      "Write one brief observation question and a clue that points at a square without giving a full answer",
+      "Build a four-step welcome sign and a waiting list with roles",
+      "Give a second spoken welcome showing how you share the single clue"
+    ],
+    "checklist": [
+      "The labels on the example grid can be said and understood",
+      "The clue hints rather than answers",
+      "Players know when to reset and switch jobs",
+      "The revised help plan can serve all three pairs"
+    ]
+  }
+}

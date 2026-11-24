@@ -1,0 +1,394 @@
+{
+  "slug": "b1-when-the-ice-shapes-changed",
+  "title": "When the Ice Shapes Changed",
+  "level": "B1",
+  "summary": "Turn a class observation log into a clear photo timeline and explain why one result has to stay uncertain.",
+  "documents": [
+    {
+      "title": "Instructions for the art-day observation",
+      "text": "For our art day, we will put three small ice shapes on trays near the windows: a star, a cube and a ring. All three come out of the freezer at ten. Each one starts on a different tray, with its name written on the back of a dry card. We want visitors to see that the shape changes over time, so take a new photograph of each tray at ten fifteen, ten thirty, ten forty-five and eleven. Try to use the same position for each photograph. There is a strip of tape on the floor where you should stand. Do not turn the tray to show a part that is difficult to see. If you cannot tell what you are looking at, make a note next to the time. Put the tray on the middle table after the last photograph. Wipe up any water that reaches the floor and tell the person at the welcome desk if you have to leave the room."
+    },
+    {
+      "title": "Nilo's notebook from the window",
+      "text": "At ten fifteen, I could still see the corners of the star and knew at once which tray held the cube. The hole in the ring was smaller than it was at ten. At ten thirty, I took the star and ring pictures. The cube picture is missing because I was helping a visitor find the welcome desk. When I returned, there was a large white mark on the cube tray. I could not tell if it was ice or a patch of light in the picture. At ten forty-five, the star had lost two corners, and the ring's hole had closed. The cube looked smaller, but I could still see a small lump. At eleven, there was only water on the tray for the star. The other two trays still held small pieces. Please put a note about the missing photograph between the cube's first and third photos. It will keep someone from assuming nothing changed."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Explaining the bright patch",
+      "text": "Mira: You wrote there was a white mark when you came back. Could it be from the window?\n\nNilo: I think so, but there was also a small bit of ice. When I went down to look from the side, the white mark moved. The bit of ice stayed where it was.\n\nMira: Did you take a picture then?\n\nNilo: No, that was already past ten thirty. I was holding the camera when you came back with the tape for the floor. After that I stood on the line for the next photo.\n\nMira: Good. Let's use the pictures you took on time and add one note about what you saw in between.\n\nNilo: Can visitors see that mark in the last photo?\n\nMira: A little, but the sun was moving, so it only appears in one corner now. We should not give it a name as if it were a new ice shape. Call it a bright patch in the photo."
+    },
+    {
+      "title": "Planning the photo table",
+      "text": "Visitor helper: There are twelve places marked on the table, but I only have eleven photographs. Am I missing one from this folder?\n\nDisplay lead: No. Use a blank card for ten thirty on the cube row. Write 'photo not taken' rather than 'ice not visible.'\n\nVisitor helper: Could I put the photo from ten forty-five in the blank space? It would look tidier.\n\nDisplay lead: Keep the time above each picture, even when a space is empty. You can move the tray name to the left-hand side so it is easier to see which row we are in.\n\nVisitor helper: I could also put one note at the bottom about the star. It was the only one with no ice at eleven.\n\nDisplay lead: Yes, provided it says what we could see in our photos. We did not measure the water or check the thickness of the shapes.\n\nVisitor helper: I will say 'Only water was visible on the star tray at 11:00.'"
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why is there tape on the floor?",
+      "options": [
+        "It shows which tray must be turned.",
+        "It covers water that reached the floor.",
+        "It helps people take pictures from the same spot.",
+        "It indicates when to bring the trays out."
+      ],
+      "answer": 2,
+      "explanation": "The tape is a fixed place to stand when taking the pictures."
+    },
+    {
+      "prompt": "1. What should an observer do if a detail is hard to see?",
+      "options": [
+        "Write a note at that time.",
+        "Move the tray around to the light.",
+        "Take a photograph of another shape instead.",
+        "Change the time label on the photo."
+      ],
+      "answer": 0,
+      "explanation": "The instructions say to note unclear details rather than move the setup."
+    },
+    {
+      "prompt": "1. When should the trays be moved to the middle table?",
+      "options": [
+        "After the final photograph",
+        "Before the 10:30 photos",
+        "As soon as a shape starts to melt",
+        "Before the ice comes out"
+      ],
+      "answer": 0,
+      "explanation": "The tray is moved only after the scheduled series ends."
+    },
+    {
+      "prompt": "2. Why is a photo missing at 10:30?",
+      "options": [
+        "Nilo was helping a visitor.",
+        "The camera fell on the tray.",
+        "The cube no longer had any ice.",
+        "Nilo took only a photo of the floor."
+      ],
+      "answer": 0,
+      "explanation": "The observer was directing someone to the welcome desk."
+    },
+    {
+      "prompt": "2. What had changed in the star by 10:45?",
+      "options": [
+        "The center hole had closed.",
+        "Two corners were gone.",
+        "A white patch took the shape of a cube.",
+        "There was already only water on its tray."
+      ],
+      "answer": 1,
+      "explanation": "The two lost corners are recorded at 10:45; the water-only observation is at 11:00."
+    },
+    {
+      "prompt": "2. Why does Nilo request a note in the cube row?",
+      "options": [
+        "The other photos show the wrong shape.",
+        "A visitor put the late picture in the first position.",
+        "The tray name has fallen under the table.",
+        "A missing record can be mistaken for no change."
+      ],
+      "answer": 3,
+      "explanation": "The note keeps readers from making an unsupported inference about the interval."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What did Nilo notice when looking from the side?",
+      "options": [
+        "The tray slid toward the window.",
+        "The white mark grew into a cube.",
+        "The tape came loose from the camera.",
+        "The bright mark moved, but the ice did not."
+      ],
+      "answer": 3,
+      "explanation": "Nilo describes different behavior of a reflection and a visible piece of ice."
+    },
+    {
+      "prompt": "1. Why didn't Nilo take the missing picture after returning?",
+      "options": [
+        "The camera was in another room.",
+        "The tray was too heavy to photograph.",
+        "The welcome desk had turned the lights off.",
+        "The scheduled time had already passed."
+      ],
+      "answer": 3,
+      "explanation": "Nilo says it was already past 10:30 when they looked from the side."
+    },
+    {
+      "prompt": "1. What does Mira say they can display between photos?",
+      "options": [
+        "A written observation",
+        "A close view of the new shape",
+        "A picture from the following hour",
+        "A second tray with fresh ice"
+      ],
+      "answer": 0,
+      "explanation": "Mira suggests adding a note without treating it as an on-time picture."
+    },
+    {
+      "prompt": "2. What words should go in the empty cube spot?",
+      "options": [
+        "Photo not taken",
+        "Ice not visible",
+        "Same as 10:45",
+        "White shape only"
+      ],
+      "answer": 0,
+      "explanation": "The proposed label records the missing action, not a claim about the ice."
+    },
+    {
+      "prompt": "2. How can the display show rows more clearly?",
+      "options": [
+        "Put each time where the tray name was.",
+        "Give the star two spaces in every row.",
+        "Put each tray name at the left of its row.",
+        "Leave out all notes until the last tray."
+      ],
+      "answer": 2,
+      "explanation": "The lead recommends moving the tray labels to the left side."
+    },
+    {
+      "prompt": "2. What wording stays within the evidence?",
+      "options": [
+        "The star dissolved faster because it was always thinner.",
+        "Only water was visible on the star tray at eleven.",
+        "The other trays contained exactly the same amount of water.",
+        "The ring stopped changing just after its hole closed."
+      ],
+      "answer": 1,
+      "explanation": "The photos give a visible condition, not thickness or water measurements."
+    }
+  ],
+  "grammar": {
+    "focus": "Past simple and past continuous in an observation log",
+    "explanation": "Use past continuous for an action in progress at a point in the past. Use past simple for a completed event or a change. Both can appear together with when or while.",
+    "examples": [
+      {
+        "before": "I helped a visitor when the ten-thirty photo was due, and I was coming back afterward.",
+        "after": "I was helping a visitor when the ten-thirty photo was due, and I came back afterward.",
+        "why": "The help was in progress at that time. The return was a later completed action."
+      },
+      {
+        "before": "While Mira was move the tape, I held the camera.",
+        "after": "While Mira was moving the tape, I held the camera.",
+        "why": "Use was followed by the -ing form."
+      },
+      {
+        "before": "At eleven I was took the final photograph.",
+        "after": "At eleven I took the final photograph.",
+        "why": "The completed action is expressed with the past simple."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "I ___ a visitor when the light changed.",
+        "options": [
+          "was help",
+          "was helped a lot",
+          "will help",
+          "was helping"
+        ],
+        "answer": 3,
+        "explanation": "Was helping gives an action that was in progress when another event happened."
+      },
+      {
+        "prompt": "At 10:45, I ___ the last image of the star with any ice visible.",
+        "options": [
+          "was take",
+          "take",
+          "taking",
+          "took"
+        ],
+        "answer": 3,
+        "explanation": "Took is the completed past action."
+      },
+      {
+        "prompt": "The sunlight ___ while we were moving the paper times. Use the past continuous to describe the background change.",
+        "options": [
+          "has shifted",
+          "will shift",
+          "was shift",
+          "was shifting"
+        ],
+        "answer": 3,
+        "explanation": "Was plus shifting shows a change already in progress."
+      },
+      {
+        "prompt": "When I came back, Mira ___ on a fresh piece of tape. She wasn't finished.",
+        "options": [
+          "was wrote",
+          "wrote all of it",
+          "was writing",
+          "will write"
+        ],
+        "answer": 2,
+        "explanation": "The last sentence makes the writing an unfinished action in progress."
+      },
+      {
+        "prompt": "Which says the return interrupted an action in progress?",
+        "options": [
+          "I was wiping the floor when you returned.",
+          "I wiped the floor after you returned.",
+          "I finished wiping before you returned.",
+          "I returned after you wiped the floor."
+        ],
+        "answer": 0,
+        "explanation": "Was wiping forms the background action at the time of the return."
+      },
+      {
+        "prompt": "While the water ___ dripping, Nilo put down the camera.",
+        "options": [
+          "were",
+          "did",
+          "was",
+          "has"
+        ],
+        "answer": 2,
+        "explanation": "With water as the subject, use was before dripping."
+      },
+      {
+        "prompt": "Which sentence makes the photo the completed event?",
+        "options": [
+          "I was taking the picture when Mira spoke.",
+          "I took the picture while Mira was speaking.",
+          "I planned to take the picture when Mira spoke.",
+          "I was take the picture while Mira spoke."
+        ],
+        "answer": 1,
+        "explanation": "Took expresses the completed photo, while was speaking gives the background."
+      },
+      {
+        "prompt": "Two visitors ___ the table as I moved the last card.",
+        "options": [
+          "was watching",
+          "were watching",
+          "was watched",
+          "will watched"
+        ],
+        "answer": 1,
+        "explanation": "The plural subject two visitors takes were plus the -ing form."
+      }
+    ],
+    "transfer": "Write a six-sentence log for a different observation that runs from 2:00 to 2:30. Include two things that happened, two ongoing actions, and one time when no photograph was taken. Underline the words that show the order."
+  },
+  "vocabulary": [
+    {
+      "word": "tray",
+      "meaning": "a flat container with a low edge",
+      "example": "The ice cube sits on a metal tray.",
+      "pair": "put something on a tray"
+    },
+    {
+      "word": "strip",
+      "meaning": "a long narrow piece of material",
+      "example": "A strip of tape marks where to stand.",
+      "pair": "a strip of tape"
+    },
+    {
+      "word": "corner",
+      "meaning": "where two edges meet",
+      "example": "The ring has no corners.",
+      "pair": "lose a corner"
+    },
+    {
+      "word": "lump",
+      "meaning": "a small solid piece of an uneven shape",
+      "example": "A lump of ice was still visible.",
+      "pair": "a lump of ice"
+    },
+    {
+      "word": "patch",
+      "meaning": "a small area that looks different from nearby parts",
+      "example": "A patch of light moved across the tray.",
+      "pair": "a patch of light"
+    },
+    {
+      "word": "wipe up",
+      "meaning": "remove liquid from a surface using cloth or paper",
+      "example": "Wipe up the water by the table.",
+      "pair": "wipe up water"
+    },
+    {
+      "word": "visible",
+      "meaning": "possible to see",
+      "example": "The hole was barely visible at the next time.",
+      "pair": "clearly visible"
+    },
+    {
+      "word": "thickness",
+      "meaning": "the distance from one side of something to its other side",
+      "example": "The team did not check the thickness of the ice.",
+      "pair": "measure thickness"
+    },
+    {
+      "word": "observation",
+      "meaning": "a note about something you saw or noticed",
+      "example": "Nilo wrote an observation beside the missing time.",
+      "pair": "record an observation"
+    },
+    {
+      "word": "assume",
+      "meaning": "accept something as true without checking",
+      "example": "Do not assume the shape stayed the same.",
+      "pair": "assume nothing changed"
+    },
+    {
+      "word": "row",
+      "meaning": "a line of things next to each other",
+      "example": "Keep the star photos on one row.",
+      "pair": "the top row"
+    },
+    {
+      "word": "blank",
+      "meaning": "empty or without writing or a picture",
+      "example": "Leave a blank card where there is no photo.",
+      "pair": "a blank space"
+    }
+  ],
+  "speaking": {
+    "audience": "Visitors of different ages at the photo table",
+    "first": "Give a two-minute explanation using a drawn timeline. Point out how the star and ring changed and tell visitors how to read the empty cube space. Invite one question about what happened between pictures.",
+    "change": "A visitor points to the bright mark and says it proves the cube split in half at ten thirty.",
+    "second": "Make a second one-minute explanation. Acknowledge what can be seen, explain what the observer saw when moving, and separate that report from a missing image.",
+    "checklist": [
+      "Use precise times and shape names",
+      "Separate what happened and what was happening",
+      "State why the empty card stays",
+      "Do not treat a guess as an observation"
+    ]
+  },
+  "writing": {
+    "audience": "Mira, who will finish the display",
+    "first": "Write 120–150 words about what to put in each row and where to place the missing-photo card. Add a one-sentence caption for the star at eleven and one for the ring at 10:45.",
+    "change": "The photographs can only be shown from left to right on one narrow display panel. The cube photo from 10:45 is hard to see at the usual distance.",
+    "second": "Write a 90–110 word message proposing a new order, one enlarged photo and a clear place for the missing-photo note.",
+    "checklist": [
+      "Include time and shape with every sample caption",
+      "Preserve the correct place of the missing record",
+      "Use a simple instruction for the unclear photo",
+      "Keep unsupported measurements out"
+    ]
+  },
+  "immersion": {
+    "role": "Class display editor",
+    "goal": "Make a plain timeline that another visitor could reconstruct from written and spoken observations.",
+    "constraints": [
+      "Use three shapes and four scheduled times",
+      "The 10:30 cube picture was not taken",
+      "Do not invent measurements of water or ice"
+    ],
+    "change": "There is now room for only six photographs and one note on the front. The remaining photos are available in a folder.",
+    "deliverables": [
+      "Draw a full schedule and mark each visible finding or missing photo",
+      "Design a six-photo visitor panel and decide why each picture is included",
+      "Write a thirty-word caption about the gap or white patch",
+      "Give a two-minute tour and include where to see the full record"
+    ],
+    "checklist": [
+      "Correct pictures keep their times",
+      "A missing picture is easy to distinguish from visible water",
+      "Every claim refers to a record or is marked as uncertain",
+      "Visitors can locate the remaining images"
+    ]
+  }
+}

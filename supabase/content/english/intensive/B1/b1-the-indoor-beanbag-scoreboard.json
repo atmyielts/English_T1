@@ -1,0 +1,394 @@
+{
+  "slug": "b1-the-indoor-beanbag-scoreboard",
+  "title": "The Indoor Beanbag Scoreboard",
+  "level": "B1",
+  "summary": "Run a short game, check the results and explain a fair change before play continues.",
+  "documents": [
+    {
+      "title": "Rules for Friday's games",
+      "text": "Each pair gets four soft beanbags to throw at a floor target. Take turns throwing one bag at a time. Stand behind the blue line. If you need to throw while sitting, ask a helper to move the chair to the same line. A bag that touches the middle circle scores three points. A bag that touches only the outside circle scores one point. When a bag touches both circles, count it once for three points. Count bags after everyone has thrown. If two bags are touching, move the one on top carefully before deciding what the lower bag touches. Write the total in the pair's row on the large score sheet. The winning pair does not always have the highest first-round score. We add two rounds before choosing the winner. If the final totals are the same, the pairs each choose one thrower for one extra throw. If both extra throws score the same, the pairs share first place."
+    },
+    {
+      "title": "A handwritten score note",
+      "text": "I helped at the table by the door during the first round. Two pairs used the shorter target while a helper was fixing the usual one. We kept the blue line in the same place. The short target has the same middle circle, but its outside circle is smaller. Sam and Lina scored nine using the short target. Ira and Bo scored ten using the usual one. These were not the only pairs, so please do not announce a winner yet. I wrote a small S beside all the scores from the short target. I also wrote down each throw in my notebook. That may help us if we decide to repeat part of the first round. Before the second round, put every bag behind the blue line. Last time we left one on the floor as a marker and someone counted it as a new throw. If a second helper is free, ask them to read the totals back before they go on the big sheet."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "At the throwing line",
+      "text": "Jay: Your bag is right across the edge here. I can see a little of the middle circle under it.\n\nRae: Do I get three and one?\n\nJay: Three only. Count a bag once. Your other bag is harder to see because Sam's bag is on top of it. We have two throws left. Let us wait before we move anything.\n\nRae: I can sit next time? My knee is fine until I stand for a long time.\n\nJay: Yes. I'll put the chair by this blue line for you before your next throw. Keep your feet behind the line.\n\nRae: Thanks. Does Sam go after me or can she finish both of her throws now?\n\nJay: Keep taking turns. She throws one, then you throw one. Tell me when you are finished and we'll look at each bag together.\n\nRae: All right. I wrote two points earlier when I thought the lower bag only touched the outside. I'll wait before changing it."
+    },
+    {
+      "title": "Before the second round",
+      "text": "Manager: We have the full target now. I checked the notebook. Nobody scored a point on the edges that were missing from the short one, of course, but someone may have tried for them.\n\nHelper: Would you like every team to play the first round again?\n\nManager: We only have ten minutes before the hall is booked. Let the two pairs with the short target choose whether to keep the scores or throw the first round again. If they choose to repeat, the new score replaces the old one even if it is lower.\n\nHelper: Should I tell them the other scores before they decide?\n\nManager: No. Read both choices the same way first and give them one minute to decide. Then we'll post the first-round totals.\n\nHelper: And can we still play the extra throw if the final score is tied?\n\nManager: Yes, if we finish the second round first. Put the target away when it is done."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. How many points does one bag score when it touches both circles?",
+      "options": [
+        "Four",
+        "One",
+        "Zero",
+        "Three"
+      ],
+      "answer": 3,
+      "explanation": "A bag that reaches the middle counts once, for three points."
+    },
+    {
+      "prompt": "1. When should the helper count the bags?",
+      "options": [
+        "After every throw in the round is complete",
+        "Whenever a bag covers a part of a circle",
+        "Before the second player throws",
+        "After the winner has been selected"
+      ],
+      "answer": 0,
+      "explanation": "Scoring is done after all bags have landed."
+    },
+    {
+      "prompt": "1. When can two pairs share first place?",
+      "options": [
+        "When neither pair used a shorter target",
+        "When they choose the same person to throw",
+        "When their totals and the extra throws remain equal",
+        "When both get one point in the first round"
+      ],
+      "answer": 2,
+      "explanation": "The extra throw can separate tied totals, but another tie means joint first."
+    },
+    {
+      "prompt": "2. What does S beside a score mean?",
+      "options": [
+        "The pair used the short target.",
+        "A pair asked to play while sitting.",
+        "The score was checked by two helpers.",
+        "The pair shared a throw with another team."
+      ],
+      "answer": 0,
+      "explanation": "The writer says which scores are marked S and why."
+    },
+    {
+      "prompt": "2. What difference could have affected the marked scores?",
+      "options": [
+        "The middle circle was smaller for those pairs.",
+        "The short target had less outside scoring space.",
+        "The throws came from a line farther away.",
+        "The pairs received a different color of bag."
+      ],
+      "answer": 1,
+      "explanation": "The outside circles differ, though the middle circle and line stay the same."
+    },
+    {
+      "prompt": "2. Why should all bags begin behind the line in round two?",
+      "options": [
+        "The short target needs a bag as a marker.",
+        "An old bag might be counted with the next throws.",
+        "There are too few bags to give each pair four.",
+        "Two helpers need to stand near the target."
+      ],
+      "answer": 1,
+      "explanation": "Previously a marker bag remained on the floor and was scored in error."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. How many points does Jay say Rae's first visible bag earns?",
+      "options": [
+        "Four",
+        "Two",
+        "Three",
+        "One"
+      ],
+      "answer": 2,
+      "explanation": "Jay counts it once because it touches the middle."
+    },
+    {
+      "prompt": "1. When will Jay check the lower bag?",
+      "options": [
+        "After the remaining throws",
+        "Before Rae uses the chair",
+        "When Sam throws both bags at once",
+        "After the second round"
+      ],
+      "answer": 0,
+      "explanation": "He wants the last two throws to happen before the bags are moved."
+    },
+    {
+      "prompt": "1. What does Rae ask to change about her next throw?",
+      "options": [
+        "She wants to use the short target.",
+        "She wants Sam to throw instead of her.",
+        "She wants to throw sitting down.",
+        "She wants to leave her old score as it is."
+      ],
+      "answer": 2,
+      "explanation": "Rae asks whether she can sit, and Jay offers a chair by the line."
+    },
+    {
+      "prompt": "2. What happens if a short-target pair repeats the round and gets fewer points?",
+      "options": [
+        "The lower new score replaces the old one.",
+        "It can choose the better result.",
+        "The two scores are added together.",
+        "The game stops for a third attempt."
+      ],
+      "answer": 0,
+      "explanation": "The manager says the replacement rule applies even to a lower score."
+    },
+    {
+      "prompt": "2. Why doesn't every pair repeat its first round?",
+      "options": [
+        "There is no regular target to use.",
+        "There is only a short time left before the next booking.",
+        "All the other pairs posted their totals already.",
+        "The helper's notebook fails to identify the two pairs."
+      ],
+      "answer": 1,
+      "explanation": "The manager says they have only ten minutes."
+    },
+    {
+      "prompt": "2. What should the helper do before making the first results public?",
+      "options": [
+        "Check whether an extra throw is needed right now.",
+        "Add a point to all scores with S beside them.",
+        "Tell each pair what everyone else scored.",
+        "Explain both options to the pairs and let them choose."
+      ],
+      "answer": 3,
+      "explanation": "Both short-target pairs choose before they see the posted results."
+    }
+  ],
+  "grammar": {
+    "focus": "If clauses for rules and next actions",
+    "explanation": "Use if plus present simple for the condition. For a fixed rule, the result can also use present simple. Use will or a command for a plan or instruction that applies when the condition happens.",
+    "examples": [
+      {
+        "before": "If both pairs will tie, they get an extra throw.",
+        "after": "If both pairs tie, they get an extra throw.",
+        "why": "Use present simple in an if clause that states a rule."
+      },
+      {
+        "before": "If the bag touches the middle, count it for three points.",
+        "after": "Count it for three points if the bag touches the middle.",
+        "why": "The instruction can come first. In this order we usually do not need a comma."
+      },
+      {
+        "before": "If the lead arrives, we asking about the target.",
+        "after": "If the lead arrives, we'll ask about the target.",
+        "why": "Will plus a base verb shows the action planned if the condition happens."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "If a bag ___ both circles, we count it once.",
+        "options": [
+          "touches",
+          "will touches",
+          "touching",
+          "touch"
+        ],
+        "answer": 0,
+        "explanation": "A singular present-simple subject takes touches in this condition."
+      },
+      {
+        "prompt": "If you need a chair, ___ a helper.",
+        "options": [
+          "asking",
+          "ask",
+          "to ask",
+          "asked"
+        ],
+        "answer": 1,
+        "explanation": "The main clause can be an instruction with a base verb."
+      },
+      {
+        "prompt": "If the totals are equal, we ___ one thrower for each team.",
+        "options": [
+          "will choose",
+          "choosing",
+          "will chose",
+          "will to choose"
+        ],
+        "answer": 0,
+        "explanation": "Will takes choose, the base verb."
+      },
+      {
+        "prompt": "Which is a correct way to give the fixed rule?",
+        "options": [
+          "A bag earns one point if it touching the outside circle.",
+          "A bag earn one point if it will touches the outside circle.",
+          "If a bag touching only outside, it earns one point.",
+          "A bag earns one point if it touches only the outside circle."
+        ],
+        "answer": 3,
+        "explanation": "The two clauses have complete verbs in the present simple."
+      },
+      {
+        "prompt": "We'll wait if the two helpers ___ to check the total.",
+        "options": [
+          "will needing",
+          "need",
+          "needs",
+          "is need"
+        ],
+        "answer": 1,
+        "explanation": "Helpers is plural and takes need."
+      },
+      {
+        "prompt": "If the chair arrives before my turn, I ___ from it.",
+        "options": [
+          "will throwing",
+          "will threw",
+          "will throw",
+          "throw will"
+        ],
+        "answer": 2,
+        "explanation": "Will plus throw describes a future action."
+      },
+      {
+        "prompt": "Choose a sentence that means 'Post the sheet only after the pairs have made their choice.'",
+        "options": [
+          "If both pairs have decided, post the sheet.",
+          "Post the sheet if both pairs are still deciding.",
+          "If the sheet is posted, tell both pairs to decide.",
+          "If both pairs have not decided, post the sheet."
+        ],
+        "answer": 0,
+        "explanation": "The if clause makes the completed decision the condition for posting."
+      },
+      {
+        "prompt": "Don't move the bottom bag if another player ___ a turn left.",
+        "options": [
+          "have",
+          "has",
+          "will having",
+          "having"
+        ],
+        "answer": 1,
+        "explanation": "Another player is singular and takes has."
+      }
+    ],
+    "transfer": "Write six rule cards for a two-round game, including two if + instruction cards, two fixed scoring rules and two future plans for problems. Read the cards aloud and ask a partner to show what would happen in each case."
+  },
+  "vocabulary": [
+    {
+      "word": "target",
+      "meaning": "a place you try to hit when throwing something",
+      "example": "The club made a target with two circles.",
+      "pair": "hit the target"
+    },
+    {
+      "word": "beanbag",
+      "meaning": "a small soft bag filled to give it weight",
+      "example": "Each player gets two beanbags for the game.",
+      "pair": "throw a beanbag"
+    },
+    {
+      "word": "edge",
+      "meaning": "the outside line of a space or object",
+      "example": "The beanbag fell on the edge of the circle.",
+      "pair": "touch the edge"
+    },
+    {
+      "word": "score",
+      "meaning": "gain points in a game",
+      "example": "The middle circle scores three points.",
+      "pair": "score three points"
+    },
+    {
+      "word": "tie",
+      "meaning": "finish a game with equal results",
+      "example": "Two pairs tied with twelve points each.",
+      "pair": "tie for first place"
+    },
+    {
+      "word": "take turns",
+      "meaning": "do the same action one person after another",
+      "example": "The two players take turns with the beanbags.",
+      "pair": "take turns throwing"
+    },
+    {
+      "word": "replace",
+      "meaning": "put one thing in place of another",
+      "example": "The new score replaces the earlier one.",
+      "pair": "replace the score"
+    },
+    {
+      "word": "usual",
+      "meaning": "normally used or expected",
+      "example": "The usual floor target was repaired.",
+      "pair": "the usual target"
+    },
+    {
+      "word": "read back",
+      "meaning": "say written details aloud to check them",
+      "example": "Please read back the result before I write it here.",
+      "pair": "read back the total"
+    },
+    {
+      "word": "marker",
+      "meaning": "something placed or drawn to show a position",
+      "example": "The helper put a marker on the starting line.",
+      "pair": "a floor marker"
+    },
+    {
+      "word": "announce",
+      "meaning": "give information to a group publicly",
+      "example": "They announce the result at four.",
+      "pair": "announce the winner"
+    },
+    {
+      "word": "share",
+      "meaning": "have or use something together",
+      "example": "The two pairs share first place today.",
+      "pair": "share first place"
+    }
+  ],
+  "speaking": {
+    "audience": "Two newcomers at the indoor games table",
+    "first": "Prepare a two-minute demonstration. Use paper circles or a quick drawing to show what counts as one or three points, what to do if bags overlap, and how to start from a chair.",
+    "change": "You are explaining to one of the short-target pairs. They need to decide whether to repeat the first round without hearing the other scores.",
+    "second": "Give a one-minute second explanation. Present the two choices evenly, clarify what happens to a lower new score, and ask the listener to repeat the rule.",
+    "checklist": [
+      "Use the right numbers",
+      "Speak one step at a time",
+      "Describe the equal-score rule",
+      "State the choice without giving away other scores"
+    ]
+  },
+  "writing": {
+    "audience": "A volunteer who will take over the second round",
+    "first": "Write a 125–155 word handover that explains S, the old marker mistake and what has to happen before posting totals. Give the helper one checklist for a completed round.",
+    "change": "Both short-target pairs decide to repeat. One first-round notebook page is missing, but the old totals are still on the main sheet.",
+    "second": "Write a 100-word replacement plan for the helper. Explain which score can be replaced, what to mark on the main sheet and what to retain as a record.",
+    "checklist": [
+      "Use a time order",
+      "Keep old totals separate from new scores",
+      "Make visible what you cannot check",
+      "Give a clear action for each pair"
+    ]
+  },
+  "immersion": {
+    "role": "Games table organizer",
+    "goal": "Create a target diagram, score record and fair instruction for the change of equipment.",
+    "constraints": [
+      "Only two rounds count toward the total",
+      "Score each bag once",
+      "The second hall booking starts in ten minutes"
+    ],
+    "change": "The full target has to be taken away five minutes early, before a possible tie-break.",
+    "deliverables": [
+      "Design a two-circle scoring diagram and demonstrate three positions",
+      "Make a sheet with at least three fictional pairs and two rounds each",
+      "Write a two-option repeat notice for the short-target pair",
+      "Add a clear shared-place rule if the target goes away before any extra throws"
+    ],
+    "checklist": [
+      "The illustrated examples match the points rule",
+      "The record distinguishes old and new scores",
+      "The notice gives the same choice to both affected pairs",
+      "The shared-place rule can be announced simply"
+    ]
+  }
+}

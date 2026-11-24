@@ -1,0 +1,391 @@
+{
+  "slug": "b2-two-readings-of-the-last-page",
+  "title": "Two Readings of the Last Page",
+  "level": "B2",
+  "summary": "Prepare an editorial note that presents competing interpretations without inventing a single intention.",
+  "documents": [
+    {
+      "title": "A publisher's note to discussion hosts",
+      "text": "We are preparing a reading pack for a short story, The Window Seat. The last page describes a young traveller returning to a railway waiting room after a long absence. She sets one suitcase down, opens the window and leaves her coat on a chair. The station clock continues to run. The narrator does not say whether she will stay. One discussion host calls this an arrival; another calls it a pause before departure.\n\nWe should make both readings available, but the introduction must distinguish what happens from what a reader makes of it. An introduction that says she has definitely returned home makes the bag and coat settle a question that the story leaves open. An introduction that calls the clock evidence of her hurry has a similar problem. Write a short account of the last actions in their original order. Ask the readers to see how each object could support more than one conclusion. Give an example before asking for their own readings."
+    },
+    {
+      "title": "Notes from a group discussion",
+      "text": "Our group agreed that the open window received more attention than the clock. We did not agree about why. Fin thought opening a window made the room more like a home, because the traveller was changing how it felt. Tara argued it might be no more than a way of getting air into a closed room. Both noticed that the traveller would have to decide later what to do with the suitcase and coat.\n\nThe first draft of the pack gives one point to readers who mention that the traveller chooses to stay. That will make some readers search for a single conclusion even if they have noticed the last page's uncertainty. I suggest asking for a claim and the precise action that supports it. A follow-up can ask what other reading the same action allows. For the practice discussion, give the group time to read the final paragraph again before asking anyone to defend their first answer."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A disagreement between two hosts",
+      "text": "Fin: If we say the ending is open, people sometimes think that any answer is acceptable. I want them to see that there are still reasons to prefer one reading.\n\nTara: Could we put two claims beside the same detail? For the coat, I would say that leaving it on the chair may suggest she expects to come back shortly. It doesn't tell us where she will go next.\n\nFin: My reading is that she is making the room hers for a moment. The window is a stronger detail for me, because it is a choice that changes the space rather than only a place to put something.\n\nTara: That could work. Ask each reader what would have to be different for their reading to lose support.\n\nFin: Suppose she kept the coat on, opened the window only an inch and stood next to the door. It would be harder for me to argue that she was settling into the room.\n\nTara: Use that as the follow-up. It makes room for a judgement about evidence."
+    },
+    {
+      "title": "The first ten minutes of a trial session",
+      "text": "Editor: I heard two people agree with the first person who said the story was an arrival. When you asked why, they both repeated the expression “she had come home” from the pack.\n\nHost: I should have asked people to note a detail before reading the sample claims. Could we change the first instruction?\n\nEditor: Yes. Ask them to read the last page on their own and name one action they remember. Then show the two sample readings together. Let people put a small mark beside the detail that supports their view.\n\nHost: What if somebody wants to say the ending is neither an arrival nor a departure?\n\nEditor: Let them explain that option if they can connect it to a detail in the story. They may see the pause itself as the point. For the next group, leave that space on the page rather than making an extra option that everybody has to choose from."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What happens on the page itself?",
+      "options": [
+        "She says she is moving back permanently.",
+        "The clock stops while she considers leaving.",
+        "She calls another person inside the room.",
+        "The traveller sets a suitcase down and opens a window."
+      ],
+      "answer": 3,
+      "explanation": "The note lists actions and states that the decision is not given."
+    },
+    {
+      "prompt": "1. Why should the introduction describe actions before interpretations?",
+      "options": [
+        "The publisher wants everyone to reach the same conclusion.",
+        "The traveller's destination is shown only in the introduction.",
+        "Readers need to see what the story shows before taking a position.",
+        "The first group misunderstood the setting of the story."
+      ],
+      "answer": 2,
+      "explanation": "The note warns against converting an interpretation into an event."
+    },
+    {
+      "prompt": "1. Which claim does the publisher treat as too certain?",
+      "options": [
+        "She opens the window.",
+        "The traveller has definitely returned home.",
+        "The clock continues to run.",
+        "Her coat remains on a chair."
+      ],
+      "answer": 1,
+      "explanation": "The three latter details appear in the account of what happens."
+    },
+    {
+      "prompt": "2. How do Fin and Tara disagree about the window?",
+      "options": [
+        "Fin thinks it is shut, while Tara thinks it is open.",
+        "Tara says the clock matters more than all other details.",
+        "Fin sees a change to the room, while Tara sees a practical action.",
+        "They disagree about where the traveller put her suitcase."
+      ],
+      "answer": 2,
+      "explanation": "Fin's interpretation sees the action as settling in. Tara suggests getting air."
+    },
+    {
+      "prompt": "2. Why revise the scoring rule?",
+      "options": [
+        "It accepts answers that do not mention the last paragraph.",
+        "It rewards describing the room rather than the window.",
+        "It keeps the group from finding the author's original draft.",
+        "It would reward one outcome even when a different reading has evidence."
+      ],
+      "answer": 3,
+      "explanation": "The draft credits staying instead of an evidence-based explanation."
+    },
+    {
+      "prompt": "2. What should happen before participants defend their view?",
+      "options": [
+        "They should choose one detail without looking.",
+        "They should list all the narrator's statements.",
+        "They should locate the station clock on a map.",
+        "They should read the final paragraph again."
+      ],
+      "answer": 3,
+      "explanation": "The note recommends returning to the text first."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What concerns Fin about calling the ending open?",
+      "options": [
+        "The host may forget to describe the suitcase.",
+        "Readers may copy two different expressions.",
+        "People may find the ending harder to hear.",
+        "People may think evidence no longer matters."
+      ],
+      "answer": 3,
+      "explanation": "Fin still wants readers to judge the strength of support."
+    },
+    {
+      "prompt": "1. Why is the window stronger evidence for Fin than the coat?",
+      "options": [
+        "It changes the room rather than just occupying a place.",
+        "It shows the time when the traveller entered.",
+        "It proves she will stay all night.",
+        "It was mentioned earlier by another traveller."
+      ],
+      "answer": 0,
+      "explanation": "Fin sees it as a choice affecting the room."
+    },
+    {
+      "prompt": "1. What does Fin's hypothetical version help test?",
+      "options": [
+        "Whether the original action matters to his reading",
+        "Whether the reader can remember every object",
+        "Whether the narrator gave an exact time",
+        "Whether the host should read the page aloud"
+      ],
+      "answer": 0,
+      "explanation": "Changing the details demonstrates what would weaken the claim."
+    },
+    {
+      "prompt": "2. What did two trial participants repeat?",
+      "options": [
+        "The full wording about the clock",
+        "An alternative offered by the editor",
+        "A detail from the first page",
+        "A claim from the pack that she had come home"
+      ],
+      "answer": 3,
+      "explanation": "The host had shown the sample position before they selected evidence."
+    },
+    {
+      "prompt": "2. What will participants do before seeing sample claims?",
+      "options": [
+        "Vote for arrival or departure.",
+        "Read again and name an action they noticed.",
+        "Write a short review of the whole story.",
+        "Explain why the traveller opened the window."
+      ],
+      "answer": 1,
+      "explanation": "The new sequence starts with separate individual evidence gathering."
+    },
+    {
+      "prompt": "2. What if a reader prefers a different interpretation?",
+      "options": [
+        "They must still choose one of the two sample claims.",
+        "They should wait for the next group to read the ending.",
+        "They can explain it using a detail from the story.",
+        "They can add an extra detail not present on the page."
+      ],
+      "answer": 2,
+      "explanation": "The editor leaves room for an evidenced option that differs from the samples."
+    }
+  ],
+  "grammar": {
+    "focus": "Modal verbs for cautious interpretation",
+    "explanation": "Use might or may + verb to present an interpretation as one possibility. Use could + verb to show which alternative a detail allows. Must gives a much stronger inference. Add a condition or an example of evidence when the claim needs it.",
+    "examples": [
+      {
+        "before": "The window might showed that she plans to stay.",
+        "after": "The window might show that she plans to stay.",
+        "why": "A modal takes the base form show."
+      },
+      {
+        "before": "It may to mean she is just waiting.",
+        "after": "It may mean she is just waiting.",
+        "why": "Do not use to after may."
+      },
+      {
+        "before": "The clock proves she must left in a hurry.",
+        "after": "The clock could suggest that she notices the time.",
+        "why": "Use an appropriately cautious modal when evidence leaves two readings open."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The open window _____ suggest that she plans to stay.",
+        "options": [
+          "might to",
+          "might",
+          "might showed",
+          "could has"
+        ],
+        "answer": 1,
+        "explanation": "Might is followed by the plain verb suggest."
+      },
+      {
+        "prompt": "Which sentence leaves other readings available?",
+        "options": [
+          "She definitely sees the room as a temporary place.",
+          "She must see the room that way and no other.",
+          "She may see the room as a temporary place.",
+          "She sees every room the same way."
+        ],
+        "answer": 2,
+        "explanation": "May presents a possible interpretation."
+      },
+      {
+        "prompt": "The coat _____ be a sign that she expects to return.",
+        "options": [
+          "could to",
+          "can was",
+          "could",
+          "might has"
+        ],
+        "answer": 2,
+        "explanation": "Could takes be without to."
+      },
+      {
+        "prompt": "Which line makes the strongest inference?",
+        "options": [
+          "She might have set it down before opening the window.",
+          "She could have set it down earlier.",
+          "She must have set it down before opening the window.",
+          "She may have set it down first."
+        ],
+        "answer": 2,
+        "explanation": "Must have signals the most confident deduction."
+      },
+      {
+        "prompt": "The writer leaves the clock running, so the sound _____ affect how we read the pause.",
+        "options": [
+          "might to",
+          "may",
+          "may has",
+          "must to"
+        ],
+        "answer": 1,
+        "explanation": "May is grammatical and leaves room for variation."
+      },
+      {
+        "prompt": "Which response acknowledges a counterexample?",
+        "options": [
+          "The coat could suggest a return, although she might leave again later.",
+          "The coat is there, so there is no other possible reading.",
+          "The coat does not matter because we know she stays.",
+          "The coat must show every future event."
+        ],
+        "answer": 0,
+        "explanation": "The first uses a cautious claim and recognises what remains possible."
+      },
+      {
+        "prompt": "If the window stayed shut, my reading _____ be harder to defend.",
+        "options": [
+          "will has",
+          "required to",
+          "would",
+          "were"
+        ],
+        "answer": 2,
+        "explanation": "Would gives the consequence of an imagined condition."
+      },
+      {
+        "prompt": "What phrasing best fits limited evidence?",
+        "options": [
+          "This action must prove she will stay forever.",
+          "The clock should mean she has left already.",
+          "This action could be significant, but the narrator leaves its meaning open.",
+          "There can no other event occur."
+        ],
+        "answer": 2,
+        "explanation": "Could puts the interpretation at the right level of certainty."
+      }
+    ],
+    "transfer": "Write two plausible readings of one action. Rewrite each once with too much certainty, then explain aloud what the stronger verb wrongly adds."
+  },
+  "vocabulary": [
+    {
+      "word": "interpretation",
+      "meaning": "a proposed meaning for something",
+      "example": "Her interpretation depends on the open window.",
+      "pair": "support an interpretation"
+    },
+    {
+      "word": "plausible",
+      "meaning": "possible and reasonable",
+      "example": "Both readings are plausible.",
+      "pair": "plausible explanation"
+    },
+    {
+      "word": "narrator",
+      "meaning": "the voice telling a story",
+      "example": "The narrator describes her coat.",
+      "pair": "the narrator observes"
+    },
+    {
+      "word": "settle",
+      "meaning": "resolve a question",
+      "example": "The suitcase does not settle the ending.",
+      "pair": "settle a question"
+    },
+    {
+      "word": "detail",
+      "meaning": "a small piece of information",
+      "example": "Choose a detail from the last page.",
+      "pair": "textual detail"
+    },
+    {
+      "word": "defend",
+      "meaning": "give reasons in favour of a view",
+      "example": "He can defend his reading with evidence.",
+      "pair": "defend a claim"
+    },
+    {
+      "word": "qualify",
+      "meaning": "limit the strength of a statement",
+      "example": "Use might to qualify the claim.",
+      "pair": "qualify a claim"
+    },
+    {
+      "word": "counterexample",
+      "meaning": "an example that does not fit a claim",
+      "example": "The closed window would be a counterexample.",
+      "pair": "offer a counterexample"
+    },
+    {
+      "word": "arrival",
+      "meaning": "the act of reaching a place",
+      "example": "Some readers see it as an arrival.",
+      "pair": "on arrival"
+    },
+    {
+      "word": "departure",
+      "meaning": "the act of leaving a place",
+      "example": "The clock does not prove her departure.",
+      "pair": "imminent departure"
+    },
+    {
+      "word": "reconsider",
+      "meaning": "think again about a decision or view",
+      "example": "The group reconsidered the first reading.",
+      "pair": "reconsider a view"
+    },
+    {
+      "word": "open-ended",
+      "meaning": "allowing more than one possible answer",
+      "example": "They wrote an open-ended question.",
+      "pair": "open-ended discussion"
+    }
+  ],
+  "speaking": {
+    "audience": "A group of readers who have not yet discussed the ending",
+    "first": "Record a three-minute introduction that describes the actions, presents two claims, and asks what detail would weaken one claim.",
+    "change": "The first cohort repeats your sample claim instead of using its own evidence.",
+    "second": "Record a second introduction with the sample claims moved later. Demonstrate one independent reading task before giving either claim.",
+    "checklist": [
+      "Facts come before conclusions",
+      "A modal matches the strength of evidence",
+      "The host gives time to test another reading"
+    ]
+  },
+  "writing": {
+    "audience": "The publisher of the discussion pack",
+    "first": "Write a 170–210 word teaching note. Explain why the final actions matter and draft two questions that help readers support different interpretations.",
+    "change": "The publisher wants a short scoring guide and gives you space for 90 words only.",
+    "second": "Write a 90-word guide that rewards a claim and evidence without preferring one interpretation. Compare against your original two questions.",
+    "checklist": [
+      "Keeps the action and inference distinct",
+      "Defines what earns credit clearly",
+      "Allows another supported reading"
+    ]
+  },
+  "immersion": {
+    "role": "Reading-group editor",
+    "goal": "Turn the evidence and two trial recordings into a short discussion pack.",
+    "constraints": [
+      "Keep the last-page facts intact",
+      "Do not invent the writer's intention",
+      "Show both sample readings after the first task"
+    ],
+    "change": "A participant offers a third interpretation that neither sample covers.",
+    "deliverables": [
+      "A one-page student prompt",
+      "A short scoring guide",
+      "A host script with the revised sequence",
+      "A brief judgement of the third reading using one story detail"
+    ],
+    "checklist": [
+      "The order leaves room for an independent response",
+      "The guide credits evidence rather than agreement",
+      "The extra reading is assessed by the same rule"
+    ]
+  }
+}

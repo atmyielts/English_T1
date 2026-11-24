@@ -1,0 +1,391 @@
+{
+  "slug": "b2-label-reclaimed-wood-with-what-is-known",
+  "title": "What a Reclaimed Wood Label Can Claim",
+  "level": "B2",
+  "summary": "Use records, observations and exceptions to write accurate labels for reused materials.",
+  "documents": [
+    {
+      "title": "Workshop project brief",
+      "text": "We are making display boards from timber that came from three buildings. Some boards arrived with reliable delivery notes. Others were pulled from one mixed pile after the collection crews had left. The designer has asked for a label identifying the building every board came from. That would be useful to visitors, but only if we can connect a piece of timber to a particular record.\n\nThe continuous blue line on several boards looks like a useful clue. It appears on a delivery photograph from the station collection. However, the crews used similar paint to mark material at two sites, and a broken line is not enough to establish a source. Staff who cut boards this week should keep each offcut with its group until the inventory is complete. Photograph the end of each board before joining it to another. The notes and photographs can support a later change to a label. Give every board an inventory number even if no origin can be confirmed."
+    },
+    {
+      "title": "Editor’s draft for visitors",
+      "text": "The first set of proposed labels has one line for the wood's origin and one for where visitors can see it in the exhibition. On several boards, the origin line reads “from the old station.” The inventory lists those boards as “probably station collection,” which is a narrower claim: they were sorted with station timber after a delivery, but the original location of each board is not known.\n\nWe propose sharing the level of certainty through plain words, rather than setting out a technical code for every visitor to learn. A label can say “recorded as coming from the station” if the delivery record names a board that has stayed marked. It can say “sorted with station timber” if that is the only link. The two descriptions are useful in different ways. The first identifies a source. The second describes how a group was assembled. If the two meanings cannot be kept clear on a short label, include a fuller sentence in the exhibition booklet."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Working through a disputed example",
+      "text": "Designer: I would like to give this board a station label. The blue line meets the line on the board beside it, almost exactly.\n\nRecorder: That helps us see why the pieces were put together. Can you find an image of both pieces before they were unloaded?\n\nDesigner: The delivery photo shows one blue line, but the photographer was standing at the other end. I cannot see whether our board was beside the one in the image.\n\nRecorder: Then we can describe what you noticed without saying it proves the origin. Put both inventory numbers in the note and include a close-up of the join.\n\nDesigner: The two pieces have different widths. Could one of them have been cut before we got it?\n\nRecorder: It could have been. That is another reason to keep this as a possibility. If we can find the collection photograph and match the rough end of one piece, we may have stronger grounds. For now, use the shorter label saying it was sorted with station timber."
+    },
+    {
+      "title": "Change before a visitor tour",
+      "text": "Guide: A visitor wants to take photographs of the boards we can link to the station. I thought I would point them to every board with a blue line.\n\nEditor: A blue line on its own is the problem. We have confirmed three boards through delivery photographs. Let's give the visitor just those three numbers.\n\nGuide: If they ask about the other boards, can I say we think they came from the station?\n\nEditor: For the group that was sorted with the station timber, yes, provided you explain what the group name means. For the loose boards at the far end, the origin is open. A crew member remembers loading those onto the truck after the first stop, but he cannot say which stop that was.\n\nGuide: I can show each kind in a different part of the tour. What if the visitor only has time to take one picture?\n\nEditor: Give them the number of a confirmed board that still has its label. Then they can photograph its number and the wood together."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What is needed before naming a building confidently?",
+      "options": [
+        "The same paint on two boards",
+        "A photo of the finished exhibition",
+        "Agreement that the label would be useful",
+        "A link from a board to a particular record"
+      ],
+      "answer": 3,
+      "explanation": "The brief asks for a traceable connection to a record."
+    },
+    {
+      "prompt": "1. Why is a broken blue line insufficient?",
+      "options": [
+        "Blue paint appeared only on new timber.",
+        "Similar paint was used at different sites.",
+        "The delivery image has no blue marks.",
+        "Offcuts were moved to the wrong workshop."
+      ],
+      "answer": 1,
+      "explanation": "The reuse of similar markings weakens this clue."
+    },
+    {
+      "prompt": "1. Why give unknown boards inventory numbers?",
+      "options": [
+        "They can then be listed as coming from the station.",
+        "Unmarked wood should be cut immediately.",
+        "The designer needs to calculate the weight of each piece.",
+        "A later check can still connect evidence with a board."
+      ],
+      "answer": 3,
+      "explanation": "Numbering keeps boards traceable even before an origin is known."
+    },
+    {
+      "prompt": "2. What does sorted with station timber establish?",
+      "options": [
+        "Which room in the station the boards came from",
+        "Which person carried the boards",
+        "The date the boards were first cut",
+        "How the boards were grouped after delivery"
+      ],
+      "answer": 3,
+      "explanation": "The editor distinguishes a sorting action from an origin."
+    },
+    {
+      "prompt": "2. Why use plain words?",
+      "options": [
+        "The booklet cannot show any pictures.",
+        "Confirmed labels are all longer than guesses.",
+        "The inventory is written in two languages.",
+        "Visitors can follow the level of certainty without learning a code."
+      ],
+      "answer": 3,
+      "explanation": "The descriptions are meant to make certainty readable at a glance."
+    },
+    {
+      "prompt": "2. When is a fuller sentence useful?",
+      "options": [
+        "When all boards come from the same known site",
+        "When a board has lost its number",
+        "When there is no evidence about sorting",
+        "When the short label cannot distinguish the meanings"
+      ],
+      "answer": 3,
+      "explanation": "The last sentence gives a specific reason for moving detail into the booklet."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What useful observation does the designer make?",
+      "options": [
+        "Both widths match exactly.",
+        "The truck photograph shows their rough ends.",
+        "Two pieces seem to share a blue line.",
+        "The boards match the first delivery count."
+      ],
+      "answer": 2,
+      "explanation": "The designer starts by pointing out the almost matching line."
+    },
+    {
+      "prompt": "1. What can the delivery photograph not show clearly?",
+      "options": [
+        "Whether the disputed piece was next to the one in the image",
+        "Whether any paint appeared on the wood",
+        "Whether the camera was held by the recorder",
+        "Whether the near piece has a blue line at all"
+      ],
+      "answer": 0,
+      "explanation": "The view was taken from the other end, so the pairing is unknown."
+    },
+    {
+      "prompt": "1. What should the recorder and designer attach to the note?",
+      "options": [
+        "The name of the crew photographer",
+        "The final approved station label",
+        "Both numbers and a close-up of the join",
+        "A new description of how the wood was cut"
+      ],
+      "answer": 2,
+      "explanation": "The recorder requests a traceable pair of numbers and an image."
+    },
+    {
+      "prompt": "2. What should the guide give the visitor first?",
+      "options": [
+        "Every board with a blue line",
+        "Three confirmed inventory numbers",
+        "A transcript of the crew member's account",
+        "One number from the loose boards"
+      ],
+      "answer": 1,
+      "explanation": "The editor limits confident recommendations to three confirmed examples."
+    },
+    {
+      "prompt": "2. What is still open for the loose boards?",
+      "options": [
+        "Their language on the label",
+        "Their number in the exhibition",
+        "Their position at the far end",
+        "Their origin"
+      ],
+      "answer": 3,
+      "explanation": "The crew member cannot connect them to a particular stop."
+    },
+    {
+      "prompt": "2. What should be in the visitor’s single picture?",
+      "options": [
+        "Every possible board on one wide shot",
+        "A confirmed board and its number",
+        "The crew notes without a board",
+        "The blue line on the loose pieces"
+      ],
+      "answer": 1,
+      "explanation": "Keeping the number in the photo preserves the link to the record."
+    }
+  ],
+  "grammar": {
+    "focus": "Past deduction with must have, may have and cannot have",
+    "explanation": "Use may have + past participle when a past event is possible. Use must have only when evidence supports a strong deduction. Cannot have rules out a past event. These phrases are about what happened, while should have is often about a missed duty.",
+    "examples": [
+      {
+        "before": "The board must came from the station.",
+        "after": "The board may have come from the station.",
+        "why": "The blue paint gives only a possibility and come follows have."
+      },
+      {
+        "before": "This board cannot belonged to the load.",
+        "after": "This board cannot have belonged to the recorded load.",
+        "why": "Use have plus past participle to rule out a past event."
+      },
+      {
+        "before": "They should have cut it because the widths differ.",
+        "after": "Someone may have cut it earlier because the widths differ.",
+        "why": "Should have usually evaluates a duty, whereas may have expresses a possible cause."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "A board of uncertain origin _____ come from the station.",
+        "options": [
+          "may have",
+          "must did",
+          "may has",
+          "cannot had"
+        ],
+        "answer": 0,
+        "explanation": "May have describes a possibility in the past."
+      },
+      {
+        "prompt": "Its delivery record dates it later than the first load, so it _____ been on that earlier truck.",
+        "options": [
+          "must have",
+          "should had",
+          "cannot have",
+          "need to have"
+        ],
+        "answer": 2,
+        "explanation": "The known date rules out the earlier load."
+      },
+      {
+        "prompt": "Choose the sentence that states a missed duty.",
+        "options": [
+          "The crew should have marked separate piles.",
+          "The crew may have marked separate piles.",
+          "The crew cannot have marked separate piles.",
+          "The crew might be marking separate piles."
+        ],
+        "answer": 0,
+        "explanation": "Should have adds a judgement about what ought to have happened."
+      },
+      {
+        "prompt": "Two pieces match exactly and a numbered photo shows their original join. They _____ come from the same board.",
+        "options": [
+          "will have to",
+          "may had",
+          "must have",
+          "cannot have to"
+        ],
+        "answer": 2,
+        "explanation": "The matching numbered evidence supports a strong deduction."
+      },
+      {
+        "prompt": "The paint is similar, but we cannot tell what happened. Someone _____ used the same colour twice.",
+        "options": [
+          "should to have",
+          "might have",
+          "must was",
+          "cannot will have"
+        ],
+        "answer": 1,
+        "explanation": "Might have leaves the explanation open."
+      },
+      {
+        "prompt": "Which option correctly uses a past participle?",
+        "options": [
+          "It could have cutted later.",
+          "It could have been cut later.",
+          "It could of been cut later.",
+          "It could has been cut later."
+        ],
+        "answer": 1,
+        "explanation": "The passive deduction uses have been and cut."
+      },
+      {
+        "prompt": "The closed station had already been removed when the photograph was taken. It _____ been photographed that day.",
+        "options": [
+          "must be",
+          "cannot have",
+          "may has",
+          "should to have"
+        ],
+        "answer": 1,
+        "explanation": "Cannot have fits the impossible event."
+      },
+      {
+        "prompt": "Which sentence best fits weak evidence?",
+        "options": [
+          "It may have travelled with the station timber.",
+          "It must have travelled with the station timber.",
+          "It certainly travelled with the station timber.",
+          "It cannot have travelled with the station timber."
+        ],
+        "answer": 0,
+        "explanation": "May have marks a possibility without ruling out the others."
+      }
+    ],
+    "transfer": "Make a deduction scale for four inventory entries. Read each claim without its source, then add the source and revise any modal that sounds too strong."
+  },
+  "vocabulary": [
+    {
+      "word": "reclaimed",
+      "meaning": "taken from an earlier use and used again",
+      "example": "They built the wall from reclaimed timber.",
+      "pair": "reclaimed timber"
+    },
+    {
+      "word": "offcut",
+      "meaning": "a piece left after a larger piece is cut",
+      "example": "The recorder kept the offcut.",
+      "pair": "keep an offcut"
+    },
+    {
+      "word": "inventory",
+      "meaning": "a list of items in a collection",
+      "example": "Add the number to the inventory.",
+      "pair": "maintain an inventory"
+    },
+    {
+      "word": "traceable",
+      "meaning": "possible to follow back to its source",
+      "example": "The label keeps the board traceable.",
+      "pair": "traceable evidence"
+    },
+    {
+      "word": "join",
+      "meaning": "the place where parts meet",
+      "example": "Photograph the join closely.",
+      "pair": "a visible join"
+    },
+    {
+      "word": "confirm",
+      "meaning": "check a claim with enough evidence",
+      "example": "The record confirms the building.",
+      "pair": "confirm an origin"
+    },
+    {
+      "word": "deduction",
+      "meaning": "a conclusion reached from evidence",
+      "example": "That deduction needs another source.",
+      "pair": "make a deduction"
+    },
+    {
+      "word": "marking",
+      "meaning": "a sign or pattern on an object",
+      "example": "Both pieces have blue markings.",
+      "pair": "painted marking"
+    },
+    {
+      "word": "ground",
+      "meaning": "a reason or basis for a claim",
+      "example": "The photograph provides stronger grounds.",
+      "pair": "strong grounds"
+    },
+    {
+      "word": "assign",
+      "meaning": "give something a place, task or number",
+      "example": "Assign a separate number to each piece.",
+      "pair": "assign an inventory number"
+    },
+    {
+      "word": "qualify",
+      "meaning": "add information to limit a claim",
+      "example": "The editor qualified the wording.",
+      "pair": "qualify a statement"
+    },
+    {
+      "word": "recorded",
+      "meaning": "entered in an official or saved record",
+      "example": "This is the recorded source.",
+      "pair": "recorded origin"
+    }
+  ],
+  "speaking": {
+    "audience": "A designer who wants all boards labelled before opening",
+    "first": "Give a three-minute briefing covering one confirmed, one likely and one open case. Indicate where the verbal wording changes and justify each with a source.",
+    "change": "A visitor wants an answer before the recorder has checked the delivery photographs.",
+    "second": "Record another briefing for the visitor. Offer one confident example and explain how they can keep its identification when taking a photograph.",
+    "checklist": [
+      "Keeps evidence levels distinct",
+      "Uses two suitable past deductions",
+      "Gives an action that does not depend on an unverified name"
+    ]
+  },
+  "writing": {
+    "audience": "Readers of the exhibition booklet",
+    "first": "Draft a 170–210 word note explaining what the labels mean. Include three sample labels and explain the difference between grouping and origin.",
+    "change": "Printing space is cut. One uncertain board now has to share a label with a confirmed board.",
+    "second": "Write a 65-word dual label plus a 130-word editor's note. Use a wording check to show which claim applies to each board.",
+    "checklist": [
+      "Each board has an unambiguous label",
+      "The shorter version preserves uncertainty",
+      "The examples remain traceable to the source"
+    ]
+  },
+  "immersion": {
+    "role": "Inventory and tour coordinator",
+    "goal": "Build an evidence packet that keeps objects, records and guest explanations in step.",
+    "constraints": [
+      "Only one photograph shows a confirmed pair",
+      "Unknown boards stay available for display",
+      "Nothing can be painted or cut during the test"
+    ],
+    "change": "A helper accidentally transfers a confirmed board's tag to an uncertain board.",
+    "deliverables": [
+      "Case table with claim and evidence strength",
+      "A provisional recheck procedure",
+      "Two corrected labels",
+      "A curator briefing and one factual answer to a visitor"
+    ],
+    "checklist": [
+      "No guess becomes a confirmed origin",
+      "A later reviewer can follow each number",
+      "Procedure separates a missing label from missing evidence"
+    ]
+  }
+}

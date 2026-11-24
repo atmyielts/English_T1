@@ -1,0 +1,394 @@
+{
+  "slug": "c2-the-exhibition-that-comes-apart",
+  "title": "The Exhibition That Comes Apart",
+  "level": "C2",
+  "summary": "Negotiate competing interpretations of what makes an installation the same work when its components are routinely replaced.\n\nReading: Trace the paper through three states: support, invitation and historical record. Cite the written terms that govern each state. Then describe one exhibition that technically obeys the contract while frustrating the visitor action it envisages.\n\nVocabulary: Choose words for a registrar, a neighbourhood organiser and an attendant. Have each write a three-line description of the same sheet. Discuss which collocations change because their responsibility or subject changes.",
+  "documents": [
+    {
+      "title": "Acquisition file: contract extract and note",
+      "text": "The artist has offered the gallery a floor installation consisting of invitations folded into narrow paper supports. The supports buckle slowly under the weight of a wooden frame. Visitors may pick up any invitation that has fallen, but the work may not be dismantled in order to give them one. The gallery will receive the frame, an initial group of invitations, and directions for making suitable supports. The artist requires replacements to be cut and folded locally. They need not be printed on the same machine as the originals.\n\nIn an attached statement the artist distinguishes the shape of any one support from the conditions under which it buckles. She gives an acceptable range of paper weights and says it is possible to have too many supports. A reliable but overly dense arrangement would leave the frame standing for the whole of the exhibition. Then a visitor would enter a room in which taking a fallen invitation was technically allowed and in practice never available.\n\nThe gallery’s registrar has asked us to define an instalment of the work. The wall text currently says this is the only surviving copy. It is accurate that there is one authorised frame. It is less clear what the number of copies should refer to once the gallery begins replacing the paper independently."
+    },
+    {
+      "title": "Essay proposed for the opening booklet",
+      "text": "When the work was first shown, the folded invitations carried the date of a small public hearing. Two people took them away before the hearing had occurred. A newspaper printed a photograph after it. For at least a week, the paper could serve as an invitation or a record of one; later it could only be the latter. The artist has approved using newly written invitations in this exhibition, provided each refers to a real event in the neighbourhood and can be understood by an unbriefed visitor.\n\nFor this authorisation to mean much, the gallery cannot select invitations only from events it already expects its visitors to attend. A gallery lecture listed on gallery paper might be a real event, but it would decrease the distance between the room and the possible journey a person makes from it. I would ask local organisers for an invitation that does a useful job whether or not our audience sees it.\n\nThis change does not require removing every old sheet. When an original frame is installed with paper made for a different street, the work can have a recognisable continuity and a real change of address. The more interesting conservation question is which of those two facts a visitor ought to be able to detect."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A conservator and a visitor-services lead argue over the floor",
+      "text": "Hassan: The upright frame has fallen twice this week. We can add two pieces and it will stay in position. That would protect the paper and be easier for the attendants.\n\nBea: It also gives people less chance to take an invitation. Are you solving a conservation problem or making our instructions easier?\n\nHassan: We know the supports should buckle. The movement has been quite large, though. I'm not comfortable leaving the route as it is. Last Friday somebody had to stop another visitor from going past an end that had moved.\n\nBea: Would a line painted farther round the work fix that? I can show where to watch from without suggesting the invitations aren't for taking.\n\nHassan: Maybe. I’d like to record the range of movement for two different arrangements, both within the artist’s limits. Adding one piece may be enough, with a new safety margin.\n\nBea: I can ask attendants to report whether people know when they can pick up a sheet. If everyone waits for permission, a physically reachable piece still isn’t available in quite the intended way.\n\nHassan: Let’s make both things observable. I can use the record to justify a safety margin without turning the whole work into an object that stands untouched."
+    },
+    {
+      "title": "A member of an association considers contributing invitations",
+      "text": "We hold our mending afternoon in a room with space for twelve. If the gallery put up our sheet it would mean two rather different things. I could hope that somebody who needs a repair finds the room, which would make the invitation useful. I could also find six unexpected people on the step because a piece of paper that usually circulates among neighbours had reached a larger audience.\n\nI told the gallery we have another afternoon in a school hall. There is enough space and we take tools people can borrow without a demonstration. When I asked whether that event would do, the coordinator wanted to retain the name of the smaller room. She said people liked what it sounded like. I said we couldn't use the name of one venue on an invitation for a session in another. If the paper only needs to evoke a neighbourhood, she can use an old invitation and date it clearly.\n\nI do want us to be included. I want to choose what commitment the paper can make in our name. The hall may be less picturesque. It is still in the neighbourhood and will be open to anyone carrying in a broken zip."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What does the artist explicitly allow the gallery to change?",
+      "options": [
+        "The machine on which replacement paper is printed",
+        "Whether the supports buckle at all",
+        "The visitor’s right to take an already fallen invitation",
+        "The restriction on deliberately taking apart the work"
+      ],
+      "answer": 0,
+      "explanation": "Paper can be printed differently if it is cut and folded locally and works within the stipulated range."
+    },
+    {
+      "prompt": "What difficulty does the registrar’s question expose?",
+      "options": [
+        "A unique frame must remain in the registrar's office.",
+        "Locally produced paper would cancel the sale.",
+        "Different components can carry different meanings of uniqueness.",
+        "The wall text requires every invitation to survive the exhibition."
+      ],
+      "answer": 2,
+      "explanation": "There is one authorised frame, but replaceable invitations complicate a claim about a single surviving copy."
+    },
+    {
+      "prompt": "Why does the author mention how timing changed the first invitation?",
+      "options": [
+        "The sheets should not have left the first gallery before the hearing.",
+        "Its function changed as the event passed.",
+        "New invitations must describe the same hearing.",
+        "The gallery was unable to reproduce the original date."
+      ],
+      "answer": 1,
+      "explanation": "An invitation to an upcoming event could later serve only as a record."
+    },
+    {
+      "prompt": "Why might the author object to using a gallery lecture even if it is real?",
+      "options": [
+        "A gallery lecture is not an authorised kind of public event.",
+        "It narrows the journey outside the institution which the invitation could initiate.",
+        "The coordinator intends to advertise only lectures with admission charges.",
+        "Gallery events cannot accept visitors who did not already book."
+      ],
+      "answer": 1,
+      "explanation": "The essay distinguishes satisfying the event rule from opening a meaningful path beyond the gallery."
+    },
+    {
+      "prompt": "What links the two written sources?",
+      "options": [
+        "They treat untouched preservation of the original paper as the work’s core.",
+        "They identify the same physical range of movement for the frame.",
+        "They treat use by visitors as a condition design can make more or less achievable.",
+        "They agree guests should be instructed to remove intact supports."
+      ],
+      "answer": 2,
+      "explanation": "Paper must be able to fall and have a meaningful potential use once taken."
+    },
+    {
+      "prompt": "Which claim goes beyond what either written source supports?",
+      "options": [
+        "The artist supports different locally relevant original designs.",
+        "Physical reliability could prevent access under the rules.",
+        "The printed sheet may act as a record after the event.",
+        "Visitors must accept an invitation in order to experience the work."
+      ],
+      "answer": 3,
+      "explanation": "The source allows guests to take a fallen sheet, and never makes uptake mandatory."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why is Hassan reluctant to leave the setup unchanged?",
+      "options": [
+        "The frame's movement has affected a visitor route.",
+        "Paper is buckling earlier than the event dates permit.",
+        "The weight range excludes the replacement sheets.",
+        "The attendants have sold some invitations."
+      ],
+      "answer": 0,
+      "explanation": "Hassan saw an end move toward an area that visitors approached."
+    },
+    {
+      "prompt": "What does Bea want attendants to observe?",
+      "options": [
+        "Whether a visitor put the invitations in date order.",
+        "Whether people perceive they may take fallen pieces.",
+        "Whether Hassan measures the weight of each frame.",
+        "Whether each arrangement uses the required printer."
+      ],
+      "answer": 1,
+      "explanation": "The issue is perceived permission even when paper is physically reachable."
+    },
+    {
+      "prompt": "What does Hassan want two observations to support?",
+      "options": [
+        "A replacement contract that removes artist input.",
+        "A permanently fixed frame with no falling pieces.",
+        "A defensible margin that allows a safe range of movement.",
+        "A footfall estimate for the next public hearing."
+      ],
+      "answer": 2,
+      "explanation": "He proposes collecting results for two allowed arrangements to set boundaries without eliminating movement."
+    },
+    {
+      "prompt": "Why propose the school hall instead of the smaller room?",
+      "options": [
+        "The artist insists on using schools.",
+        "The gallery owns the hall and pays for its use.",
+        "The earlier room no longer runs a mending afternoon.",
+        "It can take the possible increase in attendance."
+      ],
+      "answer": 3,
+      "explanation": "The speaker says the hall has enough space for a larger group."
+    },
+    {
+      "prompt": "What does the association member object to in the coordinator’s suggestion?",
+      "options": [
+        "An invitation would promise the wrong location.",
+        "The public will recognise the name of the school.",
+        "Visitors will have to take tools home.",
+        "The new invitation might use paper of a different weight."
+      ],
+      "answer": 0,
+      "explanation": "The coordinator values the appearance of a room name which would misdirect visitors if printed as an address."
+    },
+    {
+      "prompt": "Where do the speakers share a concern?",
+      "options": [
+        "A work must become more stable when its paper takes on a new use.",
+        "A formal permission should be meaningful and workable once a visitor acts on it.",
+        "Gallery conduct can be guaranteed through quieter announcements.",
+        "An invitation issued by a gallery should describe only its own work."
+      ],
+      "answer": 1,
+      "explanation": "Reachability and perceived permission matter in the gallery, and accurate capacity and destination matter outside."
+    }
+  ],
+  "grammar": {
+    "focus": "Subjunctive and modal mandatives",
+    "explanation": "Reports about what happened are distinct from recommendations that something happen. A mandative that-clause can take a plain verb without person or tense inflection; should plus a plain verb also works in many registers. Be especially alert when suggest means imply rather than propose.",
+    "examples": [
+      {
+        "before": "The conservator required that the frame is moved.",
+        "after": "The conservator required that the frame be moved.",
+        "why": "A formal mandate uses passive be moved."
+      },
+      {
+        "before": "The attendant’s report suggested that he take an invitation.",
+        "after": "The attendant’s report suggested that he had taken an invitation.",
+        "why": "This particular use of suggested introduces an inference about an earlier event."
+      },
+      {
+        "before": "The artist’s demand is that each paper should refers to a real event.",
+        "after": "The artist’s demand is that each paper should refer to a real event.",
+        "why": "Should takes the plain form refer."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Choose a formal mandate about what future sheets must do.",
+        "options": [
+          "The gallery’s evidence shows that each sheet named a real event.",
+          "The gallery acknowledges that each sheet has named a real event.",
+          "The gallery requires that each sheet name a real event.",
+          "The gallery has found that each sheet names a real event."
+        ],
+        "answer": 2,
+        "explanation": "Requires with plain name expresses the condition rather than reporting compliance."
+      },
+      {
+        "prompt": "Which reports an inference about the past?",
+        "options": [
+          "We recommend that someone refold the paper.",
+          "The cutting pattern requires that someone refold the paper.",
+          "The cutting pattern suggests that someone had refolded the paper.",
+          "The gallery insists that someone should refold the paper."
+        ],
+        "answer": 2,
+        "explanation": "Suggests here draws an inference from physical evidence."
+      },
+      {
+        "prompt": "Which expresses a passive instruction in a formal report?",
+        "options": [
+          "The conservator asked that the range be measured before opening.",
+          "The conservator accepted that the range is measured every evening.",
+          "The conservator heard that the range had not been measured.",
+          "The conservator remembered that the range had been measured."
+        ],
+        "answer": 0,
+        "explanation": "Be measured is a passive mandative complement of asked."
+      },
+      {
+        "prompt": "What would ‘Bea insisted that she had checked the route’ communicate?",
+        "options": [
+          "Bea required someone to check the route later.",
+          "Bea doubted that a check had taken place.",
+          "Bea asked permission to stop a check.",
+          "Bea maintained that an earlier check took place."
+        ],
+        "answer": 3,
+        "explanation": "Insist can assert an event. Had checked reports completed action rather than prescribing one."
+      },
+      {
+        "prompt": "Which paraphrases ‘The registrar recommended postponing installation’?",
+        "options": [
+          "The registrar noticed that installation might already have been postponed.",
+          "The registrar recommended that installation should be postponed.",
+          "The registrar reported that installation was postponed.",
+          "The registrar demanded to know why installation had been postponed."
+        ],
+        "answer": 1,
+        "explanation": "Should be postponed preserves a recommendation about a future passive action."
+      },
+      {
+        "prompt": "Which formal repair matches ‘The artist requests a real location on every invitation’?",
+        "options": [
+          "The artist requests that every invitation giving a real location.",
+          "The artist requests that every invitation gives a real location.",
+          "The artist requests that every invitation given a real location.",
+          "The artist requests that every invitation give a real location."
+        ],
+        "answer": 3,
+        "explanation": "The singular invitation still takes the plain verb give in a formal mandative clause."
+      },
+      {
+        "prompt": "Which wording makes a negative requirement rather than a prediction?",
+        "options": [
+          "It is essential that the safety line not obstruct access.",
+          "It appears that the safety line does not obstruct access.",
+          "The safety line probably will not obstruct access.",
+          "There is evidence that the safety line did not obstruct access."
+        ],
+        "answer": 0,
+        "explanation": "Not plus the plain verb in a mandative makes absence of obstruction a requirement."
+      },
+      {
+        "prompt": "Which pair distinguishes evidence from instructions?",
+        "options": [
+          "The log agrees that one be removed; the curator declares that it should have been.",
+          "The log implies that extra supports were used; the curator proposes that one be removed.",
+          "The log proposes that extra supports were used; the curator implies that one be removed.",
+          "The log mandates that supports were used; the curator recalls that one be removed."
+        ],
+        "answer": 1,
+        "explanation": "The indicative were used reports a possible event, while the plain passive be removed carries a proposal."
+      }
+    ],
+    "transfer": "Write paired entries for a registrar: in each pair state one thing you infer from observations and one thing you require before opening. Read them to a partner who should be able to separate the two without headings."
+  },
+  "vocabulary": [
+    {
+      "word": "buckle",
+      "meaning": "bend or collapse under pressure",
+      "example": "The folded sheet buckled after an hour.",
+      "pair": "buckle under pressure"
+    },
+    {
+      "word": "registrar",
+      "meaning": "institutional officer maintaining records",
+      "example": "The registrar needs a complete acquisition file.",
+      "pair": "museum registrar"
+    },
+    {
+      "word": "authorise",
+      "meaning": "give official permission for",
+      "example": "The artist authorised a new edition.",
+      "pair": "authorise a replacement"
+    },
+    {
+      "word": "provenance",
+      "meaning": "record of an object’s origin and ownership",
+      "example": "The buyer requested documentation of provenance.",
+      "pair": "establish provenance"
+    },
+    {
+      "word": "instantiate",
+      "meaning": "give concrete form to an abstract rule or design",
+      "example": "Each installation instantiates the same instructions differently.",
+      "pair": "instantiate a design"
+    },
+    {
+      "word": "stipulate",
+      "meaning": "state an obligatory condition",
+      "example": "The contract stipulates a paper weight range.",
+      "pair": "stipulate a condition"
+    },
+    {
+      "word": "evoke",
+      "meaning": "bring an image or feeling to mind",
+      "example": "The name evokes a narrow lane near the canal.",
+      "pair": "evoke a place"
+    },
+    {
+      "word": "undertaking",
+      "meaning": "formal commitment to do something",
+      "example": "The organisers gave an undertaking to provide space.",
+      "pair": "formal undertaking"
+    },
+    {
+      "word": "inadvertently",
+      "meaning": "without intending the effect",
+      "example": "The steward inadvertently blocked the path.",
+      "pair": "inadvertently restrict"
+    },
+    {
+      "word": "indistinguishable",
+      "meaning": "impossible to tell apart",
+      "example": "The signatures look indistinguishable from a distance.",
+      "pair": "virtually indistinguishable"
+    },
+    {
+      "word": "durability",
+      "meaning": "ability to last in use",
+      "example": "Durability was expected of the frame rather than the paper.",
+      "pair": "test durability"
+    },
+    {
+      "word": "replenish",
+      "meaning": "restore a supply that is running low",
+      "example": "Staff must replenish the envelopes locally.",
+      "pair": "replenish a supply"
+    }
+  ],
+  "speaking": {
+    "audience": "Gallery attendants, a conservator and an event organiser",
+    "first": "Deliver a five-minute pre-opening briefing. Run through one choice about a folded support and one choice about a visitor who asks for a sheet. Quote one condition from the contract and paraphrase another.",
+    "change": "A supporter wants to move the chosen event to a room with twelve places after invitations have been printed.",
+    "second": "Give the organisers a separate message that protects the invitation’s accuracy, then brief the floor team about which invitations to remove and how to describe them.",
+    "checklist": [
+      "Distinguish structural stability from visitor access.",
+      "Explain who can change the invitation addresses.",
+      "State a usable permission.",
+      "Include an action that protects the repair group."
+    ]
+  },
+  "writing": {
+    "audience": "People seeing the installation for the first time",
+    "first": "Draft a wall label and a 350-word registrar’s note. The label should communicate a visitor action; the note should make a careful claim about identity across exhibitions.",
+    "change": "A replacement sheet advertises a real event, but its organiser cannot accept anyone without a booking.",
+    "second": "Create a new short label for this stage of the exhibition and draft a form that organisers can approve before new copies arrive.",
+    "checklist": [
+      "Make any participation condition visible.",
+      "Keep conservation and access claims distinct.",
+      "Use a formal mandative where it clarifies the holder’s duty.",
+      "Allow a visitor to know when a document is historical."
+    ]
+  },
+  "immersion": {
+    "role": "Acquisition meeting facilitator",
+    "goal": "Make a conservation agreement compatible with real events and visitor decisions.",
+    "constraints": [
+      "The original frame must survive the installation.",
+      "Visitors cannot dismantle supports.",
+      "The organiser controls the commitment made by an invitation.",
+      "Foreseeable routes remain clear without pretending all movement is impossible."
+    ],
+    "change": "The next gallery can print locally but can only accept objects from outside during staffed hours.",
+    "deliverables": [
+      "Produce a glossary for the intake agreement and a two-column operations sheet.",
+      "Prepare a table of possible observations and corrective actions.",
+      "Role-play a negotiation in which access restrictions and the intended visitor experience both change."
+    ],
+    "checklist": [
+      "Identify the physical trigger for each floor action.",
+      "Define what leaves, stays and can be replaced.",
+      "Remedy address errors without erasing the historical record.",
+      "State which actor takes responsibility for each choice."
+    ]
+  }
+}

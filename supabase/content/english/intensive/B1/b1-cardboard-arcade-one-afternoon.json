@@ -1,0 +1,391 @@
+{
+  "slug": "b1-cardboard-arcade-one-afternoon",
+  "title": "A Cardboard Arcade in One Afternoon",
+  "level": "B1",
+  "summary": "Plan games that visitors can learn in seconds and revise the layout when a table disappears.",
+  "documents": [
+    {
+      "title": "Instructions for game makers",
+      "text": "We have one afternoon to make an arcade from boxes and card. Each game should take less than two minutes to play. Visitors can begin as soon as a volunteer shows them one example turn. Avoid games that require someone to count a long score or reset many pieces. A simple game with a clear finish is easier to run than an impressive one that occupies a table all afternoon.\n\nThere are six large boxes in the store, and we need to keep two whole to carry equipment back. You may cut up the four boxes with a blue mark. You can also use the short pieces already lying flat beside the scissors. Write the names of any extra materials on the list by the door. We will buy only those items that more than one team can use. At three, put your game on a table and ask someone outside your team to play without reading your notes."
+    },
+    {
+      "title": "A tester's report",
+      "text": "I tried the marble course and the picture toss. The marble course looked simple because it had one ramp, but I did not know whether my marble had to stop in its final space or only pass through it. The volunteer gave three different examples. Once I knew the rule, the game itself took less than a minute.\n\nThe picture toss was easier to start. The card showed where to stand and how to take one turn. I was unsure what to do after the game because nobody had explained where to put the counters. The next player waited while I picked them up and looked for a box. I suggest drawing a picture of the finished table next to the picture of a turn. Put the spare counters in the same cup each time. If every volunteer can recognise the starting position, they can reset the game quickly even when the volunteer who made it is helping somebody else."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two team members change a game",
+      "text": "Asha: The big box will make a good goal if we lay it on its side. Can we cut the top off this one?\n\nPavel: That one has no blue mark. We need it for bringing things back. There's a pile of flat card by the stairs. Could we fold a goal from that?\n\nAsha: Yes. We still need the ball to stop somewhere. If it rolls through the goal, it can hit the game behind us.\n\nPavel: We could use a long strip as a wall at the back. I tried that yesterday with a small model. It makes a noise when the ball hits, so the player has a clear sign they've scored.\n\nAsha: Good. Is one hit enough to end the turn?\n\nPavel: Let's give each person three balls. If any one touches the wall, that's a point. I can draw the three balls on the instruction card.\n\nAsha: I'll make a tray for them. Put it at the start, so a new player can find all three."
+    },
+    {
+      "title": "Just before opening",
+      "text": "Supervisor: We have a change to the room. The long table by the window is needed in the hall, so the games in this room will have only two tables. We can still run all four if we use each table from both sides.\n\nVolunteer: Will the players stand next to each other?\n\nSupervisor: Not quite. Two games can start on the left, and the other two can start on the right. The queue should go along the wall, rather than down the middle. People passing through will then have space to walk.\n\nVolunteer: The marble course is longer than the table is wide. If we turn it round, its ramp will stick out.\n\nSupervisor: Put that one against the back wall and turn the shorter picture toss round. Try both from a visitor's position before we open. If you cannot see the instruction card from the right side, move the card. Please leave both tables ready to use when you take your break."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why should a visitor be shown just one example turn?",
+      "options": [
+        "Equipment will be taken away at three.",
+        "The teams may run out of counters.",
+        "Only volunteers can read the instruction cards.",
+        "Games should be quick to learn and play."
+      ],
+      "answer": 3,
+      "explanation": "The notice prioritises one clear turn and a short game."
+    },
+    {
+      "prompt": "1. Which boxes can be cut up?",
+      "options": [
+        "The four with a blue mark",
+        "The six in the store",
+        "The two used for carrying",
+        "Only the short pieces by the scissors"
+      ],
+      "answer": 0,
+      "explanation": "The colour mark identifies the four boxes available for cutting."
+    },
+    {
+      "prompt": "1. Who should test a game at three?",
+      "options": [
+        "The person who wrote its rules",
+        "Somebody outside the team",
+        "The visitor with the most points",
+        "The supervisor who buys supplies"
+      ],
+      "answer": 1,
+      "explanation": "An outside tester has to play without relying on its makers' notes."
+    },
+    {
+      "prompt": "2. What was unclear about the marble course?",
+      "options": [
+        "How many people could play",
+        "Whether the marble had to finish in one space",
+        "Where the ramp should stand",
+        "What counted as the first turn"
+      ],
+      "answer": 1,
+      "explanation": "The tester could not distinguish stopping in the space from passing through it."
+    },
+    {
+      "prompt": "2. Why did the next picture-toss player wait?",
+      "options": [
+        "The picture of a turn had been removed.",
+        "The previous player could not see where to put the counters.",
+        "The lines were too close together.",
+        "The volunteer was counting a long score."
+      ],
+      "answer": 1,
+      "explanation": "The tester picked up counters and searched for somewhere to put them."
+    },
+    {
+      "prompt": "2. How could a picture of the finished table help?",
+      "options": [
+        "It could show how to cut a blue box.",
+        "A volunteer could reset it without asking the maker.",
+        "Visitors could record a score before playing.",
+        "It could replace the first example turn."
+      ],
+      "answer": 1,
+      "explanation": "The tester links a visible starting position to quick independent resets."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Why can Asha not cut the first box?",
+      "options": [
+        "It is too heavy to turn over.",
+        "It is marked for the marble course.",
+        "It is needed for carrying equipment back.",
+        "The top is already damaged."
+      ],
+      "answer": 2,
+      "explanation": "Pavel says it has no blue mark and is needed at the end."
+    },
+    {
+      "prompt": "1. How will the ball show it has scored?",
+      "options": [
+        "It will stop inside a painted line.",
+        "It will reach the game behind it.",
+        "It will leave the box on the left.",
+        "It will hit a wall and make a noise."
+      ],
+      "answer": 3,
+      "explanation": "The added strip makes a sound when the ball reaches it."
+    },
+    {
+      "prompt": "1. What will Asha make?",
+      "options": [
+        "A small card ramp",
+        "A tray for the three balls",
+        "A list of extra materials",
+        "A picture of the finished goal"
+      ],
+      "answer": 1,
+      "explanation": "Asha offers to make the tray at the end."
+    },
+    {
+      "prompt": "2. Where should the line form?",
+      "options": [
+        "By the middle aisle",
+        "Inside the hall",
+        "Behind the right table",
+        "Along the wall"
+      ],
+      "answer": 3,
+      "explanation": "Keeping the middle free lets people pass."
+    },
+    {
+      "prompt": "2. Which game is too long to turn on its table?",
+      "options": [
+        "The picture toss",
+        "The game with the shortest list",
+        "The game nearest the entrance",
+        "The marble course"
+      ],
+      "answer": 3,
+      "explanation": "The volunteer says the course ramp would stick out."
+    },
+    {
+      "prompt": "2. What should be checked from a visitor's position?",
+      "options": [
+        "Whether balls roll through the goal",
+        "Whether the hall still needs a table",
+        "Whether both games last two minutes",
+        "Whether they can see the instruction card from the right"
+      ],
+      "answer": 3,
+      "explanation": "The supervisor gives this explicit instruction."
+    }
+  ],
+  "grammar": {
+    "focus": "Purpose with to and so that",
+    "explanation": "Use to + verb for the aim of an action when the same person does both. Use so that + subject + verb when naming a separate person or result. Use for with a noun to name intended use, such as a tray for the balls.",
+    "examples": [
+      {
+        "before": "We drew a line for show the start.",
+        "after": "We drew a line to show the start.",
+        "why": "Use to before the purpose verb show."
+      },
+      {
+        "before": "Put a tray here so find it.",
+        "after": "Put a tray here so that visitors can find it.",
+        "why": "Name the person after so that."
+      },
+      {
+        "before": "A tray to the counters sits there.",
+        "after": "A tray for the counters sits there.",
+        "why": "For introduces the intended objects."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "We put the cup there _____ hold the counters.",
+        "options": [
+          "for",
+          "to",
+          "so",
+          "because of"
+        ],
+        "answer": 1,
+        "explanation": "Hold is a purpose verb after to."
+      },
+      {
+        "prompt": "Move the card _____ people can read it from the right.",
+        "options": [
+          "for",
+          "so that",
+          "to",
+          "despite"
+        ],
+        "answer": 1,
+        "explanation": "So that introduces a separate subject and result."
+      },
+      {
+        "prompt": "We kept two boxes _____ transport.",
+        "options": [
+          "for",
+          "to",
+          "so that",
+          "until of"
+        ],
+        "answer": 0,
+        "explanation": "Transport here is a noun."
+      },
+      {
+        "prompt": "Which sentence properly names the volunteer's purpose?",
+        "options": [
+          "She made a picture for help new volunteers.",
+          "She made a picture to new volunteers can help.",
+          "She made a picture so help new volunteers.",
+          "She made a picture to help new volunteers."
+        ],
+        "answer": 3,
+        "explanation": "To help is a clear purpose clause."
+      },
+      {
+        "prompt": "Mark the wall _____ players know that they have scored.",
+        "options": [
+          "to",
+          "in order",
+          "for",
+          "so that"
+        ],
+        "answer": 3,
+        "explanation": "The clause has the subject players and verb know."
+      },
+      {
+        "prompt": "There is a shelf _____ spare cards.",
+        "options": [
+          "to",
+          "so that",
+          "for",
+          "in order"
+        ],
+        "answer": 2,
+        "explanation": "For links the shelf to its contents."
+      },
+      {
+        "prompt": "We tested the game _____ whether the turn was too long.",
+        "options": [
+          "for see",
+          "to see",
+          "so see",
+          "for saw"
+        ],
+        "answer": 1,
+        "explanation": "The same people tested and wanted to see the result."
+      },
+      {
+        "prompt": "Which instruction makes the purpose explicit?",
+        "options": [
+          "Move the line when the centre is clear.",
+          "Move the line past the centre door.",
+          "Move the line to keep the centre clear.",
+          "Move the line and count the people."
+        ],
+        "answer": 2,
+        "explanation": "To keep names the reason for moving the line."
+      }
+    ],
+    "transfer": "Write two signs using to for one instruction and so that for an instruction addressed to somebody else. Ask a second reader to name the purpose from each sign."
+  },
+  "vocabulary": [
+    {
+      "word": "arcade",
+      "meaning": "a place with a group of games",
+      "example": "We opened a small arcade for visitors.",
+      "pair": "cardboard arcade"
+    },
+    {
+      "word": "reset",
+      "meaning": "put something back into its starting condition",
+      "example": "Reset the game after each turn.",
+      "pair": "reset the game"
+    },
+    {
+      "word": "ramp",
+      "meaning": "a surface that slopes between levels",
+      "example": "The ball rolled down the ramp.",
+      "pair": "wooden ramp"
+    },
+    {
+      "word": "counter",
+      "meaning": "a small piece used in a game",
+      "example": "Put the counters back in the cup.",
+      "pair": "game counter"
+    },
+    {
+      "word": "occupy",
+      "meaning": "use a space or period",
+      "example": "The game occupies half the table.",
+      "pair": "occupy a corner"
+    },
+    {
+      "word": "spare",
+      "meaning": "extra and available",
+      "example": "There are spare cards by the door.",
+      "pair": "spare card"
+    },
+    {
+      "word": "flat",
+      "meaning": "level and not folded",
+      "example": "Keep the card flat.",
+      "pair": "lie flat"
+    },
+    {
+      "word": "turn",
+      "meaning": "one person's chance to play",
+      "example": "Take one turn before joining another line.",
+      "pair": "take a turn"
+    },
+    {
+      "word": "stick out",
+      "meaning": "extend beyond an edge",
+      "example": "The ramp sticks out.",
+      "pair": "stick out from the table"
+    },
+    {
+      "word": "tray",
+      "meaning": "a shallow container for carrying things",
+      "example": "The tray holds three balls.",
+      "pair": "ball tray"
+    },
+    {
+      "word": "position",
+      "meaning": "a place or arrangement",
+      "example": "Check the starting position.",
+      "pair": "starting position"
+    },
+    {
+      "word": "pass through",
+      "meaning": "go across or inside and out of something",
+      "example": "The marble passed through the goal.",
+      "pair": "pass through the opening"
+    }
+  ],
+  "speaking": {
+    "audience": "The volunteer who takes your place",
+    "first": "Use the report to prepare a two-minute explanation of one chosen game. Explain a turn, its ending and the reset. Record two versions, one for a visitor and one for a helper.",
+    "change": "You lose the long table and have to welcome people from the right side.",
+    "second": "Give the helper a second handover. Say which game changes direction and what is checked from the new position.",
+    "checklist": [
+      "Explains the turn without a long story",
+      "Names both the goal and the reset",
+      "Relates the changed layout to where people stand"
+    ]
+  },
+  "writing": {
+    "audience": "New arcade volunteers",
+    "first": "Write a 130–170 word staff card for one game. Separate materials, rules and reset. Use the tester's report to identify what must be visible.",
+    "change": "The next helper did not make the game and cannot ask its maker any questions.",
+    "second": "Revise the card with one drawn or written starting view and two explicit details the original version left to memory.",
+    "checklist": [
+      "A new reader can start and reset the game",
+      "Use to or so that for reasons",
+      "Do not assume the reader knows the hidden rule"
+    ]
+  },
+  "immersion": {
+    "role": "Arcade table lead",
+    "goal": "Set up two activities in half the originally planned space.",
+    "constraints": [
+      "Two tables serve four games",
+      "Two whole boxes stay uncut",
+      "Leave a clear route through the middle"
+    ],
+    "change": "One chosen instruction card is hidden when a player approaches from the right.",
+    "deliverables": [
+      "Sketch of the final room and queue",
+      "Two game cards",
+      "Two-minute visitor script",
+      "Test report with three changes"
+    ],
+    "checklist": [
+      "Every position works from the marked approach",
+      "The boxes needed later stay whole",
+      "The test includes a reset by somebody new"
+    ]
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "slug": "b1-a-radio-show-in-two-rooms",
+  "title": "A Radio Show in Two Rooms",
+  "level": "B1",
+  "summary": "Organize a school radio recording when a quiet room and a large room offer different advantages.",
+  "documents": [
+    {
+      "title": "Note from the radio club",
+      "text": "This month's school radio program includes a five-minute story about a mouse in an empty theater. The script includes three kinds of sound: voices, doors, and footsteps. We are planning to record the four actors in Studio A on Tuesday between three and four. Two people can read at the same microphone if they stand on different sides of the desk. Please turn pages only when nobody is speaking. Studio A is too small for the wooden boards we use to make footsteps. The drama room has space for the boards and several types of doors. You can book it from four to four thirty, but a volleyball practice starts next door at four fifteen. The balls can be heard through the wall. Start with the soft sounds, then try the louder door closes if you still need them. Keep the three types of sound in separate folders so we can change the order later. Upload the files by six on Wednesday. Sara will add the opening music herself on Thursday."
+    },
+    {
+      "title": "A report from last month's editor",
+      "text": "Our last story was easy to follow in the first scene because the voices were clear. The most difficult moment came at the top of the stairs. The actors said the door was stuck, but the noise of the door finally opening covered the mouse's next line. I planned to turn the door down. In the end I could not change it without making the voice quieter, too. They were in the same recording. We also had two sounds with nearly the same name. I used a sound called Door One in the second scene and then had to check six other files to find the right one later. This month, put a place or action in the file name. For example, write Upstairs Door Opens or Side Door Closes. Record several short versions of each sound; take two loud steps for one file and four slow steps for another. For the very last line, remember that a short pause before the voice can be more useful than an extra noise."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A message from an actor",
+      "text": "Hi, this is Arman. I can still get to the studio on Tuesday, but my class finishes at three twenty instead of three. I may need ten more minutes to get to that part of the building. My character has two lines in the first scene and those last lines at the top of the stairs. I looked at the script just now. In the first scene, all I say is, 'Did you hear that?' and then, 'Let's go upstairs.' If the others get there before I do, can they record the parts where the mouse is alone? I could record my two short lines by myself afterward. I would like to do the last scene with Ana, though. She needs to hear when I stop talking, because she starts to laugh in the gap between my two sentences. Can we leave that for the end of the studio booking? I will bring the new script in case someone still has the one with the old ending. Text me the room number if we have changed rooms."
+    },
+    {
+      "title": "Two people testing a door sound",
+      "text": "Ana: That one sounds like a cupboard. Try the door by the stage.\n\nLeon: I tried it, but listen to this part. That's the lock turning. The script says the door is already open when the mouse gets to it.\n\nAna: We still need a loose door moving. Could you hold the handle down while you open the stage door slowly?\n\nLeon: Let me try. How was that?\n\nAna: That's better. It is very quiet, though. I can bring the microphone closer if you can do it just one more time.\n\nLeon: There's a ball hitting the floor next door now. You can hear it between the two sounds.\n\nAna: Then let's use the recording we just made. The editor can turn that sound up because there are no voices with it.\n\nLeon: I'll call it Stage Door Moves Slowly. Do we have a sound of the other door closing?\n\nAna: Yes, it was the first thing I recorded yesterday. It is already in the door folder, but it says Close Side Door."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why is Studio A unsuitable for the footstep boards?",
+      "options": [
+        "The actors need to share a desk.",
+        "Its microphone is made only for music.",
+        "It does not have enough space.",
+        "The boards have already been booked."
+      ],
+      "answer": 2,
+      "explanation": "The notice directly gives the room's size as the problem."
+    },
+    {
+      "prompt": "1. Why should the group record soft sounds before 4:15?",
+      "options": [
+        "The doors become louder after that time.",
+        "The boards must be returned by 4:15.",
+        "Noise from a sports practice may cover them later.",
+        "The editor uploads the footsteps first."
+      ],
+      "answer": 2,
+      "explanation": "Volleyball begins next door at 4:15 and can be heard in the drama room."
+    },
+    {
+      "prompt": "1. When does Sara need to add her part?",
+      "options": [
+        "By six on Wednesday",
+        "On Thursday",
+        "At the end of Tuesday's session",
+        "Before the actors arrive"
+      ],
+      "answer": 1,
+      "explanation": "The upload is due Wednesday; Sara adds music Thursday."
+    },
+    {
+      "prompt": "2. What prevented the editor from fixing the noisy door easily?",
+      "options": [
+        "The door and voice were recorded together.",
+        "The door file was lost among six others.",
+        "The actor forgot the next line.",
+        "The editor could not find the door by the stage."
+      ],
+      "answer": 0,
+      "explanation": "Adjusting the shared recording affected both sounds."
+    },
+    {
+      "prompt": "2. What does the writer suggest adding to the file name?",
+      "options": [
+        "A detail about the place or action",
+        "The number of actors speaking",
+        "The name of the actor holding the door",
+        "The order of all other recordings"
+      ],
+      "answer": 0,
+      "explanation": "The sample names give both a location and an action."
+    },
+    {
+      "prompt": "2. What does the editor suggest for the final line?",
+      "options": [
+        "Use the loudest door sound before it.",
+        "Have the actors read it twice into the same file.",
+        "Leave a little quiet before it.",
+        "Add four slow footsteps during it."
+      ],
+      "answer": 2,
+      "explanation": "The report says a short pause could work better than extra sound."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What does Arman suggest for the first part of the booking?",
+      "options": [
+        "Read the scene at the top of the stairs first.",
+        "Record the sections without his character.",
+        "Delay the program until after class.",
+        "Move everyone to the drama room."
+      ],
+      "answer": 1,
+      "explanation": "His delayed arrival leaves time for parts where the mouse is alone."
+    },
+    {
+      "prompt": "1. Why does Arman want to record the last scene with Ana?",
+      "options": [
+        "She needs to time her laugh around his speech.",
+        "She is the only person with the room number.",
+        "They must record a loud door together.",
+        "She needs him to explain the old ending."
+      ],
+      "answer": 0,
+      "explanation": "He describes a pause where Ana's character has to start laughing."
+    },
+    {
+      "prompt": "1. What will Arman bring?",
+      "options": [
+        "The extra microphone from class",
+        "The files from the old ending",
+        "A lock for the door at the top of the stairs",
+        "The latest version of the script"
+      ],
+      "answer": 3,
+      "explanation": "He offers to bring the new script."
+    },
+    {
+      "prompt": "2. Why does Leon change how he opens the stage door?",
+      "options": [
+        "It will avoid making a loud closing sound next door.",
+        "He wants movement without the sound of the lock.",
+        "The microphone needs the stage door to face a different way.",
+        "The script calls for the mouse to lock the door."
+      ],
+      "answer": 1,
+      "explanation": "The door is already open in the story, so the lock sound is wrong."
+    },
+    {
+      "prompt": "2. Why do they choose the quieter existing recording?",
+      "options": [
+        "The editor told them the door should be silent.",
+        "A new take would include the sounds of volleyball.",
+        "The other room has a voice recording in progress.",
+        "The microphone has stopped working."
+      ],
+      "answer": 1,
+      "explanation": "Once the balls can be heard, the clean quiet recording is preferable."
+    },
+    {
+      "prompt": "2. Which sound did Ana already save earlier?",
+      "options": [
+        "The stage door turning in its lock",
+        "The ball hitting the floor",
+        "One character laughing",
+        "The side door closing"
+      ],
+      "answer": 3,
+      "explanation": "She confirms a file called Close Side Door in the door folder."
+    }
+  ],
+  "grammar": {
+    "focus": "Suggestions and requests with can and could",
+    "explanation": "Can and could take a base verb. Use could to offer one possible plan or ask politely. Use can to describe what is possible now or to make a straightforward request.",
+    "examples": [
+      {
+        "before": "Could you to hold the handle down?",
+        "after": "Could you hold the handle down?",
+        "why": "The verb after could does not take to."
+      },
+      {
+        "before": "She can records at four.",
+        "after": "She can record at four.",
+        "why": "Use the base verb after can even with she."
+      },
+      {
+        "before": "We could moving the microphone.",
+        "after": "We could move the microphone.",
+        "why": "Could takes move, not moving."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Could we ___ the mouse's solo lines first?",
+        "options": [
+          "to record",
+          "recording",
+          "record",
+          "recorded"
+        ],
+        "answer": 2,
+        "explanation": "Record is the base form after could."
+      },
+      {
+        "prompt": "Which is a polite request to Ana?",
+        "options": [
+          "Could you read that line again?",
+          "You could reading that line again?",
+          "Could you reading that line again?",
+          "Can to read that line again?"
+        ],
+        "answer": 0,
+        "explanation": "Could you plus a base verb makes a request."
+      },
+      {
+        "prompt": "I can ___ at three thirty.",
+        "options": [
+          "arrive",
+          "arrives",
+          "to arrive",
+          "arrived"
+        ],
+        "answer": 0,
+        "explanation": "Can takes arrive after any subject."
+      },
+      {
+        "prompt": "Choose the reply that offers a possible solution.",
+        "options": [
+          "We could putting the door in a separate file.",
+          "Do we could put the sound away?",
+          "We could put the door sound in a separate file.",
+          "We can to move the sound to a separate file."
+        ],
+        "answer": 2,
+        "explanation": "Could with put offers one workable idea."
+      },
+      {
+        "prompt": "The editor can turn up the quiet door, but she ___ change two sounds separately in one file.",
+        "options": [
+          "can't",
+          "does can't",
+          "can't to",
+          "not can"
+        ],
+        "answer": 0,
+        "explanation": "Can't followed by the base verb is the negative form."
+      },
+      {
+        "prompt": "Which question asks whether the second room is available?",
+        "options": [
+          "Can we use the drama room at four?",
+          "Do we can use the drama room at four?",
+          "Can use we the drama room at four?",
+          "Can we using the drama room at four?"
+        ],
+        "answer": 0,
+        "explanation": "The question starts with Can plus the subject and base verb."
+      },
+      {
+        "prompt": "If the floor is noisy, we ___ the door we recorded earlier.",
+        "options": [
+          "could used",
+          "could use",
+          "can using",
+          "could to use"
+        ],
+        "answer": 1,
+        "explanation": "This modal and base verb make a suggestion."
+      },
+      {
+        "prompt": "Turn 'move the microphone closer' into a polite request.",
+        "options": [
+          "Could move you the microphone closer?",
+          "Could you move the microphone closer?",
+          "Could you moved the microphone closer?",
+          "Could you be move the microphone closer?"
+        ],
+        "answer": 1,
+        "explanation": "Put the subject between Could and move."
+      }
+    ],
+    "transfer": "Write and then role-play a six-line call between an actor and the editor. Ask two polite questions, offer two possible plans, and include one thing the editor can do and one they cannot."
+  },
+  "vocabulary": [
+    {
+      "word": "stuck",
+      "meaning": "unable to move from its place",
+      "example": "The door was stuck at the bottom.",
+      "pair": "get stuck"
+    },
+    {
+      "word": "script",
+      "meaning": "the written lines and directions for a performance",
+      "example": "There are two changes to the last page of the script.",
+      "pair": "read from a script"
+    },
+    {
+      "word": "scene",
+      "meaning": "one part of a story or performance",
+      "example": "The next scene takes place in a theater.",
+      "pair": "the opening scene"
+    },
+    {
+      "word": "cover",
+      "meaning": "make a quieter sound hard to hear",
+      "example": "Traffic noise covered the end of his line.",
+      "pair": "cover a quiet sound"
+    },
+    {
+      "word": "turn up",
+      "meaning": "make a sound louder",
+      "example": "Can you turn up the door recording?",
+      "pair": "turn up the volume"
+    },
+    {
+      "word": "pause",
+      "meaning": "a short break in sound or action",
+      "example": "Leave a pause before the opening music.",
+      "pair": "a brief pause"
+    },
+    {
+      "word": "folder",
+      "meaning": "a place where related digital files are kept together",
+      "example": "Put the soft footsteps in the same folder.",
+      "pair": "create a folder"
+    },
+    {
+      "word": "version",
+      "meaning": "a form of something that may differ from another one",
+      "example": "Which version of the ending is correct?",
+      "pair": "the latest version"
+    },
+    {
+      "word": "take",
+      "meaning": "one attempt at recording or filming something",
+      "example": "The sound is clearer in the second take.",
+      "pair": "record another take"
+    },
+    {
+      "word": "loose",
+      "meaning": "not held firmly in place",
+      "example": "The loose panel moved when I touched the door.",
+      "pair": "a loose handle"
+    },
+    {
+      "word": "lock",
+      "meaning": "a device that keeps a door closed until it is opened with a key or another method",
+      "example": "We heard the lock click before the door moved.",
+      "pair": "unlock a door"
+    },
+    {
+      "word": "next door",
+      "meaning": "in a nearby room or building",
+      "example": "People were speaking loudly next door.",
+      "pair": "the room next door"
+    }
+  ],
+  "speaking": {
+    "audience": "Actors who have not planned a recording before",
+    "first": "Use the two written sources to prepare and give a two-minute recording plan for Tuesday. Assign room, time and sounds. Make two polite requests and explain why the editor needs separate files.",
+    "change": "Arman texts that he can only arrive at 3:50, and Ana has to leave at 4:00.",
+    "second": "Give a 90-second revised call. Explain what happens before Arman arrives, use the ten minutes with both actors, and move one optional action out of that slot.",
+    "checklist": [
+      "State two accurate times",
+      "Keep the final scene as a joint recording",
+      "Separate effects from speech",
+      "Use a clear request with could"
+    ]
+  },
+  "writing": {
+    "audience": "Sara, the program editor",
+    "first": "Write a 130–160 word handover. List the three folders, two useful sample file names, the order for recording the doors and steps, and what Sara can expect by Wednesday.",
+    "change": "You discover that the only new recording of the stage door caught a quiet ball sound at the end. The earlier quiet door is still clean.",
+    "second": "Write a 90–110 word message to Leon asking him to revise the upload plan. Explain which file to use, what he must rename or check, and what to tell Sara.",
+    "checklist": [
+      "Use file names someone else can recognize",
+      "Give a deadline",
+      "Explain why you picked the recording",
+      "Make the new request politely"
+    ]
+  },
+  "immersion": {
+    "role": "Radio club production assistant",
+    "goal": "Produce a complete recording plan and a file handover for a five-minute story.",
+    "constraints": [
+      "Studio A is available 3:00–4:00 Tuesday",
+      "The drama room becomes noisy at 4:15",
+      "The ending needs two performers in the same scene"
+    ],
+    "change": "The studio recorder can now save only three more files. The editor can record alternative footsteps on Wednesday.",
+    "deliverables": [
+      "Make a timed three-scene running order you can explain aloud",
+      "Sketch a folder list and name six effects or voice files",
+      "Choose the three studio takes and explain what you defer or combine",
+      "Send the editor a short handover with what is still missing"
+    ],
+    "checklist": [
+      "Every recorded item has a purpose and readable name",
+      "Sensitive sounds are planned before sports practice",
+      "The three-file limit is met",
+      "The editor knows what to do on Wednesday"
+    ]
+  }
+}

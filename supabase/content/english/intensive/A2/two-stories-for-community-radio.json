@@ -1,0 +1,424 @@
+{
+  "slug": "two-stories-for-community-radio",
+  "title": "Two stories for community radio",
+  "level": "A2",
+  "summary": "Plan a seven-minute community radio show with two resident stories and a sound break called Rain on the Roof. Use an email, a draft schedule and two timing updates to decide who goes first. Practise comparing how and when people speak. Then make a run sheet and record a short link that still work when the phone guest has to leave sooner.",
+  "documents": [
+    {
+      "title": "Email from Rosa",
+      "text": "Hi Alex,\n\nPlease get Thursday's mini show ready. We go on air at 6:00 p.m. and finish at 6:07. I'd like two stories from people in the neighbourhood. Mina will tell The Missing Key by phone. Jo will tell A Bench for Everyone in the studio. Give each resident up to two minutes. Leave Rain on the Roof between the two stories. It's a one-minute recording, and we need to play all of it.\n\nThe draft has Jo first. Check Mina’s Voice Message and Alex’s Studio Note before you put the final order on the run sheet. If a story is short, Alex can speak until the next item starts. In the opening, say both story titles.\n\nThanks,\nRosa"
+    },
+    {
+      "title": "Thursday Draft Run Sheet",
+      "text": "6:00–6:01 p.m. | Opening. Alex welcomes listeners and gives both story titles.\n6:01–6:03 | A Bench for Everyone. Jo tells the story in the studio. Put a glass of water by Jo's chair.\n6:03–6:04 | Rain on the Roof. Play the whole recording. Alex names it just before it starts, in the time for the first story.\n6:04–6:06 | The Missing Key. Mina tells the story by phone. A second worker checks Mina’s line off air for ten seconds after she calls. Alex keeps speaking during the check.\n6:06–6:07 | Closing. Alex thanks both residents and says goodbye.\n\nIf the stories change places, move the story titles and the notes about the water and the phone with them. Keep the opening, sound break, and closing at the times above."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Mina's Voice Message",
+      "text": "Hi Alex, it's Mina. I'm calling about The Missing Key, my story for Thursday. I can ring the studio at 6:01 p.m. I know the show starts at six. I'll be on the bus until just before then, so please expect my call after the opening starts. I can stay on the phone until 6:04, when I need to collect my son. The short version of my story takes about a minute and a half. It starts with me looking in my coat pocket. My neighbour finds the key under a flowerpot. Before you put me on air, could you say my name more slowly than you did last week? Thanks. See you Thursday!"
+    },
+    {
+      "title": "Alex's Studio Note",
+      "text": "Thursday planning note. I checked with Jo this afternoon. Jo can get to the studio at 6:03 p.m. and is ready to speak from 6:04. Jo can't come earlier because of work. The draft puts Jo at 6:01, so we need to swap the stories if we want Jo on the show. Jo's story is about the people who built a bench outside their block of flats. I'll mention the bench in the link before the sound break so listeners know what Jo's story is about. I'll name Rain on the Roof just before we play it. I want to say the title more clearly than I did in our practice, so people know what they're about to hear."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Skim Email from Rosa. What does Rosa mainly want Alex to do?",
+      "options": [
+        "Ask both residents to find a sound recording",
+        "Prepare Thursday's mini show and check the story order",
+        "Collect stories for a future show",
+        "Write a new ending for each story"
+      ],
+      "answer": 1,
+      "explanation": "Rosa asks Alex to get Thursday's show ready and check the two planning updates before choosing the final order."
+    },
+    {
+      "prompt": "Reread Email from Rosa and underline the time limits. What does Rosa say about each resident's story?",
+      "options": [
+        "It must last exactly one minute.",
+        "It must fill the whole two-minute slot.",
+        "It can last three minutes if the show ends on time.",
+        "It can last two minutes or less."
+      ],
+      "answer": 3,
+      "explanation": "Rosa gives each resident up to two minutes and says Alex can speak if a story is short."
+    },
+    {
+      "prompt": "In Email from Rosa, what can Alex do if the first resident finishes early?",
+      "options": [
+        "Speak until the next item starts",
+        "Play just the first part of the sound break",
+        "Ask the second resident to start before the sound break",
+        "Give the first resident a second turn after the break"
+      ],
+      "answer": 0,
+      "explanation": "Rosa says Alex can speak until the next item starts when a story is short."
+    },
+    {
+      "prompt": "In Thursday Draft Run Sheet, what is on air from 6:04 to 6:06 in the draft order?",
+      "options": [
+        "The opening with both story titles",
+        "A Bench for Everyone in the studio",
+        "The Missing Key by phone",
+        "Rain on the Roof with a spoken introduction"
+      ],
+      "answer": 2,
+      "explanation": "The 6:04–6:06 row lists The Missing Key and says Mina tells it by phone."
+    },
+    {
+      "prompt": "Reread the final note in Thursday Draft Run Sheet. If Jo moves to the second story slot, which instruction moves with Jo?",
+      "options": [
+        "Say both story titles.",
+        "Thank both residents.",
+        "Check that the guest can hear Alex.",
+        "Put a glass of water by the chair."
+      ],
+      "answer": 3,
+      "explanation": "The water is for Jo, and the final note says the water and phone instructions move with their stories."
+    },
+    {
+      "prompt": "Use Thursday Draft Run Sheet to make two lists, items that can move and items that stay at fixed times. Which item is fixed at 6:03?",
+      "options": [
+        "Rain on the Roof",
+        "The introduction to Jo's story",
+        "The first story",
+        "The closing thanks"
+      ],
+      "answer": 0,
+      "explanation": "The sound break starts at 6:03, and the final note says it keeps that time after a swap."
+    },
+    {
+      "prompt": "In Thursday Draft Run Sheet, where should Alex allow time to say the name Rain on the Roof?",
+      "options": [
+        "At the very start of the opening",
+        "At the end of the first story slot",
+        "In the first few seconds of the recording",
+        "At the start of the second story slot"
+      ],
+      "answer": 1,
+      "explanation": "The sound break row says Alex names the recording just before it plays, during the first story slot."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "On your first listen to Mina's Voice Message, what is Mina mainly telling Alex?",
+      "options": [
+        "Why she wants to change her story title",
+        "How to find the key outside her home",
+        "When she can join the show by phone",
+        "Where she wants to sit in the studio"
+      ],
+      "answer": 2,
+      "explanation": "Mina gives the time she can ring the studio and the time she must leave the call."
+    },
+    {
+      "prompt": "Listen again to Mina's Voice Message. Which note puts Mina's call and the opening in the right order?",
+      "options": [
+        "The opening begins at 6:00. Mina calls at 6:01.",
+        "Mina calls at 6:00. The opening begins at 6:01.",
+        "Mina calls at 6:01. The opening begins at 6:03.",
+        "The opening begins at 6:00. Mina calls at 6:04."
+      ],
+      "answer": 0,
+      "explanation": "Mina says the show starts at six and asks Alex to expect her call at 6:01, after it starts."
+    },
+    {
+      "prompt": "In Mina's Voice Message, what does 6:04 mean? Label it in your notes as a call time, a time to leave, or a story time.",
+      "options": [
+        "The time she plans to call the studio",
+        "The earliest time she can start her story",
+        "The time her short story is due to end",
+        "The time she has to leave the call"
+      ],
+      "answer": 3,
+      "explanation": "Mina says she can stay on the phone until 6:04, when she needs to collect her son."
+    },
+    {
+      "prompt": "In Mina's Voice Message, what does Mina want Alex to change before putting her on air?",
+      "options": [
+        "Say the story title more loudly.",
+        "Say her name more slowly.",
+        "Say her neighbour's name earlier.",
+        "Say the word flowerpot more clearly."
+      ],
+      "answer": 1,
+      "explanation": "Mina asks Alex to say her name more slowly than Alex did last week."
+    },
+    {
+      "prompt": "On your first listen to Alex's Studio Note, what change does Alex say the draft needs?",
+      "options": [
+        "Move the entire show to a later time.",
+        "Play the sound break before both stories.",
+        "Swap the two stories so Jo can take part.",
+        "Move Jo's story from the studio to the phone."
+      ],
+      "answer": 2,
+      "explanation": "Alex says Jo cannot come earlier because of work and needs the second slot to take part."
+    },
+    {
+      "prompt": "Listen again to Alex's Studio Note. Which two notes correctly describe when Jo can arrive and when Jo can speak?",
+      "options": [
+        "Arrive at 6:01. Ready to speak at 6:03.",
+        "Arrive at 6:03. Ready to speak at 6:04.",
+        "Arrive at 6:04. Ready to speak at 6:06.",
+        "Arrive at 6:03. Ready to speak at 6:03."
+      ],
+      "answer": 1,
+      "explanation": "Alex gives 6:03 as Jo's studio arrival time and 6:04 as the time Jo is ready to speak."
+    },
+    {
+      "prompt": "Listen again to Alex's Studio Note and jot down what Alex plans to say before each item. What does Alex plan to mention just before Jo speaks?",
+      "options": [
+        "The name of Mina's neighbour",
+        "Jo's arrival time",
+        "The title of the sound recording",
+        "The bench in Jo's story"
+      ],
+      "answer": 3,
+      "explanation": "Alex plans to mention the bench before Jo speaks so listeners know what the story is about."
+    }
+  ],
+  "grammar": {
+    "focus": "Comparative adverbs for time, speed, and clarity",
+    "explanation": "Use earlier and later to compare when things happen. If one call comes at 6:01 and another comes at 6:03, the first call comes earlier. You can make the comparison clear with than. Say, “Mina calls earlier than Jo arrives.” For the way someone speaks, use more before slowly or clearly. Say “Speak more slowly” when you want fewer words in the same amount of time. Say “Speak more clearly” when the words are hard to understand. You can leave out than when the listener already knows what you are comparing. If you just heard a rushed practice, “Try it again, more slowly” is enough.",
+    "examples": [
+      {
+        "before": "Jo arrives more late than Mina calls.",
+        "after": "Jo arrives later than Mina calls.",
+        "why": "Use later for the event at the later time. Jo arrives at 6:03 and Mina calls at 6:01."
+      },
+      {
+        "before": "Could you say my name more slow this time?",
+        "after": "Could you say my name more slowly this time?",
+        "why": "Slowly describes how someone says the name. Put more before slowly to compare two ways of saying it."
+      },
+      {
+        "before": "I said the title more clearly yesterday I did today.",
+        "after": "I said the title more clearly yesterday than I did today.",
+        "why": "Use than to connect the two times when you say how the first and second attempts compare."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The first bus came at 8:10 yesterday. It came at 8:05 today. Which sentence gives the right comparison?",
+        "options": [
+          "The bus came later today than yesterday.",
+          "The bus came more early today than yesterday.",
+          "The bus came earlier today than yesterday.",
+          "The bus came earlier yesterday than today."
+        ],
+        "answer": 2,
+        "explanation": "Eight oh five comes before eight ten, and earlier is the form used to compare those times."
+      },
+      {
+        "prompt": "Tariq reads a notice too fast for you to write down the address. Which request asks him to change his speed?",
+        "options": [
+          "Could you read it more slowly?",
+          "Could you read it later?",
+          "Could you read it slowerly?",
+          "Could you read it earlier?"
+        ],
+        "answer": 0,
+        "explanation": "More slowly asks Tariq to lower his reading speed so you have time to write."
+      },
+      {
+        "prompt": "The first recording was easy to hear. In the new one, Lila says the street name at the same speed, but the words are hard to understand. What feedback fits?",
+        "options": [
+          "Say the street name more slowly next time.",
+          "Say the street name later next time.",
+          "Say the street name earlier next time.",
+          "Say the street name more clearly next time."
+        ],
+        "answer": 3,
+        "explanation": "The problem is understanding the words, so the request should ask Lila to speak more clearly."
+      },
+      {
+        "prompt": "A shop usually opens at nine. Tomorrow it opens at ten. Complete the notice. “Tomorrow we open ___ usual.”",
+        "options": [
+          "earlier than",
+          "later than",
+          "more late than",
+          "later as"
+        ],
+        "answer": 1,
+        "explanation": "Ten is after the usual opening time of nine, so later than completes the comparison."
+      },
+      {
+        "prompt": "In practice, Eva read the date too fast. On air, she took more time to say it. Complete the note. “Eva read the date ___ she did in practice.”",
+        "options": [
+          "more slowly as",
+          "earlier than",
+          "more slowly than",
+          "more slow than"
+        ],
+        "answer": 2,
+        "explanation": "Use more slowly to describe the lower speed and than to connect the two readings."
+      },
+      {
+        "prompt": "Two neighbours explain where to leave a parcel. You understand Ana's directions better. Which sentence says that?",
+        "options": [
+          "Ana explained the directions more clear than Ben did.",
+          "Ben explained the directions more clearly than Ana did.",
+          "Ana explained the directions more clearly as Ben did.",
+          "Ana explained the directions more clearly than Ben did."
+        ],
+        "answer": 3,
+        "explanation": "Ana's directions are easier to understand, so Ana explained them more clearly than Ben did."
+      },
+      {
+        "prompt": "Yesterday you sent a file at six. Today you sent it at five. Which message compares the times correctly?",
+        "options": [
+          "I sent the file earlier today than I did yesterday.",
+          "I sent the file later today than I did yesterday.",
+          "I sent the file earlier yesterday than I did today.",
+          "I sent the file more earlier today than I did yesterday."
+        ],
+        "answer": 0,
+        "explanation": "Five comes before six, and earlier already makes the comparison without more."
+      },
+      {
+        "prompt": "A library worker says a room number at the same speed both times. The second time you can understand every word. What can you say about the second attempt?",
+        "options": [
+          "She said it more slowly the second time.",
+          "She said it more early the second time.",
+          "She said it more clearly the second time.",
+          "She said it more clear the second time."
+        ],
+        "answer": 2,
+        "explanation": "You could understand every word the second time, so more clearly describes how she said it."
+      }
+    ],
+    "transfer": "Leave a short practice message for a friend who will read a notice at a neighbourhood sale. The doors now open at 9:00 instead of 9:30. In practice, your friend rushed the address and the words in the street name were hard to understand. Explain the new time and give two speaking tips. Read your message aloud, then check that each comparison makes clear what changed."
+  },
+  "vocabulary": [
+    {
+      "word": "go on air",
+      "meaning": "start being heard on radio or seen on television",
+      "example": "The local news goes on air after this song.",
+      "pair": "go on air at noon"
+    },
+    {
+      "word": "resident",
+      "meaning": "someone who lives in a place",
+      "example": "A resident of our building grows tomatoes on her balcony.",
+      "pair": "local resident"
+    },
+    {
+      "word": "sound break",
+      "meaning": "a short part of a show with recorded sound between spoken parts",
+      "example": "We played the sound of waves during the sound break.",
+      "pair": "play the sound break"
+    },
+    {
+      "word": "run sheet",
+      "meaning": "a list that shows when and in what order things happen",
+      "example": "The host checked the run sheet before calling the first singer.",
+      "pair": "follow the run sheet"
+    },
+    {
+      "word": "slot",
+      "meaning": "a set time for one activity",
+      "example": "My dentist had a slot at three on Friday.",
+      "pair": "book a slot"
+    },
+    {
+      "word": "swap",
+      "meaning": "change places or exchange things with someone",
+      "example": "We swapped seats so my dad could sit by the window.",
+      "pair": "swap seats"
+    },
+    {
+      "word": "ring",
+      "meaning": "call someone on the phone",
+      "example": "I’ll ring my sister when I get home.",
+      "pair": "ring the office"
+    },
+    {
+      "word": "stay on the line",
+      "meaning": "keep the phone call open",
+      "example": "Please stay on the line while I find your booking.",
+      "pair": "ask someone to stay on the line"
+    },
+    {
+      "word": "collect",
+      "meaning": "go to a place to get someone or something",
+      "example": "I need to collect my bike from the repair shop.",
+      "pair": "collect a parcel"
+    },
+    {
+      "word": "up to",
+      "meaning": "as much as a stated amount",
+      "example": "You can borrow up to three books at a time.",
+      "pair": "up to three people"
+    },
+    {
+      "word": "just before",
+      "meaning": "a short time before something happens",
+      "example": "I got to the bus stop just before the bus arrived.",
+      "pair": "just before lunch"
+    },
+    {
+      "word": "closing",
+      "meaning": "the last part of a show or event",
+      "example": "In the closing, the host thanked everyone who came to the concert.",
+      "pair": "closing remarks"
+    }
+  ],
+  "speaking": {
+    "audience": "People listening to Thursday's community radio show",
+    "first": "Sort the vocabulary cards into people, time and order, and show or phone work. Pick four useful words or phrases and say a new sentence with each. Then take Alex's role. Mina can call at 6:01 and tell the 90-second version of The Missing Key. Jo arrives at 6:03 and can start speaking at 6:04. Jo’s story is about a bench outside a block of flats. Compare those times with the draft run sheet to choose the order. Plan a short, friendly link from Mina's story to Rain on the Roof. Record a first take. Thank Mina, name the sound break, and tell listeners who will speak after it.",
+    "change": "At the 5:55 p.m. practice in the studio, Rosa hears the link. She asks you to say Rain on the Roof more slowly and to tell listeners that Jo's bench is outside a block of flats.",
+    "second": "Make a short spoken practice note for yourself. Say what you will say more slowly or more clearly than in your first take. Then record the link again for listeners. Add the location of the bench, keep the same story order, and end with the full name of the recording just before it plays. Listen back to both takes.",
+    "checklist": [
+      "I thank Mina before the sound break.",
+      "I tell listeners Jo will speak after the break and say where the bench is.",
+      "I end the link with the exact name Rain on the Roof.",
+      "My second take says the recording title more slowly than my first take.",
+      "My spoken practice note uses more slowly or more clearly to compare the two takes.",
+      "My link fits in the 20 seconds after Mina's story ends and before 6:03."
+    ]
+  },
+  "writing": {
+    "audience": "Rosa, the producer, who needs to approve Thursday's run sheet",
+    "first": "Make a run sheet Rosa can use during the show. Put the five items in order with start and end times, titles, and who speaks or what plays. Mark Mina’s 6:01 call, the ten-second off-air line check and Jo’s 6:03 arrival. Alex keeps speaking until the line is ready. In question practice, choose which times are fixed and which notes move with the stories. Then write Rosa a 50–90-word message explaining the swap and how Alex will use the time left after Mina's 90-second story.",
+    "change": "Mina can still call at 6:01 p.m. on Thursday, but she must leave the call by 6:02:15. She has a 60-second version ready. Allow ten seconds after she calls for a second worker to check the line off air. Alex keeps talking until Mina can go on air.",
+    "second": "Revise the first story row to show Alex’s lead-in, the off-air line check, Mina’s story, and Alex’s spoken link. Show how Alex can use the time after Mina finishes. Keep both story titles, the five main items, the full recording, and the original end time. Replace your message to Rosa with a 50–90-word update. Use earlier or later to compare a new time with the first plan.",
+    "checklist": [
+      "My first run sheet puts Mina first and Jo second.",
+      "My revised run sheet shows the line check at 6:01, Mina on air from 6:01:10 to 6:02:10, and Alex filling the rest of the slot.",
+      "The off-air line check and Jo’s arrival are easy to tell apart from Alex’s on-air lead-in.",
+      "Alex names Rain on the Roof before 6:03, and the full sound break plays from 6:03 to 6:04.",
+      "Jo's story can start at 6:04, and the show ends at 6:07.",
+      "My update to Rosa is 50–90 words and compares a new time with the first plan."
+    ]
+  },
+  "immersion": {
+    "role": "You are Alex at the studio desk, preparing a backup plan before Thursday's show.",
+    "goal": "Make a backup run sheet and a short script you can use at the desk if Mina calls late. Keep both resident stories on air and keep the advertised sound break at its usual time.",
+    "constraints": [
+      "Use the revised Thursday plan as your starting point. The show runs from 6:00 to 6:07 p.m., with a welcome and both titles in the opening and thanks in the closing.",
+      "Keep Rain on the Roof from 6:03 to 6:04 p.m. Name it during the first story slot and play the full minute.",
+      "Jo arrives at 6:03 and can speak in the studio from 6:04. Give Jo up to two minutes.",
+      "Allow the second worker ten seconds from the time Mina calls to check the line off air. Alex keeps talking during the check. Mina must leave by 6:02:15.",
+      "Use Alex's voice to fill any space in the first story slot. Use only story details from the dossier."
+    ],
+    "change": "At 5:58 p.m., Mina says her bus is late and she can now call at 6:01:25. She still has to leave by 6:02:15. She offers a 60-second version and a 35-second version. Alex must cover the start of the first story slot while waiting for the call.",
+    "deliverables": [
+      "A five-item run sheet with start and end times. Split the first story slot into Alex’s lead-in, Mina’s story and Alex’s link. Mark the line check as an off-air note.",
+      "A two-part on-air script with a lead-in for the wait and a link after Mina speaks. Use a real detail from the dossier in each part and end the link with Rain on the Roof.",
+      "A two-sentence note for Rosa. Give Mina's call time, the version you chose, and the time it ends. Use earlier or later to compare the new call time with the previous plan.",
+      "A practice recording of the lead-in and link. Listen once, then record a second take with the name of the sound break said more clearly."
+    ],
+    "checklist": [
+      "Alex's lead-in covers 6:01 to 6:01:35. The second worker checks the line off air from 6:01:25 to 6:01:35.",
+      "The 35-second story starts at 6:01:35 and ends at 6:02:10, before Mina has to leave.",
+      "Alex's link fits between 6:02:10 and 6:03 and ends with the full sound break title.",
+      "The sound break lasts one full minute, Jo speaks in the second slot, and the show ends at 6:07.",
+      "The note to Rosa says the call is later than in the previous plan.",
+      "I can hear each word of the sound break title clearly in my second take."
+    ]
+  }
+}

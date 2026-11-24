@@ -1,0 +1,394 @@
+{
+  "slug": "c2-the-workshop-that-started-twice",
+  "title": "The Workshop That Started Twice",
+  "level": "C2",
+  "summary": "Interpret and rewrite a fictional shared-workshop agreement with separate dates for access, preparation and paid occupation.\n\nReading: Build a decision tree for access, rent and entry to the public session. Put an actor, a trigger and a notification date on each branch. Test the tree with one delay the tenant controls and one the cooperative controls.\n\nVocabulary: Write three pairs of clauses. In each, use the formal term for a threshold or duty and a plainer paraphrase suitable for visitors. Check that your substitutes do not turn discretion into a requirement.",
+  "documents": [
+    {
+      "title": "Tenancy proposal circulated before signature",
+      "text": "A cooperative will let a former warehouse room to a group of furniture makers. The draft agreement states that the arrangement commences on 2 September. It also says the making room must open to the public within thirty days of commencement. Both sides expect the group to spend the first week checking electrical connections, clearing an old paint cabinet and setting up a booking desk. The invoice prepared by the cooperative’s administrator treats 2 September as the first day of rent. A spreadsheet supplied by the group treats the same date as the start of a rent-free preparation period.\n\nThe access clause already distinguishes an agreement from a key. Members can collect keys on 2 September if they attend an induction. Before then, the cooperative can seek permission to order equipment into the room. Some equipment is on loan and must be collected if the arrangement does not proceed. It will not count toward the group’s initial purchase.\n\nWe suggest a schedule with three named dates or triggers: formal agreement, supervised access for setup, and commencement of rent. The thirty-day opening requirement should identify the trigger relevant to operating a trustworthy public desk."
+    },
+    {
+      "title": "Furniture makers’ written response",
+      "text": "We told the cooperative we could take on payments from the first month during which we operated our regular programme. This was not a guarantee that the first workshop would immediately sell out. We were prepared to take the demand risk. What we had not budgeted for was paying for the room while contractors from the building owner still had exclusive access to the fuse cupboard. It is one thing to need time to arrange the bench. It is another to be prohibited from using the tools once they are arranged.\n\nWe accept that a fixed date for rent has budgeting advantages. If the agreement gives us a particular date, it should also specify what happens if a condition the cooperative controls remains unsatisfied. If we fail to finish our own setup, that should not mean dates can be changed at our request without limit.\n\nOur preference is a two-part trigger. An induction and handover identify when our responsibility for the room starts. A usable supply and an accepted equipment check identify the first day rent can accrue. A separately stated deadline for a pilot opening would include a narrow procedure for delays depending on who can actually resolve the problem."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Negotiation between the two administrators",
+      "text": "Anika: I can put ‘rent starts when tools can be used’. But if someone forgets to write that into the calendar, it will be very hard to plan invoicing.\n\nLoris: Then state a date and a condition. Say we'll invoice from the sixth, provided the supply has been signed off. If it hasn't, set a date on which we have to say what is still outstanding and who can fix it.\n\nAnika: I also want to recover the cost of replacing a lost key. I don't want to wait until the invoice begins to say that the group has accepted it.\n\nLoris: Give each key an issue record. The first key can be received while payments are waiting on the supply.\n\nAnika: Fine. Does a signed equipment check prove the group has actually opened?\n\nLoris: No. They still need staff, an advertised time and a route for booking. We can make an opening duty that uses a different date.\n\nAnika: When a volunteer says ‘we are opening on the sixth’, what should I reply?\n\nLoris: Ask which event they mean. Then give them the name we have used in the schedule."
+    },
+    {
+      "title": "Public workshop member describes a previous start",
+      "text": "In my last town there was a workshop that opened twice. The newspaper date celebrated the handover of the building. There were photographs of councillors at the bench and a photograph of the first instructor coming through the door. We had been told the date was the beginning of shared access, so my sister rearranged a morning shift to attend. The first class did not start for another ten days. Somebody then told her she should have read the registration sheet: it said members could reserve a place from the date on the photograph.\n\nThe opening was a success on its own terms. It gave the funders a visible event and members could make plans after it. Calling them both opening obscured the fact that one meant when we could apply and the other meant when we could enter. The withdrawal of a spare induction session later made this worse for those who had not attended the first.\n\nWhere dates are still uncertain, tell me the last thing I can do safely now. I can pay a deposit or put my name down without assuming I can bring a stool to the door. Give me a date for when the next step will be confirmed."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What is the central source of the conflicting rent calculation?",
+      "options": [
+        "One side expected to purchase all borrowed tools first.",
+        "The same stated commencement date is assigned two functions.",
+        "The agreed rent rate differs between the organisations.",
+        "The administrator mistook the address of the workshop."
+      ],
+      "answer": 1,
+      "explanation": "The invoice and internal budget read 2 September as different starts."
+    },
+    {
+      "prompt": "What can happen before 2 September under the draft?",
+      "options": [
+        "Rent can accrue before a document is signed.",
+        "The group must hold a public class.",
+        "Anyone can collect a key without an induction.",
+        "The cooperative can seek approval for advance equipment deliveries."
+      ],
+      "answer": 3,
+      "explanation": "The access clause allows the cooperative to seek permission to order items in."
+    },
+    {
+      "prompt": "What risk does the group explicitly accept?",
+      "options": [
+        "The first invoice can cover any length of setup.",
+        "Building contractors may permanently prevent tool use.",
+        "Workshops may not sell out immediately.",
+        "Induction may be denied without explanation."
+      ],
+      "answer": 2,
+      "explanation": "The letter distinguishes risk about demand from a facility not yet usable."
+    },
+    {
+      "prompt": "What does the group want if its own setup causes delay?",
+      "options": [
+        "No consequences if no date has been publicised.",
+        "A complete change to the council’s programme.",
+        "The same discretion as a delay controlled by the cooperative.",
+        "A bounded procedure rather than unlimited postponement."
+      ],
+      "answer": 3,
+      "explanation": "The group does not seek to defer at its own request indefinitely."
+    },
+    {
+      "prompt": "Which agreement point is common to both documents?",
+      "options": [
+        "The first advertised session automatically starts the rent.",
+        "Everyone must attend an induction before the contract can exist.",
+        "The start of responsibility and the start of rent can have different triggers.",
+        "A key includes authority to modify the electrical cupboard."
+      ],
+      "answer": 2,
+      "explanation": "The proposal and response each separate responsibility or supervised setup from rent."
+    },
+    {
+      "prompt": "Which requirement still needs its own carefully identified reference point?",
+      "options": [
+        "The public opening deadline",
+        "The invoice mailing address",
+        "Permission to store borrowed equipment before September",
+        "The loss of a single key"
+      ],
+      "answer": 0,
+      "explanation": "The draft attaches thirty days to commencement before distinguishing several commencements."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "How does Loris make a date usable without ignoring a condition?",
+      "options": [
+        "Wait to say anything until all work is completed.",
+        "Specify both, and schedule a progress update if the condition fails.",
+        "Require members to open the room regardless of electricity.",
+        "Keep the date off the invoicing calendar."
+      ],
+      "answer": 1,
+      "explanation": "A contingent invoice date and escalation date serve different purposes."
+    },
+    {
+      "prompt": "What does the key issue record establish?",
+      "options": [
+        "A right to dismiss the contractors.",
+        "Completion of equipment checks.",
+        "Responsibility for a key even if rent has not begun.",
+        "Proof the public has used the room."
+      ],
+      "answer": 2,
+      "explanation": "A key can be issued and recorded while another trigger remains open."
+    },
+    {
+      "prompt": "What additional evidence is needed for a functioning public opening?",
+      "options": [
+        "Proof the first invoice was never sent",
+        "A signature on a document with the word opening",
+        "An identical date for handover and rent",
+        "Staffing, an advertised time and a booking route"
+      ],
+      "answer": 3,
+      "explanation": "Loris separates equipment readiness from readiness to admit people."
+    },
+    {
+      "prompt": "What did the earlier newspaper date mark?",
+      "options": [
+        "A ceremonial building handover",
+        "The end of a rent-free period",
+        "The first regular class",
+        "The final day of registration"
+      ],
+      "answer": 0,
+      "explanation": "The account starts with photographs celebrating the transfer."
+    },
+    {
+      "prompt": "What was the practical harm of the double use of ‘opening’?",
+      "options": [
+        "Everyone could attend except councillors.",
+        "A funder did not receive the equipment it had ordered.",
+        "A prospective participant changed a work shift without being able to attend a class.",
+        "The instructor inferred that no one would book."
+      ],
+      "answer": 2,
+      "explanation": "The speaker's sister prepared to enter when only reservations could begin."
+    },
+    {
+      "prompt": "What fallback would the witness accept if dates remain uncertain?",
+      "options": [
+        "Give all volunteers a spare key in advance.",
+        "Explain which action is available now and when the next will be confirmed.",
+        "Tell members not to act until every issue has been resolved.",
+        "Publish an exact opening date even if nobody can verify it."
+      ],
+      "answer": 1,
+      "explanation": "The witness can register or pay a deposit while awaiting a later confirmation."
+    }
+  ],
+  "grammar": {
+    "focus": "Modality in conditional rules",
+    "explanation": "Must creates a duty; may can grant discretion; must not prohibits an act. Need not removes obligation and does not usually mean an action is prohibited. Write conditions and exceptions close to the part of the rule whose scope they limit.",
+    "examples": [
+      {
+        "before": "Members may not attend induction to collect keys.",
+        "after": "Members must attend induction before collecting keys.",
+        "why": "The intended clause imposes a prerequisite, rather than suggesting attendance is forbidden."
+      },
+      {
+        "before": "Rent must not start late if a signer approves.",
+        "after": "Rent may start on 6 September if the check has been signed.",
+        "why": "May grants contingent permission without requiring use at that exact moment."
+      },
+      {
+        "before": "Members must not arrive before their induction to drop off tools.",
+        "after": "Members need not bring tools to induction.",
+        "why": "Prohibition and absence of obligation communicate different policies."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which imposes a duty on the cooperative if the check is missing?",
+        "options": [
+          "If the check is missing, the cooperative must send a progress notice.",
+          "The cooperative need not send a notice if the check is missing.",
+          "If the check is missing, the cooperative may send a progress notice.",
+          "The cooperative might have sent a notice when the check went missing."
+        ],
+        "answer": 0,
+        "explanation": "Must requires the notice whenever the stated condition applies."
+      },
+      {
+        "prompt": "Which permits postponement without requiring it?",
+        "options": [
+          "The group must not postpone if the supervisor is absent.",
+          "The group cannot have postponed after hearing about it.",
+          "The group may postpone the trial when its appointed supervisor is absent.",
+          "The group must postpone whenever a supervisor is absent."
+        ],
+        "answer": 2,
+        "explanation": "May leaves a permissible choice in the specified case."
+      },
+      {
+        "prompt": "What does ‘Members need not bring tools to induction’ mean?",
+        "options": [
+          "Members are prohibited from bringing tools.",
+          "Bringing tools is not required.",
+          "Everyone must lend a tool once admitted.",
+          "Tools are required unless someone else brings them."
+        ],
+        "answer": 1,
+        "explanation": "Need not removes a requirement without itself creating a prohibition."
+      },
+      {
+        "prompt": "Which makes induction a prerequisite specifically for holding a key?",
+        "options": [
+          "Members need not complete induction to collect the key.",
+          "Only members may collect keys after induction.",
+          "The members who collect keys must be able to attend public opening.",
+          "Members may collect a key only after completing induction."
+        ],
+        "answer": 3,
+        "explanation": "Only after makes completion a time condition of permission."
+      },
+      {
+        "prompt": "Which excludes a false inference that a fee starts automatically?",
+        "options": [
+          "The agreement may be signed before rent accrues.",
+          "Rent must begin on the day the agreement is signed.",
+          "The agreement can only exist if rent has already accrued.",
+          "Any signature shall trigger the first invoice."
+        ],
+        "answer": 0,
+        "explanation": "Separate allowable dates avoid treating signature as an automatic trigger."
+      },
+      {
+        "prompt": "Which keeps a prohibition operative until an identified test?",
+        "options": [
+          "Contractors might not release the machine after the supply is signed off.",
+          "Contractors may release the machine, although the supply has not been signed off.",
+          "Contractors must not release the machine until the supply is signed off.",
+          "Contractors need not release the machine before the supply is signed off."
+        ],
+        "answer": 2,
+        "explanation": "Must not plus until forbids the action before approval."
+      },
+      {
+        "prompt": "Which sentence describes an inferred past event rather than setting a duty?",
+        "options": [
+          "The technician must sign off the supply before testing.",
+          "The technician must have signed off the supply before testing.",
+          "The technician may sign off the supply before testing.",
+          "The technician need not sign off before testing."
+        ],
+        "answer": 1,
+        "explanation": "Must have plus a past participle marks strong inference about a past event."
+      },
+      {
+        "prompt": "What wording explicitly permits advance storage and excludes early operation?",
+        "options": [
+          "The group must store tools at the induction and operate them before handover.",
+          "The group need not arrange storage after the handover.",
+          "The cooperative may not arrange storage unless the tools are in use.",
+          "The cooperative may arrange storage before induction, but the group must not use tools before the handover."
+        ],
+        "answer": 3,
+        "explanation": "The two modal verbs apply to different actors, actions and points in time."
+      }
+    ],
+    "transfer": "Draft rules for three timed events: one duty, one permitted arrangement and one action forbidden until a condition is met. State what happens if a condition fails and whose responsibility it is."
+  },
+  "vocabulary": [
+    {
+      "word": "commence",
+      "meaning": "formally begin",
+      "example": "The agreement commences after written acceptance.",
+      "pair": "commence operations"
+    },
+    {
+      "word": "accrue",
+      "meaning": "build up or become payable over time",
+      "example": "No rent accrues before the equipment test.",
+      "pair": "interest accrues"
+    },
+    {
+      "word": "precondition",
+      "meaning": "condition that must be met first",
+      "example": "Induction is a precondition for holding a key.",
+      "pair": "meet a precondition"
+    },
+    {
+      "word": "handover",
+      "meaning": "formal transfer of property or responsibility",
+      "example": "The group photographs the room at handover.",
+      "pair": "formal handover"
+    },
+    {
+      "word": "liability",
+      "meaning": "responsibility for a debt or loss",
+      "example": "The key record identifies liability for replacement.",
+      "pair": "accept liability"
+    },
+    {
+      "word": "exclusive",
+      "meaning": "available to one party only",
+      "example": "The contractor has exclusive access to the cupboard.",
+      "pair": "exclusive access"
+    },
+    {
+      "word": "contingency",
+      "meaning": "possible event requiring a planned response",
+      "example": "The parties set a contingency date.",
+      "pair": "contingency plan"
+    },
+    {
+      "word": "trustee",
+      "meaning": "person responsible for an organisation or property",
+      "example": "A trustee checks the cooperative’s records.",
+      "pair": "appointed trustee"
+    },
+    {
+      "word": "defer",
+      "meaning": "move to a later time",
+      "example": "The board may defer the first invoice.",
+      "pair": "defer a payment"
+    },
+    {
+      "word": "custodial",
+      "meaning": "relating to responsibility for safekeeping",
+      "example": "Signed keys create a custodial duty.",
+      "pair": "custodial responsibility"
+    },
+    {
+      "word": "stipulate",
+      "meaning": "specify as a condition",
+      "example": "The agreement stipulates a date for review.",
+      "pair": "stipulate a deadline"
+    },
+    {
+      "word": "induction",
+      "meaning": "orientation about the duties and use of a place",
+      "example": "New members take an induction before borrowing tools.",
+      "pair": "attend an induction"
+    }
+  ],
+  "speaking": {
+    "audience": "Equipment steward, tenant representative and a potential workshop user",
+    "first": "Conduct a five-minute negotiation. Present a clause each for keys, rent and public entry, and answer a volunteer who has only heard one date.",
+    "change": "The owner signs off two days late, while the group’s supervisor cannot attend until next week.",
+    "second": "Make a new oral agreement specifying who controls each delay and what, if anything, can proceed. Say when the public will hear again.",
+    "checklist": [
+      "Keep payments and responsibility distinct.",
+      "Use must, may and must not for different effects.",
+      "Give a concrete next action to a visitor.",
+      "Explain a realistic limit on changing dates."
+    ]
+  },
+  "writing": {
+    "audience": "Committee required to update a draft agreement and send public dates",
+    "first": "Prepare a one-page schedule and a 350-word rationale. Identify which dates are planned, binding or contingent and show how one failed condition is handled.",
+    "change": "The calendar has already called the induction a public opening and cannot be edited until Wednesday.",
+    "second": "Write a separate temporary notice and repair the agreement’s timing language. Keep interested members able to register without implying they can enter.",
+    "checklist": [
+      "Name every responsible actor.",
+      "State what readers can do immediately.",
+      "Use the same terms throughout the agreement.",
+      "Address the edited text and the unedited listing separately."
+    ]
+  },
+  "immersion": {
+    "role": "Joint convenor for a community workshop agreement",
+    "goal": "Draft a short signed schedule and communication pack enabling a workable start.",
+    "constraints": [
+      "One manual key log.",
+      "Public opening follows safety and staffing checks.",
+      "Neither side can control every prerequisite.",
+      "The first invoice date matters for cash planning."
+    ],
+    "change": "A contractor cancels the inspection but offers to collect some borrowed tools from the room.",
+    "deliverables": [
+      "Produce a timeline and a responsibilities matrix including two failed triggers.",
+      "Draft a short transcript of the amended agreement.",
+      "Prepare a public announcement and answer a plausible complaint about conflicting dates."
+    ],
+    "checklist": [
+      "Publish only dates you can justify.",
+      "Label which terms create duties and which grant options.",
+      "Use a signed record of key receipt.",
+      "Preserve the separate point at which a visitor may enter."
+    ]
+  }
+}

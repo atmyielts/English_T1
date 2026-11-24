@@ -1,0 +1,443 @@
+{
+  "slug": "choir-first-visit",
+  "title": "First visit to the choir",
+  "level": "A1",
+  "summary": "You are Alex. You want to try the choir. Find the right door, choose what to bring, and make a plan with your friend Mia. When Mia has to leave early, send her a new plan.",
+  "documents": [
+    {
+      "title": "An invitation from Rosa",
+      "text": "Hi Alex,\n\nCome and sing with us on Thursday at Oak Hall. Please arrive at 6:15. Use the side door on Bell Street. It is green. The big front door on Park Road is closed in the evening. I will meet you just inside the green door.\n\nBring a bottle of water and a pencil. You do not need to bring a song sheet. I have one for you. We start our first song at 6:30. We stop for a short break at 7:00. We sing the last song at 7:15 and finish at 7:30.\n\nSee you soon,\nRosa"
+    },
+    {
+      "title": "A sign inside Oak Hall",
+      "text": "CHOIR ON THURSDAY\n\nCoats\nPut your coat on a hook next to the green door. Put any wet umbrella in the blue box under the hooks.\n\nSeats\nThere are two rows of chairs. If you are new, please sit in the back row. You can see and hear the singers from there. The front row is for the singers who show us the songs. Leave the chair with the white card free. Ben uses that chair to play the piano.\n\nBags and water\nPut your bag under your chair. Keep your water bottle next to your bag. The small table by the chairs is for song sheets."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Rosa’s message about the warm-up",
+      "text": "Hi Alex, it’s Rosa. Before the first song, we warm up our voices. Most singers do this in the big room at 6:20. It can be loud in there. On your first visit, you can try a quiet warm-up with me. Meet me by the small room at 6:20. The small room is next to the coat hooks. You can sit and hum with me. You can also just listen. You do not need a song sheet for this. At 6:25, come with me to the big room. We can pick up your sheet there before the first song."
+    },
+    {
+      "title": "Mia’s call about her bus",
+      "text": "Hi Alex. Can you hear me? Good. I’m on the bus. It’s late today. Does the first song end at 6:35? Oh, yes? Good. My bus gets to Bell Street at 6:40, so I can be at the green door at 6:45. Can I sing next to you then? I know you have a seat in the back row. Is there a free chair there? If there is no free chair, I can ask Rosa for one. I have a pencil, but I left my water at home. Can you tell me where to put my bag when I get there?"
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read An invitation from Rosa once. What is the email mainly for?",
+      "options": [
+        "To ask Alex to bring chairs",
+        "To tell Alex how to come to choir practice",
+        "To ask Alex to choose the last song",
+        "To tell Alex how to get home by bus"
+      ],
+      "answer": 1,
+      "explanation": "Rosa invites Alex to practice and gives a door, an arrival time, and a list of things to bring."
+    },
+    {
+      "prompt": "Reread An invitation from Rosa and underline the door words. Where can Alex go in on Thursday evening?",
+      "options": [
+        "Through the big front door on Park Road",
+        "Through a front door on Bell Street",
+        "Through a side door on Park Road",
+        "Through the green side door on Bell Street"
+      ],
+      "answer": 3,
+      "explanation": "Rosa says to use the green side door on Bell Street because the big front door is closed."
+    },
+    {
+      "prompt": "In An invitation from Rosa, what two things does Rosa ask Alex to bring? Write a short list before you choose.",
+      "options": [
+        "A water bottle and a pencil",
+        "A water bottle and a song sheet",
+        "A pencil and a song sheet",
+        "A bag and a song sheet"
+      ],
+      "answer": 0,
+      "explanation": "Rosa asks for a bottle of water and a pencil. She has a song sheet for Alex."
+    },
+    {
+      "prompt": "In An invitation from Rosa, which note gives the arrival time and the finish time in that order?",
+      "options": [
+        "6:30 arrive, 7:30 finish",
+        "6:15 arrive, 7:00 finish",
+        "6:15 arrive, 7:30 finish",
+        "6:30 arrive, 7:15 finish"
+      ],
+      "answer": 2,
+      "explanation": "Rosa asks Alex to arrive at 6:15 and says practice finishes at 7:30."
+    },
+    {
+      "prompt": "Scan A sign inside Oak Hall. Which part tells Alex what to do with a wet umbrella?",
+      "options": [
+        "Bags and water",
+        "Coats",
+        "Seats",
+        "The main heading, Choir on Thursday"
+      ],
+      "answer": 1,
+      "explanation": "The Coats part tells Alex to put any wet umbrella in the blue box under the hooks."
+    },
+    {
+      "prompt": "Reread A sign inside Oak Hall. Alex is new. The chair with the white card is empty. What can Alex do?",
+      "options": [
+        "Sit in the front row with the singers who show the songs",
+        "Sit on the chair with the white card",
+        "Stand by the song sheet table for practice",
+        "Choose a chair in the back row without a white card"
+      ],
+      "answer": 3,
+      "explanation": "New singers sit in the back row, and Ben needs the chair with the white card."
+    },
+    {
+      "prompt": "Use A sign inside Oak Hall. Sort these things in your notes first. Where do Alex’s coat and bag go?",
+      "options": [
+        "The coat goes on a hook, and the bag goes under the chair.",
+        "The coat goes in the blue box, and the bag goes on the table.",
+        "The coat goes under the chair, and the bag goes on a hook.",
+        "The coat goes on the table, and the bag goes in the blue box."
+      ],
+      "answer": 0,
+      "explanation": "The hooks by the green door are for coats, and the bag goes under the chair."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Rosa’s message about the warm-up once. Why does Rosa send the message?",
+      "options": [
+        "To ask Alex to help with the piano",
+        "To ask Alex to sing the first song alone",
+        "To give Alex a quiet choice before the first song",
+        "To tell Alex to come after the break"
+      ],
+      "answer": 2,
+      "explanation": "Rosa offers Alex a quiet warm-up on the first visit before the group sings."
+    },
+    {
+      "prompt": "Listen again to Rosa’s message about the warm-up. Where and when can Alex meet Rosa for the quiet warm-up?",
+      "options": [
+        "By the small room at 6:20",
+        "In the big room at 6:20",
+        "By the small room at 6:25",
+        "In the big room at 6:25"
+      ],
+      "answer": 0,
+      "explanation": "Rosa says to meet her by the small room at 6:20 for the quiet warm-up."
+    },
+    {
+      "prompt": "In Rosa’s message about the warm-up, what can Alex do in the small room if Alex wants to stay quiet?",
+      "options": [
+        "Pick up a song sheet",
+        "Play the piano",
+        "Sing the first song",
+        "Listen to Rosa"
+      ],
+      "answer": 3,
+      "explanation": "Rosa says Alex can hum with her or just listen in the small room."
+    },
+    {
+      "prompt": "Listen once more to Rosa’s message about the warm-up. Write three short notes in order. Which order does Rosa give?",
+      "options": [
+        "Get a sheet, go to the small room, move to the big room",
+        "Try the quiet warm-up, move to the big room, get a sheet",
+        "Move to the big room, get a sheet, try the quiet warm-up",
+        "Try the quiet warm-up, get a sheet, move to the big room"
+      ],
+      "answer": 1,
+      "explanation": "Rosa gives the warm-up first, the move at 6:25 next, and the sheet in the big room after that."
+    },
+    {
+      "prompt": "Listen to Mia’s call about her bus once. What does Mia want to do at practice?",
+      "options": [
+        "Sing next to Alex",
+        "Play the piano with Ben",
+        "Warm up with Rosa in the small room",
+        "Show the front row a new song"
+      ],
+      "answer": 0,
+      "explanation": "Mia asks if she can sing next to Alex when she gets there."
+    },
+    {
+      "prompt": "Listen again to Mia’s call about her bus. Note the end of the first song, the bus time, and the time at the door. When does Mia say she can be at the green door?",
+      "options": [
+        "At 6:35, when the first song ends",
+        "At 6:40, when the bus gets to Bell Street",
+        "At 6:45, after the first song",
+        "At 6:30, before the bus gets to Bell Street"
+      ],
+      "answer": 2,
+      "explanation": "Mia says the bus gets to Bell Street at 6:40 and she can reach the green door at 6:45."
+    },
+    {
+      "prompt": "In Mia’s call about her bus, what can Mia do if there is no free chair beside Alex?",
+      "options": [
+        "Take the piano chair",
+        "Bring a chair from the bus",
+        "Ask Alex to move to the front row",
+        "Ask Rosa for a chair"
+      ],
+      "answer": 3,
+      "explanation": "Mia says she can ask Rosa for a chair if there is no free chair."
+    },
+    {
+      "prompt": "In Mia’s call about her bus, what does Mia ask Alex to tell her?",
+      "options": [
+        "Who has her pencil",
+        "Where she can put her bag",
+        "How to get to Bell Street",
+        "Which song comes after the break"
+      ],
+      "answer": 1,
+      "explanation": "At the end, Mia asks where to put her bag when she arrives."
+    }
+  ],
+  "grammar": {
+    "focus": "Object pronouns me, us, him, her, and them",
+    "explanation": "An object pronoun can take the place of a name or a group of names. Rosa sees Mia. Rosa sees her. Mia and her are the same person here. Use me for the person who is speaking. Use us for that person and one or more other people. Use him for a boy or a man, her for a girl or a woman, and them for two or more people. Put these words after action words like see, help, and call. You can also put them after with or next to. Read the examples. Point to the person or people each small word means. Then say each new sentence aloud.",
+    "examples": [
+      {
+        "before": "I am Alex. Rosa can help Alex.",
+        "after": "I am Alex. Rosa can help me.",
+        "why": "Alex is speaking about Alex. Me goes after help."
+      },
+      {
+        "before": "I am Mia. Ben can sit with Mia and Alex.",
+        "after": "I am Mia. Ben can sit with us.",
+        "why": "Us means Mia and Alex. Mia is the speaker."
+      },
+      {
+        "before": "Ben is at the piano. Please give Ben the pencil.",
+        "after": "Ben is at the piano. Please give him the pencil.",
+        "why": "Him means Ben. It goes after give."
+      },
+      {
+        "before": "Rosa is by the door. Say hello to Rosa.",
+        "after": "Rosa is by the door. Say hello to her.",
+        "why": "Her means Rosa. It goes after to."
+      },
+      {
+        "before": "Mia and Ben are ready. Wait for Mia and Ben.",
+        "after": "Mia and Ben are ready. Wait for them.",
+        "why": "Them means Mia and Ben. It goes after for."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Ben is at the piano. Which note means “Take this pencil to Ben”?",
+        "options": [
+          "Take this pencil to her.",
+          "Take this pencil to them.",
+          "Take this pencil to him.",
+          "Take this pencil to us."
+        ],
+        "answer": 2,
+        "explanation": "Him means Ben and goes after to in this note."
+      },
+      {
+        "prompt": "Rosa says, “I am by the door. Please come and find ___.”",
+        "options": [
+          "me",
+          "her",
+          "him",
+          "them"
+        ],
+        "answer": 0,
+        "explanation": "Rosa is speaking, and she asks someone to find her, so she says me."
+      },
+      {
+        "prompt": "Alex says, “Mia and I are in the back row. You can sit with ___.” The missing word must refer to Alex and Mia.",
+        "options": [
+          "me",
+          "them",
+          "her",
+          "us"
+        ],
+        "answer": 3,
+        "explanation": "Us means Alex and Mia because Alex is speaking and names both people."
+      },
+      {
+        "prompt": "Mia says, “I have a question for Rosa. I want to ask ___ now.”",
+        "options": [
+          "him",
+          "her",
+          "us",
+          "me"
+        ],
+        "answer": 1,
+        "explanation": "Her means Rosa, the person Mia wants to ask."
+      },
+      {
+        "prompt": "You are Alex. Ben and Rosa are in the big room. Which line means you can see both Ben and Rosa?",
+        "options": [
+          "I can see him.",
+          "I can see me.",
+          "I can see them.",
+          "I can see us."
+        ],
+        "answer": 2,
+        "explanation": "Them stands for Ben and Rosa, the two people Alex can see."
+      },
+      {
+        "prompt": "Ben says to Alex, “I have your sheet. Can you take it from ___?”",
+        "options": [
+          "him",
+          "us",
+          "her",
+          "me"
+        ],
+        "answer": 3,
+        "explanation": "Ben is the speaker and has the sheet, so he says from me."
+      },
+      {
+        "prompt": "Rosa says to Mia, “Alex and I are ready. Please wait for ___ at the door.” The missing word must refer to Rosa and Alex.",
+        "options": [
+          "us",
+          "me",
+          "her",
+          "them"
+        ],
+        "answer": 0,
+        "explanation": "Rosa includes herself and Alex, so she uses us after for."
+      },
+      {
+        "prompt": "Ben has a bag. Mia has a red coat. Alex tells Rosa, “The red coat is for Mia. Please give it to ___.”",
+        "options": [
+          "him",
+          "them",
+          "her",
+          "us"
+        ],
+        "answer": 2,
+        "explanation": "Her means Mia, the person who should get the red coat."
+      }
+    ],
+    "transfer": "Write a three-line note from Alex to Rosa. Say where Rosa can meet Alex and Mia, ask Rosa to show both of you the seat, and say you can give Ben his pencil. Use us and him. Circle each pronoun and write the names it means beside your note. Read the note again. Check who is speaking."
+  },
+  "vocabulary": [
+    {
+      "word": "invitation",
+      "meaning": "a message that asks you to come",
+      "example": "I got an invitation to Jo’s dinner.",
+      "pair": "send an invitation"
+    },
+    {
+      "word": "side door",
+      "meaning": "a door at the side of a building",
+      "example": "We use the side door when the shop opens.",
+      "pair": "knock on the side door"
+    },
+    {
+      "word": "arrive",
+      "meaning": "get to a place you are going to",
+      "example": "I arrive at work at eight.",
+      "pair": "arrive early"
+    },
+    {
+      "word": "coat hook",
+      "meaning": "a small thing you hang a coat on",
+      "example": "My jacket is on the coat hook.",
+      "pair": "a coat hook by the door"
+    },
+    {
+      "word": "back row",
+      "meaning": "the last line of seats in a room",
+      "example": "We sat in the back row at the cinema.",
+      "pair": "sit in the back row"
+    },
+    {
+      "word": "free chair",
+      "meaning": "a chair that nobody is using and that you can sit on",
+      "example": "There is a free chair at our table.",
+      "pair": "look for a free chair"
+    },
+    {
+      "word": "song sheet",
+      "meaning": "a page with the words of a song",
+      "example": "I read the words on my song sheet.",
+      "pair": "hand out song sheets"
+    },
+    {
+      "word": "warm up",
+      "meaning": "get your body or voice ready",
+      "example": "We warm up our voices before we sing.",
+      "pair": "warm up before a run"
+    },
+    {
+      "word": "hum",
+      "meaning": "sing a tune with your mouth closed",
+      "example": "I hum a tune when I wash the cups.",
+      "pair": "hum a tune"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go and get something or someone",
+      "example": "I pick up my bread from the shop at five.",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "break",
+      "meaning": "a short time when you stop an activity",
+      "example": "We have a break after our first class.",
+      "pair": "take a break"
+    },
+    {
+      "word": "beside",
+      "meaning": "at the side of someone or something",
+      "example": "I put my keys beside my phone.",
+      "pair": "stand beside the window"
+    }
+  ],
+  "speaking": {
+    "audience": "Rosa, the choir organizer, and Mia, a friend coming to choir",
+    "first": "You are Alex. Read the invitation. Rosa can do a quiet warm-up with you at 6:20 by the small room next to the coat hooks. At 6:25, go to the big room with her to pick up your song sheet. Make two lists of short notes. One list is for the door and arrival time. The other is for what to bring and the warm-up. Do both parts yourself. Read one question as Rosa, then answer as Alex. Use these questions. Which door will you use, and what time will you arrive? What will you bring? Who will you warm up with? Give one short answer at a time. Then tell Mia who will warm up with you. Use her for Rosa when you speak to Mia.",
+    "change": "Rosa has a new plan. The small room is busy. The quiet warm-up is now by the song sheet table in the big room at 6:20. Meet Rosa at the green door at 6:15 as before.",
+    "second": "Take the questions again. Keep the arrival time, the green door, and what you bring. Change where you warm up. Say where you meet Rosa first and where you go next. Finish with one short question to Rosa about when to pick up your song sheet. Listen to your own words as you say them and try one answer again if a place or time is hard to hear.",
+    "checklist": [
+      "I said the green side door on Bell Street and 6:15.",
+      "I said water and a pencil. I left the song sheet off my packing list.",
+      "I gave the song sheet table in the big room and 6:20 for the warm-up.",
+      "I used her for Rosa in a line I said to Mia.",
+      "I asked about the song sheet and kept my answers short."
+    ]
+  },
+  "writing": {
+    "audience": "Mia, your friend on the bus",
+    "first": "Mia will reach the green door at 6:45. She wants to sit beside you in the back row. If all the seats there are taken, she can ask Rosa for a chair. Read the hall sign for the rule about bags. Write three short notes for yourself about her time at the door, the seat, and her bag. Then write a text to Mia in 25 to 45 words across several short lines. Offer her a place beside you if there is a free chair. Say what she can do if there is no free chair, and tell her where her bag goes.",
+    "change": "Mia sends a new text. She can still reach the green door at 6:45, but she must leave at 7:00 when the break starts. Her brother Leo will wait outside the green door.",
+    "second": "Write the text again in 25 to 45 words. Keep the time at the green door and your offer to sit together if there is a free chair. Keep the bag note. Add the time to leave and where Leo will wait. Use him to mean Leo after you name him. Read the text as Mia and underline the two times.",
+    "checklist": [
+      "My new text has 25 to 45 words across several short lines.",
+      "I gave 6:45 as Mia’s arrival at the green door.",
+      "I offered a seat beside me if a chair is free and said where the bag goes.",
+      "I gave 7:00 as Mia’s leaving time and put Leo outside the green door.",
+      "I named Leo before I used him."
+    ]
+  },
+  "immersion": {
+    "role": "You are Alex. Rosa asks you to make a tiny welcome card and a practice plan for a new singer named Sam.",
+    "goal": "Help Sam find the right door, get a song sheet, and sing from the back row. Make the plan work for Mia too, so Sam knows when Mia can sing with the group and when she needs to go.",
+    "constraints": [
+      "Use Thursday’s times from the invitation. Practice starts with the first song at 6:30.",
+      "The front door on Park Road is closed. Send Sam to the green side door on Bell Street.",
+      "Sam needs water and a pencil. Rosa has a song sheet for Sam.",
+      "Keep the chair with the white card free for Ben. Give Sam a place in the back row.",
+      "Use Mia’s new leaving time from the writing task. Mia arrives at 6:45 and leaves at 7:00."
+    ],
+    "change": "Sam can get to the green door only at 6:25. The quiet warm-up is over then. Rosa can meet Sam just inside the door at 6:25 or by the piano at 6:35. Sam wants to sing in the first song.",
+    "deliverables": [
+      "Make two short notes before you write. Give one thing Sam can do at 6:25 and one thing Sam would miss by waiting until 6:35.",
+      "Make a tiny welcome card of 25 to 35 words on three or four lines. Say hello to Sam. Give the door and time, say what to bring, and say who has a song sheet.",
+      "Make a six-line rehearsal plan. Use one line each for 6:25, 6:30, 6:45, 7:00, 7:15, and 7:30. Put the sheet pickup and Sam’s seat on the first line.",
+      "Write a two-line note from Alex to Rosa. Name Sam and Mia, then use them to mean both singers in a thank-you for helping them."
+    ],
+    "checklist": [
+      "The card says 6:25 at the green side door on Bell Street and gives the two things Sam should bring.",
+      "The plan puts Sam with Rosa at 6:25 and gives Sam time to get a sheet and sit before the first song.",
+      "Sam sits in the back row, and Ben’s chair stays free.",
+      "The plan shows Mia arriving after the first song and leaving at the break.",
+      "The plan gives 7:15 for the last song and 7:30 for the finish.",
+      "My note names Sam and Mia before I use them."
+    ]
+  }
+}

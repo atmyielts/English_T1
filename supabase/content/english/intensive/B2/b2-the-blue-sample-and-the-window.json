@@ -1,0 +1,394 @@
+{
+  "slug": "b2-the-blue-sample-and-the-window",
+  "title": "The Blue Sample and the Window",
+  "level": "B2",
+  "summary": "Determine which of two paint samples matches a sample pack by evaluating inconsistent observation conditions.",
+  "documents": [
+    {
+      "title": "Studio brief for a repeatable color sample",
+      "text": "The studio will make fifty small paper sample packs for a weekend course. Each pack needs a blue strip like the reference card in the drawer by the sink. Two makers have offered to prepare the batch; each uses paint from a different supplier. Before we choose, make three test strips for each mixture on paper from the same stack. A strip should be judged when dry, beside the reference card. Our first set was photographed while still damp. One maker tagged the image 'matched' after checking it against a photo of the reference on her phone. Such comparisons can be useful when discussing which version looks promising, but the final choice should be made with the physical cards together. Check at the window and under the demonstration table light. Both lighting conditions matter because the finished packs will be compared while people move between those places. Keep the source of each paint in the record, but use letters A and B on the strips while they are being judged."
+    },
+    {
+      "title": "Maker's note after the first round",
+      "text": "Two of my strips looked slightly gray under the demonstration lamp and blue at the window. The reference card also looked gray under the lamp, but the difference was less noticeable. All three strips were painted on the same paper. The third strip received a second coat because the surface was uneven along one side. I forgot to record that before laying the strips on the tray. None of the people who looked at them from the window knew which had a second coat. All three preferred the darker strip, although they were asked to choose which they liked instead of which best matched the reference card. The lamp light wasn't tested with those readers. I would like to compare new strips with one coat each under both lights before asking for preferences again. I would also keep the first darker strip in the record as a useful example of an uneven procedure, clearly labeled with what was done."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A pair of makers comparing strips",
+      "text": "Kim: Look at this edge. One of the corners is still dark because that part isn't dry.\n\nElise: We marked both as ready when the middle looked dry, but I didn't check the corners. Shall we put them back on the rack?\n\nKim: Yes, and write that the timing for both started within a minute, but one needed longer. People might otherwise think one maker brought the sample late.\n\nElise: Did you compare them with the card from the drawer? There's one on the wall that looks the same.\n\nKim: I checked the drawer card. The one on the wall is an old demonstration card. Somebody left it in the window for a season.\n\nElise: In that case, we need a new photo of all three together, in case someone asks later. Should we take it with both lights on?\n\nKim: Take one at the window and one at the lamp. If we use both at the same time, we will lose the difference between the settings."
+    },
+    {
+      "title": "Feedback from a course tutor",
+      "text": "I walked between the two stations this morning with the reference and the sample labeled B. One participant said B looked like the reference under the lamp but looked a little cooler near the window. By cooler, I asked her to say what she meant rather than assume. She said it looked closer to purple. I'm glad I asked, because another person used cooler to describe the paper itself. For the second trial, give people two options for each light: can you see a difference or can't you see one? For those who see a difference, record the specific color difference they describe. Then ask which sample is closer to the reference under that light. Use the same three questions for both samples. I'd also ask people to move from the lamp to the window in alternating order over the whole trial. That will help us see whether the first light affects their second comparison."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why should the final comparison use the real strips and card together?",
+      "options": [
+        "The paint slips off the paper when shown on a phone.",
+        "Separately viewed images can give a different impression.",
+        "Both makers own the same phone model.",
+        "The source of each paint would be easier to guess on paper."
+      ],
+      "answer": 1,
+      "explanation": "The first comparisons were damp or photo-based, and the brief requires comparable actual samples."
+    },
+    {
+      "prompt": "1. What does the brief keep separate?",
+      "options": [
+        "The supplier record and the visible sample labels",
+        "The strip color and the stack of paper used for it",
+        "The source of the reference card and its storage place",
+        "The window photograph and the first sample maker's work"
+      ],
+      "answer": 0,
+      "explanation": "Supplier identity is retained in the record, while strips display letters during judging."
+    },
+    {
+      "prompt": "1. Why do both lighting settings matter?",
+      "options": [
+        "Only the window and lamp photos are approved for public use.",
+        "The strips take longer to dry at the window.",
+        "People will compare actual packs while using both parts of the room.",
+        "Both suppliers guarantee a match in one setting each."
+      ],
+      "answer": 2,
+      "explanation": "The finished course materials are intended to be used in both light conditions."
+    },
+    {
+      "prompt": "2. What is wrong with using the first three people's choices to judge a match?",
+      "options": [
+        "They had all seen the supplier label before deciding.",
+        "They handled the strips only under the lamp.",
+        "They each tested a different reference card.",
+        "Their task was to pick what they liked, not what was closest to the card."
+      ],
+      "answer": 3,
+      "explanation": "The preference question collected a different judgment than the required comparison."
+    },
+    {
+      "prompt": "2. Which inconsistent preparation detail matters?",
+      "options": [
+        "Every strip was made from another kind of paper.",
+        "One strip had an extra coat.",
+        "Two of the sample colors had been bought that morning.",
+        "The reference card was painted again during the test."
+      ],
+      "answer": 1,
+      "explanation": "One strip received a second coat after the maker noticed an uneven side."
+    },
+    {
+      "prompt": "2. What is the purpose of keeping the darker strip?",
+      "options": [
+        "It automatically becomes the new reference.",
+        "It shows that all three readers preferred blue to gray under both lights.",
+        "It preserves a documented example of the initial procedure problem.",
+        "It can be packed without any further comparison."
+      ],
+      "answer": 2,
+      "explanation": "The author wants it labeled as evidence of what was done, despite procedure inconsistency."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Why does Kim want to add a note about drying?",
+      "options": [
+        "Both were made at nearly the same time but took different times to dry.",
+        "Elise forgot which person brought each paint.",
+        "The colors were read in different orders by every participant.",
+        "One strip was brought to the room the previous day."
+      ],
+      "answer": 0,
+      "explanation": "The note prevents slower drying from being read as late arrival."
+    },
+    {
+      "prompt": "1. Which reference will be used?",
+      "options": [
+        "The wall card that had stood in a window",
+        "A phone image from the first maker",
+        "A strip that took longer to dry",
+        "The card stored in the drawer"
+      ],
+      "answer": 3,
+      "explanation": "Kim checked the drawer card and identifies the wall card as an older display sample."
+    },
+    {
+      "prompt": "1. Why should they take two separate photographs?",
+      "options": [
+        "They need one version for each maker's personal collection.",
+        "The active sample changes color as soon as it is removed from the rack.",
+        "The same photo cannot contain more than two sample strips.",
+        "They want a record of how the cards look in each light independently."
+      ],
+      "answer": 3,
+      "explanation": "Using both lights for one picture would obscure the difference between the settings."
+    },
+    {
+      "prompt": "2. What does the tutor learn about the word cooler?",
+      "options": [
+        "Different speakers have used it for different kinds of impressions.",
+        "People agree it always means the paper looks purple.",
+        "It can only mean the physical temperature of a paint strip.",
+        "Every learner uses it when a sample is close to the reference."
+      ],
+      "answer": 0,
+      "explanation": "One speaker means a color near purple and another is describing the paper itself."
+    },
+    {
+      "prompt": "2. What does the tutor want readers to decide first under each light?",
+      "options": [
+        "Which supplier is their favorite",
+        "Whether they can see a difference at all",
+        "Whether they want to finish near the window",
+        "Which shade is hardest to paint"
+      ],
+      "answer": 1,
+      "explanation": "The visible-difference check comes before a description or a closest-match decision."
+    },
+    {
+      "prompt": "2. Why does the tutor want to vary the station order?",
+      "options": [
+        "The first light may influence the comparison at the next one.",
+        "The sample packs have to end up in alphabetical order.",
+        "The test cannot happen twice at the same light.",
+        "The reference should be viewed only by people who have visited the lamp."
+      ],
+      "answer": 0,
+      "explanation": "Alternating orders can reveal whether one viewing condition affects the next judgment."
+    }
+  ],
+  "grammar": {
+    "focus": "Active and passive forms in a test report",
+    "explanation": "Use passive forms to focus on what was done to the sample, especially in procedures. Use active forms when the actor matters. Keep agent responsibility clear when changing voice.",
+    "examples": [
+      {
+        "before": "The strips labels A and B before they dry.",
+        "after": "The strips are labeled A and B before they dry.",
+        "why": "Use a form of be and the past participle to describe what is done to the strips."
+      },
+      {
+        "before": "The reference was compare with both strips.",
+        "after": "The reference was compared with both strips.",
+        "why": "The passive uses a past participle after was."
+      },
+      {
+        "before": "The sheet was changed last night.",
+        "after": "Elise changed the sheet last night.",
+        "why": "The active sentence gives responsibility when the maker needs to know who changed it."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Every test strip ___ from the same stack of paper.",
+        "options": [
+          "is cutting",
+          "cut itself",
+          "is cut",
+          "has cut"
+        ],
+        "answer": 2,
+        "explanation": "A present passive needs is plus the past participle."
+      },
+      {
+        "prompt": "The labels ___ last night. Use the past simple passive.",
+        "options": [
+          "are replaced",
+          "were replacing them",
+          "were replaced",
+          "replacing"
+        ],
+        "answer": 2,
+        "explanation": "Were replaced shows work completed on the labels in the past."
+      },
+      {
+        "prompt": "Which version makes the instructor responsible?",
+        "options": [
+          "The light conditions were recorded.",
+          "The instructor recorded the light conditions.",
+          "Recording of the conditions took place.",
+          "A record was made last night."
+        ],
+        "answer": 1,
+        "explanation": "Only the active subject tells us who made the record."
+      },
+      {
+        "prompt": "The photo should ___ after all the paint is dry.",
+        "options": [
+          "be taking",
+          "be taken",
+          "taken",
+          "is taken"
+        ],
+        "answer": 1,
+        "explanation": "A modal passive uses be followed by a past participle."
+      },
+      {
+        "prompt": "Which sentence correctly places extra attention on the test result rather than on the observer?",
+        "options": [
+          "An observer under the lamp was the one who looked.",
+          "The tutor evaluated a slight difference under the lamp.",
+          "The participant had noticed a difference under the lamp.",
+          "A slight difference was observed under the lamp."
+        ],
+        "answer": 3,
+        "explanation": "The passive begins with the difference and does not require naming an observer."
+      },
+      {
+        "prompt": "For the repeat trial, the same three questions will ___ about each strip.",
+        "options": [
+          "be asked",
+          "have asking",
+          "are asked",
+          "be ask"
+        ],
+        "answer": 0,
+        "explanation": "Will be asked is the full future passive form."
+      },
+      {
+        "prompt": "Which converts 'Kim photographed the drawer card' to passive and keeps Kim's role?",
+        "options": [
+          "The drawer card was photographed by Kim.",
+          "The drawer card was photographing Kim.",
+          "Kim was photographed by the drawer card.",
+          "The drawer card had photographed Kim."
+        ],
+        "answer": 0,
+        "explanation": "The original object becomes the passive subject, with Kim named in a by phrase."
+      },
+      {
+        "prompt": "The reference is stored in the drawer. Which says where it was kept earlier this week?",
+        "options": [
+          "It is stored in the drawer tomorrow.",
+          "It stores the drawer itself.",
+          "It was store in the drawer.",
+          "It was stored in the drawer."
+        ],
+        "answer": 3,
+        "explanation": "Was stored puts the otherwise same passive statement in the past."
+      }
+    ],
+    "transfer": "Write a short three-stage test procedure in the passive. Then add two active statements naming who discovered and recorded an exception. Check that the tenses separate planned procedure and what already happened."
+  },
+  "vocabulary": [
+    {
+      "word": "swatch",
+      "meaning": "a small piece that shows the color or texture of a material",
+      "example": "The instructor set two paint swatches beside the reference.",
+      "pair": "a blue swatch"
+    },
+    {
+      "word": "reference",
+      "meaning": "an example used as a standard for comparison",
+      "example": "Compare each strip with the reference card.",
+      "pair": "a physical reference"
+    },
+    {
+      "word": "damp",
+      "meaning": "slightly wet",
+      "example": "The dark corner was still damp.",
+      "pair": "slightly damp paint"
+    },
+    {
+      "word": "coat",
+      "meaning": "a layer put on a surface",
+      "example": "The uneven strip received a second coat.",
+      "pair": "apply a coat"
+    },
+    {
+      "word": "consistent",
+      "meaning": "staying the same across cases",
+      "example": "Use a consistent position under the lamp.",
+      "pair": "consistent conditions"
+    },
+    {
+      "word": "take turns",
+      "meaning": "do something in alternating order with other people",
+      "example": "Participants take turns beginning at the window.",
+      "pair": "take turns starting"
+    },
+    {
+      "word": "surface",
+      "meaning": "the outer or upper layer of a thing",
+      "example": "The paper surface looked rough on one edge.",
+      "pair": "an uneven surface"
+    },
+    {
+      "word": "setting",
+      "meaning": "the conditions or place in which something happens",
+      "example": "The blue changed under a different light setting.",
+      "pair": "a viewing setting"
+    },
+    {
+      "word": "tag",
+      "meaning": "add a short identifying label",
+      "example": "She tagged one photo as a possible match.",
+      "pair": "tag a photo"
+    },
+    {
+      "word": "preference",
+      "meaning": "a choice of what one likes more",
+      "example": "The tutor recorded a preference after asking about the match.",
+      "pair": "state a preference"
+    },
+    {
+      "word": "specific",
+      "meaning": "precise about one particular thing",
+      "example": "Ask for a specific difference if a person sees one.",
+      "pair": "a specific difference"
+    },
+    {
+      "word": "promising",
+      "meaning": "showing good signs even before the result is final",
+      "example": "The first sample looks promising under the lamp.",
+      "pair": "a promising result"
+    }
+  ],
+  "speaking": {
+    "audience": "Two volunteer makers and the instructor who needs finished packs",
+    "first": "Give a 2–3 minute meeting brief. Explain why the preference and match results could differ, assign repeat trial roles, and demonstrate the first two neutral questions.",
+    "change": "A window blind breaks and half the group can only use the lamp today. The pack deadline stays the same.",
+    "second": "Record a revised two-minute brief. State which decision can be made now and which comparison needs a later check, propose how to avoid conflating them, and give a small production contingency.",
+    "checklist": [
+      "Report distinct light settings",
+      "Assign a maker and an observer to separate tasks",
+      "Use neutral questions rather than color suggestions",
+      "Qualify any choice made on partial evidence"
+    ]
+  },
+  "writing": {
+    "audience": "The instructor reviewing preparation for the weekend",
+    "first": "Write a 180–220 word method note with equal coat and paper conditions, meaningful drying checks, and an ordered comparison under both lights. Add a short statement of what the earlier trial did not establish.",
+    "change": "You learn that one reader compared an old wall card while the other two used the drawer card.",
+    "second": "Write a 120–150 word addendum stating which result has to be set aside or labeled, why, and how to ensure the repeat comparison uses the same standard.",
+    "checklist": [
+      "Specify the reference card",
+      "Use passive where the materials matter and active where responsibility matters",
+      "Distinguish earlier results from new instructions",
+      "Give a practical way to check compliance"
+    ]
+  },
+  "immersion": {
+    "role": "Course sample quality lead",
+    "goal": "Prepare a repeatable color comparison and enough evidence to defend a production choice.",
+    "constraints": [
+      "The paper and number of coats must match",
+      "Judges compare dry strips in both lights",
+      "Keep identity in the log and letter labels in front of judges"
+    ],
+    "change": "The instructor can delay only half the packs if the tests disagree across lights.",
+    "deliverables": [
+      "Draw three cards at each of two light stations and show two visit orders",
+      "Prepare a six-column data sheet recording letter, light, visible difference, description, closest match and observer order",
+      "Write a decision note with separate choices if results agree or disagree",
+      "Role-play a two-minute explanation of the split deadline and revise your card labels"
+    ],
+    "checklist": [
+      "Each test condition is controlled or explicitly recorded",
+      "Readers answer a comparison question before stating a preference",
+      "A log can trace strips to the appropriate reference",
+      "A split production decision can be justified from recorded evidence"
+    ]
+  }
+}

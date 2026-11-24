@@ -1,29 +1,50 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-hub-long-course",
+  "releaseId": "english-hub-intensive-60-minute-study",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [
-    "20261124165000_english_hub_long_course.sql"
+  "frontends": [
+    "english-hub"
   ],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261124172000_english_intensive_schema.sql",
+    "20261124172100_english_intensive_units.sql"
+  ],
+  "edgeFunctions": [
+    "english-intensive",
+    "hub",
+    "listening-content"
+  ],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ENGLISH_APP_URL"
+  ],
   "rolloutOrder": [
-    "migration:20261124165000_english_hub_long_course.sql",
-    "content:private-authored-writing-models-long-course",
-    "verify:english-hub-long-course"
+    "pages",
+    "migration:20261124172000_english_intensive_schema.sql",
+    "migration:20261124172100_english_intensive_units.sql",
+    "secret:ENGLISH_APP_URL",
+    "function:english-intensive",
+    "function:hub",
+    "function:listening-content",
+    "verify:english-intensive"
   ],
   "manualFollowUps": [
-    "Dry-run supabase db push --linked and apply only the English Hub content migration with the checksum-verified private cache seed for the 36 new Writing model responses."
+    "After the English Hub Pages build is live, run supabase db push --linked with only these two migrations pending. The Practice link stays hidden until the intensive service reports ready.",
+    "Run supabase functions deploy english-intensive, supabase functions deploy hub, and supabase functions deploy listening-content on the approved Schood project.",
+    "Keep the existing optional supabase secrets set ENGLISH_APP_URL= configuration or its production default. No secret rotation is needed."
   ],
   "verification": [
-    "Verify the learner catalogues include all 251 new activities across all 42 skill-and-level combinations.",
-    "Measure the loaded catalogue at every level and verify at least 1,000 native estimated minutes per level.",
-    "Open activities from all seven skills using an authenticated learner, verify browser-voice Listening, and verify Writing models require a submitted response."
+    "Confirm 11 original themes for every level from A1 to C2, six active sessions per theme, and all intensive Listening sessions awaiting recorded audio.",
+    "Verify paid learner access, grading and draft persistence across all six active skills, and confirm each level clears 63 hours without Listening or review time.",
+    "Confirm the native Listening library and lesson routes show audio coming soon where recordings are absent, and production recommendations do not send learners to those lessons."
   ],
   "rollback": {
-    "content": "Archive the activities identified by this migration in English Content Studio while retaining learner progress and Writing models."
-  }
+    "content": "Keep intensive content and progress available in the database. Previous Hub Pages and prior Edge builds are available through the recorded production deployment revisions."
+  },
+  "sharedEdgeConsumers": [
+    "english-intensive",
+    "hub",
+    "listening-content"
+  ]
 }

@@ -1,0 +1,395 @@
+{
+  "slug": "the-quiet-corner-sign",
+  "title": "The Quiet Corner Sign",
+  "level": "A1",
+  "summary": "The craft room is busy, but some visitors want a quiet place to draw. Read the room guide and the pencil sign. Use the room details to welcome a visitor. Then make a sign and help a new visitor find a seat.",
+  "documents": [
+    {
+      "title": "Craft Room Guide",
+      "text": "Welcome to the open house. Come in through the glass door. The welcome desk is in front of you. The long tables on the right are for people who want to make things together. There is often a lot of noise there. Walk past the welcome desk to the back of the room. The small table on the left is the quiet corner. There is a blue star on the wall next to this table. You can sit here and draw. There are four chairs. Please leave a space between the table and the door. People need to walk through that space."
+    },
+    {
+      "title": "Pencil Box Sign",
+      "text": "Take one pencil from the green box. Use a sheet of white paper from the table. Take your picture home when you go. Put the pencil back in the green box. There is a small red cup next to the box. Put a broken pencil in the red cup so the desk helper can see it. Please keep pens in your bag while you use this table. We do not have a bin by the quiet corner. You can use the tall bin at the welcome desk. Come to the desk if the paper is gone."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Mira at the Door",
+      "text": "Hello, I'm Mira. Is this the craft room? I can see the long tables, but I don't want to work there today. My friend Ada is coming in ten minutes. We want to sit and draw together. I have one pencil in my bag. Ada doesn't have one. Can she take one from the table? I have a pen too, but I can leave it in my bag. We want to draw a little house. Ada will take her picture home. I need to go before she does, so please tell her where to put my pencil if I lend it to her."
+    },
+    {
+      "title": "Nodir’s Desk Update",
+      "text": "Hi, it's Nodir at the welcome desk. I put six clean sheets of paper on the small table with the star. I moved my coat, so all four chairs are free now. Please ask visitors to use the chairs at the table. Don't move a chair next to the door. People from the big tables go out that way. One pencil in the green box has a broken point. Leave it in the red cup when you find it. I'm here at the desk until half past four. After that, Farida will sit here and help people."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In the Craft Room Guide, what can you see in front of you as you come in?",
+      "options": [
+        "A table with a blue star",
+        "The welcome desk",
+        "The green pencil box",
+        "Four small chairs"
+      ],
+      "answer": 1,
+      "explanation": "The welcome desk is directly in front of you when you enter."
+    },
+    {
+      "prompt": "According to the Craft Room Guide, what is on the wall next to the quiet table?",
+      "options": [
+        "A red square",
+        "A picture of a house",
+        "A green arrow",
+        "A blue star"
+      ],
+      "answer": 3,
+      "explanation": "The guide says a blue star marks the quiet table."
+    },
+    {
+      "prompt": "Why does the Craft Room Guide ask you to leave space by the door?",
+      "options": [
+        "People need to walk through that space.",
+        "The desk helper puts used paper there.",
+        "The room has no other place to draw.",
+        "The long tables move there later."
+      ],
+      "answer": 0,
+      "explanation": "The guide asks you to keep that space open so people can walk through."
+    },
+    {
+      "prompt": "According to the Pencil Box Sign, what can a visitor keep?",
+      "options": [
+        "The green box",
+        "A borrowed pencil",
+        "Their finished picture",
+        "The small red cup"
+      ],
+      "answer": 2,
+      "explanation": "The sign says to take the picture home and put borrowed pencils back."
+    },
+    {
+      "prompt": "Where does the Pencil Box Sign say to put a broken pencil?",
+      "options": [
+        "In the little red cup",
+        "In the tall bin",
+        "In your own bag",
+        "In the green box"
+      ],
+      "answer": 0,
+      "explanation": "The sign names the red cup as the place for a broken pencil."
+    },
+    {
+      "prompt": "What does the Pencil Box Sign ask you to do when there are no more sheets?",
+      "options": [
+        "Ask someone at the long tables.",
+        "Take a picture from the wall.",
+        "Use a pen from your bag.",
+        "Go to the welcome desk."
+      ],
+      "answer": 3,
+      "explanation": "The last line tells you to go to the desk if the paper is gone."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In Mira at the Door, what do Mira and Ada want to do together?",
+      "options": [
+        "Work at the welcome desk",
+        "Make a new table sign",
+        "Sit and draw",
+        "Clean the pencil box"
+      ],
+      "answer": 2,
+      "explanation": "Mira tells the helper that she and Ada want to sit and draw together."
+    },
+    {
+      "prompt": "Who needs a pencil according to Mira at the Door?",
+      "options": [
+        "Ada",
+        "Mira",
+        "Nodir",
+        "Farida"
+      ],
+      "answer": 0,
+      "explanation": "Mira says she has a pencil, but Ada doesn't have one."
+    },
+    {
+      "prompt": "In Mira at the Door, what does Mira say she can leave in her bag?",
+      "options": [
+        "Her finished picture",
+        "The white paper",
+        "A borrowed pencil",
+        "Her pen"
+      ],
+      "answer": 3,
+      "explanation": "Mira says she has a pen but can leave it in her bag."
+    },
+    {
+      "prompt": "In Nodir’s Desk Update, how many chairs at the quiet table can people use?",
+      "options": [
+        "Two",
+        "Four",
+        "Six",
+        "Three"
+      ],
+      "answer": 1,
+      "explanation": "Nodir has moved his coat and says all four chairs are free."
+    },
+    {
+      "prompt": "Nodir’s Desk Update says to leave the chair by the quiet table. Why keep it away from the door?",
+      "options": [
+        "The pencils need to stay near the door.",
+        "There is a bin next to the door.",
+        "People from the big tables leave that way.",
+        "The glass door closes at half past four."
+      ],
+      "answer": 2,
+      "explanation": "Nodir says that people at the big tables go out through that door."
+    },
+    {
+      "prompt": "Who will help visitors at the desk after half past four in Nodir’s Desk Update?",
+      "options": [
+        "Mira",
+        "Ada",
+        "Nodir",
+        "Farida"
+      ],
+      "answer": 3,
+      "explanation": "Nodir will leave at half past four, and Farida will take his place."
+    }
+  ],
+  "grammar": {
+    "focus": "Instructions with a verb and with Don’t",
+    "explanation": "You can start a short instruction with a verb. On a sign, “Take one pencil” tells people what to do. It is an instruction for the person who reads it, so the word you is usually left out. To tell someone to avoid an action, put don't before the verb. “Don't move the chair” asks the person to keep the chair in its place. Use the simple form of the verb after don't, as in don't take, don't put and don't move. Say please when a request should sound friendly. Put it at the start, as in “Please sit here” or “Please don't move this chair.”",
+    "examples": [
+      {
+        "before": "To take one sheet of paper.",
+        "after": "Take one sheet of paper.",
+        "why": "Start a short instruction with Take, the verb."
+      },
+      {
+        "before": "Don't to use this pen.",
+        "after": "Don't use this pen.",
+        "why": "After don't, use the verb form without to."
+      },
+      {
+        "before": "Please don't moves the chair.",
+        "after": "Please don't move the chair.",
+        "why": "Use move after don't. Please makes the request friendly."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Write one short instruction for a paper box. Which tells visitors to take just one sheet?",
+        "options": [
+          "Take one sheet.",
+          "Don't take a sheet.",
+          "Takes one sheet.",
+          "Taking one sheet."
+        ],
+        "answer": 0,
+        "explanation": "A direct instruction can start with the verb Take and give the amount."
+      },
+      {
+        "prompt": "A chair needs to stay here. Choose an instruction for that rule.",
+        "options": [
+          "Move this chair.",
+          "Don't moving the chair.",
+          "Don't move this chair.",
+          "Doesn't move this chair."
+        ],
+        "answer": 2,
+        "explanation": "Don't move says to leave the chair in its current place."
+      },
+      {
+        "prompt": "Choose the friendly instruction that asks visitors to sit near the star.",
+        "options": [
+          "Don't sit near the star, please.",
+          "Please sits near the star.",
+          "Please to sit near the star.",
+          "Please sit near the star."
+        ],
+        "answer": 3,
+        "explanation": "Please can go before the verb Sit to soften the instruction."
+      },
+      {
+        "prompt": "You can read here, but you cannot talk here. Choose the sentence for the talking rule.",
+        "options": [
+          "Don't to talk here.",
+          "Don't talk here.",
+          "Talk here.",
+          "Talking here."
+        ],
+        "answer": 1,
+        "explanation": "Don't plus the simple verb Talk tells people to avoid talking."
+      },
+      {
+        "prompt": "Which signs give one action and one rule against an action?",
+        "options": [
+          "Draw here. Take a pencil.",
+          "Don't draw here. Don't take a pencil.",
+          "Draw here. Don't use a pen.",
+          "You can draw here. There is a pen."
+        ],
+        "answer": 2,
+        "explanation": "Draw gives a positive instruction and Don't use gives a negative instruction."
+      },
+      {
+        "prompt": "Choose the right verb in this request. Please ___ your pencil in the green box.",
+        "options": [
+          "put",
+          "puts",
+          "to put",
+          "putting"
+        ],
+        "answer": 0,
+        "explanation": "After Please at the beginning of an instruction, use the simple verb Put."
+      },
+      {
+        "prompt": "Choose the correct short instruction for the desk helper. ___ the name on the card, please.",
+        "options": [
+          "Writes",
+          "To write",
+          "Writing",
+          "Write"
+        ],
+        "answer": 3,
+        "explanation": "Write starts the instruction, and please at the end makes it friendly."
+      },
+      {
+        "prompt": "One line on a sign asks people to leave the door free. Which line gives that instruction?",
+        "options": [
+          "Please leave a chair in front of the door.",
+          "Please don't put a chair by the door.",
+          "Please don't to put a chair by the door.",
+          "Please to put a chair by the door."
+        ],
+        "answer": 1,
+        "explanation": "Don't put stops visitors from putting a chair in the doorway."
+      }
+    ],
+    "transfer": "Look at the Pencil Box Sign. Write a new two-line sign for the green box. Tell people where to put a good pencil and what they should avoid doing with a broken pencil. Read your two lines out loud. Circle the action words."
+  },
+  "vocabulary": [
+    {
+      "word": "glass door",
+      "meaning": "A door made of glass.",
+      "example": "The room is warm, so close the glass door.",
+      "pair": "open the glass door"
+    },
+    {
+      "word": "welcome desk",
+      "meaning": "A place where visitors can ask for help.",
+      "example": "Ask for the room number at the welcome desk.",
+      "pair": "go to the welcome desk"
+    },
+    {
+      "word": "long table",
+      "meaning": "A table that is much longer than it is wide.",
+      "example": "There are six plates on the long table.",
+      "pair": "sit at the long table"
+    },
+    {
+      "word": "quiet corner",
+      "meaning": "A small part of a room with little noise.",
+      "example": "May I read in the quiet corner?",
+      "pair": "find a quiet corner"
+    },
+    {
+      "word": "star",
+      "meaning": "A shape with points going out from the middle.",
+      "example": "Put a star next to the room number.",
+      "pair": "draw a star"
+    },
+    {
+      "word": "chair",
+      "meaning": "A seat for one person, with a back.",
+      "example": "There is one chair next to my bed.",
+      "pair": "move a chair"
+    },
+    {
+      "word": "sheet",
+      "meaning": "One flat piece of paper.",
+      "example": "Take a sheet of paper from the desk.",
+      "pair": "a blank sheet"
+    },
+    {
+      "word": "pencil",
+      "meaning": "Something you write with that leaves a grey line.",
+      "example": "Write your name with a pencil.",
+      "pair": "borrow a pencil"
+    },
+    {
+      "word": "broken",
+      "meaning": "Damaged so that it does not work well.",
+      "example": "We cannot use the broken chair today.",
+      "pair": "a broken pencil"
+    },
+    {
+      "word": "bin",
+      "meaning": "A box for things you want to throw away.",
+      "example": "Can you put this old paper in the bin?",
+      "pair": "empty the bin"
+    },
+    {
+      "word": "put back",
+      "meaning": "Return something to the place it came from.",
+      "example": "Please put back the books after the class.",
+      "pair": "put back a pencil"
+    },
+    {
+      "word": "free",
+      "meaning": "Ready for someone to use because nobody is using it.",
+      "example": "One seat by the window is free.",
+      "pair": "a free chair"
+    }
+  ],
+  "speaking": {
+    "audience": "Ada, who has never been to this craft room",
+    "first": "Mira will wait at the quiet table. Tell Ada how to find her from the glass door. Give your directions in two or three short parts. Name a sign or thing Ada can see. Say where Ada can get a pencil. Record the welcome, then check it.",
+    "change": "Ada will arrive after half past four. Mira will already be gone. Ada wants to draw on her own and take her picture home. The green box is empty, but Farida has two good pencils at the welcome desk.",
+    "second": "Give Ada the welcome again. Tell her who can give her a pencil and where she should go next. Keep the clue that shows her which table to use. End with one friendly instruction for when she finishes.",
+    "checklist": [
+      "Give one direction from the glass door.",
+      "Say that Farida has a pencil at the desk.",
+      "Use the blue star to help Ada.",
+      "Say one short instruction starting with a verb."
+    ]
+  },
+  "writing": {
+    "audience": "People who come to the quiet corner for the first time",
+    "first": "Make a sign for the small table. Write a title and four short lines. Tell people how many sheets or pencils to take, where to put a good pencil, where to put a broken one, and what to do if they need more paper.",
+    "change": "At four, the desk helper takes the green box and red cup off the table. Visitors now get pencils from the welcome desk. They also return good and broken pencils there.",
+    "second": "Write a sign for after four. Add a line that says where to get a pencil. Update both pencil return lines and keep the line about going to the desk for more paper. Use one short line for each action.",
+    "checklist": [
+      "Say when the new sign is for.",
+      "Send visitors to the right place for both kinds of pencils.",
+      "Keep the line about asking for paper.",
+      "Start two instruction lines with an action word."
+    ]
+  },
+  "immersion": {
+    "role": "You are the helper who puts up room signs",
+    "goal": "Plan a temporary quiet corner and help a visitor find it. Make a new sign for the entrance and a short desk note. Keep the room easy to walk through.",
+    "constraints": [
+      "Keep the space by the door open for people to walk through.",
+      "Name the new table’s location and say how many chairs it has.",
+      "Put a clear marker at the new table.",
+      "Leave the long tables on the right for group work."
+    ],
+    "change": "A class needs the small table by the blue star. Move the quiet corner to a separate table by the back wall on the right. It has two chairs. Put a yellow card on that table. The old blue star cannot come down.",
+    "deliverables": [
+      "Write an entrance sign with the new place, the yellow card and the number of chairs.",
+      "Make a small table sign with one instruction about drawing and one instruction about the door.",
+      "Write a two-line note for the desk helper. Say which marker to follow and which old place to avoid."
+    ],
+    "checklist": [
+      "Name the new table by the back wall.",
+      "Use the yellow card as the clue.",
+      "Give the right number of chairs.",
+      "Keep chairs away from the walking space by the door.",
+      "Make it clear the old star is not the way to the quiet corner."
+    ]
+  }
+}

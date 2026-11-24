@@ -1,0 +1,399 @@
+{
+  "slug": "returnable-cups-at-the-square",
+  "title": "Returnable cups at the square",
+  "level": "A2",
+  "summary": "The coffee stalls at the square no longer use paper cups. On Saturday, you help people return their cups without joining the coffee queue. Read a volunteer card and a stall ticket, then sort the details by place, label and action. Use your notes when you give a briefing, write a sign and change the return station.\n\nListening (when available): Listen to a stallholder and a shift leader. After each first listen, note the main job. On the second listen, write down the times and put the jobs in order.",
+  "documents": [
+    {
+      "title": "Saturday volunteer card",
+      "text": "Start your shift at the market table at 9:45. Take the green sign to the fountain and put it beside the bin marked MARKET CUPS. This bin is for cups with a square on the side. The coffee stalls stopped using paper cups this week. Some people still join the coffee queue just to return a cup. If someone only wants to return a market cup, point them to the fountain. The fountain bin opens at 10:00. Keep the wide path between the main gate and the stalls clear. At 11:00, check the bin. If it is nearly full, ask the shift leader for an empty bin."
+    },
+    {
+      "title": "Orange Stall exchange ticket",
+      "text": "Bring this ticket and your orange cup to the Orange Stall if you want a clean cup for your next drink. Use the small window on the side of the stall for this exchange. The front queue is for people who want to order coffee. The side window opens at 10:30 and closes at 12:00. If you only want to return the orange cup, you can drop it in the bin marked ORANGE STALL beside the side window. You can use that bin from 10:00, even before the window opens. Please put the ticket in the tray under the window if you use the bin."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Maya's message from the Blue Stall",
+      "text": "Hi, it's Maya from the Blue Stall. A quick message about the return boxes. My stall uses blue cups with a star on them. If someone brings one to the fountain, please send them to my stall. The box marked BLUE STALL is just past my tea table. I'll put it out at 10:00. At 11:15, I'll bring a spare box to the market table. Please leave it there until I ask for it. The two boxes look the same, but only the one by the tea table is for customers right now. I'll come back for the spare if my first box gets full."
+    },
+    {
+      "title": "Leo's live shift briefing",
+      "text": "Everyone, look at the fountain for a moment. At 11:30, we'll move the MARKET CUPS bin from there to the side gate. The fountain area gets busy before lunch. First, help anyone who is already waiting to return a cup. Wait until the last person in that group has finished. Then cover the bin and move it with me. We'll move the green sign after the bin is in its new place. If someone comes while the bin is covered, ask them to hold their cup for a moment. Keep the wide path from the main gate clear while we work."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In Saturday volunteer card, where does the volunteer go at 9:45?",
+      "options": [
+        "To the main gate",
+        "To the market table",
+        "To the fountain",
+        "To the coffee queue"
+      ],
+      "answer": 1,
+      "explanation": "The card says to start the shift at the market table at 9:45."
+    },
+    {
+      "prompt": "What is the main job described in Saturday volunteer card?",
+      "options": [
+        "Help customers choose a coffee stall",
+        "Show sellers where to set up their tables",
+        "Give clean cups to people ordering drinks",
+        "Help people return market cups without waiting to order coffee"
+      ],
+      "answer": 3,
+      "explanation": "The card tells volunteers to send people who only want to return a market cup to the fountain."
+    },
+    {
+      "prompt": "According to Saturday volunteer card, what should you do if the fountain bin is nearly full at the 11:00 check?",
+      "options": [
+        "Ask the shift leader for an empty bin",
+        "Move the bin to the main gate",
+        "Send people to the coffee queue",
+        "Take the green sign to the market table"
+      ],
+      "answer": 0,
+      "explanation": "The last line says to ask the shift leader for an empty bin if the current one is nearly full."
+    },
+    {
+      "prompt": "In Orange Stall exchange ticket, where do you take your orange cup and ticket to get a clean cup?",
+      "options": [
+        "To the front of the stall",
+        "To the tray under the window",
+        "To the small side window",
+        "To the bin beside the stall"
+      ],
+      "answer": 2,
+      "explanation": "The ticket says to bring your cup and ticket to the small side window for the exchange."
+    },
+    {
+      "prompt": "According to Orange Stall exchange ticket, what can you do at 10:15 if you only want to return your orange cup?",
+      "options": [
+        "Hand it to someone at the side window",
+        "Put it in the ORANGE STALL bin",
+        "Leave it in the tray under the window",
+        "Wait in the front queue until 10:30"
+      ],
+      "answer": 1,
+      "explanation": "The return bin opens at 10:00, thirty minutes before the side window opens for exchanges."
+    },
+    {
+      "prompt": "Read Orange Stall exchange ticket again. You used the return bin. Where should your ticket go?",
+      "options": [
+        "On the front counter",
+        "Inside the orange cup",
+        "In the ORANGE STALL bin",
+        "In the tray under the window"
+      ],
+      "answer": 3,
+      "explanation": "The final sentence asks people who use the bin to put their ticket in the tray under the window."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In Maya's message from the Blue Stall, how can you tell which cups belong to Maya's stall?",
+      "options": [
+        "They are green with a star",
+        "They are blue with a square",
+        "They are blue with a star",
+        "They are orange with a square"
+      ],
+      "answer": 2,
+      "explanation": "Maya says her stall uses blue cups with a star on them."
+    },
+    {
+      "prompt": "In Maya's message from the Blue Stall, what does Maya say she will do at 11:15?",
+      "options": [
+        "Bring a spare box to the market table",
+        "Open the box beside the tea table",
+        "Move the first box to the fountain",
+        "Collect all the cups from the market table"
+      ],
+      "answer": 0,
+      "explanation": "Maya says she will bring the spare box to the market table at 11:15."
+    },
+    {
+      "prompt": "Listen again to Maya's message from the Blue Stall. Why should you still send customers to the box by the tea table after the spare arrives?",
+      "options": [
+        "The spare has a different label",
+        "The spare is already full",
+        "The box by the tea table opens at 11:30",
+        "Maya wants the spare to stay at the market table until she asks for it"
+      ],
+      "answer": 3,
+      "explanation": "Maya says only the tea table box is for customers and asks volunteers to leave the spare at the market table."
+    },
+    {
+      "prompt": "In Leo's live shift briefing, why does Leo plan to move the MARKET CUPS bin?",
+      "options": [
+        "The bin is already nearly full",
+        "The fountain area gets busy before lunch",
+        "People cannot read the green sign",
+        "The coffee stalls are closing early"
+      ],
+      "answer": 1,
+      "explanation": "Leo says the fountain area gets busy before lunch when he explains the move."
+    },
+    {
+      "prompt": "According to Leo's live shift briefing, what must happen before you cover the bin?",
+      "options": [
+        "The green sign must reach the side gate",
+        "The spare box must arrive at the market table",
+        "The last person already waiting must finish returning their cup",
+        "Everyone must leave the fountain area"
+      ],
+      "answer": 2,
+      "explanation": "Leo tells volunteers to wait until the last person in the group has finished before covering the bin."
+    },
+    {
+      "prompt": "In Leo's live shift briefing, what should you tell someone who arrives while the bin is covered?",
+      "options": [
+        "Hold your cup for a moment",
+        "Leave your cup beside the fountain",
+        "Take your cup to the Blue Stall",
+        "Put your cup under the cover"
+      ],
+      "answer": 0,
+      "explanation": "Leo asks new arrivals to hold their cups for a moment while the bin is covered."
+    }
+  ],
+  "grammar": {
+    "focus": "First conditional with if and the present simple in both clause orders",
+    "explanation": "Use the first conditional for a possible future situation and its result. Put the present simple after if. Use will plus the base form of the verb in the result. In instructions, you can use a command in the result instead. You can start with either part. If the if part comes first, put a comma after it: If the bin is full, tell Leo. If the result comes first, you usually leave out the comma: Tell Leo if the bin is full. When you check your sentence, underline the situation and circle the result. Check which verb belongs to each part.",
+    "examples": [
+      {
+        "before": "If the box will fill up, Maya will bring another one.",
+        "after": "If the box fills up, Maya will bring another one.",
+        "why": "Use the present simple fills up after if and will bring for the future result."
+      },
+      {
+        "before": "Keep your cup, if the bin is covered.",
+        "after": "Keep your cup if the bin is covered.",
+        "why": "The instruction comes first, so you usually leave out the comma."
+      },
+      {
+        "before": "If someone needs a clean cup show them the side window.",
+        "after": "If someone needs a clean cup, show them the side window.",
+        "why": "Put a comma after the if part when it comes first."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The sign might fall later. Which sentence tells your team what you will do?",
+        "options": [
+          "If the sign will fall, I will put it back.",
+          "If the sign falls, I put it back yesterday.",
+          "If the sign falls, I will put it back.",
+          "If I put the sign back, it will fall."
+        ],
+        "answer": 2,
+        "explanation": "Falls describes the possible situation, and will put it back describes your future action."
+      },
+      {
+        "prompt": "Which instruction starts with the result and uses the usual punctuation?",
+        "options": [
+          "Ask Sam for help if the box is too heavy.",
+          "Ask Sam for help, if the box is too heavy.",
+          "If the box is too heavy, ask Sam for help.",
+          "Ask Sam for help if the box will be too heavy."
+        ],
+        "answer": 0,
+        "explanation": "Ask Sam for help comes first, so the if part follows without a comma."
+      },
+      {
+        "prompt": "A customer may arrive before the window opens. Which instruction gives the right order of ideas and punctuation?",
+        "options": [
+          "If a customer will arrive early, show them the opening times.",
+          "If a customer arrives early show them the opening times.",
+          "If a customer arrives early, you showed them the opening times.",
+          "If a customer arrives early, show them the opening times."
+        ],
+        "answer": 3,
+        "explanation": "Arrives is present simple, and the comma separates the opening if part from the instruction."
+      },
+      {
+        "prompt": "You promise to carry the box if Jo needs help. Which sentence puts your promise first?",
+        "options": [
+          "If Jo needs help, I will carry the box.",
+          "I will carry the box if Jo needs help.",
+          "I will carry the box if Jo will need help.",
+          "I carried the box if Jo needs help."
+        ],
+        "answer": 1,
+        "explanation": "I will carry the box gives the promise first, and needs is present simple."
+      },
+      {
+        "prompt": "You want volunteers to open the spare box only when the first box is full. Which instruction matches?",
+        "options": [
+          "If the first box is empty, open the spare box.",
+          "If the first box is full, close the spare box.",
+          "Open the spare box only if the first box is full.",
+          "If the first box will be full, open the spare box."
+        ],
+        "answer": 2,
+        "explanation": "Only if says the first box must be full before volunteers open the spare box."
+      },
+      {
+        "prompt": "Leo says, “If the path gets busy, we will wait by the wall.” Which sentence keeps the meaning and starts with the result? Use the usual punctuation.",
+        "options": [
+          "We will wait by the wall if the path gets busy.",
+          "We will wait by the wall, if the path gets busy.",
+          "The path will get busy if we wait by the wall.",
+          "We will wait by the wall if the path will get busy."
+        ],
+        "answer": 0,
+        "explanation": "The result moves to the front and the if part keeps gets with no comma."
+      },
+      {
+        "prompt": "Which sentence uses a command as the result and starts with the possible situation?",
+        "options": [
+          "Show people the bench if the wait gets longer.",
+          "If the wait gets longer, we will show people the bench.",
+          "If the wait will get longer, show people the bench.",
+          "If the wait gets longer, show people the bench."
+        ],
+        "answer": 3,
+        "explanation": "If the wait gets longer gives the situation first, and show people the bench is a command."
+      },
+      {
+        "prompt": "The green sign may get wet. Which sentence says what you will do if that happens? Use the usual punctuation.",
+        "options": [
+          "I will dry the sign if it will get wet.",
+          "If the sign gets wet, I will dry it.",
+          "If I dry the sign, it will get wet.",
+          "If the sign gets wet I will dry it."
+        ],
+        "answer": 1,
+        "explanation": "Gets is present simple after if, and a comma comes before the result I will dry it."
+      }
+    ],
+    "transfer": "Write three lines for the volunteer who takes over later. Give an instruction for a full bin, say what you will do if the green sign falls, and give a direction for someone with a blue cup. Start one line with if and another with the result. Underline the verb after if and check the commas before you read the lines aloud."
+  },
+  "vocabulary": [
+    {
+      "word": "queue",
+      "meaning": "a line of people waiting",
+      "example": "There was a long queue outside the bakery.",
+      "pair": "join the queue"
+    },
+    {
+      "word": "stall",
+      "meaning": "a small shop or table at a market",
+      "example": "I bought six apples from a fruit stall.",
+      "pair": "market stall"
+    },
+    {
+      "word": "shift",
+      "meaning": "the time when you are working",
+      "example": "My shift at the café ends at two.",
+      "pair": "start a shift"
+    },
+    {
+      "word": "return",
+      "meaning": "take something back",
+      "example": "I need to return these books to the library.",
+      "pair": "return a cup"
+    },
+    {
+      "word": "exchange",
+      "meaning": "give one thing and get another in its place",
+      "example": "Can I exchange this shirt for a smaller one?",
+      "pair": "exchange a shirt"
+    },
+    {
+      "word": "label",
+      "meaning": "words on something that tell you what it is or what goes in it",
+      "example": "The label on this jar says strawberry jam.",
+      "pair": "read the label"
+    },
+    {
+      "word": "tray",
+      "meaning": "a flat object used to carry or hold things",
+      "example": "He brought three glasses of water on a tray.",
+      "pair": "serving tray"
+    },
+    {
+      "word": "spare",
+      "meaning": "extra and ready to use if needed",
+      "example": "I left a spare key with my sister.",
+      "pair": "spare key"
+    },
+    {
+      "word": "nearly full",
+      "meaning": "with only a little space left",
+      "example": "My suitcase is nearly full, but I can fit one more shirt.",
+      "pair": "a nearly full bottle"
+    },
+    {
+      "word": "drop off",
+      "meaning": "take something to a place and leave it there",
+      "example": "I'll drop off the parcel at the post office.",
+      "pair": "drop off a parcel"
+    },
+    {
+      "word": "cover",
+      "meaning": "put something over the top of another thing",
+      "example": "Cover the bowl with a clean plate.",
+      "pair": "cover a bowl"
+    },
+    {
+      "word": "keep clear",
+      "meaning": "leave a place open so people can use it",
+      "example": "Please keep the doorway clear while we bring in the chairs.",
+      "pair": "keep the entrance clear"
+    }
+  ],
+  "speaking": {
+    "audience": "Two new market volunteers starting the Saturday morning shift",
+    "first": "Reread the volunteer card and the exchange ticket. Put the cup labels, places and times into three groups in your notes. Cover the notes and name one example from each group. Then plan and say a brief welcome and two short instructions. Tell people where market cups go. Then tell people what to do with an orange cup. Say one or two if sentences aloud. Finish by answering this question aloud: What if the fountain bin is nearly full at 11:00?",
+    "change": "At 9:50, Leo tells you the fountain bin will open at 10:15 today. The green sign is already beside the bin. Early market cup returns can go in a tub marked MARKET CUPS at the market table until 10:15.",
+    "second": "Mark the old opening time in your notes and add the temporary return point. Give the briefing again. Keep the orange cup instructions and the 11:00 check. Answer a new question aloud: Where do I send someone with a square cup at 10:05? Listen to your own answer or say it again slowly to check the time, place and label.",
+    "checklist": [
+      "I said where to send an orange cup return and where to go for an exchange.",
+      "I named the temporary tub and gave the new fountain opening time in my second take.",
+      "I gave the 11:00 check and said who to ask for an empty bin.",
+      "I said one or two complete if sentences aloud in each take.",
+      "I answered the 10:05 question with the market table and the MARKET CUPS tub."
+    ]
+  },
+  "writing": {
+    "audience": "Orange Stall customers who are deciding where to go with a used cup",
+    "first": "Reread the exchange ticket and list what customers must bring, where each action happens and when the return bin opens and the full exchange window hours. Sort the facts under Order coffee, Exchange a cup and Return a cup. Use those three headings to draft a 50–90-word sign. Include one if sentence. Read your draft as a customer who wants to return a cup at 10:15 and check that you can act on it.",
+    "change": "At 10:20, the stallholder moves the ticket tray from under the side window to a small shelf beside the ORANGE STALL bin. The tray now has a TICKETS label. The side window still opens at 10:30.",
+    "second": "Revise your sign to show the new tray location and label. Keep the three actions, their destinations, the return bin opening time and the exchange window hours. Read the whole sign again as a customer who arrives at 10:25. Check that the sign tells you where to put your ticket if you only want to return a cup.",
+    "checklist": [
+      "The sign has 50–90 words and three clear headings.",
+      "The front queue, side window and return bin each have a clear use.",
+      "The sign gives 10:00 for returns and 10:30 to 12:00 for exchanges.",
+      "The revised directions name the TICKETS tray and the shelf beside the ORANGE STALL bin.",
+      "The verb after if is in the present simple."
+    ]
+  },
+  "immersion": {
+    "role": "Volunteer in charge of moving the MARKET CUPS return station",
+    "goal": "Make a move plan that another volunteer can follow at 11:30. Help the people already at the fountain finish their returns and show later visitors where to take their market cups.",
+    "constraints": [
+      "Help the people already waiting at the fountain finish before you cover and move the bin with Leo.",
+      "Ask people who arrive during the move to hold their cups until the bin is ready.",
+      "Keep the wide path from the main gate to the stalls clear for people using wheelchairs or walking. Place the bin, sign and waiting line off that path.",
+      "Move the green sign after the bin reaches its new place.",
+      "Use the MARKET CUPS bin for cups with a square. Keep the Blue Stall box by the tea table for blue cups with a star. Keep the Orange Stall bin beside the side window for orange cups."
+    ],
+    "change": "At 11:25, a delivery blocks the side gate until noon. Leo can help you at 11:30. The space beside the market table fits the bin and green sign, but a line there would cross the wide path. The paved space beside the noticeboard has room for the bin, sign and a short line along the wall.",
+    "deliverables": [
+      "Make two short notes comparing the market table and the noticeboard. Choose one place and give one reason based on the wide path.",
+      "Write a five-step move card for the volunteers. Start with the people already waiting and include the 11:30 move, the new place and when to move the sign.",
+      "Write two short visitor messages. Give one message to someone who arrives while the bin is covered. Make the other a sign that shows where to return square cups after the move. Use an if sentence in one message.",
+      "Read your card and messages from start to finish. Check them against three arrivals: someone already waiting at the fountain, someone who arrives during the move and someone who comes after the sign moves. Revise any line that sends a person to the wrong place."
+    ],
+    "checklist": [
+      "My chosen location fits the bin, the green sign and a short line without blocking the wide path.",
+      "My card says to finish serving the people already waiting before covering the bin.",
+      "The card moves the bin with Leo before the green sign moves.",
+      "The two messages give different actions during and after the move.",
+      "My if sentence uses a present simple verb after if."
+    ]
+  }
+}

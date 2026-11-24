@@ -1,0 +1,395 @@
+{
+  "slug": "handcart-on-market-day",
+  "title": "The market-day handcart",
+  "level": "A2",
+  "summary": "Two helpers need to move a banner and a set of paper signs before the market opens. Read the route card and the fair desk note. Check the helpers’ latest trial results. Use what they were able to do yesterday and today to plan a handover that works.",
+  "documents": [
+    {
+      "title": "Store Room Card",
+      "text": "You can collect the handcart from the store room at 8:35. Ask the fair desk for the key first. From inside the store room, the door on the left leads to steps. The door on the right leads to a ramp. A loaded cart must use the ramp. Follow the north lane to Stall 4 with the blue banner. Stop there only long enough to unload it. Go around the end of the lane to reach the south lane, then stop at Stall 11 with the paper signs. Keep the lanes clear at every stop. Return the cart to the store room and the key to the fair desk by 9:20."
+    },
+    {
+      "title": "Fair Desk Note",
+      "text": "Stall 4 needs its blue banner by nine because the bread sellers will start bringing out their tables then. Stall 11 opens at 9:15 and needs its undamaged signs by 9:10. If the torn sign takes longer, the stall owner can collect it at 9:13. The signs are in a flat yellow folder. One sign still has a torn corner. Leave that sign flat and ask at the fair desk for a piece of clear tape. You can bring the other signs to the stall while the torn sign is being fixed. Write your name beside the key number when you collect the store room key. Please take the cart back yourself. It must not stay at either stall after the deliveries."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Marta’s Voice Message",
+      "text": "Hi, it's Marta. I tried loading the cart at the end of yesterday's market. I couldn't get the big blue banner inside while it was rolled up. I took it out, folded it once and tried again. Then I managed to fit it in. The yellow folder can lie on top of the banner, but put the handles of the cart up before you start loading. Yesterday I could use the steps before the market opened because I was only carrying empty bags. With a loaded cart, I'll use the ramp. I'll be at the fair desk at eight forty with the spare rope."
+    },
+    {
+      "title": "Deni’s Desk Update",
+      "text": "This is Deni from the fair desk. We found the yellow folder, and it's ready for the cart. I managed to put the signs in number order, but I couldn't fix the torn one. We ran out of clear tape. Nina is bringing a roll at nine five. Please leave the damaged sign with me at the fair desk, and I'll fix it when the tape gets here. The folk music group is putting up a notice beside Stall 11. Their red folder is separate from ours, so please leave it at the desk. A helper is free to carry a repaired sign at nine ten if you need one."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "According to the Store Room Card, which door can a loaded handcart use?",
+      "options": [
+        "The left door that leads to the steps",
+        "The right door that leads to the ramp",
+        "Either door if two people are helping",
+        "The left door before nine"
+      ],
+      "answer": 1,
+      "explanation": "The right door leads to the ramp, which is required for a loaded cart."
+    },
+    {
+      "prompt": "In the Store Room Card, what does the volunteer deliver just before going around the end of the north lane?",
+      "options": [
+        "The paper signs",
+        "The fair desk key",
+        "The yellow folder",
+        "The blue banner"
+      ],
+      "answer": 3,
+      "explanation": "Stall 4 is in the north lane, and the banner is unloaded there."
+    },
+    {
+      "prompt": "What does the Store Room Card ask the volunteer to do by 9:20?",
+      "options": [
+        "Return the cart and key to different places",
+        "Deliver the banner and ask for a key",
+        "Return both the cart and key to Stall 11",
+        "Collect the cart and clear the north lane"
+      ],
+      "answer": 0,
+      "explanation": "The cart goes back to the store room and the key goes to the fair desk."
+    },
+    {
+      "prompt": "Why does the Fair Desk Note give Stall 4 the earlier delivery time?",
+      "options": [
+        "Its banner is smaller than the folder.",
+        "The fair desk closes at nine.",
+        "The bread sellers start putting their tables out at nine.",
+        "The sign repair needs to happen at Stall 4."
+      ],
+      "answer": 2,
+      "explanation": "The desk note says the blue banner is needed before the bread tables come out."
+    },
+    {
+      "prompt": "What does the Fair Desk Note tell the helper to do with the sign with a torn corner?",
+      "options": [
+        "Leave it flat and ask the fair desk for tape.",
+        "Roll it up and send it with the banner.",
+        "Put it in the red folder for the music group.",
+        "Leave it outside the store room."
+      ],
+      "answer": 0,
+      "explanation": "The damaged sign should stay flat while the helper asks for clear tape."
+    },
+    {
+      "prompt": "What must the helper write down according to the Fair Desk Note?",
+      "options": [
+        "The stall number beside the cart number",
+        "The time each stall opens",
+        "The colour of the folder next to the sign number",
+        "Their name beside the key number"
+      ],
+      "answer": 3,
+      "explanation": "The helper writes a name beside the key number when collecting the key."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In Marta’s Voice Message, what let Marta fit the blue banner into the cart?",
+      "options": [
+        "She cut a shorter piece from it.",
+        "She unrolled it and folded it once.",
+        "She put the yellow folder below it.",
+        "She rolled it more tightly."
+      ],
+      "answer": 1,
+      "explanation": "Marta says she took it out and folded it once before trying again."
+    },
+    {
+      "prompt": "Marta’s Voice Message says Marta could use the steps yesterday. Why was that possible?",
+      "options": [
+        "She was carrying only empty bags.",
+        "She was pushing an empty cart.",
+        "The desk helper held the door open.",
+        "Another volunteer moved the banner first."
+      ],
+      "answer": 0,
+      "explanation": "She could use the steps because her only load was empty bags."
+    },
+    {
+      "prompt": "What is Marta bringing to the fair desk in Marta’s Voice Message?",
+      "options": [
+        "A roll of clear tape",
+        "A yellow folder",
+        "A spare rope",
+        "A repaired sign"
+      ],
+      "answer": 2,
+      "explanation": "Marta says she'll be at the desk at eight forty with the spare rope."
+    },
+    {
+      "prompt": "Why couldn't Deni repair the torn sign before Deni’s Desk Update?",
+      "options": [
+        "Someone had carried off the yellow folder.",
+        "He didn't know which sign was torn.",
+        "The sign was already at Stall 11.",
+        "There was no clear tape left."
+      ],
+      "answer": 3,
+      "explanation": "Deni says he couldn't fix the sign because they ran out of clear tape."
+    },
+    {
+      "prompt": "In Deni’s Desk Update, what belongs to the folk music group?",
+      "options": [
+        "The red folder",
+        "The clear tape",
+        "The spare rope",
+        "The yellow folder"
+      ],
+      "answer": 0,
+      "explanation": "Deni says the red folder is separate and belongs to the folk music group."
+    },
+    {
+      "prompt": "What kind of help is available at 9:10 in Deni’s Desk Update?",
+      "options": [
+        "A helper can collect the blue banner.",
+        "A helper can carry the repaired sign.",
+        "A helper can bring tape to the desk.",
+        "A helper can sort the signs into order."
+      ],
+      "answer": 1,
+      "explanation": "Deni says a helper is free to carry the repaired sign at nine ten."
+    }
+  ],
+  "grammar": {
+    "focus": "Could, couldn’t and managed to for past ability",
+    "explanation": "Use could with the base form of a verb to say what someone was able to do in the past. Marta could use the steps when she just had empty bags. This tells us what was possible for her. Use couldn't with the base form when someone was unable to do something. It also works when one try failed. Marta couldn't fit the rolled banner in the cart. Use managed to with the base form when a particular action succeeded after an effort. She managed to fit it in after folding it. When you report one successful action, say what the person actually did.",
+    "examples": [
+      {
+        "before": "Before I hurt my hand, I could carried two boxes at once.",
+        "after": "Before I hurt my hand, I could carry two boxes at once.",
+        "why": "Use the base form after could. This describes a past ability."
+      },
+      {
+        "before": "The lock was stuck. He couldn't opened it.",
+        "after": "The lock was stuck. He couldn't open it.",
+        "why": "Use the base form after couldn't to report the failed attempt."
+      },
+      {
+        "before": "After two more tries, we managed put the sign back up.",
+        "after": "After two more tries, we managed to put the sign back up.",
+        "why": "Managed is followed by to and the base form when a particular attempt succeeds."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Choose the correct sentence about Leo’s ability every week last year.",
+        "options": [
+          "Last year, Leo could carried a tray in each hand.",
+          "Last year, Leo can carried a tray in each hand.",
+          "Last year, Leo could carry a tray in each hand.",
+          "Last year, Leo could to carry a tray in each hand."
+        ],
+        "answer": 2,
+        "explanation": "Could plus the base form carry describes Leo's past ability."
+      },
+      {
+        "prompt": "The box was too wide, so I ___ it through the doorway. Choose the phrase that describes the failed try.",
+        "options": [
+          "couldn't push",
+          "could pushed",
+          "managed to push",
+          "couldn't to push"
+        ],
+        "answer": 0,
+        "explanation": "Couldn't plus the base form push reports an unsuccessful attempt."
+      },
+      {
+        "prompt": "They tried two keys. The second worked. Which sentence reports that success?",
+        "options": [
+          "They couldn't unlock the cupboard with the second key.",
+          "They could unlocked the cupboard with the second key.",
+          "They managed unlock the cupboard with the second key.",
+          "They managed to unlock the cupboard with the second key."
+        ],
+        "answer": 3,
+        "explanation": "Managed to unlock describes an actual success after an earlier attempt failed."
+      },
+      {
+        "prompt": "Before the old lift broke, it ___ a box this size on every trip. Choose the correct past ability.",
+        "options": [
+          "could to carry",
+          "could carry",
+          "could carried",
+          "can carried"
+        ],
+        "answer": 1,
+        "explanation": "A past ability uses could followed directly by the base form carry."
+      },
+      {
+        "prompt": "Yesterday the rope was too short to reach the hook. Which sentence reports what didn't work?",
+        "options": [
+          "I couldn't reach the hook.",
+          "I couldn't reached the hook.",
+          "I could reach the hook.",
+          "I managed to reach the hook."
+        ],
+        "answer": 0,
+        "explanation": "Couldn't reach explains that the person didn't succeed in reaching the hook."
+      },
+      {
+        "prompt": "Complete this note about a successful action. After we tied the handles together, we managed ___ both bags in one trip.",
+        "options": [
+          "carry",
+          "carried",
+          "to carry",
+          "to carried"
+        ],
+        "answer": 2,
+        "explanation": "The past form managed is followed by to and the base form carry."
+      },
+      {
+        "prompt": "Choose the two verbs for a failed action followed by a successful action. She ___ read the sign on the top shelf, but she ___ read it after moving it down.",
+        "options": [
+          "could / couldn't",
+          "couldn't to / managed to",
+          "could to / managed",
+          "couldn't / managed to"
+        ],
+        "answer": 3,
+        "explanation": "Couldn't marks the first failure, and managed to introduces the success after moving the sign."
+      },
+      {
+        "prompt": "Which sentence describes a general past ability without saying what happened on one particular delivery?",
+        "options": [
+          "Yesterday I managed to deliver the last two boxes.",
+          "When I worked there, I could move small deliveries on my own.",
+          "Last Saturday I managed to find a faster route.",
+          "Last week I couldn't send a box because its address was missing."
+        ],
+        "answer": 1,
+        "explanation": "The speaker uses could to describe a general ability at a previous job."
+      }
+    ],
+    "transfer": "Make a two-column note for the next helper. In the first column, report one thing Marta could do in the past. In the second, note one failed attempt and explain what she managed to do. Read the three verbs out loud and check that each uses the base form."
+  },
+  "vocabulary": [
+    {
+      "word": "handcart",
+      "meaning": "A small cart that a person pushes or pulls.",
+      "example": "Use the handcart to move the heavier boxes across the square.",
+      "pair": "push a handcart"
+    },
+    {
+      "word": "store room",
+      "meaning": "A room used for keeping supplies.",
+      "example": "We put the extra chairs back in the store room.",
+      "pair": "lock the store room"
+    },
+    {
+      "word": "stall",
+      "meaning": "A small stand where people display or sell things.",
+      "example": "The bread stall sets up near the north entrance.",
+      "pair": "set up a stall"
+    },
+    {
+      "word": "unload",
+      "meaning": "To take things off a vehicle or cart.",
+      "example": "We need five minutes to unload the crates.",
+      "pair": "unload the cart"
+    },
+    {
+      "word": "fold",
+      "meaning": "To bend one part over another so something takes less space.",
+      "example": "Fold the fabric once so it fits on the shelf.",
+      "pair": "fold the banner"
+    },
+    {
+      "word": "roll up",
+      "meaning": "To turn something flat into a tube shape.",
+      "example": "At closing time, we roll up the mat and take it inside.",
+      "pair": "roll up a poster"
+    },
+    {
+      "word": "torn",
+      "meaning": "Damaged because part has been pulled apart.",
+      "example": "The torn page needs tape along one edge.",
+      "pair": "a torn corner"
+    },
+    {
+      "word": "clear tape",
+      "meaning": "A sticky strip you can see through.",
+      "example": "Use clear tape so the number can still be read.",
+      "pair": "a roll of clear tape"
+    },
+    {
+      "word": "handle",
+      "meaning": "A part you hold to move or use something.",
+      "example": "I lifted the basket by its handle.",
+      "pair": "hold the handle"
+    },
+    {
+      "word": "lane",
+      "meaning": "A narrow marked route for people or vehicles.",
+      "example": "Keep the lane clear while the sellers bring in their carts.",
+      "pair": "keep the lane clear"
+    },
+    {
+      "word": "delivery",
+      "meaning": "The act of bringing something to a place or person.",
+      "example": "The stall owner will be here for the delivery at nine.",
+      "pair": "make a delivery"
+    },
+    {
+      "word": "spare rope",
+      "meaning": "An extra cord available if one is needed.",
+      "example": "The spare rope is in the box with the tent poles.",
+      "pair": "bring a spare rope"
+    }
+  ],
+  "speaking": {
+    "audience": "A new helper named Dara who will unload at Stall 4",
+    "first": "Marta will be at the fair desk at 8:40 with a spare rope. Yesterday the blue banner was too big for the cart while rolled up. It fit after she folded it once. Prepare a short voice message for Dara. Say when and where Marta will meet the team. Describe one thing Marta couldn't do yesterday and how she solved it. Then tell Dara which lane to take and when the banner needs to arrive. Practise without reading the whole message.",
+    "change": "Dara now needs to go directly to Stall 4 and won't pass the fair desk. Dara can be at the stall at 8:55 and will unload the banner there.",
+    "second": "Record the message again in three short parts: where Dara should wait, how Dara will recognise the right load, and what time it needs to arrive. Keep one useful lesson from Marta's practice. Remove directions that Dara won't need.",
+    "checklist": [
+      "Give Dara one exact place to wait.",
+      "Say when Dara should be at Stall 4 and when the banner is due.",
+      "Name the load that goes to Stall 4.",
+      "Use could, couldn't, or managed to with the correct verb form."
+    ]
+  },
+  "writing": {
+    "audience": "Deni, the volunteer at the fair desk",
+    "first": "Deni has the yellow folder at the fair desk and has put the signs in number order. He couldn't fix the torn sign because the clear tape ran out. Nina can bring a roll at 9:05. Use the Fair Desk Note to decide what should be delivered first. Write a short handover of about 55–75 words. Report where the yellow folder is and what Deni has already done. Mention the torn sign and why Deni couldn't fix it. Say what the cart helper will deliver now and what time the desk can expect tape.",
+    "change": "Nina sends a new message. She can get to the fair desk at 8:58 with clear tape. The damaged sign still stays at the desk, and the helper who can carry it is still free at 9:10.",
+    "second": "Rewrite the handover so Deni can act on it without reading the first note. Separate what happened from your next actions. Change the tape arrival time and keep the information about the folder and the sign.",
+    "checklist": [
+      "Identify the correct folder by its colour.",
+      "Give the changed tape time exactly.",
+      "Explain what can go to the stall before the repair.",
+      "Use a past expression to report what Deni could or could not do."
+    ]
+  },
+  "immersion": {
+    "role": "You are preparing the fair’s delivery handover",
+    "goal": "Make a clear plan for both stalls and the fair desk. Show how two helpers can deliver the banner and most signs on time, arrange the missing repair, and return the borrowed equipment.",
+    "constraints": [
+      "Get the store room key from the fair desk before loading.",
+      "Use the ramp and keep the lanes clear when unloading.",
+      "Give Stall 4 its banner before nine.",
+      "Give Stall 11 the good signs by 9:10. Keep the torn sign flat at the desk until the tape arrives at 9:05. Another helper can take it to the stall at 9:10 if it is ready.",
+      "Return the cart and key to their own places by 9:20."
+    ],
+    "change": "A storage volunteer asks you to keep the cart out of the south lane after 9:02 because a display is moving through it. Another helper can take the yellow folder on foot from the fair desk to Stall 11 in three minutes.",
+    "deliverables": [
+      "Write a four-step route plan for the cart, naming the ramp and the banner stop.",
+      "Make a two-line plan for who carries the yellow folder and when it leaves the desk.",
+      "Add a one-line note about the torn sign and a one-line return note for the cart and key."
+    ],
+    "checklist": [
+      "Put each colour and stall number with the correct object.",
+      "Keep the cart out of the south lane after 9:02.",
+      "Allow at least three minutes to carry the folder to Stall 11.",
+      "List both return locations and the final return time."
+    ]
+  }
+}

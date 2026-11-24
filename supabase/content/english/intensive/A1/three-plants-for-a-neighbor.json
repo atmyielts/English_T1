@@ -1,0 +1,413 @@
+{
+  "slug": "three-plants-for-a-neighbor",
+  "title": "Three plants for a neighbor",
+  "level": "A1",
+  "summary": "Mia asks you to check three plants while she is away. Read the notes on the pots and the garden supplies card. Use Mia and Ben’s visit details to make a four-line plant schedule, and record a handover. Then change your plans when a door is locked.",
+  "documents": [
+    {
+      "title": "Paper Leaves on the Pots",
+      "text": "I put a paper leaf on each pot. Check the plant names before you start.\n\nMint. I keep this pot on the kitchen shelf by the window. Water it on Monday. On Wednesday, look at the mint and leave it on the shelf. Don't water it that day.\n\nFern. This pot is on the hall table, next to the big bag. Water it on Wednesday. Don't water the fern on Monday.\n\nIvy. This pot is on the balcony, by the chair. Water it on Monday. On Wednesday, leave it by the chair. Don't water it that day.\n\nPlease put the paper leaves back on the same pots. Thanks, Mia."
+    },
+    {
+      "title": "Garden Supplies Card",
+      "text": "You can use a jug from the garden cupboard. The cupboard is next to the lift on the ground floor. Its door is open from 8 a.m. to 6 p.m. Put the green jug or white cup back on its shelf after each visit.\n\nLook for the green jug on the top shelf. If the green jug is missing, use the white cup from the bottom shelf. The red jug is for cleaning the floor. Don't use it for the plants, even if it is the only jug there.\n\nIf the green jug and the white cup are both missing, you can use the yellow cup in Mia's kitchen. Leave the yellow cup in her flat."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Mia's Holiday Message",
+      "text": "Hi, it's Mia. Thanks for looking after my plants. I leave for my holiday on Monday at 9 a.m. Please come to my flat at 10 a.m. on Monday. Come at 10 a.m. on Wednesday, too. Read the paper leaves before you water anything. I keep the yellow cup next to the kitchen sink. I don't keep it with the plates. There's a blue cloth on the hall table, under the big bag. You can use it if water gets on the table. The balcony door is in the living room. When you go home, please close the balcony door and lock the flat door. Thanks!"
+    },
+    {
+      "title": "At Ben's Door",
+      "text": "You: Hi, Ben. Do I get Mia's key on Monday morning?\nBen: We need to change that. I go to work early on Monday. Come on Sunday, between 5 p.m. and 6 p.m. Pick up the key here at flat 2. You get it before your first plant visit.\nYou: Where do you keep it?\nBen: In a blue envelope on my hall shelf. I can give it to you at the door.\nYou: Do I bring it back after the Monday visit?\nBen: Keep it for both visits. On Wednesday, lock Mia's flat after you finish. Then put the key through the letter slot in my door."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read Paper Leaves on the Pots. Find the three plant names. What is each paper leaf for?",
+      "options": [
+        "It shows where to get a cup.",
+        "It gives the jobs for one plant.",
+        "It gives the times to visit the flat.",
+        "It shows where to leave the key."
+      ],
+      "answer": 1,
+      "explanation": "Each leaf names a plant, gives its place, and tells you what to do on Monday or Wednesday."
+    },
+    {
+      "prompt": "Read Paper Leaves on the Pots again. Make a short note for Monday. Which plants do you water?",
+      "options": [
+        "The fern and the mint",
+        "The ivy and the fern",
+        "The fern only",
+        "The mint and the ivy"
+      ],
+      "answer": 3,
+      "explanation": "The mint and the ivy need water on Monday, and the fern waits until Wednesday."
+    },
+    {
+      "prompt": "In Paper Leaves on the Pots, where do you find the fern?",
+      "options": [
+        "On the hall table, next to the big bag",
+        "On the kitchen shelf, by the window",
+        "On the balcony, by the chair",
+        "By the balcony door in the living room"
+      ],
+      "answer": 0,
+      "explanation": "The fern's paper leaf says its pot is on the hall table next to the big bag."
+    },
+    {
+      "prompt": "Use Paper Leaves on the Pots to check your Wednesday note. What do you do with the mint?",
+      "options": [
+        "Water it and put it back on the shelf.",
+        "Move it to the hall table and water it.",
+        "Look at it and leave it on the kitchen shelf.",
+        "Take it to the balcony and leave it there."
+      ],
+      "answer": 2,
+      "explanation": "The Wednesday note says to look at the mint, leave it on the shelf, and give it no water that day."
+    },
+    {
+      "prompt": "Read Garden Supplies Card. Where is the cupboard, and when does it open?",
+      "options": [
+        "By the lift on the ground floor, at 6 p.m.",
+        "By the lift on the ground floor, at 8 a.m.",
+        "By Mia's flat door, at 8 a.m.",
+        "By Ben's flat door, at 6 p.m."
+      ],
+      "answer": 1,
+      "explanation": "The card puts the cupboard next to the ground-floor lift and says it opens at 8 a.m."
+    },
+    {
+      "prompt": "Read Garden Supplies Card again. The green jug is out. The white cup and the red jug are there. What do you take?",
+      "options": [
+        "The yellow cup from Mia's kitchen",
+        "The red jug for the floor",
+        "The blue cloth from Mia's hall",
+        "The white cup from the bottom shelf"
+      ],
+      "answer": 3,
+      "explanation": "The card says to use the white cup when the green jug is missing."
+    },
+    {
+      "prompt": "Use Garden Supplies Card to check a different visit. Only the red jug is in the cupboard. What do you use, and where do you leave it?",
+      "options": [
+        "Use the yellow cup and leave it in Mia's flat.",
+        "Use the red jug and leave it on the top shelf.",
+        "Use the white cup and leave it by Mia's sink.",
+        "Use the yellow cup and leave it in the cupboard."
+      ],
+      "answer": 0,
+      "explanation": "The red jug is for the floor. If both plant items are out, use Mia's yellow cup and leave it in her flat."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Mia's Holiday Message once. Why does Mia leave this message?",
+      "options": [
+        "To ask Ben to open the garden cupboard",
+        "To ask when the neighbor leaves for a holiday",
+        "To tell the neighbor when to come and where things are",
+        "To tell the neighbor where to pick up the key"
+      ],
+      "answer": 2,
+      "explanation": "Mia gives the times for both plant visits and says where to find the yellow cup and blue cloth."
+    },
+    {
+      "prompt": "Listen to Mia's Holiday Message again. Write two times under Monday. Which time is Mia's departure, and which is your arrival?",
+      "options": [
+        "Mia leaves at 9 a.m. You arrive at 10 a.m.",
+        "Mia leaves at 10 a.m. You arrive at 9 a.m.",
+        "Mia leaves at 9 a.m. You arrive at 9 a.m.",
+        "Mia leaves at 10 a.m. You arrive at 10 a.m."
+      ],
+      "answer": 0,
+      "explanation": "Mia says she leaves on Monday at 9 a.m. and asks you to come at 10 a.m."
+    },
+    {
+      "prompt": "Listen to Mia's Holiday Message. Water gets on the hall table. Where do you look for the cloth?",
+      "options": [
+        "By the living room door",
+        "Next to the kitchen sink",
+        "On the shelf with the plates",
+        "Under the big bag on the hall table"
+      ],
+      "answer": 3,
+      "explanation": "Mia says the blue cloth is under the big bag on the hall table."
+    },
+    {
+      "prompt": "Listen to At Ben's Door once. What is the change Ben tells you about?",
+      "options": [
+        "The first plant visit moves to Sunday.",
+        "The key pickup moves from Monday to Sunday.",
+        "The key now goes back after the Monday visit.",
+        "The Wednesday plant visit moves to the morning."
+      ],
+      "answer": 1,
+      "explanation": "The neighbor asks about Monday morning, and Ben says to pick up the key on Sunday instead."
+    },
+    {
+      "prompt": "Listen to At Ben's Door again. Write the day, the time window, and the flat number. Which pickup note is right?",
+      "options": [
+        "Sunday, 5 p.m. to 6 p.m., at Mia's flat",
+        "Monday, 5 p.m. to 6 p.m., at flat 2",
+        "Sunday, 5 p.m. to 6 p.m., at flat 2",
+        "Sunday, 8 a.m. to 9 a.m., at flat 2"
+      ],
+      "answer": 2,
+      "explanation": "Ben asks you to come to his door at flat 2 on Sunday between 5 p.m. and 6 p.m."
+    },
+    {
+      "prompt": "Use At Ben's Door to check the order of your last two jobs. What do you do after the Wednesday plant check?",
+      "options": [
+        "Lock Mia's flat, then put the key through Ben's letter slot.",
+        "Put the key through Ben's letter slot, then lock Mia's flat.",
+        "Take the key home and bring it back on Sunday.",
+        "Leave the key on Mia's hall table and close her flat door."
+      ],
+      "answer": 0,
+      "explanation": "Ben says to lock Mia's flat after the Wednesday visit and then put the key through his door's letter slot."
+    }
+  ],
+  "grammar": {
+    "focus": "Present simple with I and you for routines, negatives with don't, and yes-or-no questions with do",
+    "explanation": "Use I or you and a verb for a routine. Say “I check the pots on Monday” or “You check the pots on Monday.” To say a job is not part of the routine, put don't before the verb. Don't means do not. Say “I don't check the pots on Friday.” Use the same verb after don't: check, water, or use. To ask a yes-or-no question, start with Do. Put I or you next, then the verb. “Do I close the door?” asks about my job. “Do you close the door?” asks about your job. You can answer “Yes, I do” or “No, I don't.”",
+    "examples": [
+      {
+        "before": "I not keep the cup by the window.",
+        "after": "I don't keep the cup by the window.",
+        "why": "Use don't before keep to say where you do not keep the cup."
+      },
+      {
+        "before": "You don't uses the red jug.",
+        "after": "You don't use the red jug.",
+        "why": "After don't, use the form use."
+      },
+      {
+        "before": "You do bring the key on both days?",
+        "after": "Do you bring the key on both days?",
+        "why": "Begin with Do to ask a neutral yes-or-no question with you."
+      },
+      {
+        "before": "Do I put the cup here? Yes, I put.",
+        "after": "Do I put the cup here? Yes, you do.",
+        "why": "The other person answers you and uses do in the short answer."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Tell Mia a job you do every Monday. Choose the correct sentence.",
+        "options": [
+          "I checks the shelf every Monday.",
+          "I check the shelf every Monday.",
+          "I checking the shelf every Monday.",
+          "I does check the shelf every Monday."
+        ],
+        "answer": 1,
+        "explanation": "Use I and the verb check to talk about your Monday routine."
+      },
+      {
+        "prompt": "Tell Mia that you leave the pots where they are. Choose the correct negative sentence.",
+        "options": [
+          "I not move the pots.",
+          "I don't moves the pots.",
+          "I doesn't move the pots.",
+          "I don't move the pots."
+        ],
+        "answer": 3,
+        "explanation": "Use don't with I, then use the verb move without an ending."
+      },
+      {
+        "prompt": "Ask Mia if she keeps a cloth in the kitchen. Choose the correct question starting with Do.",
+        "options": [
+          "Do you keep a cloth in the kitchen?",
+          "Does you keep a cloth in the kitchen?",
+          "Do you keeps a cloth in the kitchen?",
+          "You do keep a cloth in the kitchen?"
+        ],
+        "answer": 0,
+        "explanation": "In this yes-or-no question the order is Do, you, then keep."
+      },
+      {
+        "prompt": "Mia asks you, “Do you take the cup home?” Give a short answer that means no.",
+        "options": [
+          "No, you don't.",
+          "No, I do.",
+          "No, I don't.",
+          "No, I doesn't."
+        ],
+        "answer": 2,
+        "explanation": "Use I to answer about yourself, and use don't to give the negative short answer."
+      },
+      {
+        "prompt": "Ask Ben about your own job with the key. Choose the correct question starting with Do.",
+        "options": [
+          "Do I leaves the key here?",
+          "Do I leave the key here?",
+          "Does I leave the key here?",
+          "I do leave the key here?"
+        ],
+        "answer": 1,
+        "explanation": "Start with Do I because you are asking about your own job, and follow it with leave."
+      },
+      {
+        "prompt": "Tell a visitor that checking the fern is part of their Wednesday routine. Choose the correct sentence.",
+        "options": [
+          "You check the fern on Wednesday.",
+          "You checks the fern on Wednesday.",
+          "You checking the fern on Wednesday.",
+          "You does check the fern on Wednesday."
+        ],
+        "answer": 0,
+        "explanation": "In a positive routine sentence, use You followed by the verb check."
+      },
+      {
+        "prompt": "Tell a visitor to leave the living room window closed. Choose the correct negative sentence with you.",
+        "options": [
+          "You doesn't open the window.",
+          "You don't opens the window.",
+          "You not open the window.",
+          "You don't open the window."
+        ],
+        "answer": 3,
+        "explanation": "Put don't between you and open to tell the visitor what they do not do."
+      },
+      {
+        "prompt": "A visitor asks, “Do I put the jug back?” Give a short answer that means yes.",
+        "options": [
+          "Yes, I do.",
+          "Yes, you don't.",
+          "Yes, you do.",
+          "Yes, you does."
+        ],
+        "answer": 2,
+        "explanation": "Speak to the visitor with you and use do for the positive short answer."
+      }
+    ],
+    "transfer": "Make a short door note with a question and answer about the key, a question and answer about a cup or jug, and one line about a job you don't do. Read it as two voices. Circle Do at the start of each question. Underline the verb after each don't. Check who says I and who says you."
+  },
+  "vocabulary": [
+    {
+      "word": "pot",
+      "meaning": "a container for a plant",
+      "example": "My small plant is in a blue pot.",
+      "pair": "a clay pot"
+    },
+    {
+      "word": "shelf",
+      "meaning": "a flat surface that holds things",
+      "example": "I keep my books on the shelf.",
+      "pair": "the top shelf"
+    },
+    {
+      "word": "balcony",
+      "meaning": "a small outside area above the ground",
+      "example": "We sit on the balcony after lunch.",
+      "pair": "the balcony door"
+    },
+    {
+      "word": "cupboard",
+      "meaning": "a place with doors for keeping things",
+      "example": "The plates are in the cupboard.",
+      "pair": "a kitchen cupboard"
+    },
+    {
+      "word": "jug",
+      "meaning": "a container you pour drinks or water from",
+      "example": "There is a jug of cold water on the table.",
+      "pair": "a glass jug"
+    },
+    {
+      "word": "cloth",
+      "meaning": "a piece of material for cleaning",
+      "example": "I clean the table with a cloth.",
+      "pair": "a damp cloth"
+    },
+    {
+      "word": "next to",
+      "meaning": "at the side of something",
+      "example": "My shoes are next to the door.",
+      "pair": "next to the window"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go and get something or someone",
+      "example": "I pick up my bag from the office at five.",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "put back",
+      "meaning": "return something to its usual place",
+      "example": "I put back the milk after breakfast.",
+      "pair": "put back the book"
+    },
+    {
+      "word": "lock",
+      "meaning": "close something so it needs a key to open",
+      "example": "I lock the front door when I leave.",
+      "pair": "lock the gate"
+    },
+    {
+      "word": "letter slot",
+      "meaning": "a narrow opening for letters in a door",
+      "example": "I put the card through the letter slot.",
+      "pair": "through the letter slot"
+    },
+    {
+      "word": "missing",
+      "meaning": "not in the place where you expect it",
+      "example": "One plate is missing from the cupboard.",
+      "pair": "a missing cup"
+    }
+  ],
+  "speaking": {
+    "audience": "Ben, who has Mia's key and needs your handover before the first visit",
+    "first": "Ben can give you Mia’s key at flat 2 on Sunday between 5 and 6 p.m. Keep it for both visits. After Wednesday’s visit, lock Mia’s flat and put the key through Ben’s letter slot. Sort the vocabulary cards into places, things, actions, and words for where something is or if it is there. Cover each pair. Look at the word and say six pairs from memory. Then plan and record three short answers for Ben. Answer these prompts in order: When do you pick up the key? What do you use if the green jug is missing but the white cup is there? What do you do with the key after Wednesday? Use don't once when you talk about the red jug.",
+    "change": "Ben sends a new message. The living room balcony door is locked for both visits. The flat key does not open it. On Monday at 10 a.m., leave the ivy where it is and send Mia a message from the flat.",
+    "second": "Listen to your first recording and check the key times and the cup rule. Record the three short answers again. Keep the Sunday pickup and Wednesday return. Add one short answer to Ben's new question, “Do you water the ivy on Monday?” Say what you do about the locked door and who you tell.",
+    "checklist": [
+      "Give the Sunday window of 5 p.m. to 6 p.m. and say flat 2.",
+      "Name the white cup as the first choice when the green jug is missing and the white cup is there.",
+      "Use one clear sentence with don't.",
+      "Say that you lock Mia's flat before you return the key through Ben's letter slot.",
+      "In the second take, explain what happens to the ivy and when you message Mia."
+    ]
+  },
+  "writing": {
+    "audience": "Mia, who wants a short plant schedule she can read on her phone",
+    "first": "Mia asks you to visit at 10 a.m. on Monday and Wednesday. Make two rough lists from the paper leaves, one for Monday and one for Wednesday. Mark each plant job with water, look at, or leave. Then write a four-line schedule of 25 to 45 words for Mia. Use one line for Monday's visit time and one for its jobs. Do the same for Wednesday. Use I don't for a job you skip.",
+    "change": "Mia sends an update before Monday. The balcony door in the living room is locked for both visits. The ivy stays by the balcony chair. Mia asks you to text her about the ivy during the Monday visit at 10 a.m.",
+    "second": "Rewrite the same four lines. Keep both visit times and the kitchen and hall jobs. Change the Monday ivy job to a clear negative and add the message to Mia on that line. On Wednesday, show that the ivy stays on the balcony. Read your two job lines back to check the days.",
+    "checklist": [
+      "Use four lines and about 25 to 45 words.",
+      "Put 10 a.m. on both visit lines.",
+      "Keep mint on the Monday water list and fern on the Wednesday water list.",
+      "In the new schedule, say that you don't water the ivy on Monday and that you text Mia.",
+      "Check the spelling of the three plant names against the paper leaves."
+    ]
+  },
+  "immersion": {
+    "role": "You are the neighbor at Mia's flat for the last plant visit.",
+    "goal": "Finish the Wednesday check at 10 a.m. Make a short record of the plant jobs, leave a supplies note for Mia, and record a short message for Ben about the key.",
+    "constraints": [
+      "Use Wednesday's paper leaves. Water the fern and look at the mint on the kitchen shelf.",
+      "The balcony door is still locked. The ivy stays by the chair.",
+      "The red jug is for the floor. Use a plant cup or jug.",
+      "Lock Mia's flat before you put the key through the letter slot at flat 2."
+    ],
+    "change": "At 10 a.m. on Wednesday, you find that the garden cupboard by the lift is locked. A note on it says it opens at noon today. You need to leave at 10:20 a.m. Mia's yellow cup is by the kitchen sink, so you can finish the plant check before you go.",
+    "deliverables": [
+      "Make a three-line visit record for Mia. Write one line per plant with its place and what you do.",
+      "Write a two-line supplies note for Mia. Give the reason you use the yellow cup on one line and say where you leave it on the other.",
+      "Record two short sentences for Ben after the visit. Say that you locked Mia's flat and where you put the key. Then read the lines back and check that the jobs are in order."
+    ],
+    "checklist": [
+      "The three plant lines name mint, fern, and ivy, and only the fern gets water.",
+      "The visit record uses don't at least once for a job you skip.",
+      "The supplies note gives the locked cupboard as the reason and leaves the yellow cup in Mia's kitchen.",
+      "The visit plan fits between 10 a.m. and 10:20 a.m.",
+      "Ben's message puts locking the flat before returning the key and names the letter slot at flat 2."
+    ]
+  }
+}

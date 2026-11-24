@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { playableCatalog } from "../_shared/english-recorded-listening.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   authUser,
@@ -406,7 +407,7 @@ serve(async (req) => {
         if (wantSkill) query = query.eq("service_key", wantSkill);
         const { data, error } = await query;
         if (error) throw new Error(`Failed to load catalog: ${error.message}`);
-        return (data ?? [])
+        const items = (data ?? [])
           .filter((row: Record<string, unknown>) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
           .map((row: Record<string, unknown>) => ({
             id: String(row.id),
@@ -418,6 +419,7 @@ serve(async (req) => {
             difficulty: Number(row.difficulty ?? 0.5),
             tags: Array.isArray(row.tags) ? (row.tags as unknown[]).map(String).slice(0, 12) : [],
           }));
+        return route === "/today" || route === "/week" ? await playableCatalog(sb, scope.languageId, items) : items;
       };
 
       const loadAttempts = async (days: number, limit: number) => {
@@ -683,9 +685,11 @@ serve(async (req) => {
       // A stored plan is reused only while the inputs that shaped it are unchanged.
       const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(practiceLevels)].join("|");
       const existingSummary = (existingRes.data?.summary ?? {}) as Record<string, unknown>;
+      const playableListening = new Set(items.filter((entry) => entry.skill === "listening").map((entry) => entry.id));
       const existing = existingSummary.generated_by === "hub.today.v1"
           && existingSummary.plan_key === planKey
           && Array.isArray(existingSummary.today_tasks)
+          && (existingSummary.today_tasks as TodayTask[]).every((task) => task.skill !== "listening" || playableListening.has(task.content_item_id ?? ""))
         ? existingSummary.today_tasks as TodayTask[]
         : null;
 

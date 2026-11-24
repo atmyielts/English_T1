@@ -1,0 +1,428 @@
+{
+  "slug": "aprons-for-the-cooking-room",
+  "title": "Aprons for the cooking room",
+  "level": "A1",
+  "summary": "Get aprons ready for an adult cooking class. Read a peg note and a sign-up list, then prepare an apron board that reflects a change. Use this, that, these and those to show people where things are.",
+  "documents": [
+    {
+      "title": "Note on the peg board",
+      "text": "The cooking aprons are on the board by the door. There are six pegs. Start on the left. Pegs 1 and 2 have short green aprons. Pegs 3 and 4 have medium blue aprons. Pegs 5 and 6 have large grey aprons. You can read the size on a white tag inside each apron.\n\nThe yellow name tags in the cup are for the art class. Leave them in the cup. Use the blank white cards on the shelf for cooking class names. Write one name on each card. Put the card above the peg. Please keep the floor clear."
+    },
+    {
+      "title": "Saturday apron sign-up",
+      "text": "Cooking class, Saturday. Please come to the cooking room at 10:00. Pick up your apron from 10:05 to 10:15. Here is our list for the peg board.\n\nLina wants a short apron. Her card goes above peg 1. Omar wants a medium apron. His card goes above peg 3. Sam wants a short apron. His card goes above peg 2. Eva wants a medium apron. Her card goes above peg 4.\n\nBen is on the class list too. He has his own apron in his bag. Leave his name off the board. Check the four cards before people come in."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Ella talks to the class",
+      "text": "Hello, everyone. I’m Ella, your teacher. Come and stand by the door, please. Take your apron when I say your name. I can help you with the size. Hold the apron in front of you. Does it go below your knees? Try a shorter one. It’s OK to ask me for help. You can keep your coat on while you check. If you take an apron from a different peg, tell me. I can change the card for you. When you have an apron that fits, go to the big table. Put your bag under your chair."
+    },
+    {
+      "title": "Mo leaves a voice message",
+      "text": "Hi, Ella. It’s Mo. I’m in the cooking room now. I moved the two large grey aprons from the board. They are in the blue box under the low shelf. The lid is open, so you can see them. Pegs 5 and 6 are empty now. The four aprons for Lina, Omar, Sam and Eva are still on their pegs. Their white cards are up too. I put a pen next to the blank cards on the shelf. The yellow tags are still in the cup. I’ll leave at 9:55. The room is ready for you."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read “Note on the peg board” once. What does the note mainly help you do?",
+      "options": [
+        "Find out who is in the class.",
+        "Choose a time to come to class.",
+        "Find aprons and put name cards in the right place.",
+        "Pack aprons in a box after class."
+      ],
+      "answer": 2,
+      "explanation": "The note gives the sizes by peg and says to put each name card above its peg."
+    },
+    {
+      "prompt": "Read “Note on the peg board” again. Draw six circles in a row and number them from the left. Which two pegs have medium blue aprons?",
+      "options": [
+        "Pegs 3 and 4",
+        "Pegs 1 and 2",
+        "Pegs 2 and 3",
+        "Pegs 5 and 6"
+      ],
+      "answer": 0,
+      "explanation": "The note puts the medium blue aprons on pegs 3 and 4."
+    },
+    {
+      "prompt": "In “Note on the peg board”, you find a yellow tag and a blank white card. What do you do to make a cooking class name card?",
+      "options": [
+        "Write the name on the yellow tag.",
+        "Put both items above the peg.",
+        "Put both items in the cup.",
+        "Write the name on the white card and leave the yellow tag in the cup."
+      ],
+      "answer": 3,
+      "explanation": "The yellow tags are for art, and the blank white cards are for cooking class names."
+    },
+    {
+      "prompt": "Read “Saturday apron sign-up”. Make two notes, one for when to come and one for when to pick up an apron. What goes in the pickup note?",
+      "options": [
+        "Before 10:00",
+        "From 10:05 to 10:15",
+        "At 10:00",
+        "After 10:15"
+      ],
+      "answer": 1,
+      "explanation": "The list says to come at 10:00 and pick up an apron from 10:05 to 10:15."
+    },
+    {
+      "prompt": "Use “Saturday apron sign-up” to add names to your six circles. Sam is at the board. Where is his card?",
+      "options": [
+        "Above peg 4",
+        "Above peg 3",
+        "Above peg 2",
+        "Above peg 1"
+      ],
+      "answer": 2,
+      "explanation": "The sign-up list says Sam wants a short apron and puts his card above peg 2."
+    },
+    {
+      "prompt": "In “Saturday apron sign-up”, Ben is on the class list. Why do you leave his name off the board?",
+      "options": [
+        "He has his own apron in his bag.",
+        "He has a card above peg 4.",
+        "He is picking up Sam’s apron.",
+        "He is in the art class."
+      ],
+      "answer": 0,
+      "explanation": "The last part of the list says Ben brings his own apron in his bag."
+    },
+    {
+      "prompt": "In “Saturday apron sign-up”, you are doing the check before people come in. Which set of names should you see on the board? Reread and check your six circles.",
+      "options": [
+        "Lina, Omar, Eva and Ben",
+        "Lina, Omar, Sam, Eva and Ben",
+        "Lina, Sam and Eva",
+        "Lina, Omar, Sam and Eva"
+      ],
+      "answer": 3,
+      "explanation": "The list gives four peg numbers to Lina, Omar, Sam and Eva, and leaves Ben off the board."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to “Ella talks to the class”. What is Ella mainly helping people do?",
+      "options": [
+        "Find a place to leave their coats.",
+        "Pick up an apron and check its size.",
+        "Write their names on blank cards.",
+        "Put the aprons away after class."
+      ],
+      "answer": 1,
+      "explanation": "Ella says when to take an apron and how to see if a shorter one is needed."
+    },
+    {
+      "prompt": "Listen to “Ella talks to the class” again. Make short notes for take, check and go. When can you take your apron?",
+      "options": [
+        "When you arrive at the door.",
+        "After you sit at the big table.",
+        "After you take your coat off.",
+        "When Ella says your name."
+      ],
+      "answer": 3,
+      "explanation": "Ella asks people to take an apron when she says their name."
+    },
+    {
+      "prompt": "In “Ella talks to the class”, you hold an apron in front of you. It goes below your knees. What does Ella say to try?",
+      "options": [
+        "A shorter apron",
+        "An apron from the same peg",
+        "A longer apron",
+        "The same apron with your coat off"
+      ],
+      "answer": 0,
+      "explanation": "Ella says to try a shorter apron if the first one goes below your knees."
+    },
+    {
+      "prompt": "In “Ella talks to the class”, you take an apron from a different peg. Why do you tell Ella?",
+      "options": [
+        "She can bring your bag to the table.",
+        "She can put your coat by the door.",
+        "She can change the card for you.",
+        "She can show you where to sit."
+      ],
+      "answer": 2,
+      "explanation": "Ella says she can change your card if you take an apron from a different peg."
+    },
+    {
+      "prompt": "Listen to “Mo leaves a voice message”. Which change is Mo telling Ella about? Write the old and new places.",
+      "options": [
+        "The yellow tags are now in the box.",
+        "The large grey aprons are now in the blue box.",
+        "The four name cards are now on the shelf.",
+        "The medium aprons are now on pegs 5 and 6."
+      ],
+      "answer": 1,
+      "explanation": "Mo moved both large grey aprons off the board and into the blue box."
+    },
+    {
+      "prompt": "Listen to “Mo leaves a voice message” again. Make two short lists for the board and the shelf area. You need a pen to write another name. Where is the pen?",
+      "options": [
+        "In the cup with the yellow tags.",
+        "In the box with the grey aprons.",
+        "Above peg 6.",
+        "Next to the blank cards on the shelf."
+      ],
+      "answer": 3,
+      "explanation": "Mo says the pen is on the shelf next to the blank cards."
+    },
+    {
+      "prompt": "In “Mo leaves a voice message”, what happens at 9:55? Listen again and check what this time goes with.",
+      "options": [
+        "Mo leaves the room.",
+        "The class comes to the room.",
+        "The apron pickup starts.",
+        "Ella moves the large aprons."
+      ],
+      "answer": 0,
+      "explanation": "At the end of the message, Mo says he will leave at 9:55."
+    }
+  ],
+  "grammar": {
+    "focus": "This, that, these and those",
+    "explanation": "Think about where you are when you speak. Is the thing near you or far from you? Then count the things you point to. Use this for one thing near you. Use that for one thing far from you. Use these for two or more things near you. Use those for two or more things far from you. Say “This is” or “That is” for one thing. Say “These are” or “Those are” for two or more things. If you walk to the board, the aprons there are near you now. You can say “those aprons” from the table and “these aprons” at the board.",
+    "examples": [
+      {
+        "before": "You hold one card. “That is Eva’s card.”",
+        "after": "You hold one card. “This is Eva’s card.”",
+        "why": "You hold one card, so it is near you."
+      },
+      {
+        "before": "You point to one peg across the room. “This peg is empty.”",
+        "after": "You point to one peg across the room. “That peg is empty.”",
+        "why": "There is one peg, and it is far from you."
+      },
+      {
+        "before": "You have two cards in your hand. “Those are the white cards.”",
+        "after": "You have two cards in your hand. “These are the white cards.”",
+        "why": "There are two cards, and they are near you."
+      },
+      {
+        "before": "You point to two coats across the room. “That is the coats.”",
+        "after": "You point to two coats across the room. “Those are the coats.”",
+        "why": "The coats are far from you, and there are two."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "You hold one green apron. What do you say to Lina?",
+        "options": [
+          "Those are your green aprons.",
+          "That is your green apron.",
+          "This is your green apron.",
+          "These are your green aprons."
+        ],
+        "answer": 2,
+        "explanation": "You are holding one apron, so it is near you."
+      },
+      {
+        "prompt": "You are by the door. Two bags are across the room. What do you say about the bags?",
+        "options": [
+          "Those bags are under the table.",
+          "These bags are under the table.",
+          "That bag is under the table.",
+          "This bag is under the table."
+        ],
+        "answer": 0,
+        "explanation": "You are talking about two bags far from where you stand."
+      },
+      {
+        "prompt": "You have two clean cloths in your hands. Which question fits?",
+        "options": [
+          "Is that cloth for you?",
+          "Are those cloths for you?",
+          "Is this cloth for you?",
+          "Are these cloths for you?"
+        ],
+        "answer": 3,
+        "explanation": "There are two cloths and you have them in your hands."
+      },
+      {
+        "prompt": "You are at the table. You point to one chair far away by the door. What do you ask?",
+        "options": [
+          "Is this chair free?",
+          "Is that chair free?",
+          "Are those chairs free?",
+          "Are these chairs free?"
+        ],
+        "answer": 1,
+        "explanation": "You are asking about one chair far from your table."
+      },
+      {
+        "prompt": "One cup is beside your hand. Two cups are across the room. Which pair of sentences fits?",
+        "options": [
+          "That cup is mine. These cups are yours.",
+          "These cups are mine. That cup is yours.",
+          "This cup is mine. Those cups are yours.",
+          "Those cups are mine. This cup is yours."
+        ],
+        "answer": 2,
+        "explanation": "One cup is near you, and the two other cups are far away."
+      },
+      {
+        "prompt": "You stand across the room from two boxes. You walk over and stand right beside them. What do you say now?",
+        "options": [
+          "That box is open.",
+          "Those boxes are open.",
+          "This box is open.",
+          "These boxes are open."
+        ],
+        "answer": 3,
+        "explanation": "After you walk over, both boxes are right beside you."
+      },
+      {
+        "prompt": "Omar stands by one window. You stand across the room and point to it. What do you say from where you stand?",
+        "options": [
+          "That is the window.",
+          "This is the window.",
+          "Those are the windows.",
+          "These are the windows."
+        ],
+        "answer": 0,
+        "explanation": "The one window is far from you, the person speaking."
+      },
+      {
+        "prompt": "You stand beside two empty pegs and point across the room to one box. Which pair of sentences fits?",
+        "options": [
+          "Those pegs are empty. This box is full.",
+          "These pegs are empty. That box is full.",
+          "This peg is empty. Those boxes are full.",
+          "That peg is empty. These boxes are full."
+        ],
+        "answer": 1,
+        "explanation": "The two pegs are near you and the one box is far away."
+      }
+    ],
+    "transfer": "Draw a small room with a board and a table far apart. Put one card and two aprons on the board. Write two lines you can say from the table. Walk to the board in your drawing and change both lines. Underline each pointing word. Check where you are and count the things in each line."
+  },
+  "vocabulary": [
+    {
+      "word": "apron",
+      "meaning": "clothing you wear over the front of your clothes to keep them clean",
+      "example": "I wear a white apron at work.",
+      "pair": "tie an apron"
+    },
+    {
+      "word": "peg",
+      "meaning": "a small piece that sticks out and holds things",
+      "example": "I hang my coat on the peg.",
+      "pair": "an empty peg"
+    },
+    {
+      "word": "board",
+      "meaning": "a flat piece where you can put cards or pegs",
+      "example": "We put our class photos on the board.",
+      "pair": "a board on the wall"
+    },
+    {
+      "word": "size",
+      "meaning": "how big or small something is",
+      "example": "What size do you wear in this coat?",
+      "pair": "the right size"
+    },
+    {
+      "word": "name tag",
+      "meaning": "a small piece of paper or card with a name on it",
+      "example": "Sara wears a name tag at work.",
+      "pair": "wear a name tag"
+    },
+    {
+      "word": "blank",
+      "meaning": "with no words or marks on it",
+      "example": "Please write your address on this blank card.",
+      "pair": "a blank page"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go to get something that is ready for you",
+      "example": "I pick up my new glasses after work.",
+      "pair": "pick up an order"
+    },
+    {
+      "word": "shelf",
+      "meaning": "a flat place to put things above the floor",
+      "example": "The clean cups are on the top shelf.",
+      "pair": "a low shelf"
+    },
+    {
+      "word": "below",
+      "meaning": "in a lower place than something",
+      "example": "The bottom of my coat is below my knees.",
+      "pair": "below eye level"
+    },
+    {
+      "word": "fit",
+      "meaning": "be the right size for a person",
+      "example": "These shoes fit me, so I can walk in them.",
+      "pair": "fit well"
+    },
+    {
+      "word": "lid",
+      "meaning": "the top you can take off or open",
+      "example": "I put the lid back on the jar.",
+      "pair": "close the lid"
+    },
+    {
+      "word": "borrow",
+      "meaning": "take something to use and give it back later",
+      "example": "Can I borrow your pen for this form?",
+      "pair": "borrow a book"
+    }
+  ],
+  "speaking": {
+    "audience": "Lina, an adult learner at the apron board.",
+    "first": "Mo has moved the large grey aprons to the blue box under the low shelf. Pegs 5 and 6 are empty, and the other aprons and cards stay. Ella says to try a shorter apron if it goes below your knees. If you change pegs, tell Ella. When the apron fits, go to the big table and put your bag under your chair. Draw the new board. Make three small cue cards for name, size and fit. Read Lina’s three questions aloud, then answer each as the helper in one or two short sentences. “Where is my apron?” “It goes below my knees. What can I do?” “What do I do when it fits?” Start beside peg 1 and point to her apron as you answer.",
+    "change": "At 10:10, Lina brings her child, Nuri. Lina is shorter than you thought. She tries the green apron, and it goes below her knees. Ella puts a shorter white adult apron on the shelf. Nuri has a borrowed red apron in a bag.",
+    "second": "Take three new turns. Answer “Where is the shorter apron?” from the board, with the shelf across the room. Answer “Does Nuri need an apron from the board?” and “Who do I tell about the change?” Keep the rule about telling Ella. Say this or that clearly once or twice as you point.",
+    "checklist": [
+      "In the first take, I point to the short green apron on peg 1.",
+      "I say what to do if an apron goes below Lina’s knees.",
+      "I send Lina to the big table after she has an apron that fits.",
+      "In the second take, I say where the shorter white apron is and say that Nuri already has a borrowed red apron.",
+      "I tell Lina to speak to Ella about the change and use a pointing word from where I stand.",
+      "I pause after each question and give a short answer."
+    ]
+  },
+  "writing": {
+    "audience": "Ella, the teacher reading the first note before class and the new one during pickup.",
+    "first": "Use the sign-up list and this update. Mo has put both large grey aprons in the blue box under the low shelf. Pegs 5 and 6 are empty. The other aprons and white name cards stay on the board. Make a six-peg map for Ella. Write one row per peg. Add the name, size and colour where there is an apron. Then write a short handover note of about 25 to 45 words across several lines. Say when people come, when pickup starts and ends, where the large aprons are, and where the yellow tags go. Use the vocabulary cards to check your words.",
+    "change": "At 10:05, Omar asks to collect his apron at 10:12. The blue apron on peg 3 has a broken tie. Ella puts a clean medium blue apron on peg 5 and moves Omar’s white card there. She takes the apron with the broken tie away.",
+    "second": "Correct both peg rows and make a white name card for the new peg. Rewrite the handover in about 25 to 45 words across several lines. Add Omar’s pickup time and new peg. Keep the class arrival time, the class pickup window, the box location and the line about the yellow tags.",
+    "checklist": [
+      "My map shows all six pegs in order, including the empty ones.",
+      "My new map shows peg 3 empty and Omar’s medium blue apron on peg 5.",
+      "My white name card says Omar and goes above peg 5.",
+      "My note shows 10:00 as arrival time, 10:05 to 10:15 as the pickup window, and 10:12 as Omar’s pickup time.",
+      "My note puts the large grey aprons in the blue box under the low shelf and the yellow art tags in the cup."
+    ]
+  },
+  "immersion": {
+    "role": "Apron helper for the last pickup at the cooking room door.",
+    "goal": "Help a late learner get an apron while you keep a second learner’s apron ready. Make a board map and a named label that Ella can use when you leave the door.",
+    "constraints": [
+      "Start this pickup practice with pegs 5 and 6 already empty. Mo moved their two large grey aprons to the blue box. Use the sign-up list for names and numbers.",
+      "At 10:13, Lina and Omar have their aprons. Pegs 1 and 3 are empty, and their cards are off the board.",
+      "Keep Sam’s short green apron on peg 2 until he comes at 10:15.",
+      "Leave both large grey aprons in the blue box under the low shelf.",
+      "Use a blank white card for a cooking class name. The yellow tags stay in the cup."
+    ],
+    "change": "At 10:14, Ada arrives. The medium apron on peg 4 goes below Ada’s knees. Eva is away today, so Ella takes Eva’s card down and puts that apron on the shelf. Ella finds one clean short green apron in a bag by the door. Put it on an empty peg for Ada.",
+    "deliverables": [
+      "Draw a six-peg map just before Ada takes her apron. Mark every peg as empty or write its learner name, size and colour.",
+      "Write one white name card for Ada. Show it above the peg you choose for her.",
+      "Write a three-line note for Ella. Say where Sam’s apron is, where the medium blue apron from peg 4 is, and where the two large grey aprons are.",
+      "Say two short lines for Ada. First imagine standing at the big table with the board across the room. Then imagine standing beside Ada’s peg. Point to her apron in both lines."
+    ],
+    "checklist": [
+      "All six pegs are on my map. Sam is on peg 2 and Ada has a different peg.",
+      "Ada’s white card shows her name, and her apron is short and green.",
+      "Peg 4 is empty and the medium apron from that peg is on the shelf.",
+      "My note gives three places that Ella can find.",
+      "I say that near the big table and this beside Ada’s peg.",
+      "I reread my map and note together to check that the names and places match."
+    ]
+  }
+}

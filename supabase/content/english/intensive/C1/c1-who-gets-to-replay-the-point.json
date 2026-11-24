@@ -1,0 +1,394 @@
+{
+  "slug": "c1-who-gets-to-replay-the-point",
+  "title": "Who Gets to Replay the Point?",
+  "level": "C1",
+  "summary": "Design an evidence policy for contested calls in a volunteer youth sports league.\n\nReading: Use exact lines to build a five-row decisions table for a clear reversal, a clear confirmation, an unreadable clip, a late request and a safeguarding report. Beneath the table, explain which row two readers could interpret differently and rewrite the relevant instruction.\n\nVocabulary: Sort the words into evidence, access and follow-up. Turn three entries from each group into a spoken explanation for a player and then an equivalent note for an official. Check which collocations keep their meaning after the audience changes.",
+  "documents": [
+    {
+      "title": "Draft rules for line-call reviews",
+      "text": "For six weekends, the Elm Court junior league will record matches on courts one and two. The pilot targets decisions about whether the ball landed inside the line, rather than questions about conduct or the quality of refereeing. Each pair can request one review per set by speaking to the umpire before the next serve begins. The umpire will watch the club recording on a tablet. Parents may flag an issue for the club after a match, but their own phone footage will not be used to change a score.\n\nA view of the court is not enough to reverse a call. The recording must show both the landing and the relevant line clearly. If the camera misses either, or if the image supports more than one reading, the initial call stands. An unsuccessful review will cost the pair its request only when the recording clearly supports the initial call. A clip that cannot settle the matter carries no such penalty.\n\nThe equipment team will log the time each review takes and whether the angle was useful. No archive is planned. Individual recordings will be erased after two days unless the club has received a formal safeguarding report and needs to retain the relevant material. The pilot review will publish totals without player names."
+    },
+    {
+      "title": "Response from the captains’ group",
+      "text": "The captains support giving players a tool they can use themselves. The proposal may also help a new umpire admit uncertainty without having to ask adults in the crowd what happened. Nevertheless, giving every pair the same number of requests does not give every pair the same ability to use them. Some teams have practised making the request. Others do not even know whether a player can ask after a long rally ends with an unexpected point.\n\nWe suggest including a two-minute demonstration before the first fixture. A captain can ask in a complete sentence, in a few words, or by showing a review card. The request should still come before the next serve. Since only two courts have equipment, the same practice should cover how to ask a question on an unrecorded court, where the result is an explanation from the umpire and not a replay.\n\nWe also want a limit on what the final figures claim. A high number of successful challenges could reflect how rarely players ask unless they are confident. A low number could reflect poor angles. Publish the number of unusable clips alongside both totals, and ask players privately whether they understood their right to ask. The pilot should be judged on information that includes those who did not make a request."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Planning call between referee and equipment lead",
+      "text": "Nadia: One of the umpires asked whether volunteers would watch lots of footage between games. That sounded like extra work we had forgotten to count.\n\nBen: During a match the tablet starts at the time of the request and goes back eight seconds. The log records when the umpire closes the clip. There is no need to save the clip for an equipment report.\n\nNadia: That gives us time on the tablet, not necessarily time taken from the match. It may take me half a minute to explain a decision to two upset players after the clip closes.\n\nBen: Fair. We can add a second mark when play resumes. Would you also record arguments when nobody asks for a review?\n\nNadia: On one afternoon, perhaps. Otherwise we would be comparing every new kind of delay with a guess about the old ones. My other concern is that some courts may look too slow simply because they host the longer age-group matches.\n\nBen: Then let’s group by match format rather than putting all the minutes in one average. I can add those fields. I can’t work out who felt able to ask merely by looking at how often the tablet was used.\n\nNadia: The captains’ short question after the match can help there. We should check that umpires themselves understand it is about the players, not a rating of the umpire."
+    },
+    {
+      "title": "A player explains why the rule matters",
+      "text": "I used to think a challenge meant you had to prove somebody was wrong. When we tried a review card at training I asked about a very close ball. The replay did not show whether it caught the line, so the call stood. I didn't enjoy losing the point, but I liked that the umpire said what he had checked. It was different from hearing, “You know the rule, just play.”\n\nThe hard part was raising the card in time. We finished our rally and both of us walked back to serve. By the time I decided to ask, my partner was bouncing the ball ready to start. In training the coach let us begin again, which was fair because we were learning how to ask. In a league match I wouldn't expect that.\n\nMy mother has a clearer camera than the club one. If you only care about getting one line call right, letting her show the recording sounds sensible. But she was standing much closer to our end, which mattered when the ball landed on the other side. Other parents would start filming just in case. I would rather be able to ask the same way even when nobody has come to watch me."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What is outside the pilot’s decision scope?",
+      "options": [
+        "Whether the line was visible at landing",
+        "Whether a review arrived in time",
+        "Whether a ball touched the line",
+        "Whether a player behaved improperly"
+      ],
+      "answer": 3,
+      "explanation": "The opening distinguishes ball placement from questions about conduct."
+    },
+    {
+      "prompt": "What happens when a clip cannot resolve the call?",
+      "options": [
+        "The pair receives the point and loses its request.",
+        "The next set begins with an additional request.",
+        "The initial call stands without using the pair’s request.",
+        "The call stands and the pair loses its request."
+      ],
+      "answer": 2,
+      "explanation": "An unusable image imposes no penalty and leaves the initial decision in place."
+    },
+    {
+      "prompt": "Why distinguish recording totals from feedback about requests?",
+      "options": [
+        "The feedback can establish which calls would have been reversed.",
+        "The totals reveal the identities protected by deletion.",
+        "The totals leave out players who never felt able or knew how to ask.",
+        "The totals exclude clearly correct initial calls."
+      ],
+      "answer": 2,
+      "explanation": "The captains want information from players who never used the review."
+    },
+    {
+      "prompt": "What benefit do captains see for a novice umpire?",
+      "options": [
+        "A way to acknowledge doubt without relying on spectators",
+        "A way to avoid being asked about calls",
+        "A private method to penalise players",
+        "An automatic ruling on an unrecorded court"
+      ],
+      "answer": 0,
+      "explanation": "The response sees replay as an alternative to crowdsourcing a ruling."
+    },
+    {
+      "prompt": "Which requirement stays the same under the suggested card system?",
+      "options": [
+        "Show the card to a parent first.",
+        "Request before the next serve.",
+        "Use the equipment in every fixture.",
+        "Finish a full sentence."
+      ],
+      "answer": 1,
+      "explanation": "The response changes the form of the request but preserves the deadline."
+    },
+    {
+      "prompt": "Which claim would both texts support?",
+      "options": [
+        "An unhelpful angle can affect what we learn from the pilot.",
+        "Players should get two reviews in a difficult set.",
+        "A successful challenge rates the umpire’s overall performance.",
+        "Phone footage needs to be retained for a season."
+      ],
+      "answer": 0,
+      "explanation": "Rules log visibility; captains want unusable clips published to qualify outcome totals."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why does Nadia want an extra timing mark?",
+      "options": [
+        "Volunteers have to assemble a report between games.",
+        "Reviewing clips takes place only after a set.",
+        "Explaining the decision can delay play after the tablet closes.",
+        "The tablet always starts too far back."
+      ],
+      "answer": 2,
+      "explanation": "Time spent on the device misses the period before players actually resume."
+    },
+    {
+      "prompt": "Why split timing by match format?",
+      "options": [
+        "The types of fixture hosted can affect observed times.",
+        "Each age group has a different tablet model.",
+        "Only some formats have a process for player questions.",
+        "The club has different clip retention periods by format."
+      ],
+      "answer": 0,
+      "explanation": "Grouping reduces the risk that assigning different match formats distorts a court comparison."
+    },
+    {
+      "prompt": "What does the player value about an inconclusive review?",
+      "options": [
+        "Having the call overturned without clear footage",
+        "Keeping their parents out of the club",
+        "Hearing what the umpire actually checked",
+        "Using the same request twice"
+      ],
+      "answer": 2,
+      "explanation": "The player still loses the point but appreciates knowing the evidence examined."
+    },
+    {
+      "prompt": "Why does the player regard the training exception as appropriate there?",
+      "options": [
+        "The line call was especially important to the result.",
+        "Players were practising the review procedure.",
+        "Camera use was prohibited until the next set.",
+        "Players were preparing an equipment report."
+      ],
+      "answer": 1,
+      "explanation": "They say they were still learning how to ask and would not expect an exception in competition."
+    },
+    {
+      "prompt": "What concern does the player identify about parent footage?",
+      "options": [
+        "Players would be required to share recordings with every other family.",
+        "Parents cannot record an image sharp enough for any ruling.",
+        "It prevents umpires from telling parents why a call stood.",
+        "It makes usable evidence depend partly on who attends and where they stand."
+      ],
+      "answer": 3,
+      "explanation": "Better resolution does not mean an equal or relevant angle; attendance differs."
+    },
+    {
+      "prompt": "Which distinction matters in both recordings?",
+      "options": [
+        "Responding to parents is more demanding than reviewing a clip.",
+        "Recorded footage provides decisive evidence for most calls.",
+        "Only adults can determine when two cameras disagree.",
+        "A countable event can miss a part of the experience that affects participation."
+      ],
+      "answer": 3,
+      "explanation": "The call distinguishes measured use from feeling able to ask, and the player makes that distinction concrete."
+    }
+  ],
+  "grammar": {
+    "focus": "Concession and conditionality",
+    "explanation": "Use even though for a fact you accept before qualifying its consequence. Even if tests a hypothetical without asserting it. Provided that identifies a condition required for permission or a result. Unless introduces an exception: A unless B means A if B does not happen.",
+    "examples": [
+      {
+        "before": "Even if the clip did not show the line, we watched it.",
+        "after": "Even though the clip did not show the line, we watched it.",
+        "why": "The log already establishes that the line was invisible."
+      },
+      {
+        "before": "The clip stays even though a formal claim comes in.",
+        "after": "The clip is erased unless a formal claim comes in.",
+        "why": "Deletion is the default; a claim is the exception."
+      },
+      {
+        "before": "A player may ask despite a deadline.",
+        "after": "A player may ask provided that play has not restarted.",
+        "why": "The deadline limits the permission; it is not an obstacle routinely disregarded."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The clip was clearly inconclusive. Choose a concession about the known fact.",
+        "options": [
+          "Provided the clip was inconclusive, we were permitted to check the angle.",
+          "Even though the clip was inconclusive, it helped us check the angle.",
+          "Unless the clip was inconclusive, it helped us check the angle.",
+          "Even if the clip is inconclusive, it might help us check the angle."
+        ],
+        "answer": 1,
+        "explanation": "The known fact is conceded, rather than posed as a condition."
+      },
+      {
+        "prompt": "The ruling stands regardless of whether a clearer phone clip turns up. Choose that meaning.",
+        "options": [
+          "The ruling will stand provided a clearer phone clip turns up.",
+          "The ruling will stand unless a clearer phone clip turns up.",
+          "Even though a clearer phone clip has turned up, the ruling will stand.",
+          "Even if a clearer phone clip turns up, the ruling will stand."
+        ],
+        "answer": 3,
+        "explanation": "Even if includes the possible future appearance without making it an exception."
+      },
+      {
+        "prompt": "Which phrasing makes a request before service a genuine condition for use?",
+        "options": [
+          "A pair can review unless it asks before the next serve.",
+          "A pair can review even though it asks before the next serve.",
+          "A pair can review provided that it asks before the next serve.",
+          "A pair can review even if it asks after the next serve."
+        ],
+        "answer": 2,
+        "explanation": "Provided that attaches the requirement to the permission."
+      },
+      {
+        "prompt": "Which sentence keeps the request when the camera fails to show both items?",
+        "options": [
+          "The pair keeps the request unless the footage clearly confirms the call.",
+          "The pair loses the request even if the camera misses the line.",
+          "The pair loses the request unless the footage clearly confirms the call.",
+          "The pair keeps the request provided the footage clearly confirms the call."
+        ],
+        "answer": 0,
+        "explanation": "The exception applies to keeping the request only when the clip clearly supports the call."
+      },
+      {
+        "prompt": "A sign says ‘We delete clips unless a formal report arrives.’ Which rewrite preserves it?",
+        "options": [
+          "We keep clips even when no report arrives.",
+          "We delete clips if no formal report arrives.",
+          "We delete clips if a formal report arrives.",
+          "We keep clips regardless of whether a report arrives."
+        ],
+        "answer": 1,
+        "explanation": "Negating the unless clause gives the condition for normal deletion."
+      },
+      {
+        "prompt": "The opening test is known to have taken longer. Choose wording that accepts the fact without asserting its cause.",
+        "options": [
+          "Even if the test takes longer, the new method will be easier to use.",
+          "Provided the test took longer, the new method was easier to use.",
+          "Even though the test took longer, the new method may have been easier to use.",
+          "Unless the test took longer, the new method could be used."
+        ],
+        "answer": 2,
+        "explanation": "Even though treats the extra time as established, rather than as the cause or condition of access."
+      },
+      {
+        "prompt": "Which wording gives two genuinely necessary conditions?",
+        "options": [
+          "A call changes provided the clip shows both the landing and the relevant line clearly.",
+          "A call changes even if only one is visible.",
+          "A call changes even though neither is visible.",
+          "A call changes unless the clip shows the landing and the line clearly."
+        ],
+        "answer": 0,
+        "explanation": "Provided plus both expresses the joint requirement."
+      },
+      {
+        "prompt": "Which sentence states a genuine exception to the usual deadline?",
+        "options": [
+          "Late requests are refused provided the coach restarts the drill.",
+          "In training, late requests are refused even when the coach restarts the drill.",
+          "Late requests are accepted unless the coach restarts the drill.",
+          "In training, late requests are refused unless the coach restarts the drill."
+        ],
+        "answer": 3,
+        "explanation": "Unless introduces the one condition under which the usual refusal may be lifted."
+      }
+    ],
+    "transfer": "Write four actual rules for a camera-free club. Use each connector once. For each, identify whether the clause names a known fact, a hypothetical test, a permission condition or an exception."
+  },
+  "vocabulary": [
+    {
+      "word": "overturn",
+      "meaning": "reverse an official decision",
+      "example": "The panel overturned the call after seeing the ball touch the line.",
+      "pair": "overturn a ruling"
+    },
+    {
+      "word": "inconclusive",
+      "meaning": "unable to settle a question",
+      "example": "The only available angle was inconclusive.",
+      "pair": "inconclusive footage"
+    },
+    {
+      "word": "safeguarding",
+      "meaning": "protecting people from harm in an institution",
+      "example": "The safeguarding lead handled the report confidentially.",
+      "pair": "safeguarding report"
+    },
+    {
+      "word": "fixture",
+      "meaning": "scheduled match",
+      "example": "The last fixture moved inside when rain started.",
+      "pair": "away fixture"
+    },
+    {
+      "word": "unobstructed",
+      "meaning": "free of objects blocking a view",
+      "example": "The tripod needs an unobstructed view of the far line.",
+      "pair": "unobstructed view"
+    },
+    {
+      "word": "retention",
+      "meaning": "continued keeping of material or records",
+      "example": "The club shortened its retention period.",
+      "pair": "retention period"
+    },
+    {
+      "word": "appeal",
+      "meaning": "formal request to reconsider a decision",
+      "example": "Players may lodge an appeal after a disciplinary decision.",
+      "pair": "lodge an appeal"
+    },
+    {
+      "word": "eligibility",
+      "meaning": "meeting requirements for access",
+      "example": "We checked eligibility before allocating replay tablets.",
+      "pair": "eligibility criteria"
+    },
+    {
+      "word": "discretion",
+      "meaning": "authority to judge within given limits",
+      "example": "The coach used discretion during the demonstration.",
+      "pair": "exercise discretion"
+    },
+    {
+      "word": "representative",
+      "meaning": "typical enough to reflect a wider group",
+      "example": "One tournament gave us no representative sample of younger players.",
+      "pair": "representative sample"
+    },
+    {
+      "word": "resume",
+      "meaning": "begin an interrupted activity again",
+      "example": "Play resumed when both pairs had heard the decision.",
+      "pair": "resume play"
+    },
+    {
+      "word": "backlog",
+      "meaning": "accumulation of work still pending",
+      "example": "Queries left unanswered over the weekend created a backlog.",
+      "pair": "clear a backlog"
+    }
+  ],
+  "speaking": {
+    "audience": "Captains, new players and one upset parent",
+    "first": "Run a four-minute pre-fixture demonstration. Act out a valid request, a clip that shows too little and the outcome. Explain in everyday language what a parent can raise after the match.",
+    "change": "The team will play on a court without a camera and a captain has a speech hesitation.",
+    "second": "Run a fresh briefing. Demonstrate a card or short request, explain what still happens on an unrecorded court, and answer a parent's demand for an automatic review.",
+    "checklist": [
+      "Distinguish an explanation from a replay.",
+      "Use two conditional or concessive connectors accurately.",
+      "State the deadline with an example.",
+      "Answer without suggesting the player loses a request merely for asking."
+    ]
+  },
+  "writing": {
+    "audience": "League committee comparing the pilot with ordinary play",
+    "first": "Draft a one-page recommendation with a short table of three measures. Use both written documents, explain what changes a call, and separate an activity count from participant experience.",
+    "change": "The funding committee offers two extra cameras if you publish an umpire league table.",
+    "second": "Write the committee chair’s reply. Make a separate decision on accepting cameras, propose a report that avoids rating volunteers, and spell out what evidence it can justify.",
+    "checklist": [
+      "Qualify a causal inference from challenge totals.",
+      "State what the timing measures include.",
+      "Separate a formal requirement from an optional practice.",
+      "Change the reply to address the funding condition directly."
+    ]
+  },
+  "immersion": {
+    "role": "League pilot coordinator",
+    "goal": "Present an implementable weekend policy that protects children and keeps review manageable.",
+    "constraints": [
+      "Two recorded courts and three unrecorded courts.",
+      "Two days' footage retention unless material is required for a report.",
+      "Officials can log only two times per reviewed point.",
+      "Captured images cannot be published."
+    ],
+    "change": "At the weekend one tablet fails. Half the players have already been briefed under the two-court plan.",
+    "deliverables": [
+      "Produce an instruction card with reasons and an alternative for unrecorded courts.",
+      "Draw a workflow for the five outcomes: clear reversal, clear confirmation, no visible line, late request, safeguarding report.",
+      "Speak a contingency announcement and prepare a revised tabulation plan."
+    ],
+    "checklist": [
+      "Both classes of court remain intelligible.",
+      "Match procedure and report handling stay distinct.",
+      "Your outcome logic agrees with the rule.",
+      "Your final plan states what the missing tablet prevents you from measuring."
+    ]
+  }
+}

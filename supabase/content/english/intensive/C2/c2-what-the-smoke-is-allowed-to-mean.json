@@ -1,0 +1,394 @@
+{
+  "slug": "c2-what-the-smoke-is-allowed-to-mean",
+  "title": "What the Smoke Is Allowed to Mean",
+  "level": "C2",
+  "summary": "Negotiate a food label after a regional producer group changes how and where its beans are smoked.\n\nReading: Map each packet claim to crop, technique, labour or site. Match the strongest evidence from the proposal or museum column to each. Construct one modified label whose true words could still leave a buyer with a mistaken impression.\n\nVocabulary: Use the deck to draft a public label note and a private audit paragraph. Mark which collocations refer to present production and which only justify claims about the history of the mark.",
+  "documents": [
+    {
+      "title": "Producer group’s renewal proposal",
+      "text": "For eighteen years our association has put its Hearth Province Mark on smoked white beans. The shared specification required growing and smoking within the province, and it identified the local fruitwood ordinarily used in the kilns. Two summers of poor harvest have left several growers unable to supply the full quantity. One member’s smoking shed is also closed for repairs. The association proposes authorising two temporary alterations. Beans may come from a named cooperative outside the district. One kiln outside the province may be used if a group member supervises the process.\n\nThe proposed card says ‘Made by hearth producers’ next to the existing mark. We want to preserve the reputation that our small farms have built. Supervision would retain a person who knows how quickly the beans can take on a bitter taste. Sending the beans out by truck, however, would create two more journeys and mean fewer orders for the few people still working at the provincial kiln.\n\nThe mark currently does more than name a familiar flavour. It links a method, a crop and a place. The committee has to decide which parts of that link can be interrupted while an altered product continues to carry a visibly qualified version of the mark."
+    },
+    {
+      "title": "Column from the town’s food museum",
+      "text": "A cracked kiln door, a storage jar and a group of wage entries are the main objects from the early bean trade. They are often taken as proof that everybody did the same thing. A visitor can see from the wage entries that some smoking was outsourced even then. There is less evidence about who supplied the unsmoked beans over several poor seasons. We can say the method has a long local history without assigning unbroken local origins to every bean ever sold.\n\nThat account does not entitle a present label to advertise a provenance customers will not get. The question is what mixture of histories people recognise when they buy the packet. Someone looking for a flavour may be interested in supervision and wood. Someone seeking to support local growers needs to know that the crop came from elsewhere. Somebody else may want to support local kiln workers independently of either concern.\n\nI would permit a transitional label if the growers agree what they need it to preserve and readers can identify the missing link when it matters to a purchase. I would not claim that the mark has meant a single, unchanged production route from the beginning."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Cooperative member and retail buyer at a tasting",
+      "text": "Rim: Nobody guessed which plate was from the outside kiln. That seems quite a good case for keeping the label.\n\nMae: It is a good case for one narrow claim, if methods were the only difference. Did you use the same beans?\n\nRim: The cook used provincial beans in both versions. That is what we will have until the next shipment.\n\nMae: Then you have made the case that the alternate kiln can produce something like the flavour we expect with one supply. You haven’t shown that the next supply will taste the same. It would help to identify who did the smoking as well.\n\nRim: Where would you put all of that?\n\nMae: On the front, tell people what changed. On the side, give the name of the outside farm and the kiln when it is used. Keep the full method log for anyone who needs to see it.\n\nRim: I can do that on the next print. The existing bags already have the mark, but we can apply a band that says ‘Outside-grown beans; supervised by the household association.’\n\nMae: Ask a shopper what they think that means before printing thousands. I suspect some will hear where the smoking happened rather than where the plants grew."
+    },
+    {
+      "title": "A kiln worker at the label consultation",
+      "text": "I helped carry the batches from the shed to the old loading point before the main building reopened. There was no name for that job in the association book. A grower’s registered name went into the batch log because his worker had to bring the beans to us. When the crop comes from elsewhere, the log says which organisation owns it. It might say nothing about who still lives here or who actually did the work.\n\nWe should be careful about saying every altered batch supports local labour. Some will give us work because the beans are still smoked by the river. Another part of the season may pay somebody to supervise a different kiln. That is valuable, but it does not pay me for a morning of loading. I am not asking every buyer to learn the details of my shift. I am asking the association to keep a record we can examine during renewal.\n\nA good label can separate growing, smoking and supervision in a few words. Before the exception becomes ordinary, ask who earned something under each arrangement. The authority can then decide whether the label maintained a skill, a local supply, a reputation or a mix of all three."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Which requirement does the producer group propose relaxing?",
+      "options": [
+        "Supervising any work in an outside kiln",
+        "Avoiding the intentional use of fruitwood",
+        "Naming the producers in the trade register",
+        "Growing and smoking within the province"
+      ],
+      "answer": 3,
+      "explanation": "The temporary exceptions cover a named outside grower and an outside kiln under supervision."
+    },
+    {
+      "prompt": "What limit does the proposal acknowledge about its new sourcing route?",
+      "options": [
+        "It could reduce orders for local kiln workers.",
+        "It guarantees that every grower can supply all their beans.",
+        "It necessarily destroys the expected flavour.",
+        "It removes the need for transport."
+      ],
+      "answer": 0,
+      "explanation": "Additional journeys and work leaving the local kiln are distinct effects."
+    },
+    {
+      "prompt": "What can the museum objects substantiate?",
+      "options": [
+        "All growers once used the same route.",
+        "The origins of every bean are fully documented.",
+        "Some smoking was outsourced in the early period.",
+        "Every method has changed exactly once."
+      ],
+      "answer": 2,
+      "explanation": "The wage entries indicate some outside smoking, but crop origin evidence is incomplete."
+    },
+    {
+      "prompt": "Why does the columnist distinguish three customer concerns?",
+      "options": [
+        "Customers inevitably prioritise flavour before reading.",
+        "The same mark can be read as a promise about different things.",
+        "A single method proves all three geographical claims.",
+        "Labour concerns cannot inform an ordinary purchase."
+      ],
+      "answer": 1,
+      "explanation": "Flavour, crop provenance and labour each require different evidence."
+    },
+    {
+      "prompt": "What would make the adapted mark acceptable to the columnist?",
+      "options": [
+        "Buyers can identify the changed link relevant to their choice.",
+        "The label states only that the method is old.",
+        "No growers are consulted about what matters.",
+        "The first documented marking must be recovered in full."
+      ],
+      "answer": 0,
+      "explanation": "The proposed exception should be visible enough for an informed purchase."
+    },
+    {
+      "prompt": "What does each source resist by a different route?",
+      "options": [
+        "Using records to disclose an altered practice",
+        "Treating a recognisable sign as proof that every part of production is unchanged",
+        "Testing public comprehension of a proposed term",
+        "Paying local workers separately from growers"
+      ],
+      "answer": 1,
+      "explanation": "The producer notes the mark’s multiple associations, and the museum cautions against historical overclaims."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What does the tasting currently compare?",
+      "options": [
+        "Two kilns using provincial beans",
+        "One kiln operated by two undisclosed workers",
+        "Two origins using the same provincial kiln",
+        "Smoking with fruitwood versus smoking without wood"
+      ],
+      "answer": 0,
+      "explanation": "The same origin was used to test the alternative kiln."
+    },
+    {
+      "prompt": "What conclusion does Mae withhold?",
+      "options": [
+        "That the alternative kiln can sometimes deliver comparable flavour.",
+        "That the next beans will taste like both samples.",
+        "That the card should reveal changed production.",
+        "That the tested beans were provincial."
+      ],
+      "answer": 1,
+      "explanation": "The next supply is a separate input which the tasting cannot establish."
+    },
+    {
+      "prompt": "Why test the proposed packaging band with a shopper?",
+      "options": [
+        "The bag might fail to reach the local market.",
+        "Buyers might insist that every package use the same bean count.",
+        "Readers may confuse the location of growing and smoking.",
+        "They may refuse to disclose the amount they paid."
+      ],
+      "answer": 2,
+      "explanation": "Mae expects a possible misunderstanding about what the phrase modifies."
+    },
+    {
+      "prompt": "Which role was initially missing from the batch log?",
+      "options": [
+        "The worker involved in transporting and loading the batch",
+        "The clerk sending bills to market buyers",
+        "The organisation that owns the outside crop",
+        "The grower supplying registered beans"
+      ],
+      "answer": 0,
+      "explanation": "The speaker’s labour was not captured by the grower’s registered name."
+    },
+    {
+      "prompt": "Which distinction matters to the worker’s idea of local labour?",
+      "options": [
+        "Any batch smoked nearby automatically pays everyone in the association.",
+        "Kiln labour is only needed to stamp a label.",
+        "An outside farm always pays the same workers as a local farm.",
+        "Supervising an outside kiln and working at the river site pay for different work."
+      ],
+      "answer": 3,
+      "explanation": "The worker accepts the value of supervision but notes it does not pay for the loading work."
+    },
+    {
+      "prompt": "Which test would the worker want before deciding renewal?",
+      "options": [
+        "Count how many customers recognise the old mark.",
+        "Place three labels without identifying where they were printed.",
+        "Inspect whom each production arrangement actually paid.",
+        "Ask cooks whether jobs can be grouped under a single title."
+      ],
+      "answer": 2,
+      "explanation": "The worker wants a record connecting the different production routes to how people benefit."
+    }
+  ],
+  "grammar": {
+    "focus": "Concession through despite, albeit and even granting",
+    "explanation": "Despite takes a noun phrase or gerund, while although takes a finite clause. Albeit commonly introduces a short qualification. Even granting presents a point for the sake of argument without allowing it to settle the issue. Keep a concession attached to the claim it actually limits.",
+    "examples": [
+      {
+        "before": "Despite the labour cost rose, we supported the shipment.",
+        "after": "Although the labour cost rose, we supported the shipment.",
+        "why": "The subordinate clause has a subject and finite verb."
+      },
+      {
+        "before": "The change is workable, albeit it costs more money.",
+        "after": "The change is workable, albeit more expensive.",
+        "why": "A short adjective phrase naturally gives the qualification."
+      },
+      {
+        "before": "We can prove the whole claim because the tasting matched.",
+        "after": "Even granting that the tasting matched, we do not know how the next supply will taste.",
+        "why": "The accepted premise has a narrower reach than the conclusion."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which is a grammatical concession before a finite clause?",
+        "options": [
+          "Albeit some batches may use outsiders and the label can name them.",
+          "Although some batches may use outsiders, the label can name each change.",
+          "Despite that some batches may use outsiders, naming the change.",
+          "Despite some batches may use outsiders, the label can name each change."
+        ],
+        "answer": 1,
+        "explanation": "Although takes the full clause with subject and modal."
+      },
+      {
+        "prompt": "Which treats the claimed result as a premise to grant provisionally?",
+        "options": [
+          "Although the untested harvest certainly matches, the two samples disagree.",
+          "Even granting that the two samples match, the next harvest still needs its own test.",
+          "The next harvest matches because both samples match.",
+          "The two samples matched, so the next harvest has been validated."
+        ],
+        "answer": 1,
+        "explanation": "Even granting introduces acceptance for argument rather than proof across new conditions."
+      },
+      {
+        "prompt": "Which form follows despite naturally?",
+        "options": [
+          "Despite they used the alternate kiln, the workers followed the sequence.",
+          "Despite use they the alternate kiln, the workers followed the sequence.",
+          "Despite using the alternate kiln, the workers followed the agreed sequence.",
+          "Despite were using an alternate kiln, the sequence was followed."
+        ],
+        "answer": 2,
+        "explanation": "The gerund using makes a suitable complement and the subject is clear in the following clause."
+      },
+      {
+        "prompt": "Which gives a brief qualification to a favourable judgement?",
+        "options": [
+          "The proposal is workable, albeit administratively demanding.",
+          "The proposal is workable notwithstanding because administration.",
+          "The proposal is workable albeit of its demands.",
+          "The proposal is workable, albeit the administration demand it."
+        ],
+        "answer": 0,
+        "explanation": "Albeit introduces a concise adjectival qualification here."
+      },
+      {
+        "prompt": "Which concession preserves that the kiln test was meaningful but narrowly scoped?",
+        "options": [
+          "The comparison was meaningless unless grain origin was varied as well.",
+          "The comparison established all future flavours despite the harvest had not arrived.",
+          "The comparison confirmed the change of crop even granting the crop stayed the same.",
+          "The comparison was informative even though the origin varied in neither sample."
+        ],
+        "answer": 3,
+        "explanation": "The variation in kiln is relevant even though origin was held fixed."
+      },
+      {
+        "prompt": "What does ‘Notwithstanding the expense, the pilot will proceed’ mean?",
+        "options": [
+          "The expense is a necessary permission for the pilot.",
+          "The pilot will occur only if it costs more.",
+          "The expense is accepted but does not prevent the pilot.",
+          "The pilot has already reduced the expense."
+        ],
+        "answer": 2,
+        "explanation": "Notwithstanding concedes an obstacle while maintaining the stated action."
+      },
+      {
+        "prompt": "Which assigns the qualification to the right part of the sentence?",
+        "options": [
+          "The outside crop may be acceptable, although supervision alone cannot prove origin.",
+          "Although acceptable supervision, the crop proves its own origin.",
+          "The supervision alone proves origin although acceptance was still disputed.",
+          "Although we can trace it, any crop confirms where it was smoked."
+        ],
+        "answer": 0,
+        "explanation": "The main judgement and the separate evidentiary limit remain clear."
+      },
+      {
+        "prompt": "Which wording contrasts continuity of skill with loss of work?",
+        "options": [
+          "The same method survives because no shifts took place.",
+          "The method has vanished despite that it is still followed.",
+          "Fewer shifts prove no one knows the method.",
+          "The same method survives, though fewer shifts take place at the original kiln."
+        ],
+        "answer": 3,
+        "explanation": "Though distinguishes survival of a technique from different staffing consequences."
+      }
+    ],
+    "transfer": "Write one label-review paragraph that concedes a valid concern about each of three criteria. Use although, despite and even granting for different jobs and annotate the scope of each."
+  },
+  "vocabulary": [
+    {
+      "word": "provenance",
+      "meaning": "place and history from which something came",
+      "example": "The card records the crop’s provenance.",
+      "pair": "verify provenance"
+    },
+    {
+      "word": "transitional",
+      "meaning": "applying while moving between arrangements",
+      "example": "The committee approved a transitional label.",
+      "pair": "transitional period"
+    },
+    {
+      "word": "outsource",
+      "meaning": "have a task performed by an outside organisation",
+      "example": "Some farms outsource the smoking stage.",
+      "pair": "outsource production"
+    },
+    {
+      "word": "quota",
+      "meaning": "fixed amount allocated or required",
+      "example": "The grower cannot meet this season’s quota.",
+      "pair": "meet a quota"
+    },
+    {
+      "word": "authorisation",
+      "meaning": "official permission",
+      "example": "The factory needs separate authorisation for each change.",
+      "pair": "obtain authorisation"
+    },
+    {
+      "word": "palatable",
+      "meaning": "reasonably pleasant in taste",
+      "example": "A lighter smoke made the batch more palatable.",
+      "pair": "palatable flavour"
+    },
+    {
+      "word": "deviation",
+      "meaning": "departure from an expected rule or method",
+      "example": "The log records a temporary deviation.",
+      "pair": "document a deviation"
+    },
+    {
+      "word": "safeguard",
+      "meaning": "measure protecting against loss or confusion",
+      "example": "A clear sticker is a safeguard against misreading.",
+      "pair": "additional safeguard"
+    },
+    {
+      "word": "misnomer",
+      "meaning": "name that misleadingly describes something",
+      "example": "Calling the crop local would be a misnomer.",
+      "pair": "something of a misnomer"
+    },
+    {
+      "word": "attest",
+      "meaning": "provide formal evidence for",
+      "example": "The record attests to the place of smoking.",
+      "pair": "attest to origin"
+    },
+    {
+      "word": "specification",
+      "meaning": "detailed statement of requirements",
+      "example": "The mark has a written specification.",
+      "pair": "product specification"
+    },
+    {
+      "word": "disaggregate",
+      "meaning": "separate an overall figure into its components",
+      "example": "The board disaggregates wages by step.",
+      "pair": "disaggregate costs"
+    }
+  ],
+  "speaking": {
+    "audience": "Producer association hearing with a grower, a buyer and a kiln worker",
+    "first": "Defend two possible temporary labels. Explain which meaning of the old mark you preserve in each, and have one listener explain what they believe is guaranteed.",
+    "change": "The supplier changes just after a successful tasting and shoppers treat ‘supervised here’ as ‘grown here’.",
+    "second": "Give a separate pre-market response and read a corrected card aloud. Explain what can be said now and what you would verify before making the next claim.",
+    "checklist": [
+      "Separate crop, method, place and who is paid.",
+      "Use concessions without granting untested conclusions.",
+      "Offer one alternative to retaining the exact mark.",
+      "Make the changed input affect the level of confidence."
+    ]
+  },
+  "writing": {
+    "audience": "Museum editor and association label team",
+    "first": "Write a one-page amended specification and a short caption describing the trade’s history without equating earlier practice with current approval.",
+    "change": "Local kiln staff offer to track wages by task but growers do not want private amounts in print.",
+    "second": "Produce a fresh renewal proposal with a public wording and a separate internal record. Identify what aggregate outcomes can still be disclosed.",
+    "checklist": [
+      "Identify evidence for historical statements.",
+      "Make each altered batch distinguishable.",
+      "Protect individual amounts while keeping work visible.",
+      "Use a real decision point for ending the exception."
+    ]
+  },
+  "immersion": {
+    "role": "Independent mediator for a temporary food label",
+    "goal": "Agree on a temporary variance that preserves meaningful claims and reveals practical trade-offs.",
+    "constraints": [
+      "Growers, supervisors and kiln workers can earn from different routes.",
+      "A tasting can establish only the tested comparison.",
+      "Old bags cannot be withdrawn before market day.",
+      "There is no complete historical origin record."
+    ],
+    "change": "The region regains sufficient beans but the kiln stays out of service for another two months.",
+    "deliverables": [
+      "Produce two contrasting labels with filled-out evidence files.",
+      "Prepare a short explanation of who may authorise each exception and when it ends.",
+      "Run a mock renewal hearing and revise both the label and the record after new evidence."
+    ],
+    "checklist": [
+      "Disclose changes in plain language.",
+      "Separate heritage evidence from current production.",
+      "Make the feasibility of each label match available work.",
+      "Define success without treating every form of local support as the same."
+    ]
+  }
+}

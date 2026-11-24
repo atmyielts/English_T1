@@ -1,0 +1,394 @@
+{
+  "slug": "c2-larch-yard-has-two-clocks",
+  "title": "Larch Yard Has Two Clocks",
+  "level": "C2",
+  "summary": "Make a public interpretation of two reconstructed clocks that served different kinds of coordination in an invented factory district.\n\nReading: Extract a dated action, a repeated event and an undecided causal explanation from the historical texts. Design a worked example in which following the dial gives one correct answer and attending to the bell gives another.\n\nVocabulary: Write one anecdote and one interpretive label about the same wait. Use the words for the measured interval, an instruction and a contemporary record where they belong. Let a reader distinguish the genres without headings.",
+  "documents": [
+    {
+      "title": "Historical society draft for an anniversary booklet",
+      "text": "The stone tower at Larch Yard received its electric clock in 1911. A diary entry written by a clerk that spring says the yard’s manager had for some years wanted a reliable time that customers could read from the gate. A ledger of dispatches begins taking the same time from the week of the opening. Some orders are recorded to the minute. Others still say ‘before carts’, which probably refers to a loading round rather than a position on the dial.\n\nA previous anniversary booklet called the older bell unreliable and the electric clock an improvement. The tower clock clearly served a useful purpose. It gave staff a common figure to put on invoices. It did not remove the bell beside the loading ramp. A former driver recorded that carts were sent round the yard after that bell in the first year of the new clock. It may have continued to indicate when the measured work was ready rather than what the time was.\n\nFor the display we have collected two photographs, a copy of the work ledger and a clockmaker’s scale drawing. The scale drawing confirms the size of the dial, not that the dial could be read across the whole yard."
+    },
+    {
+      "title": "Interpretive proposal from an industrial historian",
+      "text": "A loading bell might be rung every day at two, or it might mean that a load was ready after the right carts had been assembled. A device of the second sort could be excellent at its own job and very poor at telling somebody outside the yard when a delivery would reach a shop. We should be able to tell a visitor why some records keep the two points of coordination separate.\n\nThere is a risk of making every earlier practice sound collaborative. Someone working near the gate might see the carts being assembled and estimate a pause. A temporary worker at the ramp might be unable to leave until the bell and have no way of knowing whether it would be late. A public time could improve the worker’s position if it made a promise across the fence enforceable. Saying the two systems coexisted does not commit us to saying their distribution of authority was neutral.\n\nThe test I would propose for the display is small. Ask visitors to perform one role that requires a known time and then one that requires a sign of completion. Let them explain why substituting one for the other leaves something uncertain."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Discussion at a display workshop",
+      "text": "Eli: I can play a bell on the hour and then ask when the next cart goes out.\n\nMira: If it always sounds on the hour, visitors will assume the old one was simply another clock. Make someone finish loading a model wagon first. The instructor should ring when the load is in place.\n\nEli: That suggests someone always waited. We only have evidence about carts going round after the bell. We don't know what the person at the ramp was doing each time.\n\nMira: Put ‘one possible use’ on the activity. Write an example of when ringing and two o'clock could both matter. A customer knows two. A supervisor knows when loading is complete. Ask which one is an instruction to move.\n\nEli: Could we use a separate notice above the tower replica?\n\nMira: Yes. Use that to mark an agreement somebody could check even if they were in another part of town. Add a question. If a wagon is ready at ten to two but the customer will arrive at two, does any rule prevent it being moved?\n\nEli: We don't know. We can ask which additional rule would answer the question."
+    },
+    {
+      "title": "Volunteer remembers learning the two signals",
+      "text": "I arrived at the yard in the year they stopped using horses. The tower face was visible from the bicycle shed if you stood on the low wall. From the office we could see it quite clearly. In a different job I would have treated a bell as enough to put the end of the shift in my pocket. At Larch Yard it meant I should make room by the ramp. I had to observe others first because nobody had time to tell me what it did not mean.\n\nMy supervisor kept a small watch. She used it to record how long I had waited for a van, starting when she asked me to fetch it. A man from the next building could point to the tower clock and tell me we had been waiting much less. He remembered when he had arrived, not when she had started my wait. Both instruments could agree and still produce two durations.\n\nI wouldn't reconstruct that argument from clocks alone. Give visitors a start event to write down before you show them how a minute is measured. A shared dial is useful precisely when people can also say what period or task the reading belongs to."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What does the early ledger show after the electric clock was opened?",
+      "options": [
+        "The bell no longer played any role in moving carts.",
+        "The tower dial could be read equally well at every point.",
+        "Every shipment was timed to the minute.",
+        "Written times coexist with some entries defined by a work event."
+      ],
+      "answer": 3,
+      "explanation": "Some entries record minutes while others are expressed relative to the carts."
+    },
+    {
+      "prompt": "What does the historical society infer cautiously about the bell?",
+      "options": [
+        "Its clock was designed by the same worker as the tower.",
+        "It was the only signal customers could record.",
+        "It may have signalled readiness rather than a numbered time.",
+        "The manager rang it exactly twice a day."
+      ],
+      "answer": 2,
+      "explanation": "The driver's account establishes continued use, which the note interprets provisionally."
+    },
+    {
+      "prompt": "What does the scale drawing establish on its own?",
+      "options": [
+        "The visibility of the dial from the entire yard",
+        "The position of each loading round",
+        "The size of the clock dial",
+        "The accuracy of individual ledgers"
+      ],
+      "answer": 2,
+      "explanation": "The document explicitly distinguishes size from visibility."
+    },
+    {
+      "prompt": "Why does the historian question an idealised view of the older system?",
+      "options": [
+        "Different workers may not have been equally able to anticipate the signal.",
+        "The earlier system recorded all commitments precisely.",
+        "The bell could be heard only by customers.",
+        "Carts were legally compelled to run every quarter hour."
+      ],
+      "answer": 0,
+      "explanation": "Those who cannot see assembly may lack the information available to others."
+    },
+    {
+      "prompt": "What two roles does the historian want to contrast?",
+      "options": [
+        "Two workers both using times from invoices",
+        "One dependent on a known time and one dependent on a completed task",
+        "A clockmaker and a person who draws photographs",
+        "One visitor who refuses a bell and a paid photographer"
+      ],
+      "answer": 1,
+      "explanation": "The display should make the different informational needs visible."
+    },
+    {
+      "prompt": "What claim would both texts resist?",
+      "options": [
+        "A bell can coexist with recorded minute times.",
+        "Once the tower clock was installed, event-based coordination ceased to matter.",
+        "A shared time can help make a fact verifiable.",
+        "The clock made a common record useful to some people."
+      ],
+      "answer": 1,
+      "explanation": "The first document provides evidence of coexistence; the second explains why both could serve different needs."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why does Mira object to ringing the bell on the hour?",
+      "options": [
+        "It would require an expensive sound system.",
+        "It would be inaudible to the supervisor.",
+        "It would prevent a cart from fitting through the gate.",
+        "It would imply that its function was to announce clock time."
+      ],
+      "answer": 3,
+      "explanation": "A regular hourly demonstration would obscure the proposed completion signal."
+    },
+    {
+      "prompt": "Why qualify the model wagon activity as ‘one possible use’?",
+      "options": [
+        "The society has no evidence whatsoever that there was a bell.",
+        "The original bell always rang before a cart could be loaded.",
+        "The historical record does not fully establish how a particular ringing was triggered.",
+        "The instructor has confused the electric clock’s model with a cart."
+      ],
+      "answer": 2,
+      "explanation": "Eli separates evidence of a relation to movement from a precise reconstructed routine."
+    },
+    {
+      "prompt": "What does the ten-to-two example reveal?",
+      "options": [
+        "Knowing readiness and appointment times still leaves an operational rule undecided.",
+        "The loading order always overrules an agreed appointment.",
+        "Customers do not need to be told when they can collect goods.",
+        "Ringing the bell makes a cart ready whether it is loaded or not."
+      ],
+      "answer": 0,
+      "explanation": "The speakers say another rule would tell them whether they can move early."
+    },
+    {
+      "prompt": "How did the volunteer learn what the ramp bell meant?",
+      "options": [
+        "By following an instruction announced at induction",
+        "By watching how others responded to it",
+        "By reading all the year’s delivery ledgers",
+        "By inspecting an engraved clock diagram"
+      ],
+      "answer": 1,
+      "explanation": "The speaker had to observe other people first."
+    },
+    {
+      "prompt": "How could both instruments agree yet produce different waits?",
+      "options": [
+        "The people using them measured from different starts.",
+        "The tower dial was always ten minutes slow.",
+        "The supervisor recorded the wrong van from another building.",
+        "The supervisor’s watch used different minutes."
+      ],
+      "answer": 0,
+      "explanation": "The supervisor timed from the request; the neighbour timed from his own arrival."
+    },
+    {
+      "prompt": "What wider principle follows from the volunteer’s account?",
+      "options": [
+        "A bell can give more reliable minutes than an agreed dial.",
+        "Measuring minutes is pointless when an event happens near a clock.",
+        "Agreement about clock time does not settle what event starts a duration.",
+        "Watching both clocks resolves where to place the ramp."
+      ],
+      "answer": 2,
+      "explanation": "Measurements remain different if the beginning of the interval differs."
+    }
+  ],
+  "grammar": {
+    "focus": "Past habits, expected futures and implied regularity",
+    "explanation": "Used to describes an earlier state or recurring action, usually with a contrast to now. In an established past setting, would can describe repeated actions, but normally does not express a static state there. Was to can indicate a planned later event. What eventually happened needs independent evidence.",
+    "examples": [
+      {
+        "before": "The dial would be visible from the office in those days.",
+        "after": "The dial used to be visible from the office in those days.",
+        "why": "Visibility is presented as a state, not an action repeated on specific occasions."
+      },
+      {
+        "before": "Every loading day he used to ring once. He would have waited at the gate.",
+        "after": "Every loading day he would ring once and wait at the gate.",
+        "why": "Would describes two repeated actions; would have waited can invite an inference or a counterfactual."
+      },
+      {
+        "before": "The bell was to ring at two, so we know it rang.",
+        "after": "The bell was to ring at two, but the log does not confirm that it did.",
+        "why": "The planned future from a past point is not evidence of completion."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which expresses an old state with an implied contrast to the present?",
+        "options": [
+          "The old platform has had a second ramp every day this month.",
+          "The old platform would have had a second ramp if needed.",
+          "The old platform used to have a second ramp.",
+          "The old platform is to have a second ramp."
+        ],
+        "answer": 2,
+        "explanation": "Used to have describes an earlier state from the present viewpoint."
+      },
+      {
+        "prompt": "Which natural reading of ‘When carts arrived, the hand would ring the bell’ uses would?",
+        "options": [
+          "A single recorded action with a precise time",
+          "An unperformed duty stated in past form",
+          "A counterfactual result that could never happen",
+          "A repeated action under a recurring past condition"
+        ],
+        "answer": 3,
+        "explanation": "The recurring time clause gives would a habitual interpretation."
+      },
+      {
+        "prompt": "Which wording records a plan without claiming that it happened?",
+        "options": [
+          "The first cart always left at two with a trace in the log.",
+          "The first cart was to leave at two, but no departure was logged.",
+          "The clock confirms that the first cart had left at two.",
+          "The first cart used to leave at two, so it must be gone now."
+        ],
+        "answer": 1,
+        "explanation": "Was to names an expected future seen from a past point."
+      },
+      {
+        "prompt": "Which version avoids a static habitual-would reading outside any event frame?",
+        "options": [
+          "The gate would belong to the workshop in the absence of an agreement.",
+          "The gate was to have belonged to a workshop, so we know it did.",
+          "The gate would be belonging to the workshop each hour.",
+          "The gate used to belong to the workshop."
+        ],
+        "answer": 3,
+        "explanation": "Used to is the clear choice for a former condition of ownership."
+      },
+      {
+        "prompt": "Without an established sequence of recurring events, what can ‘The old bell would have rung by then’ express?",
+        "options": [
+          "An unambiguous description of a repeated habit",
+          "A rule forbidding anyone from ringing",
+          "An inference or imagined result about the past, depending on context",
+          "A guaranteed event independently established by the clock"
+        ],
+        "answer": 2,
+        "explanation": "Would have plus a participle needs context to distinguish inference and counterfactuality."
+      },
+      {
+        "prompt": "Which distinguishes the intended and actual order of actions?",
+        "options": [
+          "The cart was to move after the bell, but it had already reached the gate.",
+          "The cart had moved after the bell before it rang initially.",
+          "The cart used to move a single time and certainly had not reached the gate.",
+          "The cart moved after the bell, as was planned when it reached the gate first."
+        ],
+        "answer": 0,
+        "explanation": "The plan concerns the future at that point, while the past perfect reports an earlier actual arrival."
+      },
+      {
+        "prompt": "Which supports repeated events without alleging every past occurrence?",
+        "options": [
+          "The supervisor will be at the ramp if Fridays resume.",
+          "On busy Fridays, the supervisor would send a hand to clear the ramp.",
+          "The supervisor attended every day without a single exception.",
+          "The supervisor was to send a hand only once that year."
+        ],
+        "answer": 1,
+        "explanation": "The specified recurring condition supports a habit, with no claim about all days."
+      },
+      {
+        "prompt": "Which sentence separates an earlier habit from a single documented change?",
+        "options": [
+          "Workers used to wait for the bell; a notice on 5 June set a time for the first round.",
+          "Workers usually knew the date and therefore it never changed.",
+          "Workers were to wait last summer, so we know they always did.",
+          "Workers would have waited on 5 June, so a date was not needed."
+        ],
+        "answer": 0,
+        "explanation": "Used to holds the past habit separate from the dated intervention."
+      }
+    ],
+    "transfer": "Construct two historical exhibit labels from the same three clues. Mark the recurring pattern, one intended later event and one independently established event. Notice where the claims would become stronger if the modals were removed."
+  },
+  "vocabulary": [
+    {
+      "word": "dispatch",
+      "meaning": "formal sending of goods or vehicles",
+      "example": "The clerk added a time of dispatch to the form.",
+      "pair": "record a dispatch"
+    },
+    {
+      "word": "contemporaneous",
+      "meaning": "occurring or recorded at about the same time",
+      "example": "A contemporaneous diary records the change.",
+      "pair": "contemporaneous account"
+    },
+    {
+      "word": "retroactive",
+      "meaning": "taking effect from an earlier time",
+      "example": "The new rule has no retroactive effect on old entries.",
+      "pair": "retroactive application"
+    },
+    {
+      "word": "coordination",
+      "meaning": "organising actions so they work together",
+      "example": "The yard needed coordination between loading and delivery.",
+      "pair": "operational coordination"
+    },
+    {
+      "word": "dial",
+      "meaning": "face of a measuring instrument with marks",
+      "example": "A post partly hid the dial.",
+      "pair": "clock dial"
+    },
+    {
+      "word": "normative",
+      "meaning": "establishing what should happen",
+      "example": "The notice has a normative function: it sets a schedule.",
+      "pair": "normative rule"
+    },
+    {
+      "word": "divergence",
+      "meaning": "difference increasing or becoming apparent",
+      "example": "The two durations diverged after the new driver arrived.",
+      "pair": "divergence of accounts"
+    },
+    {
+      "word": "impose",
+      "meaning": "establish or apply a requirement",
+      "example": "The notice imposed a fixed dispatch time.",
+      "pair": "impose a requirement"
+    },
+    {
+      "word": "interval",
+      "meaning": "period between two events",
+      "example": "Both witnesses measured a different interval.",
+      "pair": "elapsed interval"
+    },
+    {
+      "word": "inaugural",
+      "meaning": "marking the start of an organisation or period",
+      "example": "The inaugural notice remains in the archive.",
+      "pair": "inaugural event"
+    },
+    {
+      "word": "prescriptive",
+      "meaning": "setting requirements rather than describing how things are",
+      "example": "The new instruction was prescriptive for staff.",
+      "pair": "prescriptive wording"
+    },
+    {
+      "word": "construe",
+      "meaning": "understand an expression or act in a particular way",
+      "example": "Visitors might construe the bell as an hourly cue.",
+      "pair": "construe as permission"
+    }
+  ],
+  "speaking": {
+    "audience": "Visitors to an industrial history exhibition",
+    "first": "Lead a five-minute role-play. Let one person announce the time and another announce the cart is ready. State how each narrator can be right even when their instructions conflict.",
+    "change": "The audience takes the model as a fully confirmed reconstruction and thinks every loading round began at two.",
+    "second": "Give a fresh interpretation that separates documented practice from your simplified example, then present a different possible use of the same signals.",
+    "checklist": [
+      "Identify the role each signal serves.",
+      "Report one historical uncertainty.",
+      "Keep planned and observed actions apart.",
+      "Ask listeners which extra rule would settle a real case."
+    ]
+  },
+  "writing": {
+    "audience": "Curator finalising a 400-word display and introductory panel",
+    "first": "Write a display text interpreting both instruments. Include a short case about an elapsed wait, name the earlier event from which it is measured and identify a competing interpretation.",
+    "change": "A programme sponsor wants the headline ‘When we finally learnt to tell time’. You can change the title but must retain a strong narrative arc.",
+    "second": "Write a new headline and lead paragraph with a persuasive alternative arc. Add a concise correction to the sponsor’s proposed interpretation.",
+    "checklist": [
+      "Explain evidence of historical change precisely.",
+      "Do not flatten distinct tasks into a single improvement.",
+      "Make a former habit and a plan grammatically distinct.",
+      "Retain a readable story for non-specialists."
+    ]
+  },
+  "immersion": {
+    "role": "Interpretive designer at the historical association",
+    "goal": "Make two historical coordination systems observable without treating reconstructed actions as certain.",
+    "constraints": [
+      "The earlier bell’s exact trigger is not fully documented.",
+      "The tower clock offered a common numerical reading.",
+      "Visitor roles may receive different information.",
+      "No one witness describes every working position."
+    ],
+    "change": "A recovered invoice records a promised time and an actual round described only as ‘after bell’.",
+    "deliverables": [
+      "Create a timed scenario with four witness cards.",
+      "Design two explanatory labels distinguishing evidence from possible reconstructions.",
+      "Perform a twenty-line interpretation and revise it after viewers infer two different waiting times."
+    ],
+    "checklist": [
+      "Keep printed time distinct from job status.",
+      "Identify the start event for each duration.",
+      "Do not imply the clock is faulty when measurements differ.",
+      "Use the invoice to refine rather than erase historical uncertainty."
+    ]
+  }
+}

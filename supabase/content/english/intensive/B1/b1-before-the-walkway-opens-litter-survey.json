@@ -1,0 +1,391 @@
+{
+  "slug": "b1-before-the-walkway-opens-litter-survey",
+  "title": "A Litter Survey Before the Walkway Opens",
+  "level": "B1",
+  "summary": "Record what volunteers actually find and revise a route when part of the site is unavailable.",
+  "documents": [
+    {
+      "title": "Brief for the Saturday survey",
+      "text": "Next Saturday we want to learn where litter gathers beside the river. Please meet at the upper gate at eight. We will count items along the marked walkway before the clean-up starts. The survey runs from marker one to marker six. Work in pairs: one person describes what they can see and the other records it on a sheet. Change roles after marker three.\n\nWrite the marker number and the kind of object. Count a group of wrappers separately only if you can see how many there are. If you cannot tell, make one mark in the “group” column. Note anything you can see from the walkway that the clean-up team cannot reach. Stay on the marked path and leave any closed section alone. Return the sheet to the upper gate before nine so the coordinator can check for missing marker numbers. We will use the sheets to choose where the clean-up team starts next time."
+    },
+    {
+      "title": "A note from the survey organiser",
+      "text": "At the rehearsal, pairs mixed two kinds of information. They marked a space as zero when they had looked and found nothing, but they made the same mark when they had not been able to look. When the results were added together, both spaces appeared clear. That made the final map easier to read but less accurate.\n\nOn Saturday, use a zero only after you check a section and see no litter. If you cannot check it, leave the count blank and write “not checked” beside the marker. Add the reason in a few words. For example, if a temporary fence blocks the view, write “fence.” At the end, circle the markers where both pairs agree. We will use the disagreements as places to check again, not as proof that somebody counted badly. Keep both original sheets until we finish comparing them. A correction belongs on a separate line with the time it was made."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two volunteers compare counts",
+      "text": "Ella: At marker two, I wrote zero for bottles. Did you find any opposite the bench?\n\nNoah: No, and I had a clear view there. I left the box blank at marker three, though. The grass covered the lower edge of the path.\n\nElla: I wrote zero at three because I couldn't see any bottles either. Is a blank better if we both had trouble seeing?\n\nNoah: Yes. I wrote a note about the grass beside the number. The clean-up team can see why we have not made a count. We can still mark the cans. They were on the path where we could see them clearly.\n\nElla: Shall we change both sheets?\n\nNoah: Leave the first entries as they are. Add a correction below them, with the time. After the short break, we can tell the coordinator that the can count is usable and the bottle count for three is still unknown. That way she will know where to send the next pair."
+    },
+    {
+      "title": "An announcement at the upper gate",
+      "text": "Coordinator: A maintenance crew is working beyond marker four. The gate before marker five will remain closed all morning. Leave that part of your route blank and write “gate” next to markers five and six. Don't try to count items through the fence.\n\nPair leader: Should we still change roles at marker three?\n\nCoordinator: Yes. You can work normally through marker four. When you finish, use the time you have left to check part of the route a second time. I would choose marker two because two pairs reported different totals for cups there.\n\nPair leader: Do you want one correct total on the second sheet?\n\nCoordinator: Give me the second count and write down where you stood. If one of the cups was near the edge of your view, put that in the note. I can compare the observation points. Please return both sheets by nine even if you could not complete the extra count. Bring them to the desk beside the gate."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why must pairs count litter before the clean-up starts?",
+      "options": [
+        "The coordinator will close the gate at eight.",
+        "Volunteers need to take rubbish to the desk.",
+        "The count should describe what was originally there.",
+        "The pairs are not allowed to bring a second sheet."
+      ],
+      "answer": 2,
+      "explanation": "Counting first provides the evidence requested for the later plan."
+    },
+    {
+      "prompt": "1. What should pairs do with a group of wrappers they cannot count individually?",
+      "options": [
+        "Record it as zero.",
+        "Separate the wrappers first.",
+        "Record each possible wrapper in a different column.",
+        "Make one mark in the group column."
+      ],
+      "answer": 3,
+      "explanation": "The group column preserves the observation without inventing a number."
+    },
+    {
+      "prompt": "1. What should pairs say about an object the team cannot reach?",
+      "options": [
+        "Remove the marker and place it closer.",
+        "Note it without leaving the walkway.",
+        "Leave the object off both sheets.",
+        "Ask one volunteer to cross the closed area."
+      ],
+      "answer": 1,
+      "explanation": "The notice asks for a note and requires people to stay on the path."
+    },
+    {
+      "prompt": "2. Why were spaces wrongly shown as clear?",
+      "options": [
+        "Cup counts appeared twice on the map.",
+        "The wrong pairs changed roles halfway.",
+        "Objects that could not be collected were marked twice.",
+        "Unchecked sections had the same mark as checked sections with no litter."
+      ],
+      "answer": 3,
+      "explanation": "The organiser explains that two meanings were recorded as one."
+    },
+    {
+      "prompt": "2. What belongs next to a blank count on Saturday?",
+      "options": [
+        "The time the clean-up team will arrive",
+        "The largest count another pair reported",
+        "A short reason why the section was not checked",
+        "The names of the people who walked past"
+      ],
+      "answer": 2,
+      "explanation": "The note explains what stopped a count."
+    },
+    {
+      "prompt": "2. What should happen to disagreements between pairs?",
+      "options": [
+        "They should guide a repeat check.",
+        "They should be removed before making the map.",
+        "They should be averaged immediately.",
+        "They should be assigned to whoever counted first."
+      ],
+      "answer": 0,
+      "explanation": "The organiser treats disagreement as a place to investigate."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Why did Noah leave marker three blank for bottles?",
+      "options": [
+        "The marker number was missing.",
+        "Grass blocked part of the view.",
+        "The coordinator had collected his sheet.",
+        "There were definitely no bottles there."
+      ],
+      "answer": 1,
+      "explanation": "Noah could not see the lower edge of the path."
+    },
+    {
+      "prompt": "1. Why are cans at marker three different?",
+      "options": [
+        "A different team counted them.",
+        "They were visible on the path.",
+        "They had already been removed.",
+        "The group column did not include cans."
+      ],
+      "answer": 1,
+      "explanation": "The cans could be seen even though bottles at the edge could not."
+    },
+    {
+      "prompt": "1. How should they correct the record?",
+      "options": [
+        "Add a new entry with the time while keeping the first one.",
+        "Remove the old sheet after the break.",
+        "Use a zero on both sheets.",
+        "Give the coordinator one combined number."
+      ],
+      "answer": 0,
+      "explanation": "Noah asks for the original entries and a timed correction."
+    },
+    {
+      "prompt": "2. What is the reason not to check markers five and six?",
+      "options": [
+        "The litter is too far from the path.",
+        "A gate will stay closed for maintenance.",
+        "The group is finishing before the gates open.",
+        "Another pair has already checked those markers."
+      ],
+      "answer": 1,
+      "explanation": "Work beyond marker four keeps the gate closed."
+    },
+    {
+      "prompt": "2. Why does the coordinator suggest checking marker two?",
+      "options": [
+        "Two pairs reported different cup totals.",
+        "The cans have moved since the rehearsal.",
+        "The first pair did not record a time.",
+        "That is where people change roles."
+      ],
+      "answer": 0,
+      "explanation": "A repeat count can help clarify the discrepancy."
+    },
+    {
+      "prompt": "2. What extra detail matters for the repeat count?",
+      "options": [
+        "How many sheets they took",
+        "Where the pair stood",
+        "The name of the maintenance worker",
+        "How far they walked on the way back"
+      ],
+      "answer": 1,
+      "explanation": "The coordinator wants to compare observation positions."
+    }
+  ],
+  "grammar": {
+    "focus": "Past simple and past continuous in reports",
+    "explanation": "Use past continuous for an activity in progress at an earlier point. Use past simple for the short event, decision or finished action that happened then. A report can combine them to separate observation conditions from what happened.",
+    "examples": [
+      {
+        "before": "We were reach marker four when the gate closed.",
+        "after": "We were approaching marker four when the gate closed.",
+        "why": "Use was or were and an -ing form for the ongoing action."
+      },
+      {
+        "before": "The volunteer writing a note when it began to rain.",
+        "after": "The volunteer was writing a note when it began to rain.",
+        "why": "Was makes the ongoing verb phrase complete."
+      },
+      {
+        "before": "When the fence was open, we counted the bottles yesterday at eight.",
+        "after": "At eight yesterday we counted the bottles while the fence was open.",
+        "why": "The count is a finished action. The open fence describes the circumstances."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "We _____ the bottles when another pair arrived.",
+        "options": [
+          "count",
+          "are counting",
+          "were counted",
+          "were counting"
+        ],
+        "answer": 3,
+        "explanation": "Were counting describes the action in progress."
+      },
+      {
+        "prompt": "The coordinator _____ the route at eight fifteen.",
+        "options": [
+          "changed",
+          "was change",
+          "has changing",
+          "had change"
+        ],
+        "answer": 0,
+        "explanation": "The clock time identifies one completed change."
+      },
+      {
+        "prompt": "While we were looking at the path, a cup _____ against the fence.",
+        "options": [
+          "were rolling",
+          "is roll",
+          "rolling",
+          "rolled"
+        ],
+        "answer": 3,
+        "explanation": "Rolled names the short event during the observation."
+      },
+      {
+        "prompt": "Which line describes what was happening at the point of arrival?",
+        "options": [
+          "A pair counted cans before we arrived.",
+          "A pair was counting cans when we arrived.",
+          "A pair will count cans when we arrive.",
+          "A pair counted cans after we had left."
+        ],
+        "answer": 1,
+        "explanation": "Only the first shows an ongoing action at that moment."
+      },
+      {
+        "prompt": "They _____ standing behind the bench when it rained.",
+        "options": [
+          "were",
+          "was",
+          "have",
+          "did"
+        ],
+        "answer": 0,
+        "explanation": "Plural they takes were plus standing."
+      },
+      {
+        "prompt": "What _____ when you lost sight of marker six?",
+        "options": [
+          "were you doing",
+          "you were do",
+          "are you did",
+          "did you doing"
+        ],
+        "answer": 0,
+        "explanation": "The question asks about a continuing activity in the past."
+      },
+      {
+        "prompt": "At eight we reached the gate, but nobody _____ it then.",
+        "options": [
+          "use",
+          "was using",
+          "is using",
+          "were using"
+        ],
+        "answer": 1,
+        "explanation": "Nobody takes the singular was."
+      },
+      {
+        "prompt": "Choose the sentence with a clear time order.",
+        "options": [
+          "While we finished the count, we were wrote the correction.",
+          "We finished the first count, then we wrote the correction.",
+          "We finish first, then we were writing it yesterday.",
+          "We had writing the correction before we counted."
+        ],
+        "answer": 1,
+        "explanation": "The two simple past verbs show consecutive completed actions."
+      }
+    ],
+    "transfer": "Create a three-scene account of a count that needs correction. Use a time at the start of every scene. Include at least two observation conditions and two finished events."
+  },
+  "vocabulary": [
+    {
+      "word": "litter",
+      "meaning": "small rubbish left in a public place",
+      "example": "There was litter beside the bench.",
+      "pair": "collect litter"
+    },
+    {
+      "word": "walkway",
+      "meaning": "a path people walk on",
+      "example": "Please stay on the walkway.",
+      "pair": "marked walkway"
+    },
+    {
+      "word": "marker",
+      "meaning": "a sign showing a position",
+      "example": "Look for marker four.",
+      "pair": "numbered marker"
+    },
+    {
+      "word": "wrapper",
+      "meaning": "something used to cover an item",
+      "example": "Three wrappers were by the gate.",
+      "pair": "food wrapper"
+    },
+    {
+      "word": "column",
+      "meaning": "a vertical group of spaces on a form",
+      "example": "Use the last column for notes.",
+      "pair": "fill a column"
+    },
+    {
+      "word": "count",
+      "meaning": "find how many things there are",
+      "example": "We counted the cups twice.",
+      "pair": "repeat a count"
+    },
+    {
+      "word": "blank",
+      "meaning": "with nothing written in it",
+      "example": "Leave the count blank.",
+      "pair": "a blank space"
+    },
+    {
+      "word": "rehearsal",
+      "meaning": "a practice before an actual event",
+      "example": "The team tested the form at a rehearsal.",
+      "pair": "hold a rehearsal"
+    },
+    {
+      "word": "disagreement",
+      "meaning": "a difference in people's reports or opinions",
+      "example": "The two totals show a disagreement.",
+      "pair": "resolve a disagreement"
+    },
+    {
+      "word": "correction",
+      "meaning": "a change that puts something right",
+      "example": "Make a correction below the first line.",
+      "pair": "record a correction"
+    },
+    {
+      "word": "observation",
+      "meaning": "a detail noticed by looking carefully",
+      "example": "Write down your observation.",
+      "pair": "record an observation"
+    },
+    {
+      "word": "edge",
+      "meaning": "the point where one area ends",
+      "example": "A cup was at the edge of the path.",
+      "pair": "at the edge"
+    }
+  ],
+  "speaking": {
+    "audience": "A volunteer who will join during the break",
+    "first": "Read the two survey documents and this field note: the gate before marker five is shut. At marker three, grass blocked the view of bottles, but cans were counted clearly. Give a 90-second handover explaining the shortened route and how to record marker three.",
+    "change": "Two pairs report different cup counts at marker two. The new volunteer has time for only one short repeat check before returning the sheets.",
+    "second": "Record a second handover. Direct the new helper to the repeat check, say where to stand, and explain how to add a correction without replacing the first result.",
+    "checklist": [
+      "Separates missing evidence from a zero result",
+      "Reports the two object types accurately",
+      "Uses an exact marker and return time"
+    ]
+  },
+  "writing": {
+    "audience": "The clean-up team coordinator",
+    "first": "Use this field note: the gate before marker five was shut, marker three had a usable can count but no reliable bottle count, and two pairs disagreed about cups at marker two. Write a 130–170 word field report explaining which entries to use and what needs a repeat check.",
+    "change": "The coordinator wants a short volunteer note rather than the full report.",
+    "second": "Write a condensed action note with four tasks. Keep the evidence limits clear and include a blank example.",
+    "checklist": [
+      "States at least one number and two conditions accurately",
+      "Uses a criterion for repeating a count",
+      "Separates observed events from a plan"
+    ]
+  },
+  "immersion": {
+    "role": "Pair lead",
+    "goal": "Turn a partly observed route into an honest plan for the next survey.",
+    "constraints": [
+      "Markers five and six are closed",
+      "Original notes must stay readable",
+      "Time for one repeat count"
+    ],
+    "change": "At marker two, the second count is still different because one pair was behind the bench.",
+    "deliverables": [
+      "Two filled sample rows",
+      "A route sketch showing closure",
+      "A repeat observation instruction",
+      "A 100-word account of what the map can show"
+    ],
+    "checklist": [
+      "No inaccessible marker is marked zero",
+      "Notes say when and where the observation happened",
+      "At least one action addresses a real source of disagreement"
+    ]
+  }
+}

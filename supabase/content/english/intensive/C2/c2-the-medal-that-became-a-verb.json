@@ -1,0 +1,394 @@
+{
+  "slug": "c2-the-medal-that-became-a-verb",
+  "title": "The Medal That Became a Verb",
+  "level": "C2",
+  "summary": "Redesign a civic award to describe several kinds of contribution without crediting a visible spokesperson for every task.\n\nReading: Break each written example into contributor, action and consequence. Write a citation that retains relationships in forty words. Then mark precisely which actions remain present even where a person does not want to be named.\n\nVocabulary: Recast the account in the registers of a ceremony, a private record and an enquiry. Use at least two of the terms in each and identify which technical expression would mislead if a volunteer used it to locate expertise.",
+  "documents": [
+    {
+      "title": "Secretary’s proposal for the city service medal",
+      "text": "The city award normally names a single recipient. Where a person has been nominated for work done by a group, a nominator lists any supporting colleagues in a private appendix. The summary read out at the ceremony describes the individual’s achievement using material from the full nomination. Last year the citation said a shop owner had established a parcel service on a closed street. Her actual role had been to make a store room available and obtain keys. Delivery routes and lifting arrangements were worked out by several other people. The shop owner asked for their names to be added after hearing the citation.\n\nWe can award a second medal to the delivery group this year, but the committee sees a more general problem. A nomination can be sufficiently detailed to identify several different actions and still generate a short citation in which one person performs them all. We propose a new form asking who performed each action, and whether people agree to being named. A team may use a collective name.\n\nThe mayor’s speech will remain short. We should decide how to give it an engaging focus without passing off summary as simplification of the actual record."
+    },
+    {
+      "title": "Essay for the volunteer network circular",
+      "text": "A list of names is not an account of what anybody did. In our garage one person repaired a set of brakes, another stayed late so the garage could remain open, and a third had taught both of them when they were younger. It is tempting to solve an account of omitted work by adding a row of surnames beneath the main title. A visitor still would not learn how all three actions were related. The grammar of the first sentence can be as decisive as the length of the list.\n\nI am not proposing a ceremony in which every fact receives the same time. A chair can tell the short story of one repair. The important thing is that she makes clear who did the fixing, who made a time and place available and whose early work shaped the volunteers. She can even tell the whole story without every name if some people prefer that. What she should not do is give all the active verbs to whoever happens to be in front of her.\n\nGive nominators the chance to describe a relationship among actions rather than an order of merit. A good short citation leaves room for other true short accounts of the work."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two members rehearse a citation",
+      "text": "Ellen: My draft is forty-five seconds. ‘Dale Green trained a team and kept the evening garage open to all.’ It might be unfair to leave out the volunteer who had the key.\n\nIvo: It also sounds as if Dale trained them. Our form says he proposed the free evening and fetched used parts. Mara trained the two volunteers on other days. Nasir stayed late with the key.\n\nEllen: If I name all three in forty-five seconds, won't it sound as though we are presenting three identical claims?\n\nIvo: Then keep the actions. You can say the team offered a free evening, drawing on Mara’s training and Nasir’s late shifts, and led by Dale on the night. If he was the leader, confirm it first. They may have coordinated that shift together.\n\nEllen: The form doesn’t say. I can call Mara. She asked us not to use her surname on the poster.\n\nIvo: We can thank an instructor without identifying her to the crowd. We do not have to turn an unnamed action into Dale’s action to keep it in the story.\n\nEllen: I'll practise two versions, then ask the group which one accurately leaves a part of the account unpublished."
+    },
+    {
+      "title": "Volunteer’s account after a separate award event",
+      "text": "When my name was read out I wanted to look round for the people I had been working with. I had arranged two of the shifts, and the announcer said the project was my idea. The person who had brought it to our first meeting had moved away. The printed programme did list her as an adviser, and afterwards someone told me she hadn't been completely forgotten. I am sure he meant to reassure me.\n\nThe trouble was practical. A new volunteer wanted to run a similar project. She had heard that I had devised it and asked me how to start. I gave her the former adviser’s email and sketched what I could, but the part I knew best was why we had to set up two different shifts. She might have missed a source of help if I hadn't happened to speak to her.\n\nI don't need the medal returned. I would like a shorter description of what I did and an honest route to hear how the idea began. Thanking me for the shifts could have been generous without telling anybody I was the right person to answer every question."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What particular failure does the nomination process allow?",
+      "options": [
+        "The full nomination cannot mention anyone outside the ceremony.",
+        "Several documented actions may all be assigned to one person in the short citation.",
+        "Individual awards are never given to group representatives.",
+        "The nomination can name at most one action."
+      ],
+      "answer": 1,
+      "explanation": "The appendix permits details; the compressed summary can still transfer agency."
+    },
+    {
+      "prompt": "What role did the shop owner actually perform?",
+      "options": [
+        "She planned the delivery routes.",
+        "She developed the team's loading techniques.",
+        "She established a medal for the parcel service.",
+        "She arranged access to a store room."
+      ],
+      "answer": 3,
+      "explanation": "The file credits her with offering the room and obtaining keys."
+    },
+    {
+      "prompt": "Why is adding surnames insufficient in the essay author’s view?",
+      "options": [
+        "It leaves the short list too long to publish.",
+        "It does not explain which related action each person performed.",
+        "It necessarily violates the contributors’ privacy.",
+        "It prevents speakers spending the same time on every fact."
+      ],
+      "answer": 1,
+      "explanation": "A list alone leaves the verbs and relationships in the main story unchanged."
+    },
+    {
+      "prompt": "What accommodation does the essay accept?",
+      "options": [
+        "Describe distinct actions without necessarily naming everyone.",
+        "Rank volunteers by how long their names appear in the programme.",
+        "Omit any action that did not happen at the main venue.",
+        "Award a separate prize for every recorded action."
+      ],
+      "answer": 0,
+      "explanation": "Anonymity and accurate action can coexist."
+    },
+    {
+      "prompt": "Where do the documents align?",
+      "options": [
+        "The ceremony should become a full reading of nomination appendices.",
+        "Any use of collective names should be prohibited.",
+        "A short citation should not transform a shared effort into one person's work.",
+        "Recipients must be chosen by everyone who worked with them."
+      ],
+      "answer": 2,
+      "explanation": "Both want brevity without transferring ownership of the actions."
+    },
+    {
+      "prompt": "What is the essay's author asking nominators to replace?",
+      "options": [
+        "Ranked credit with an account of how actions fit together",
+        "A group announcement with a shorter private appendix",
+        "Public acknowledgement with private negotiations",
+        "Long accounts with unsupported verbs"
+      ],
+      "answer": 0,
+      "explanation": "The last paragraph moves from rank towards linked contributions."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Which action is unverified in Ellen’s revision?",
+      "options": [
+        "Dale’s leadership on the evening",
+        "Dale’s proposal for a free evening",
+        "Mara’s prior training",
+        "Nasir’s coverage with a key"
+      ],
+      "answer": 0,
+      "explanation": "The existing form credits proposal and parts, while Ivo treats evening leadership as unconfirmed."
+    },
+    {
+      "prompt": "How could they retain Mara’s contribution and respect her request?",
+      "options": [
+        "Print the surname only in the largest poster text.",
+        "Leave the actions out until she changes the request.",
+        "Assign the teaching to the person at the podium.",
+        "Describe the teaching without using the surname publicly."
+      ],
+      "answer": 3,
+      "explanation": "Ivo explicitly distinguishes credit for an act from a public identification."
+    },
+    {
+      "prompt": "What advice does Ivo give on avoiding an indistinct list?",
+      "options": [
+        "Keep the separate verbs and roles in the story.",
+        "Read the full report exactly as entered.",
+        "Give all three the same title and action.",
+        "Treat the latest comment as verified leadership."
+      ],
+      "answer": 0,
+      "explanation": "Specific actions preserve differences among contributors."
+    },
+    {
+      "prompt": "What practical cost does the volunteer identify?",
+      "options": [
+        "The award gave the volunteer no time to mention the work.",
+        "The adviser might refuse to work with anybody else.",
+        "A person seeking to repeat the project may ask the wrong original contributor.",
+        "Staff could no longer run two shifts at once."
+      ],
+      "answer": 2,
+      "explanation": "A visitor takes distorted credit as information about where expertise resides."
+    },
+    {
+      "prompt": "Why is ‘adviser’ in the programme insufficient?",
+      "options": [
+        "It accidentally names the wrong town of residence.",
+        "It obscures that the person brought the idea to the meeting.",
+        "It appeared only beside the volunteer’s name.",
+        "It gives the adviser credit for running both shifts."
+      ],
+      "answer": 1,
+      "explanation": "The adviser had a specific originating role that a broad label did not convey."
+    },
+    {
+      "prompt": "What does the volunteer want now?",
+      "options": [
+        "A complete list of everyone who once attended a shift",
+        "A new ceremony that removes the award entirely",
+        "A narrower citation plus a way to find out how the idea started",
+        "A chance to run another project without advice"
+      ],
+      "answer": 2,
+      "explanation": "The closing distinguishes keeping thanks for real work from repairing the unsupported attribution."
+    }
+  ],
+  "grammar": {
+    "focus": "Information structure in participle clauses",
+    "explanation": "Introductory participle clauses often share a subject with the following main clause. Having plus a past participle puts one action before another. A passive past participle makes the subject the affected party. A different agent usually needs a full clause or its own explicit noun.",
+    "examples": [
+      {
+        "before": "Having trained the team, the garage opened.",
+        "after": "Having trained the team, Mara covered the first evening.",
+        "why": "Mara can have trained people; the garage cannot."
+      },
+      {
+        "before": "Asked to keep his surname off the poster, the staff changed the text.",
+        "after": "After Nasir asked them to omit his surname, the staff changed the text.",
+        "why": "The original assigns the request to the wrong recipient."
+      },
+      {
+        "before": "Listing the team by name, the full record stays private.",
+        "after": "The full record stays private although it lists the team by name.",
+        "why": "A full clause clarifies what the listed names are in."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Who asked for a late shift in ‘Having arranged two sessions already, the volunteer asked for a late shift’?",
+        "options": [
+          "The person who leads all shifts",
+          "The volunteer",
+          "The two sessions",
+          "An unnamed organiser"
+        ],
+        "answer": 1,
+        "explanation": "The participle clause and the main finite verb share the volunteer as subject."
+      },
+      {
+        "prompt": "Which avoids the dangling introduction?",
+        "options": [
+          "Having obtained the keys, the event started.",
+          "Having obtained the keys, the room opened for the group.",
+          "Having obtained keys, advance notice reached the team.",
+          "Having obtained the keys, Jane opened the room for the group."
+        ],
+        "answer": 3,
+        "explanation": "Only Jane is a plausible subject of both the introductory and main acts."
+      },
+      {
+        "prompt": "Which preserves the order of verification and printing?",
+        "options": [
+          "Printing the roles, the secretary verified the citation.",
+          "Having verified the roles, the secretary printed the citation.",
+          "Verified by the roles, the secretary printed the citation.",
+          "Printing the citation, the roles verified the secretary."
+        ],
+        "answer": 1,
+        "explanation": "Having verified explicitly places the checking before printing."
+      },
+      {
+        "prompt": "Who was named publicly in ‘Named on the board, Jamil still asked for a private note’?",
+        "options": [
+          "Jamil",
+          "An unnamed officer",
+          "The board",
+          "The private note"
+        ],
+        "answer": 0,
+        "explanation": "Named is passive with the main-clause subject as the person named."
+      },
+      {
+        "prompt": "How should two different agents be retained?",
+        "options": [
+          "Checked by Mona, the chair changed the wording.",
+          "Having checked the form, the chair changed the wording.",
+          "After Mona checked the form, the chair changed the wording.",
+          "Checking the form, the wording changed for the chair."
+        ],
+        "answer": 2,
+        "explanation": "The full subordinate clause keeps Mona as checker and the chair as reviser."
+      },
+      {
+        "prompt": "Which phrase most economically describes a person whose surname was left out?",
+        "options": [
+          "The instructor who identifies the role",
+          "The instructor having only identified the role",
+          "The instructor identified only by role",
+          "The instructor identifying only by role"
+        ],
+        "answer": 2,
+        "explanation": "Identified is a passive reduction for someone described by their role."
+      },
+      {
+        "prompt": "What relationship does ‘Having led the repair, Lea wrote up the process’ encode?",
+        "options": [
+          "Lea led the repair because she first wrote it up.",
+          "Writing and leading are done by different people.",
+          "Lea was led by whoever wrote the repair up.",
+          "Lea led the repair before writing it up."
+        ],
+        "answer": 3,
+        "explanation": "The perfect participle marks an earlier act and the name governs both verbs."
+      },
+      {
+        "prompt": "Which correction uses a finite clause where the modifier otherwise attaches to the wrong noun?",
+        "options": [
+          "Because Mara had moved away, the organisers sent the note by email.",
+          "Having sent her a note, Mara moved away last year.",
+          "Having moved away, the organisers sent Mara a note.",
+          "Having moved away, the note was emailed to Mara."
+        ],
+        "answer": 0,
+        "explanation": "A finite clause explicitly gives Mara the moving action and organisers the sending action."
+      }
+    ],
+    "transfer": "Read a compressed introduction aloud and mark the agent of every clause. Rewrite any sentence where a shortened opening attributes work to the wrong person."
+  },
+  "vocabulary": [
+    {
+      "word": "citation",
+      "meaning": "formal public wording describing why someone receives an award",
+      "example": "The citation named the particular role she held.",
+      "pair": "award citation"
+    },
+    {
+      "word": "attribution",
+      "meaning": "assignment of responsibility or credit",
+      "example": "Two entries disagreed about the attribution of the original plan.",
+      "pair": "accurate attribution"
+    },
+    {
+      "word": "appendix",
+      "meaning": "supplementary section at an end",
+      "example": "The appendix contains a record for auditors.",
+      "pair": "technical appendix"
+    },
+    {
+      "word": "custodian",
+      "meaning": "person responsible for keeping an object or record",
+      "example": "A custodian holds the original forms.",
+      "pair": "record custodian"
+    },
+    {
+      "word": "originate",
+      "meaning": "be the first to develop or propose",
+      "example": "The idea originated in a half-hour meeting.",
+      "pair": "originate a proposal"
+    },
+    {
+      "word": "conflate",
+      "meaning": "combine things that should remain distinct",
+      "example": "The summary conflates teaching with staffing.",
+      "pair": "conflate roles"
+    },
+    {
+      "word": "acknowledgement",
+      "meaning": "recognition of a contribution",
+      "example": "The greeter wanted an acknowledgement of the earlier instructor.",
+      "pair": "formal acknowledgement"
+    },
+    {
+      "word": "anonymity",
+      "meaning": "state of remaining unnamed",
+      "example": "A worker can request anonymity in the report.",
+      "pair": "preserve anonymity"
+    },
+    {
+      "word": "succinct",
+      "meaning": "brief and clear",
+      "example": "They chose a succinct account of the first shift.",
+      "pair": "succinct account"
+    },
+    {
+      "word": "remit",
+      "meaning": "scope of responsibility",
+      "example": "The capacity decision was beyond his remit.",
+      "pair": "within one’s remit"
+    },
+    {
+      "word": "relational",
+      "meaning": "concerned with how things relate",
+      "example": "The form seeks a relational account of the work.",
+      "pair": "relational account"
+    },
+    {
+      "word": "account for",
+      "meaning": "give a satisfactory account of",
+      "example": "The shorter text must account for the opening shift.",
+      "pair": "account for a decision"
+    }
+  ],
+  "speaking": {
+    "audience": "Award chair and three contributors",
+    "first": "Read a citation of under a minute, then explain exactly which facts it leaves out and why. Defend one omission against an objection from a contributor.",
+    "change": "The former instructor requests public anonymity while the team wants people to learn from her method.",
+    "second": "Give a revised citation and role-play a follow-up enquiry from a person seeking training. Offer a viable route that does not force disclosure.",
+    "checklist": [
+      "Use an action verb for each role retained.",
+      "Distinguish unnamed from unacknowledged.",
+      "Say what expertise each follow-up can reach.",
+      "Avoid attributing motive to an absent contributor."
+    ]
+  },
+  "writing": {
+    "audience": "City awards secretary revising the nomination process",
+    "first": "Write a short policy, a five-field form and two contrasting worked nominations. Show how a group and an individual can each be credited precisely.",
+    "change": "The mayor wants one named person and a certificate using only eighteen words.",
+    "second": "Write a new title, concise citation and accompanying handout that respects the limit but keeps linked roles and accurate points of contact.",
+    "checklist": [
+      "Verify all actors in shortened clauses.",
+      "Preserve consent restrictions.",
+      "Avoid treating a ticket-holding role as leadership.",
+      "Make the short and long records factually consistent."
+    ]
+  },
+  "immersion": {
+    "role": "Independent facilitator for a disputed citation",
+    "goal": "Secure a usable public account of several roles before the ceremony and repair an account afterward if needed.",
+    "constraints": [
+      "The speech lasts no more than a minute.",
+      "The appendix cannot be circulated without checking consent.",
+      "The event may proceed before a missing participant replies.",
+      "People should be able to request practical help later."
+    ],
+    "change": "A published caption adopts a leadership claim unsupported by the original nomination.",
+    "deliverables": [
+      "Prepare a record of claims classified as supported, uncertain or omitted with consent.",
+      "Produce a revised speech and a separate correction for the caption.",
+      "Rehearse an exchange with a contributor who sees role-based reference as too vague."
+    ],
+    "checklist": [
+      "Keep absence of a reply distinct from agreement.",
+      "Distinguish the public record from a way of contacting someone.",
+      "Show what claim the evidence supports.",
+      "Balance fair credit against the demands of the short format."
+    ]
+  }
+}
