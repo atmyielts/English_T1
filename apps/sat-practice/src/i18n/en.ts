@@ -211,6 +211,8 @@ export const en = {
   'bank.loading': 'Loading matching questions…',
   'bank.showing': 'Showing {from}–{to} of {total} matching questions.',
   'bank.none': 'No questions match these filters yet. Try another skill, difficulty or history.',
+  'bank.unseenComplete': 'You’ve tried every question that matches these filters. Review your misses, revisit correct answers, or broaden your filters.',
+  'bank.historyMatches': 'Questions matching these filters, by answer history',
   'bank.prev': 'Previous page',
   'bank.next': 'Next page',
   'bank.clear': 'Clear filters',

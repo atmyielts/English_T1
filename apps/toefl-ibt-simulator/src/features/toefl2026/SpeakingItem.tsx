@@ -32,6 +32,7 @@ export const SpeakingItem: React.FC<{
   const stoppedRef = useRef(false);
   const audio = isRecord(data.audio) ? data.audio : {};
   const isRepeat = type === 'question_speaking_repeat';
+  const textCue = !isRepeat && typeof data.practice_text_cue === 'string' ? data.practice_text_cue : '';
   const seconds = Math.max(3, Number(data.response_seconds) || (isRepeat ? 10 : 45));
 
   const stop = async () => {
@@ -79,7 +80,7 @@ export const SpeakingItem: React.FC<{
 
   return (
     <div className="t26-speaking" data-testid={isRepeat ? 'listen-repeat' : 'take-interview'} data-phase={phase}>
-      <p className="t26-instructions">{isRepeat ? t('speak.repeat_prompt') : t('speak.interview_prompt')}</p>
+      <p className="t26-instructions">{textCue ? t('practice.textCue') : isRepeat ? t('speak.repeat_prompt') : t('speak.interview_prompt')}</p>
       <p className="t26-scenario">{String(data.scenario ?? '')}</p>
       <p className="t26-muted">{t('speak.item_of', { current: Number(data.index) || 1, total: Number(data.of) || 1 })}</p>
       {phase === 'ready' ? (
@@ -89,7 +90,11 @@ export const SpeakingItem: React.FC<{
           <button type="button" className="t26-button" onClick={() => setPhase('listen')}>{t('speak.start')}</button>
         </div>
       ) : null}
-      {phase === 'listen' ? (
+      {phase === 'listen' && textCue ? <div className="t26-card">
+        <p>{textCue}</p>
+        <button className="t26-button" type="button" onClick={() => setPhase('prep')}>{t('practice.startResponse')}</button>
+      </div> : null}
+      {phase === 'listen' && !textCue ? (
         <PlayOnceAudio
           key={`${unitId}-audio`}
           url={typeof audio.url === 'string' ? audio.url : null}
@@ -99,6 +104,7 @@ export const SpeakingItem: React.FC<{
           onEnded={() => { onAudioEvent?.('end', null); setPhase('prep'); }}
         />
       ) : null}
+      {textCue && (phase === 'prep' || phase === 'record') ? <p>{textCue}</p> : null}
       {phase === 'prep' ? <div className="t26-card t26-center">{t('speak.get_ready')}</div> : null}
       {phase === 'record' ? (
         <div className="t26-card t26-record" role="status">

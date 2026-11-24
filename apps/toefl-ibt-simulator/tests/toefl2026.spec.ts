@@ -122,7 +122,7 @@ type Calls = { responses: Array<Record<string, unknown>>; starts: Array<Record<s
 
 const json = (route: Route, body: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
-const mockBackend = async (page: Page): Promise<Calls> => {
+const mockBackend = async (page: Page, includeFocusedSet = false): Promise<Calls> => {
   const calls: Calls = { responses: [], starts: [], completed: false };
   await page.context().addCookies([{ name: 'schood-auth', value: encodeURIComponent(JSON.stringify(session)), domain: '127.0.0.1', path: '/', httpOnly: false, sameSite: 'Lax' }]);
   await page.addInitScript(() => {
@@ -174,12 +174,14 @@ const mockBackend = async (page: Page): Promise<Calls> => {
       return json(route, [
         { id: EXP_ID, name: 'TOEFL iBT Practice Test 1 (2026 format)', display_order: 0, is_active: true, metadata: { format: 'toefl-2026', catalog: 'full_test' } },
         { id: BANK_ID, name: 'TOEFL iBT 2026 Task Practice', display_order: 30, is_active: true, metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026' } },
+        ...(includeFocusedSet ? [{ id: 'focused-bank', name: 'Focused Practice Sets', display_order: 31, is_active: true, metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026' } }] : []),
         { id: LEGACY_ID, name: 'TOEFL RLW Full Test 1', display_order: 1, is_active: true, metadata: { catalog: 'full_test' } },
       ]);
     }
     if (table === 'sections') {
       return json(route, [
         ...TASKS.map((task, i) => ({ id: `bank-${task}`, experience_id: BANK_ID, name: task, display_order: i + 1, metadata: { type: SECTION_OF[task], format: 'toefl-2026', practice_task: task, duration_seconds: 600, item_sets: 10 } })),
+        ...(includeFocusedSet ? [{ id: 'focused-academic', experience_id: 'focused-bank', name: 'Reading a repair report', display_order: 1, metadata: { type: 'reading', format: 'toefl-2026', practice_task: 'read_academic_passage', practice_short_set: true, duration_seconds: 240, item_sets: 4 } }] : []),
         { id: 'legacy-r', experience_id: LEGACY_ID, name: 'Reading', display_order: 1, metadata: { type: 'reading' } },
       ]);
     }
@@ -215,6 +217,17 @@ test('unknown ?task shows the full list without an error', async ({ page }) => {
   await expect(page.getByTestId('practice-task-take_interview')).toBeVisible();
   await expect(page.locator('[data-selected="true"]')).toHaveCount(0);
   await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
+test('focused practice starts the selected set alongside the original task bank', async ({ page }) => {
+  const calls = await mockBackend(page, true);
+  await page.goto('/practice');
+  const academic = page.getByTestId('practice-task-read_academic_passage');
+  await expect(academic.getByText('Full task bank')).toBeVisible();
+  await expect(page.getByText('New Listening sets are coming soon.', { exact: false })).toBeVisible();
+  await academic.getByRole('button', { name: /Reading a repair report/ }).click();
+  await expect.poll(() => calls.starts.length).toBe(1);
+  expect(calls.starts[0]).toMatchObject({ experience_id: 'focused-bank', metadata: { mode: 'practice', allowed_section_ids: ['focused-academic'] } });
 });
 
 test('reading: Complete the Words inputs stay inline and save letters; daily life and passage screens', async ({ page }) => {

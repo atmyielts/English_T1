@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { practiceLibraryRequest } from './library.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadPublishedBlueprintCandidates, PRACTICE_LAB_SCHEMA_VERSION } from "../_shared/ielts-practice-blueprints.ts";
 import {
@@ -4647,6 +4648,11 @@ serve(async (req) => {
     const hasPracticeAccess = await userHasPracticeAccess(sb, auth.userId, scope);
     if (!hasPracticeAccess) {
       return json(403, practiceAccessRequired(scope.practiceProductId));
+    }
+
+    if (route === '/library' || route.startsWith('/library/')) {
+      const result = await practiceLibraryRequest(sb, req.method, route, req.method === 'POST' ? await parseBody(req) : undefined);
+      return json(result.status, result.body);
     }
 
     if (req.method === "GET" && route === "/goals") {

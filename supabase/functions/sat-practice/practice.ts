@@ -69,10 +69,13 @@ export function bankQuery(input: Record<string, unknown>, defaults = { limit: 24
 export const hasOfficialFilters = (input: Record<string, unknown>) => ['official_domain', 'skill', 'format', 'status'].some(k => input[k] != null && input[k] !== '');
 
 export function bankPage(entries: CatalogEntry[], q: BankQuery) {
-  const matches = filterCatalog(entries, q);
+  const pool = filterCatalog(entries, { ...q, status: undefined });
+  const matchingHistory = { unseen: 0, missed: 0, correct: 0 };
+  for (const entry of pool) matchingHistory[entry.status]++;
+  const matches = q.status ? pool.filter(entry => entry.status === q.status) : pool;
   // Facets: counts within the chosen section, so empty combinations are visible before choosing them.
   const facetBase = filterCatalog(entries, { section_type: q.section_type, official_domain: q.official_domain });
-  return { matches, page: matches.slice(q.offset, q.offset + q.limit), facets: catalogFacets(facetBase), total: matches.length };
+  return { matches, page: matches.slice(q.offset, q.offset + q.limit), facets: catalogFacets(facetBase), total: matches.length, matchingHistory };
 }
 
 /** Questions for a bank drill: the filtered pool, unseen first then the oldest misses. */

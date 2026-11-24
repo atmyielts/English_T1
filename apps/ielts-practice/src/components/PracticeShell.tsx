@@ -29,6 +29,7 @@ const PRIMARY_NAV: Array<{ label: AppKey; hint: AppKey; to: string }> = [
 
 // Secondary tools — reachable but not competing with the daily path.
 const MORE_NAV: Array<{ label: AppKey; to: string }> = [
+  { label: 'library.title', to: '/library' },
   { label: 'shell.nav.reviews', to: '/practice/reviews' },
   { label: 'shell.nav.stats', to: '/practice/stats/by-type' },
   { label: 'shell.nav.speaking', to: '/speaking' },

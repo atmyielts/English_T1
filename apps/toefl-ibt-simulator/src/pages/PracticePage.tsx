@@ -60,15 +60,15 @@ export const PracticePage: React.FC = () => {
     void run();
   }, [t]);
 
-  const bank = useMemo(() => experiences.find((e) => is2026Metadata(e.metadata) && String(e.metadata?.catalog ?? '') === 'practice_bank_2026') ?? null, [experiences]);
+  const banks = useMemo(() => experiences.filter(e => is2026Metadata(e.metadata) && e.metadata?.catalog === 'practice_bank_2026'), [experiences]);
   const bankSections = useMemo(() => {
-    const out = new Map<string, SectionRow>();
-    for (const s of bank ? sectionsByExperience[bank.id] ?? [] : []) {
+    const out = new Map<string, SectionRow[]>();
+    for (const s of banks.flatMap(bank => sectionsByExperience[bank.id] ?? [])) {
       const task = String(s.metadata?.practice_task ?? '');
-      if (task) out.set(task, s);
+      if (task) out.set(task, [...(out.get(task) ?? []), s]);
     }
     return out;
-  }, [bank, sectionsByExperience]);
+  }, [banks, sectionsByExperience]);
   const legacy = useMemo(() => experiences.filter((e) => !is2026Metadata(e.metadata)), [experiences]);
 
   useEffect(() => {
@@ -95,10 +95,8 @@ export const PracticePage: React.FC = () => {
   };
 
   const taskCard = (task: Toefl2026Task) => {
-    const section = bankSections.get(task);
+    const sets = bankSections.get(task) ?? [];
     const selected = task === selectedTask;
-    const minutes = Math.round(Number(section?.metadata?.duration_seconds ?? 0) / 60);
-    const sets = Number(section?.metadata?.item_sets ?? 0);
     return (
       <div
         key={task}
@@ -111,20 +109,24 @@ export const PracticePage: React.FC = () => {
         {selected ? <div className="text-xs font-semibold uppercase tracking-wider text-[#c2410c] mb-1">{t('practice.selected')}</div> : null}
         <h3 className="font-semibold text-[#0f172a] text-lg break-words">{t(`task.${task}` as AppKey)}</h3>
         <p className="text-sm text-[#475569] mt-1 break-words">{t(`task_desc.${task}` as AppKey)}</p>
-        {section ? (
-          <>
-            <p className="text-xs text-[#64748b] mt-2">
-              {sets > 0 ? t('practice.items', { count: sets }) : null}{minutes > 0 ? ` · ${t('practice.minutes', { count: minutes })}` : ''}
-            </p>
-            <button
-              type="button"
-              onClick={() => void start(bank!.id, section.id)}
-              disabled={starting != null}
-              className="mt-3 min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-full bg-[#0f172a] text-white font-semibold disabled:opacity-60"
-            >
-              {starting === section.id ? t('practice.starting') : t('practice.start')}
-            </button>
-          </>
+        {sets.length ? (
+          <ul className="mt-2 divide-y divide-[#151d2b]/12">
+            {sets.map(section => {
+              const short = section.metadata?.practice_short_set === true;
+              const minutes = Math.max(1, Math.round(Number(section.metadata?.duration_seconds ?? 0) / 60));
+              const items = Number(section.metadata?.item_sets ?? 0);
+              const title = short ? section.name : t('practice.fullBank');
+              return <li key={section.id} className="py-2">
+                {sets.length > 1 ? <p className="text-sm font-semibold">{title}{short && task === 'take_interview' ? ` · ${t('practice.textCue')}` : ''}</p> : null}
+                <p className="text-xs text-[#64748b]">{items > 0 ? t('practice.items', { count: items }) : null}{items > 0 ? ' · ' : ''}{t('practice.minutes', { count: minutes })}</p>
+                <button type="button" aria-label={`${t('practice.start')} — ${t(`task.${task}` as AppKey)} — ${title}`}
+                  onClick={() => void start(section.experience_id, section.id)} disabled={starting != null}
+                  className="mt-2 min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-full bg-[#0f172a] text-white font-semibold disabled:opacity-60">
+                  {starting === section.id ? t('practice.starting') : t('practice.start')}
+                </button>
+              </li>;
+            })}
+          </ul>
         ) : (
           <p className="text-sm text-[#64748b] mt-2">{t('practice.unavailable')}</p>
         )}
@@ -145,11 +147,12 @@ export const PracticePage: React.FC = () => {
         {loading ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/70 px-4 py-3 text-[#475569]">{t('common.loading')}</div> : null}
         {error ? <div role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-2xl p-3">{error}</div> : null}
 
-        {!loading && !bank ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/75 p-6 text-[#475569]">{t('practice.none')}</div> : null}
+        {!loading && !banks.length ? <div className="rounded-2xl border border-[#151d2b]/12 bg-white/75 p-6 text-[#475569]">{t('practice.none')}</div> : null}
 
         {TASKS_BY_SECTION.map(({ section, tasks }) => (
           <section key={section}>
             <h2 className="text-xl font-semibold text-[#0f172a] mb-3">{t(`section.${section}` as AppKey)}</h2>
+            {section === 'listening' ? <p className="mb-3 text-sm text-[#475569]">{t('practice.listeningSoon')}</p> : null}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">{tasks.map(taskCard)}</div>
           </section>
         ))}

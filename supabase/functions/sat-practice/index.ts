@@ -172,12 +172,12 @@ serve(async (req) => {
     if (req.method === "GET" && path === "/bank") {
       const query = bankQuery(Object.fromEntries(url.searchParams));
       const entries = await loadCatalog(sb, user.id);
-      const { page, facets, total } = bankPage(entries, query);
+      const { page, facets, total, matchingHistory } = bankPage(entries, query);
       const ids = page.map(e => e.id);
       const rows = ids.length ? await loadBankQuestions(sb, user.id, { question_ids: ids, limit: ids.length }) : [];
       const byId = new Map(rows.map((q: any) => [q.id, q]));
       const history = Object.fromEntries(page.map(e => [e.id, e.status]));
-      return json(200, { questions: ids.map(id => byId.get(id)).filter(Boolean).map(questionForLearner), total, offset: query.offset, limit: query.limit, facets, history });
+      return json(200, { questions: ids.map(id => byId.get(id)).filter(Boolean).map(questionForLearner), total, offset: query.offset, limit: query.limit, facets, history, matching_history: matchingHistory });
     }
 
     if (req.method === "POST" && path === "/attempts/start") {
