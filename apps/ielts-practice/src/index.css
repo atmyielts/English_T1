@@ -3761,5 +3761,11 @@ audio.practice-audio {
 .practice-library textarea { width: 100%; display: block; }
 .practice-library fieldset { margin-block: 1rem; }
 .practice-library .library-option { display: block; padding: 0.35rem 0; }
+.practice-library .library-option input[type='text'] { display: block; width: min(100%, 24rem); margin-top: 0.5rem; }
+.practice-library .library-filters { display: flex; flex-wrap: wrap; gap: 1rem; }
+.practice-library .library-filters label { display: grid; gap: 0.25rem; }
+.practice-library .library-sets { list-style: none; padding: 0; }
+.practice-library .library-sets li { display: grid; gap: 0.25rem; padding: 0.75rem 0; border-bottom: 1px solid currentColor; border-color: color-mix(in srgb, currentColor 16%, transparent); }
+.practice-library .library-sets li span { font-size: 0.875rem; }
 .practice-library .library-table { overflow: auto; margin-block: 1rem; }
 .practice-library td, .practice-library th { padding: 0.5rem; text-align: left; }

@@ -4651,7 +4651,8 @@ serve(async (req) => {
     }
 
     if (route === '/library' || route.startsWith('/library/')) {
-      const result = await practiceLibraryRequest(sb, req.method, route, req.method === 'POST' ? await parseBody(req) : undefined);
+      const formatVersion = url.searchParams.get('response_format') === '2' ? 2 : 1;
+      const result = await practiceLibraryRequest(sb, auth.userId, req.method, route, req.method === 'POST' ? await parseBody(req) : undefined, formatVersion);
       return json(result.status, result.body);
     }
 

@@ -488,7 +488,12 @@ if (depthArgument !== -1) {
   if (!source) throw new Error('Pass the directory containing reading.json and writing-speaking.json');
   const newReading = JSON.parse(fs.readFileSync(path.join(source, 'reading.json'), 'utf8'));
   const newWs = JSON.parse(fs.readFileSync(path.join(source, 'writing-speaking.json'), 'utf8'));
-  const collection = 'practice-depth-2026-11';
+  const collectionOption = process.argv.indexOf('--practice-collection');
+  const defaultCollection = 'practice-depth-2026-11';
+  const collection = collectionOption === -1 ? defaultCollection : process.argv[collectionOption + 1];
+  if (!collection || !/^practice-depth-\d{4}-\d{2}(?:-wave-[1-9]\d*)?$/.test(collection)) {
+    throw new Error('Pass a unique practice collection such as practice-depth-2026-11-wave-2');
+  }
   const exp = uuid(`experience:${collection}`);
   const sections = [];
   const seen = new Set([...Object.values(reading).flat(), ...Object.values(listening).flat(), ...Object.values(ws).flat()].map(item => item.slug));
@@ -534,7 +539,8 @@ if (depthArgument !== -1) {
   }
   if (problems.length) throw new Error(problems.join('\n'));
   console.log(JSON.stringify({ experience: { id: exp, product_id: PRODUCT_ID, name: 'TOEFL iBT 2026 Focused Practice Sets', version: 1,
-    display_order: 31, is_active: false, metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026', collection } }, sections }, null, 2));
+    display_order: collection === defaultCollection ? 31 : 32, is_active: false,
+    metadata: { format: 'toefl-2026', catalog: 'practice_bank_2026', collection } }, sections }, null, 2));
   process.exit(0);
 }
 
