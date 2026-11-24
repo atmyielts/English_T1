@@ -14,6 +14,7 @@
 // english-streak, english-progress-check); this file only loads rows and
 // stores results.
 import { json, loadNotebookStats, parseBody, toText } from "../_shared/english-learning.ts";
+import { playableCatalog } from "../_shared/english-recorded-listening.ts";
 import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
 import { checkActivityAccess } from "../_shared/english-allowance.ts";
 import { testResultRecord } from "../_shared/english-certificate.ts";
@@ -230,7 +231,7 @@ const loadCatalog = async (ctx: Ctx): Promise<CatalogItem[]> => {
     .in("content_type", PRIMARY_CONTENT_TYPES)
     .limit(2000);
   if (error) throw new Error(`Failed to load catalog: ${error.message}`);
-  return ((data ?? []) as Row[])
+  const items = ((data ?? []) as Row[])
     .filter((row) => isSkill(row.service_key) && row.source_ref)
     .map((row) => ({
       id: String(row.id),
@@ -242,6 +243,7 @@ const loadCatalog = async (ctx: Ctx): Promise<CatalogItem[]> => {
       difficulty: Number(row.difficulty ?? 0.5),
       tags: Array.isArray(row.tags) ? (row.tags as unknown[]).map(String).slice(0, 12) : [],
     }));
+  return await playableCatalog(ctx.sb, ctx.languageId, items);
 };
 
 const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?: string | null }>): Promise<Response> => {
@@ -317,7 +319,10 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
 
   const summary = (planRes.data?.summary ?? {}) as Row;
   const doneToday = new Set(attempts.filter((attempt) => attempt.submitted_at.slice(0, 10) === date).map((attempt) => attempt.content_item_id));
+  const playableListening = new Set(items.filter((item) => item.skill === "listening").map((item) => item.id));
+  const recordedSlugs = new Set(items.filter((item) => item.skill === "listening").map((item) => item.slug));
   const planTasks = (summary.generated_by === "hub.today.v1" && Array.isArray(summary.today_tasks) ? summary.today_tasks as TodayTask[] : [])
+    .filter((task) => task.skill !== "listening" || playableListening.has(task.content_item_id ?? ""))
     .map((task) => ({ ...task, done: task.done || Boolean(task.content_item_id && doneToday.has(task.content_item_id)) }));
 
   const fromSkill = toText(url.searchParams.get("from_skill") || url.searchParams.get("skill"), 24);
@@ -344,7 +349,7 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     fromSkill: isSkill(fromSkill) ? fromSkill : null,
     goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
     assignments,
-    resume,
+    resume: resume.filter((item) => item.skill !== "listening" || item.kind !== "activity" || recordedSlugs.has(item.ref)),
     exam: examNextContext(goal?.metadata, ratings.skills),
   });
   return json(200, { ok: true, date, ...result });

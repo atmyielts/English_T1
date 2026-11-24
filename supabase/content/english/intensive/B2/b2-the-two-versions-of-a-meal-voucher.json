@@ -1,0 +1,392 @@
+{
+  "slug": "b2-the-two-versions-of-a-meal-voucher",
+  "title": "The Two Versions of a Meal Voucher",
+  "level": "B2",
+  "summary": "Design a small pilot that measures access as well as completed transactions.",
+  "documents": [
+    {
+      "title": "Centre memo after the pilot",
+      "text": "We offered the same lunch voucher in two forms during last month's pilot. Eighty digital codes were issued by email and sixty paper cards were handed out at community sessions. The digital system recorded forty-eight meals, while the signed paper list recorded thirty-six. Those numbers describe completed uses. They do not show whether someone tried to use a voucher and left without a meal.\n\nAt two cafés, the code scanner was beside the main till. At the other two, a member of staff had to fetch it from a drawer. Paper vouchers were signed by staff in all four cafés. The manager at Hill Café reported that the paper list took longer to check at closing, particularly when the same first name appeared twice.\n\nThe budgets for the formats were similar. Before choosing a format, we should consider what happens if visitors receive a voucher late or leave a phone at home. The weekend café also wants to know whether it can handle two kinds of record when several people arrive together."
+    },
+    {
+      "title": "A coordinator's comparison sheet",
+      "text": "The forms were offered through different routes. Visitors requesting email updates received digital codes. People at sessions could choose a paper card without giving an email address. We therefore cannot explain a difference between the groups simply by pointing to the format. Their usual ways of contacting the centre may also differ.\n\nFor a second pilot, we could give people a choice at two sessions and record which format they select. Staff would make one short mark if a transaction had to be restarted. The mark shows that something interrupted the process. It does not need a customer's name. Staff could select one reason from a small list after the customer leaves.\n\nA person whose digital voucher will not load can show the printed booking reference. Staff can record a completed use on a separate sheet and verify it at closing. This fallback is for an unavailable code. It does not permit another meal when the same voucher has been used."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "At the weekend till",
+      "text": "Coordinator: The pilot shows that you accepted all the digital codes that reached your till. Does that mean the scanner worked well?\n\nTill worker: It worked once I had it out. We keep it on the counter when we expect a group. On other days, the cable gets in the way of the people carrying drinks. On Saturday I had to open the drawer, find the scanner and plug it in for one customer. The people behind her thought I was fixing the till.\n\nCoordinator: Did anybody give up while you were doing that?\n\nTill worker: I saw one man leave the line. I don't know whether he had a voucher. Another customer showed his code after the scanner was ready, and the rest of the sale was quick.\n\nCoordinator: Could we move it without affecting the drinks counter?\n\nTill worker: If we put it at the end table, I could finish the current sale before checking a code there. I'd need a clear sign. People would otherwise start to queue at both places."
+    },
+    {
+      "title": "Two members of the review team",
+      "text": "Mina: I want us to keep the paper cards. People in the morning group collect them for a family member. With email codes, the family member sometimes has to ask for the email to be sent again on the day.\n\nColin: I agree that choice matters, but we can't give staff two long lists to check at closing. Could both formats show the same reference? A till worker could mark it and we could combine the records at the centre.\n\nMina: How would they know if the reference had already been used at another café that day?\n\nColin: A working scanner could tell them whether a digital code was used. A café using the fallback sheet would need to check the reference first. Let's test it with one café that can call us during opening hours.\n\nMina: So we retain a paper option and try the shared reference in one place. We aren't asking everyone to change how they work at once."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What do the counts leave out?",
+      "options": [
+        "Attempts that did not result in a meal",
+        "Digital codes that were sent",
+        "Completed paper transactions",
+        "The number of cafés using scanners"
+      ],
+      "answer": 0,
+      "explanation": "The counts are for recorded uses, not unsuccessful attempts."
+    },
+    {
+      "prompt": "1. Why did the paper list sometimes take longer to check?",
+      "options": [
+        "A first name appeared more than once.",
+        "The scanner was in a drawer.",
+        "Staff had to call everyone individually.",
+        "The form was missing the café name."
+      ],
+      "answer": 0,
+      "explanation": "The manager reported this issue with repeated first names."
+    },
+    {
+      "prompt": "1. What would the manager need to learn before choosing?",
+      "options": [
+        "Whether the pilot recorded any completed meals",
+        "How to make the formats cost the same",
+        "How staff and visitors manage each format in less convenient conditions",
+        "Which format was first offered at Hill Café"
+      ],
+      "answer": 2,
+      "explanation": "The final paragraph raises questions about access and simultaneous arrivals."
+    },
+    {
+      "prompt": "2. Why do different distribution routes matter?",
+      "options": [
+        "The two groups could differ in habits beyond voucher format.",
+        "It explains why all users opened email at the café.",
+        "Each paper card always went to a different person.",
+        "It proves customers choose based on budget."
+      ],
+      "answer": 0,
+      "explanation": "How people contact the centre is a possible additional difference."
+    },
+    {
+      "prompt": "2. When is a reason recorded?",
+      "options": [
+        "At the start of any normal sale",
+        "After an interrupted transaction and after the customer leaves",
+        "When the customer picks a format",
+        "Only when the main scanner is replaced"
+      ],
+      "answer": 1,
+      "explanation": "Staff flag an interruption and choose a reason after the guest leaves."
+    },
+    {
+      "prompt": "2. What makes the fallback applicable?",
+      "options": [
+        "An already-used code",
+        "A digital code that cannot be displayed",
+        "A request for a second meal",
+        "A paper list with missing names"
+      ],
+      "answer": 1,
+      "explanation": "Its purpose is to handle a code that will not load."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Why was the scanner in a drawer?",
+      "options": [
+        "It had stopped working.",
+        "Only the coordinator could use it.",
+        "There was nowhere to plug it in.",
+        "Its cable got in the way near drinks."
+      ],
+      "answer": 3,
+      "explanation": "The worker identifies the route for carrying drinks as the constraint."
+    },
+    {
+      "prompt": "1. What can we conclude about the man who left?",
+      "options": [
+        "He left after a voucher was rejected.",
+        "He had already redeemed his voucher.",
+        "His reason and whether he had a voucher are unknown.",
+        "His digital code was later accepted."
+      ],
+      "answer": 2,
+      "explanation": "The till worker saw him leave but does not know his situation."
+    },
+    {
+      "prompt": "1. What would staff need at the end table?",
+      "options": [
+        "A sign to prevent confusion about where to queue",
+        "A second receipt for every sale",
+        "An extra paper voucher on the counter",
+        "A way to avoid finishing the sale first"
+      ],
+      "answer": 0,
+      "explanation": "The sign would help prevent people forming two lines unexpectedly."
+    },
+    {
+      "prompt": "2. Why keep paper according to Mina?",
+      "options": [
+        "It avoids evening checks.",
+        "It can be collected for somebody else.",
+        "A paper list can verify digital uses.",
+        "All café staff prefer it."
+      ],
+      "answer": 1,
+      "explanation": "She describes people collecting cards for family members."
+    },
+    {
+      "prompt": "2. What risk does she raise?",
+      "options": [
+        "A reference may have been used at a different café.",
+        "A worker might issue the wrong café name.",
+        "A family member could forget where to collect a code.",
+        "The centre cannot combine the two lists."
+      ],
+      "answer": 0,
+      "explanation": "Mina asks how they would identify prior use elsewhere."
+    },
+    {
+      "prompt": "2. Which change do they agree to test?",
+      "options": [
+        "All cafés move to paper immediately.",
+        "One café tries shared references while retaining paper.",
+        "Email codes are removed at the morning session.",
+        "Two cafés test picking up new scanners."
+      ],
+      "answer": 1,
+      "explanation": "They keep a paper option and limit the shared reference to one café."
+    }
+  ],
+  "grammar": {
+    "focus": "Concession and contrast",
+    "explanation": "Although introduces a concession before or after a main claim. Whereas contrasts two facts. While can also set facts beside each other, and can introduce an -ing phrase when both actions belong to the same subject. Avoid adding but after an although clause.",
+    "examples": [
+      {
+        "before": "Although the scanner worked, but it took time.",
+        "after": "Although the scanner worked, it took time.",
+        "why": "Although already connects the concession to its main clause."
+      },
+      {
+        "before": "The list was slow whereas it, codes closed fast.",
+        "after": "The paper check took longer, whereas the code record was ready at closing.",
+        "why": "Whereas links two complete claims."
+      },
+      {
+        "before": "While codes were used. Attempts were not counted.",
+        "after": "While codes were used, attempts were not counted.",
+        "why": "Keep the concession joined to the contrasting finding."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "_____ the café logged each meal, its record missed unsuccessful attempts.",
+        "options": [
+          "Despite",
+          "Although",
+          "During",
+          "Because of"
+        ],
+        "answer": 1,
+        "explanation": "Although introduces a finite clause."
+      },
+      {
+        "prompt": "Paper cards arrive in person, _____ digital codes are sent by email.",
+        "options": [
+          "because of",
+          "until",
+          "afterwards",
+          "whereas"
+        ],
+        "answer": 3,
+        "explanation": "Whereas contrasts delivery routes."
+      },
+      {
+        "prompt": "Which sentence is standard?",
+        "options": [
+          "Although the reference can be printed, but staff must check it.",
+          "Although the reference can be printed, staff must check it.",
+          "Despite the reference can be printed, staff must check it.",
+          "The reference although can be printed, staff must check it."
+        ],
+        "answer": 1,
+        "explanation": "Only the first uses one suitable connector."
+      },
+      {
+        "prompt": "Staff handled the till _____ checking codes.",
+        "options": [
+          "whereas",
+          "while",
+          "despite of",
+          "because of"
+        ],
+        "answer": 1,
+        "explanation": "While introduces the simultaneous -ing action."
+      },
+      {
+        "prompt": "Which sentence qualifies a result?",
+        "options": [
+          "Because costs were similar, access was equal.",
+          "Staff checked access because all results were equal.",
+          "Although costs were similar, access still needs checking.",
+          "As costs were low, nobody left the queue."
+        ],
+        "answer": 2,
+        "explanation": "The concession separates observed cost from an unknown."
+      },
+      {
+        "prompt": "_____ both formats use one reference, the sheets stay separate for now.",
+        "options": [
+          "Despite of",
+          "Due to",
+          "Although",
+          "Yet of"
+        ],
+        "answer": 2,
+        "explanation": "The opening introduces a full clause."
+      },
+      {
+        "prompt": "The list was quick on Tuesday, _____ Saturday took longer.",
+        "options": [
+          "whereas",
+          "instead of",
+          "despite",
+          "before that"
+        ],
+        "answer": 0,
+        "explanation": "The connector contrasts two days."
+      },
+      {
+        "prompt": "Which sentence keeps the evidence and its limit distinct?",
+        "options": [
+          "The till accepted the code because nobody left.",
+          "The till accepted the code, so everyone was served.",
+          "The till accepted the code, although we cannot account for everyone who left.",
+          "Although everyone was served, the code was rejected."
+        ],
+        "answer": 2,
+        "explanation": "The first keeps the recorded sale and the unknown outcome separate."
+      }
+    ],
+    "transfer": "Make four claims from the sources. Mark two contrasts and two concessions. Check that no concession quietly turns an unknown cause into a known one."
+  },
+  "vocabulary": [
+    {
+      "word": "redeem",
+      "meaning": "use a voucher for what it offers",
+      "example": "Redeem the card at the till.",
+      "pair": "redeem a voucher"
+    },
+    {
+      "word": "fallback",
+      "meaning": "an option used when the usual one fails",
+      "example": "The printed reference is our fallback.",
+      "pair": "fallback option"
+    },
+    {
+      "word": "issue",
+      "meaning": "give someone an official document or code",
+      "example": "The centre issued sixty cards.",
+      "pair": "issue a voucher"
+    },
+    {
+      "word": "transaction",
+      "meaning": "an exchange that takes place at a till",
+      "example": "The transaction restarted.",
+      "pair": "complete a transaction"
+    },
+    {
+      "word": "uptake",
+      "meaning": "how many people use an offer",
+      "example": "The team checked uptake in May.",
+      "pair": "measure uptake"
+    },
+    {
+      "word": "interrupt",
+      "meaning": "stop a process before it finishes",
+      "example": "The question interrupted the payment.",
+      "pair": "interrupt a transaction"
+    },
+    {
+      "word": "reconcile",
+      "meaning": "check two sets of records and account for differences",
+      "example": "Staff reconcile the lists at closing.",
+      "pair": "reconcile records"
+    },
+    {
+      "word": "fetch",
+      "meaning": "go and bring back something",
+      "example": "The worker fetched the scanner.",
+      "pair": "fetch the scanner"
+    },
+    {
+      "word": "distinct",
+      "meaning": "separate and clearly different",
+      "example": "The two queues must stay distinct.",
+      "pair": "distinct routes"
+    },
+    {
+      "word": "reference",
+      "meaning": "a code used to find a record",
+      "example": "Please show the reference on the card.",
+      "pair": "booking reference"
+    },
+    {
+      "word": "trial",
+      "meaning": "a limited test",
+      "example": "The trial begins at one café.",
+      "pair": "run a trial"
+    },
+    {
+      "word": "valid",
+      "meaning": "usable under the rules",
+      "example": "This card is valid until Friday.",
+      "pair": "valid voucher"
+    }
+  ],
+  "speaking": {
+    "audience": "Till staff and the coordinator",
+    "first": "Give a two-minute briefing using one observed interruption, one unknown and one possible fix. Include a line a worker can say to a customer.",
+    "change": "The café can contact the centre by phone before noon only.",
+    "second": "Redo the briefing with a time limit on the fallback. Say exactly what the worker should offer outside that window.",
+    "checklist": [
+      "Observation and assumption stay distinct",
+      "Uses one concession and one contrast",
+      "States who checks the reference and when."
+    ]
+  },
+  "writing": {
+    "audience": "The centre manager and then people choosing a voucher",
+    "first": "Draft a 170–200 word recommendation that compares the formats and sets out one measure for people who were not served.",
+    "change": "Only one café can join the trial, and visitors need a short public notice.",
+    "second": "Revise the recommendation to fit one site. Add a notice of up to 55 words explaining what to bring if a code does not load.",
+    "checklist": [
+      "Recommendation accounts for the distribution route",
+      "The notice contains no promise of a second meal",
+      "The measure can distinguish failed and successful attempts."
+    ]
+  },
+  "immersion": {
+    "role": "Pilot coordinator",
+    "goal": "Prepare a trial that a café can run during normal service.",
+    "constraints": [
+      "Keep both formats",
+      "Use one café",
+      "Collect no names for interruption statistics"
+    ],
+    "change": "The only worker able to use the scanner also serves hot drinks at the busiest time.",
+    "deliverables": [
+      "Evidence and unknowns table",
+      "One-page workflow with two exception routes",
+      "Entrance sign",
+      "A tally sheet and an end-of-trial decision rule"
+    ],
+    "checklist": [
+      "The site and time limits match across artifacts",
+      "The procedure explains who checks prior use",
+      "The tally covers people who did not reach payment",
+      "The trial has a clear change criterion."
+    ]
+  }
+}

@@ -1,0 +1,391 @@
+{
+  "slug": "b2-light-a-waterside-path-with-separate-evidence",
+  "title": "A Lighting Trial Beside the Water",
+  "level": "B2",
+  "summary": "Compare how a trial affects evening access and a separate set of wildlife observations.",
+  "documents": [
+    {
+      "title": "Notice for residents and night-shift staff",
+      "text": "During next week we will try two ways of lighting the short path behind the boat store. The path links the main road with the earliest bus stop. A fixed lamp has worked well for people walking to early shifts. The power group has asked us to test a lamp that dims when nobody is near it. At the same time, the river group wants light to fall on the path rather than across the water.\n\nThe group will try a shield on the existing lamp on Monday and Tuesday. On Wednesday and Thursday a second unit will brighten as people approach. Staff will walk the route before the first bus and write down where it is hard to see the stone steps at the end. Please report the time and direction if you notice a problem. The trial is limited to the two sheltered sections. The existing lamps along the road will remain lit until morning, and the bus timetable will stay the same."
+    },
+    {
+      "title": "Notes from the observations lead",
+      "text": "We have two kinds of information to review. First, people walking the path can tell us whether they can see a step in time to reach it. An observation from the start of the path is less informative than one made at the top of the steps. Second, two volunteers can watch a short stretch of water from the same bank before dawn. They will count birds that land in that stretch during the same ten minutes on each test day.\n\nCloud and the movement of the water may change what the volunteers can see. Their numbers do not tell us how many birds used the whole river on each night. Record landings as events. If a bird takes off and lands again, record a second landing even if it appears to be the same bird. Identify flyovers separately. A final recommendation should say which observations support it. A shield can solve one problem with the path even if the bird count is too limited to support a separate claim."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A route check near the steps",
+      "text": "Worker: The lamp brightens when I turn the corner. By then I can see the path in front of me. The difficulty is that I reach the first step almost at the same moment.\n\nEngineer: Did it brighten too late every time?\n\nWorker: It did when I came from the boat store. From the road, I had already been on the straight path for a few seconds by the time I reached the steps. I saw them before I changed my pace.\n\nEngineer: That suggests the direction matters. Could you make a mark on the plan where the light first seemed useful on each walk?\n\nWorker: Yes. I also noticed the tree shadow on the step under the fixed lamp. Does that belong on the same plan?\n\nEngineer: Put it on a different line. A late brightening and a shadow can look like the same problem from the step, but moving the detector would affect only one of them."
+    },
+    {
+      "title": "A call about a wet morning",
+      "text": "Ruth: We watched the stretch for ten minutes each morning. On Tuesday I wrote two landings. On Thursday I wrote five, but I think one bird returned several times. The same white mark showed on its wing each time.\n\nJosef: The site manager wants to know whether the new lamp attracted more birds. Can we give her five and say that three more birds came?\n\nRuth: We can report three more landing events in the observed window. We cannot turn those events into a number of different birds. We also need to compare more mornings before connecting the difference with the lamp.\n\nJosef: Would it help if we watched from the bridge?\n\nRuth: We might see longer flights from there, but we would have to start a new series. Keep the count of landings separate from any notes about recognizable birds. Add the observation point each day so people can check which mornings belong in the same series. A drawing of the exact stretch would help."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why is the group trying a shield?",
+      "options": [
+        "To keep more light on the path and less on the water",
+        "To prevent the lamp from dimming",
+        "To make the bus arrival easier to see",
+        "To stop staff walking in the sheltered section"
+      ],
+      "answer": 0,
+      "explanation": "The river group wants the spill of light across the water reduced."
+    },
+    {
+      "prompt": "1. Where will staff note problems with the light?",
+      "options": [
+        "Near the stone steps during a walk before the first bus",
+        "At the bus stop after morning service",
+        "From the bank opposite the boat store",
+        "Along the whole main road at midday"
+      ],
+      "answer": 0,
+      "explanation": "The notice says staff will walk early and check visibility at the steps."
+    },
+    {
+      "prompt": "1. What remains unchanged during the trial?",
+      "options": [
+        "The wake time of each worker",
+        "The bus timetable and the main road lamps",
+        "The brightness of the covered path",
+        "The way every path lamp detects visitors"
+      ],
+      "answer": 1,
+      "explanation": "The last two clauses name the normal service that continues."
+    },
+    {
+      "prompt": "2. Why is an observation on the steps particularly useful?",
+      "options": [
+        "It shows how many people use the river at night.",
+        "It shows who needs to report a bird landing.",
+        "It makes cloud conditions easier to record.",
+        "It evaluates what a walker needs to see at that point."
+      ],
+      "answer": 3,
+      "explanation": "The note connects sight of a step with the ability to reach it."
+    },
+    {
+      "prompt": "2. Why restrict the bird count to the same bank and the same ten minutes?",
+      "options": [
+        "To calculate the whole river's bird population",
+        "To make the observations easier to compare",
+        "To make the bright lamp reflect farther",
+        "To record how many birds left during the night"
+      ],
+      "answer": 1,
+      "explanation": "Keeping place and time fixed reduces differences in how the view is sampled."
+    },
+    {
+      "prompt": "2. What should a recommendation do if the bird evidence stays limited?",
+      "options": [
+        "Treat a blank count as zero.",
+        "Explain a supported path change without claiming a result about the birds.",
+        "Assume the workers found the lighting too dim.",
+        "Stop using staff route observations."
+      ],
+      "answer": 1,
+      "explanation": "The last sentence allows separate conclusions based on the evidence available."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. When was brightening particularly late?",
+      "options": [
+        "When coming along the straight path from the road",
+        "When the worker stopped at the detector",
+        "When coming from the boat store",
+        "Every time the fixed lamp was lit"
+      ],
+      "answer": 2,
+      "explanation": "The worker contrasts two approaches to the same steps."
+    },
+    {
+      "prompt": "1. Why mark the location where the light became useful?",
+      "options": [
+        "To track the time of the first bus",
+        "To replace a photograph of the tree",
+        "To connect the observation to the direction of approach",
+        "To count people entering the shelter"
+      ],
+      "answer": 2,
+      "explanation": "The engineer asks for a position on each walk because direction may matter."
+    },
+    {
+      "prompt": "1. What would moving the detector be unable to solve by itself?",
+      "options": [
+        "Late brightening of the second light",
+        "The tree shadow under the fixed lamp",
+        "A late report from a worker",
+        "A timing difference between approaches"
+      ],
+      "answer": 1,
+      "explanation": "The discussion distinguishes the trigger from a separate obstruction to the existing light."
+    },
+    {
+      "prompt": "2. What can Ruth safely report about Thursday compared with Tuesday?",
+      "options": [
+        "Exactly three more individual birds used the river.",
+        "Three more landings were recorded.",
+        "Five different birds arrived from upstream.",
+        "The new lamp attracted one extra bird."
+      ],
+      "answer": 1,
+      "explanation": "Five minus two gives three more events. The number of distinct birds and reason for the difference are still unknown."
+    },
+    {
+      "prompt": "2. Why would using the bridge need a new series?",
+      "options": [
+        "It changes the viewing position and what flights the observers may see.",
+        "Volunteers can count birds only from a bridge with a light.",
+        "Nobody has ever seen a bird with a white mark from the bank.",
+        "The manager has changed the ten-minute time limit."
+      ],
+      "answer": 0,
+      "explanation": "A new position can alter the set of flights that are visible."
+    },
+    {
+      "prompt": "2. What two kinds of observations should stay separate?",
+      "options": [
+        "Light readings and drawings of the bus stop",
+        "Birds from Tuesday and all the next flights in one count",
+        "Landing events and signs that a bird might be recognizable",
+        "Time of day and direction of approach to the steps"
+      ],
+      "answer": 2,
+      "explanation": "Ruth wants the event tally kept distinct from any notes about bird identity."
+    }
+  ],
+  "grammar": {
+    "focus": "Passive wording and explicit agency",
+    "explanation": "Use be plus a past participle to report an action when the thing affected matters more than the actor. Include by or use active voice if a recommendation requires a person to take responsibility. Passive reports describe who or what was measured without creating an explanation.",
+    "examples": [
+      {
+        "before": "The count was wrote down at six.",
+        "after": "The count was written down at six.",
+        "why": "A past participle follows was."
+      },
+      {
+        "before": "Two lamps tested by a volunteer tomorrow.",
+        "after": "Two lamps will be tested by a volunteer tomorrow.",
+        "why": "Keep will be and a past participle for a future passive."
+      },
+      {
+        "before": "The notes should check before a decision.",
+        "after": "The observations lead should check the notes before a decision.",
+        "why": "Active wording names the person who needs to act."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The lamp _____ on Monday before the first bus.",
+        "options": [
+          "did tested",
+          "were tested",
+          "was tested",
+          "was test"
+        ],
+        "answer": 2,
+        "explanation": "Was tested is a singular past passive."
+      },
+      {
+        "prompt": "Both approaches _____ at the same time tomorrow.",
+        "options": [
+          "will checked",
+          "are check",
+          "will be checking by",
+          "will be checked"
+        ],
+        "answer": 3,
+        "explanation": "Will be checked gives a future passive with the approaches as objects of the action."
+      },
+      {
+        "prompt": "The birds _____ counted while the far edge was hidden.",
+        "options": [
+          "were not",
+          "has not",
+          "was not",
+          "were not count"
+        ],
+        "answer": 0,
+        "explanation": "The plural subject takes were not counted."
+      },
+      {
+        "prompt": "Which sentence assigns a clear follow-up responsibility?",
+        "options": [
+          "The detector should be moved sometime.",
+          "The engineer should move the detector after testing it.",
+          "A move might be considered.",
+          "A test will be done by somebody."
+        ],
+        "answer": 1,
+        "explanation": "The active subject names who should act."
+      },
+      {
+        "prompt": "A new position has _____ agreed for both pairs.",
+        "options": [
+          "be",
+          "being",
+          "was",
+          "been"
+        ],
+        "answer": 3,
+        "explanation": "Present perfect passive uses has been plus a past participle."
+      },
+      {
+        "prompt": "The lamp _____ moved until the approach has been checked.",
+        "options": [
+          "should not be",
+          "should not have to",
+          "is not being by",
+          "will not has"
+        ],
+        "answer": 0,
+        "explanation": "The main clause needs a modal passive."
+      },
+      {
+        "prompt": "Which sentence reports an observation without claiming its cause?",
+        "options": [
+          "No birds landed because the lamp was bright.",
+          "The lamp made the bird count fall.",
+          "The rain sent all the birds to another site.",
+          "The far bank was not visible through the rain."
+        ],
+        "answer": 3,
+        "explanation": "Only the first reports what could be seen."
+      },
+      {
+        "prompt": "Two late brightening points have _____ on the plan.",
+        "options": [
+          "been marked",
+          "marked the",
+          "been mark",
+          "was marked"
+        ],
+        "answer": 0,
+        "explanation": "Have been marked is the plural present perfect passive."
+      }
+    ],
+    "transfer": "Write a short paired report with a passive sentence for each observation, then rewrite your two recommended actions to name who should carry them out."
+  },
+  "vocabulary": [
+    {
+      "word": "shield",
+      "meaning": "a cover that stops something reaching a place",
+      "example": "The new shield keeps light off the water.",
+      "pair": "fit a shield"
+    },
+    {
+      "word": "spill",
+      "meaning": "light or another substance that reaches beyond an intended area",
+      "example": "The shield reduces light spill.",
+      "pair": "light spill"
+    },
+    {
+      "word": "detector",
+      "meaning": "a device that notices a change or movement",
+      "example": "The detector caught movement on the path.",
+      "pair": "adjust a detector"
+    },
+    {
+      "word": "trigger",
+      "meaning": "cause something to start",
+      "example": "A visitor can trigger the lamp.",
+      "pair": "trigger the light"
+    },
+    {
+      "word": "approach",
+      "meaning": "a route or act of coming nearer",
+      "example": "The eastern approach is narrow.",
+      "pair": "approach to the steps"
+    },
+    {
+      "word": "threshold",
+      "meaning": "the point at which a change begins",
+      "example": "The engineer adjusted the movement threshold.",
+      "pair": "set a threshold"
+    },
+    {
+      "word": "comparability",
+      "meaning": "the degree to which two things can reasonably be compared",
+      "example": "The same position improves comparability.",
+      "pair": "maintain comparability"
+    },
+    {
+      "word": "interval",
+      "meaning": "a fixed period between two points",
+      "example": "Use a ten-minute interval.",
+      "pair": "observation interval"
+    },
+    {
+      "word": "visibility",
+      "meaning": "how clearly something can be seen",
+      "example": "Rain reduced visibility.",
+      "pair": "poor visibility"
+    },
+    {
+      "word": "sheltered",
+      "meaning": "protected from weather or an exposed area",
+      "example": "The test is on the sheltered path.",
+      "pair": "sheltered section"
+    },
+    {
+      "word": "recorded",
+      "meaning": "put into a written or saved account",
+      "example": "The recorded count was two.",
+      "pair": "recorded observation"
+    },
+    {
+      "word": "dim",
+      "meaning": "make less bright",
+      "example": "The lamp dims when people leave.",
+      "pair": "dim the light"
+    }
+  ],
+  "speaking": {
+    "audience": "The lighting trial team",
+    "first": "Use the two documents and these field notes: a worker could see the steps from the main road before reaching them, but the light came on late from the boat store. Observers counted two landing events on Tuesday and five on Thursday; the same bird may have landed more than once. Give a three-minute briefing separating the two findings and proposing one action.",
+    "change": "The bridge becomes the only place from which volunteers can see the whole test stretch.",
+    "second": "Record a follow-up for the resident meeting explaining whether and how a new observation series can begin.",
+    "checklist": [
+      "Separates the two purposes",
+      "Distinguishes recorded landings from distinct birds",
+      "Names one consequence of the changed viewpoint"
+    ]
+  },
+  "writing": {
+    "audience": "The site manager and people using the path",
+    "first": "Use these field notes and the two documents: the light came on late for one worker approaching from the boat store, and observers counted two landing events on Tuesday and five on Thursday. Write a 180–220 word trial note deciding what can change now and what needs further evidence. Add a 45-word notice for reporting a route problem.",
+    "change": "A worker reports the light comes on early enough from the road but too late from the boat store.",
+    "second": "Rewrite the route instructions and the recommendation with one specific hypothesis about the detector and one check to compare approaches.",
+    "checklist": [
+      "Uses neutral passive reporting for observations",
+      "Assigns two recommended actions to a person",
+      "Needs and evidence are stated separately"
+    ]
+  },
+  "immersion": {
+    "role": "Trial coordinator",
+    "goal": "Assemble a defensible trial update from evidence that was gathered under different conditions.",
+    "constraints": [
+      "Record landing events separately from notes about recognizable birds",
+      "Keep both directions on the route plan",
+      "The main road lighting and bus timetable remain unchanged"
+    ],
+    "change": "Only one volunteer is available for the repeat. They can watch or check the path, but not both at the same moment.",
+    "deliverables": [
+      "An observation grid",
+      "A decision about the next walk and count",
+      "A revised visitor notice",
+      "Two-minute handover defending the order of the repeat checks"
+    ],
+    "checklist": [
+      "The time and point of each observation are visible",
+      "The notice says which issue staff should report",
+      "The decision protects direct evidence for both purposes over time"
+    ]
+  }
+}

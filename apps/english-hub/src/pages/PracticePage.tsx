@@ -3,6 +3,7 @@ import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { getCatalog } from '../lib/hub';
 import { HandbookTeaser } from '../skills/grammar/HandbookTeaser';
+import { IntensiveLink } from './intensive/IntensiveLink';
 import { PracticeLinks } from '../components/PracticeLinks';
 import { SKILLS } from '../lib/skills';
 import { focusSkillOf, orderSkills } from '../lib/focusSkill';
@@ -24,6 +25,7 @@ export const PracticePage = () => {
         actions={<Link className="en-button-quiet" to="/today">{t('practice.backToToday')}</Link>}
       />
       {catalog.error ? <ErrorState error={catalog.error} onRetry={catalog.reload} /> : null}
+      <IntensiveLink />
       <div className="en-grid-cards">
         {orderSkills(SKILLS, focusSkillOf(access)).map((skill) => {
           const items = (catalog.data?.items ?? []).filter((item) => item.skill === skill.key);

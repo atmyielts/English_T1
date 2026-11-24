@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { hasRecordedListening, loadRecordedListeningSlugs } from "../_shared/english-recorded-listening.ts";
 import { guardActivity } from "../_shared/english-allowance.ts";
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -99,12 +100,15 @@ const loadItem = async (sb: any, productId: string, languageId: string, identifi
   return data as JsonRecord;
 };
 
-type Segment = { segment_index: number; segment_text: string; focus_phrase: string | null };
+type Segment = {
+  segment_index: number; segment_text: string; focus_phrase: string | null;
+  starts_at_seconds: number | null; ends_at_seconds: number | null;
+};
 
 const loadSegments = async (sb: any, itemId: string): Promise<Segment[]> => {
   const { data } = await sb
     .from("listening_segments")
-    .select("segment_index, segment_text, focus_phrase")
+    .select("segment_index, segment_text, focus_phrase, starts_at_seconds, ends_at_seconds")
     .eq("listening_item_id", itemId)
     .order("segment_index", { ascending: true });
   return ((data ?? []) as JsonRecord[])
@@ -112,13 +116,19 @@ const loadSegments = async (sb: any, itemId: string): Promise<Segment[]> => {
       segment_index: Number(row.segment_index ?? 0),
       segment_text: toText(row.segment_text, 1000),
       focus_phrase: toText(row.focus_phrase, 200) || null,
+      starts_at_seconds: row.starts_at_seconds == null ? null : toNumber(row.starts_at_seconds),
+      ends_at_seconds: row.ends_at_seconds == null ? null : toNumber(row.ends_at_seconds),
     }))
     .filter((row) => row.segment_text);
 };
 
 /** The sentences the learner writes down: segments marked with a focus phrase, in order. */
-const dictationTargets = (segments: Segment[]): Segment[] =>
-  segments.filter((segment) => segment.focus_phrase).slice(0, DICTATION_SENTENCES);
+const dictationTargets = (segments: Segment[]): Segment[] => segments.filter((segment) =>
+  segment.focus_phrase && segment.starts_at_seconds !== null && segment.starts_at_seconds >= 0 &&
+  segment.ends_at_seconds !== null && segment.ends_at_seconds > segment.starts_at_seconds
+).slice(0, DICTATION_SENTENCES);
+
+const audioComingSoon = () => json(409, { error: "Recorded audio is coming soon.", code: "listening_audio_soon" });
 
 // Offline answers synced later carry a client attempt id and are recorded once.
 serve(dedupeSubmits({
@@ -147,16 +157,20 @@ serve(dedupeSubmits({
     const productId = products.listening?.productId;
     if (!productId) return json(500, { error: "Listening is not available right now" });
 
+    if (req.method === "GET" && route === "/recordings") {
+      return json(200, { slugs: [...await loadRecordedListeningSlugs(sb, scope.languageId, productId)] });
+    }
+
     if (req.method === "GET" && (route === "" || route === "/" || route === "/items")) {
       return await listItems(sb, productId, scope.languageId, url);
     }
 
-    // One activity: the script (read aloud by the browser), questions without
-    // answer keys, and the sentences used for dictation.
+    // One recorded activity with timed excerpts and questions without keys.
     if (req.method === "GET" && route.startsWith("/items/")) {
       const identifier = decodeURIComponent(route.slice("/items/".length)).trim();
       const item = identifier ? await loadItem(sb, productId, scope.languageId, identifier) : null;
       if (!item) return json(404, { error: "Listening item not found" });
+      if (!hasRecordedListening(item.audio_url)) return audioComingSoon();
       const segments = await loadSegments(sb, String(item.id));
       return json(200, {
         item: publicItem(item),
@@ -174,6 +188,7 @@ serve(dedupeSubmits({
       const identifier = decodeURIComponent(route.slice("/items/".length, -"/submit".length)).trim();
       const item = identifier ? await loadItem(sb, productId, scope.languageId, identifier) : null;
       if (!item) return json(404, { error: "Listening item not found" });
+      if (!hasRecordedListening(item.audio_url)) return audioComingSoon();
 
       const questions = parseQuestions(item.questions);
       const targets = dictationTargets(await loadSegments(sb, String(item.id)));

@@ -1,0 +1,401 @@
+{
+  "slug": "returning-a-sweater",
+  "title": "Returning a sweater",
+  "level": "A1",
+  "summary": "You want to exchange a green sweater at Willow Lane Charity Shop. Read a desk sign and an item receipt. Work out what the customer wants to exchange and what she wants to keep. Use is and it for one sweater, and are and they for two items. Ask for an exchange and leave a clear note when the shop has no green sweater in your size. The shop is fictional.",
+  "documents": [
+    {
+      "title": "Care Sale and Return Desk",
+      "text": "Welcome to Willow Lane Charity Shop. Our Care Sale is on Saturday. The return desk is by the front door. It is open from 10 a.m. to 2 p.m. Bring your receipt to this desk for an exchange. Keep the tag on the item. The clerk checks the line on the receipt and looks for the size you need. If your size is not here, you can take your item home or ask the clerk to hold it. The repair table is at the back. The repair volunteer can sew on a button. Ask at the return desk before you leave anything at the shop."
+    },
+    {
+      "title": "Friday Item Receipt",
+      "text": "Willow Lane Charity Shop\nFriday, 4:10 p.m.\nReceipt number 218\n\nItem 1: Green sweater, size M, £6. It has a round neck and a white tag.\nItem 2: Blue sweater, size M, £6. It has a round neck and a yellow tag.\n\nTwo items. Total paid: £12. Paid by card.\n\nBring this receipt if you want to exchange an item. Point to the line for the sweater you bring back. Bring both sweaters only if you want to exchange both. The price and size are the same, so check the color and tag. The return desk is open on Saturday. Keep this receipt with your things."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Clerk at the Desk",
+      "text": "Hi. I’m Sam. I work at the return desk on Saturday. Let’s look at your receipt first. The receipt shows that you paid for the sweater. Tell me which sweater is too small. I can check the shelf for a larger one. If we have your size, I can do the exchange here. Jo is our repair volunteer. Jo works at the back table from eleven to one. You can ask Jo about a button or a small hole. Come to me for an exchange. If I hold your sweater here, I write your name and a pickup time on a card. You take the small copy home."
+    },
+    {
+      "title": "Mia’s Voice Message",
+      "text": "Hello, this is Mia. I bought two sweaters on Friday. The green sweater is too small. It is a medium. The blue sweater is fine. I wear it to work, so I want to keep it. Can I have a large green sweater, please? I wear green a lot. I can get to the shop at half past ten on Saturday. I have to leave at eleven. I have a bus to catch. I can come back between half past twelve and one if you hold my sweater. I have the receipt in my bag. The white tag is still on the green sweater."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Skim Care Sale and Return Desk. What does the sign help you do?",
+      "options": [
+        "Find the bus stop after the sale",
+        "Find the right desk or table for your item",
+        "Choose which color to buy",
+        "See how much you paid on Friday"
+      ],
+      "answer": 1,
+      "explanation": "The sign gives the return desk location and the repair table location."
+    },
+    {
+      "prompt": "Read Care Sale and Return Desk again. Mark the two desk times. When is the return desk open?",
+      "options": [
+        "Friday from 10 a.m. to 2 p.m.",
+        "Saturday from 10 a.m. to noon",
+        "Saturday from noon to 2 p.m.",
+        "Saturday from 10 a.m. to 2 p.m."
+      ],
+      "answer": 3,
+      "explanation": "The sign gives Saturday as the sale day and lists the desk hours as 10 a.m. to 2 p.m."
+    },
+    {
+      "prompt": "Use Care Sale and Return Desk. Your size is missing, and you want to keep the item with you today. What can you do?",
+      "options": [
+        "Take the item home",
+        "Ask the clerk to hold the item",
+        "Leave the item at the repair table",
+        "Leave the item by the front door"
+      ],
+      "answer": 0,
+      "explanation": "The sign says you can take your item home if your size is missing."
+    },
+    {
+      "prompt": "Skim Friday Item Receipt. Which detail tells you what the two sweaters cost together?",
+      "options": [
+        "Receipt number 218",
+        "Friday at 4:10 p.m.",
+        "Total paid £12",
+        "Paid by card"
+      ],
+      "answer": 2,
+      "explanation": "The receipt lists two items and gives £12 as the total paid."
+    },
+    {
+      "prompt": "Read Friday Item Receipt again. Make two short rows with item number, color, size and tag. Which row is correct for Item 2?",
+      "options": [
+        "Green, M, white tag",
+        "Blue, M, yellow tag",
+        "Blue, L, white tag",
+        "Green, L, yellow tag"
+      ],
+      "answer": 1,
+      "explanation": "The line for Item 2 says the sweater is blue, size M, with a yellow tag."
+    },
+    {
+      "prompt": "Use Friday Item Receipt. You want to exchange only the green sweater. What do you take and point to?",
+      "options": [
+        "Both sweaters and the total paid",
+        "The blue sweater and Item 2",
+        "The green sweater and the payment time",
+        "The green sweater and Item 1 on the receipt"
+      ],
+      "answer": 3,
+      "explanation": "The receipt lists the green sweater as Item 1 and says to point to its line."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Clerk at the Desk once. What is Sam mainly telling the customer?",
+      "options": [
+        "How to pay for two sweaters",
+        "When to take a bus home",
+        "Who helps with an exchange and who helps with a repair",
+        "Which sweater to wear to work"
+      ],
+      "answer": 2,
+      "explanation": "Sam explains that he handles exchanges and Jo helps with buttons or small holes."
+    },
+    {
+      "prompt": "Listen to Clerk at the Desk again. Put receipt, shelf and exchange in the order you hear. What does Sam look at first?",
+      "options": [
+        "The receipt",
+        "The shelf",
+        "The pickup card",
+        "The repair table"
+      ],
+      "answer": 0,
+      "explanation": "Sam says to look at the receipt first, before checking the shelf for a larger sweater."
+    },
+    {
+      "prompt": "Listen to the end of Clerk at the Desk. Put hold details in one group and repair details in another. What do you take home if Sam holds the sweater?",
+      "options": [
+        "A green sweater in a larger size",
+        "A button from the repair table",
+        "The shop’s shelf list",
+        "The small copy of the card"
+      ],
+      "answer": 3,
+      "explanation": "Sam writes a name and pickup time on a card and gives you the small copy."
+    },
+    {
+      "prompt": "Listen to Mia’s Voice Message once. Which sweater does Mia want to keep?",
+      "options": [
+        "The green medium sweater",
+        "The blue medium sweater",
+        "A large green sweater",
+        "A large blue sweater"
+      ],
+      "answer": 1,
+      "explanation": "Mia says the blue sweater is fine and she wears it to work."
+    },
+    {
+      "prompt": "Listen to Mia’s Voice Message again. Make three notes for arrival, leaving and coming back. When does Mia have to leave the first time?",
+      "options": [
+        "At 10:30 a.m.",
+        "At 12:30 p.m.",
+        "At 11 a.m.",
+        "At 1 p.m."
+      ],
+      "answer": 2,
+      "explanation": "Mia says she has to leave at eleven because she has a bus to catch."
+    },
+    {
+      "prompt": "Use Mia’s Voice Message. If the shop holds her sweater, which pickup time can Mia use?",
+      "options": [
+        "12:45 p.m.",
+        "11:15 a.m.",
+        "Noon",
+        "1:30 p.m."
+      ],
+      "answer": 0,
+      "explanation": "Mia can come back between half past twelve and one, so 12:45 fits."
+    }
+  ],
+  "grammar": {
+    "focus": "Is and it for one thing. Are and they for two or more things.",
+    "explanation": "Look at the thing or things you mean. Say The sweater is green for one sweater. Say The sweaters are green for two or more sweaters. You can use it for one thing after you name it. You can use they for two or more things after you name them. Read these examples aloud to hear the difference. Here is the receipt. It is in my bag. Here are the tags. They are on the table. In these yes-or-no questions, put is or are first. Is it yours? Are they yours? Read the After sentences twice. Mark one or two beside the sweater or sweaters in each. Say each corrected sentence aloud.",
+    "examples": [
+      {
+        "before": "This sweater are too small.",
+        "after": "This sweater is too small.",
+        "why": "This sweater means one sweater, so use is."
+      },
+      {
+        "before": "The tags are on the table. It is white.",
+        "after": "The tags are on the table. They are white.",
+        "why": "The second sentence is about both tags, so use they are."
+      },
+      {
+        "before": "The receipt is here. Are it yours?",
+        "after": "The receipt is here. Is it yours?",
+        "why": "There is one receipt. Start the question with is and use it."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "You show the clerk one sweater. Which sentence can you say?",
+        "options": [
+          "This sweater are too big.",
+          "These sweater are too big.",
+          "This sweater is too big.",
+          "This sweater too big."
+        ],
+        "answer": 2,
+        "explanation": "This sweater names one garment, so the sentence needs is before too big."
+      },
+      {
+        "prompt": "A customer points to two coats. Finish the reply. ‘Yes, ___ for sale.’",
+        "options": [
+          "they are",
+          "it is",
+          "they is",
+          "it are"
+        ],
+        "answer": 0,
+        "explanation": "The reply is about two coats, so use they with are."
+      },
+      {
+        "prompt": "You have one jacket in your hand. Ask the clerk about its size.",
+        "options": [
+          "Are they a medium?",
+          "Are it a medium?",
+          "Is they a medium?",
+          "Is it a medium?"
+        ],
+        "answer": 3,
+        "explanation": "You mean one jacket, so the question starts with Is it."
+      },
+      {
+        "prompt": "A volunteer opens a box with two hats. Which label goes on the box?",
+        "options": [
+          "The hats is clean.",
+          "The hats are clean.",
+          "The hat are clean.",
+          "The hats clean."
+        ],
+        "answer": 1,
+        "explanation": "The label is about two hats, so use hats and are."
+      },
+      {
+        "prompt": "Finish the note about one slip of paper. ‘The receipt is in my pocket. ___ still there.’",
+        "options": [
+          "They are",
+          "It are",
+          "They is",
+          "It is"
+        ],
+        "answer": 3,
+        "explanation": "The second sentence means the one receipt, so it takes It is."
+      },
+      {
+        "prompt": "You want to know if both bags are ready. Which question can you ask?",
+        "options": [
+          "Is the bags ready?",
+          "Are the bag ready?",
+          "Are the bags ready?",
+          "The bags is ready?"
+        ],
+        "answer": 2,
+        "explanation": "You ask about both bags, so start with Are and keep bags plural."
+      },
+      {
+        "prompt": "You see one white tag and two yellow tags. Which pair of sentences fits?",
+        "options": [
+          "The white tag is here. The yellow tags are here.",
+          "The white tag are here. The yellow tags are here.",
+          "The white tag is here. The yellow tags is here.",
+          "The white tag are here. The yellow tags is here."
+        ],
+        "answer": 0,
+        "explanation": "Use is for the one white tag and are for the two yellow tags."
+      },
+      {
+        "prompt": "Leo asks, ‘Is the blue sweater in this bag?’ Answer yes. The bag has one blue sweater.",
+        "options": [
+          "Yes, it are.",
+          "Yes, it is.",
+          "Yes, they are.",
+          "Yes, they is."
+        ],
+        "answer": 1,
+        "explanation": "Leo asks about one blue sweater, so the short answer is Yes, it is."
+      }
+    ],
+    "transfer": "Make a label for a bag with one green scarf and two blue hats. Write one line for the scarf and one for the hats. Then say two short lines to a volunteer. Use it in one line and they in the other. Check that each word points to the right thing or group."
+  },
+  "vocabulary": [
+    {
+      "word": "exchange",
+      "meaning": "give one item back and get another",
+      "example": "Can I exchange these shoes for a bigger pair?",
+      "pair": "exchange a sweater"
+    },
+    {
+      "word": "receipt",
+      "meaning": "paper that shows what you paid for",
+      "example": "I put my lunch receipt in my pocket.",
+      "pair": "keep the receipt"
+    },
+    {
+      "word": "return desk",
+      "meaning": "place in a shop where you take things back",
+      "example": "I took the broken lamp to the return desk.",
+      "pair": "go to the return desk"
+    },
+    {
+      "word": "tag",
+      "meaning": "small label on an item",
+      "example": "The tag on my new hat says £4.",
+      "pair": "price tag"
+    },
+    {
+      "word": "size",
+      "meaning": "how big or small an item of clothing is",
+      "example": "This shirt is the right size for me.",
+      "pair": "a larger size"
+    },
+    {
+      "word": "shelf",
+      "meaning": "flat board for holding things",
+      "example": "My cups are on the top shelf.",
+      "pair": "top shelf"
+    },
+    {
+      "word": "repair",
+      "meaning": "fix something that is broken or has a hole",
+      "example": "I can repair the hole in my sock.",
+      "pair": "repair a zip"
+    },
+    {
+      "word": "volunteer",
+      "meaning": "person who helps without pay",
+      "example": "A volunteer reads books to children at the library.",
+      "pair": "shop volunteer"
+    },
+    {
+      "word": "hold",
+      "meaning": "keep something for someone for a short time",
+      "example": "Can you hold this bag for me until four?",
+      "pair": "hold an item"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go to a place to get something",
+      "example": "I pick up my books after work.",
+      "pair": "pick up an order"
+    },
+    {
+      "word": "too small",
+      "meaning": "smaller than you need",
+      "example": "This box is too small for the boots.",
+      "pair": "too small for me"
+    },
+    {
+      "word": "come back",
+      "meaning": "go to the same place again",
+      "example": "I can come back after lunch.",
+      "pair": "come back tomorrow"
+    }
+  ],
+  "speaking": {
+    "audience": "Sam and then Lee at the Willow Lane Charity Shop return desk",
+    "first": "Be Mia at 10:30 a.m. on Saturday. Your green sweater in size M is too small, and you want a green sweater in size L. The blue one fits, so keep it. Use the receipt to identify the green one. Make a cue card with the sweater, the receipt line and the size you want. Say hello and ask Sam for an exchange. Pause. Read Sam’s question aloud, ‘Which sweater is too small?’ Answer in one short turn. Then answer ‘Which size would you like?’ Use ‘It is’ once when you talk about the sweater. Try the three turns again with the cue card face down.",
+    "change": "Sam leaves at 10:45 a.m. Lee takes over at the return desk by the front door. There is a large blue sweater and no large green sweater. Lee can hold Mia’s green sweater at the desk until 12:45 p.m. and give her a copy of the hold card.",
+    "second": "Start again with Lee. Keep the green medium sweater, Item 1 and your wish for a large green sweater in your reply. Read Lee’s question, ‘Would you like the large blue one?’ Answer politely. Ask Lee to hold your sweater until 12:45 p.m. Say where you will pick it up and ask for a copy of the card. Listen to your own second take or say it again from memory.",
+    "checklist": [
+      "I say hello and use please in a request.",
+      "I name the green medium sweater and point to Item 1.",
+      "I use It is to talk about one sweater.",
+      "I give short answers to the clerk’s questions.",
+      "I say 12:45 p.m. as the pickup time at the return desk.",
+      "I ask for a copy of the hold card."
+    ]
+  },
+  "writing": {
+    "audience": "Lee, the volunteer taking over at the return desk",
+    "first": "Look at Friday Item Receipt. Mia wants to keep the blue sweater and exchange the green one for size L. If the shop holds the green sweater, she can come back between 12:30 and 1:00 p.m. Make two columns on scrap paper called Leave and Take home. Put the two sweaters in the right columns for a hold. Draft a note for Lee on four or five short lines, about 25–45 words. Use Mia’s name, receipt 218, the item, its color and size, and a pickup time in Mia’s return window.",
+    "change": "At 10:50 a.m. Lee checks the shelf again. The only large sweater is blue. Mia asks to collect it at 12:50 p.m. Lee agrees to extend the hold and changes the card. Lee will put the green sweater in a paper bag under the return desk by the front door. Mia takes a small copy of the card.",
+    "second": "Revise the same note for the paper bag. Change the pickup time to 12:50 p.m. and add where the bag goes. Keep Mia’s name, receipt number and the green sweater’s size. Use it once for the sweater. Give a short instruction to give the sweater back to Mia. Read the note as Lee and check that you can find the right bag.",
+    "checklist": [
+      "My note has four or five short lines and about 25–45 words.",
+      "Mia’s name and receipt 218 are easy to find.",
+      "I name one green medium sweater and use it for that sweater.",
+      "I write 12:50 p.m. as the pickup time.",
+      "I give the paper bag’s place under the return desk.",
+      "The note tells Lee to give the sweater back to Mia."
+    ]
+  },
+  "immersion": {
+    "role": "You are Alex, the volunteer at the Willow Lane Charity Shop return desk on another Saturday.",
+    "goal": "Help Noor choose what to do with a red sweater when the shop has the wrong color in her size. Make a hold card and a copy Noor can use to get her own sweater back.",
+    "constraints": [
+      "Noor brings one red sweater, size S, with a white tag. It is Item 1 on receipt 307.",
+      "Item 2 on receipt 307 is a red sweater, size S, with a yellow tag. Noor keeps it in her bag.",
+      "Noor wants a red sweater in size M. She wants to keep her own sweater if there is no red one in that size.",
+      "Noor gets to the desk at 11:20 a.m. and must leave at 11:35 a.m. She can come back from 1:15 to 1:30 p.m.",
+      "Noor says, ‘Please hold my sweater if I can pick it up at 1:20. If I can’t, I’ll take it home now.’"
+    ],
+    "change": "At 11:25 a.m., Pat takes over from Alex. Pat finds two gray sweaters, both size M. The shop has no red sweater in size M. Pat can hold Noor’s sweater in the small basket behind the return desk until 1:30 p.m. Noor can take a paper copy of the hold card.",
+    "deliverables": [
+      "Make a two-row list from receipt 307. Give the item number and tag color in each row. Mark the sweater Noor leaves and the sweater she keeps.",
+      "Speak as Pat after the handover. Say three short turns aloud. Say what is on the shelf using they are. Ask if Noor wants the hold at 1:20 p.m. Read Noor’s words in the instructions and answer them. Use it is once for her sweater.",
+      "Write a four- to six-line hold card. Include Noor, receipt 307, Item 1, red, size S, white tag, the small basket behind the return desk and pickup at 1:20 p.m.",
+      "Write a two- or three-line copy for Noor. Give the receipt number, the pickup place and time, and say she gets her own red sweater back."
+    ],
+    "checklist": [
+      "I marked Item 1 with the white tag for the hold and Item 2 with the yellow tag for Noor to keep.",
+      "I used they are for the two gray sweaters and it is for one sweater.",
+      "I chose a hold using Noor’s words and checked that 1:20 p.m. is before 1:30 p.m.",
+      "The hold card tells Pat which sweater to give back and where to find it.",
+      "Noor’s copy gives the same receipt number and pickup time as the hold card."
+    ]
+  }
+}

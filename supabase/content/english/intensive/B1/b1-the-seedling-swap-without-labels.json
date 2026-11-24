@@ -1,0 +1,392 @@
+{
+  "slug": "b1-the-seedling-swap-without-labels",
+  "title": "The Seedling Swap Without Labels",
+  "level": "B1",
+  "summary": "Organise an exchange when some donated plants arrive without reliable names.",
+  "documents": [
+    {
+      "title": "Garden exchange notice",
+      "text": "Bring up to four young plants to the community garden on Saturday. Plants in ordinary pots are welcome. Before you leave home, write the name of each plant and whether it usually grows indoors or outdoors on a separate card. We use separate cards because a wet pot can be hard to write on. Bring the plants to the desk under the covered entrance between ten and eleven. The exchange starts when the bell rings at eleven.\n\nYou can take home one plant for each one you bring. If you bring none, ask at noon whether there are plants to share. We reserve a few plants near the end for people who are trying gardening for the first time. The covered entrance can become crowded, so leave your bags next to the side fence after you check in. Take a photograph of any plant card you will want to remember. The cards stay with the pots until the end of the exchange."
+    },
+    {
+      "title": "Message to Saturday volunteers",
+      "text": "Hi team. Last time several people brought seedlings in reused pots with the old names still printed on them. A visitor chose a tomato plant because the container said basil. This week, look at the separate card. The label on the pot itself is not a second piece of evidence.\n\nIf a visitor is unsure about the name, put the plant on the table marked Needs a Name. Ask the visitor to write where it came from, such as a seed packet or a friend's garden. The person who brought it can still choose another plant. Nobody should announce a name for an unknown plant just because it looks like one nearby. A gardener will be at the table from eleven thirty. When a name has been confirmed, move the plant to the main tables with a new card. If you cannot confirm it, leave the note protected from the rain and ask the donor whether they want to take the plant home later."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A visitor checks in",
+      "text": "Visitor: Hello. I have three pots here, but only two cards. I wrote both herb names on one card because they were in the same tray at home.\n\nRae: The two pots may go to different people. Could you make two cards here? I have blank ones beside the pencil tin.\n\nVisitor: Yes. The third was a gift from my neighbour. She told me it grows well in her garden, but I cannot remember its name.\n\nRae: Take that one to the small table near the fence. Write what your neighbour told you on a blank card. You can still take three plants from the exchange when the bell rings.\n\nVisitor: Even if the gardener cannot name the third one?\n\nRae: Yes. You brought it for the swap and told us what you know. Just remember that pots on the small table stay there until someone adds a confirmed name. You can ask at the desk whether that has happened before you go.\n\nVisitor: I'll do that. I don't want anyone to take it home and guess what it is."
+    },
+    {
+      "title": "Update at eleven thirty",
+      "text": "Coordinator: The main tables are working well, but we have one change. The gardener is stuck on a delayed train. She expects to arrive just after twelve. Please leave the plants that need names where they are. Keep the cards with them and explain the delay if anyone asks.\n\nVolunteer: We have four spare plants for people who did not bring one. Should we still open that table at noon?\n\nCoordinator: Yes. It is a different table. The plants there all have cards and we can give them away as planned. Please move the sign for the spare table closer to the entrance. People keep joining the line for the gardener.\n\nVolunteer: What if someone wants to leave a photograph instead of waiting?\n\nCoordinator: Ask them to put the pot number on the photograph and leave a first name at the desk. Don't promise an answer today. If the gardener cannot name the plant from the photograph, we can tell them what extra detail would help."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why does the notice ask for a separate card?",
+      "options": [
+        "Names on cards count as extra plants.",
+        "Pots must stay outside the entrance.",
+        "Gardeners choose cards when the bell rings.",
+        "A wet pot can be hard to write on."
+      ],
+      "answer": 3,
+      "explanation": "The first paragraph explains that wet pots are hard to write on."
+    },
+    {
+      "prompt": "1. When can someone who brought no plant ask for a spare?",
+      "options": [
+        "At noon",
+        "Before ten",
+        "Between ten and eleven",
+        "At eleven when the bell rings"
+      ],
+      "answer": 0,
+      "explanation": "The second paragraph gives noon as the time to ask."
+    },
+    {
+      "prompt": "1. Why might a visitor photograph a card?",
+      "options": [
+        "Photos replace the notes on pots.",
+        "The garden closes before people can read.",
+        "Cards are available only at check-in.",
+        "The card stays with the plant."
+      ],
+      "answer": 3,
+      "explanation": "A photo keeps a record while the card stays with the pot."
+    },
+    {
+      "prompt": "2. What happened with the pot marked basil?",
+      "options": [
+        "It held a tomato plant.",
+        "The wet card refused to stick.",
+        "It had been left in the wrong garden.",
+        "The tomato plant had no container."
+      ],
+      "answer": 0,
+      "explanation": "The memo says the reused container still showed the old name."
+    },
+    {
+      "prompt": "2. What happens to an unclear donation?",
+      "options": [
+        "It is placed beside a look-alike plant.",
+        "It is handed immediately to a beginner.",
+        "The donor cannot collect any plant.",
+        "Its pot and a source note go to Needs a Name."
+      ],
+      "answer": 3,
+      "explanation": "The instructions ask for a location and a note instead of a guess."
+    },
+    {
+      "prompt": "2. When can a plant move to the main tables?",
+      "options": [
+        "When the bell rings",
+        "As soon as the gardener arrives",
+        "When the donor takes another pot",
+        "After the name is confirmed"
+      ],
+      "answer": 3,
+      "explanation": "The required step is confirmation of the plant name."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Why does Rae ask for two cards?",
+      "options": [
+        "One old card became wet.",
+        "The gardener wants larger handwriting.",
+        "The two pots may go to different people.",
+        "The visitor used the same plant name twice."
+      ],
+      "answer": 2,
+      "explanation": "A separate card lets each plant carry its own information."
+    },
+    {
+      "prompt": "1. What does the visitor know about the unnamed plant?",
+      "options": [
+        "It came from a seed packet.",
+        "It grew well in the neighbour's garden.",
+        "It was kept indoors.",
+        "It is the same herb as one in the tray."
+      ],
+      "answer": 1,
+      "explanation": "The only information remembered from the neighbour concerns where it grew well."
+    },
+    {
+      "prompt": "1. What can the visitor take after the bell?",
+      "options": [
+        "One plant",
+        "Two plants",
+        "Three plants",
+        "One spare without a label"
+      ],
+      "answer": 2,
+      "explanation": "Rae confirms that all three contributions count."
+    },
+    {
+      "prompt": "2. What changed this morning?",
+      "options": [
+        "The noon opening of the spare table",
+        "The number of spare plants",
+        "The gardener's arrival time",
+        "The place for holding unnamed pots"
+      ],
+      "answer": 2,
+      "explanation": "A late train moves the gardener's arrival past noon."
+    },
+    {
+      "prompt": "2. Why move the spare table sign?",
+      "options": [
+        "The gardener will use the same table later.",
+        "People are joining the wrong line.",
+        "The entrance is closing for repairs.",
+        "The cards cannot be seen from the fence."
+      ],
+      "answer": 1,
+      "explanation": "Visitors are joining the gardener's line when they want spares."
+    },
+    {
+      "prompt": "2. What must a visitor put on a photograph?",
+      "options": [
+        "The plant's confirmed name",
+        "The expected reply time",
+        "The pot number",
+        "The volunteer's name"
+      ],
+      "answer": 2,
+      "explanation": "The pot number connects the photograph with the correct plant."
+    }
+  ],
+  "grammar": {
+    "focus": "If and when in instructions",
+    "explanation": "If introduces a condition that may or may not apply. When points to an event the speaker expects. Use a present form in a forward-looking time or condition clause. Then state the action in the main clause.",
+    "examples": [
+      {
+        "before": "If a plant will have no name, put it aside.",
+        "after": "If a plant has no name, put it aside.",
+        "why": "Place has in the if clause."
+      },
+      {
+        "before": "When the bell will ring, start the exchange.",
+        "after": "When the bell rings, start the exchange.",
+        "why": "Use present simple after when."
+      },
+      {
+        "before": "When nobody can name it, take a guess.",
+        "after": "If nobody can name it, keep the source note beside it.",
+        "why": "If makes this a possible situation, and the action follows the actual rule."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "If the card _____ wet, use another one.",
+        "options": [
+          "will be",
+          "would be",
+          "were",
+          "is"
+        ],
+        "answer": 3,
+        "explanation": "Use the present for an open condition."
+      },
+      {
+        "prompt": "When the volunteer _____, show her the notes.",
+        "options": [
+          "arrives",
+          "will arrive",
+          "had arrived",
+          "has arriving"
+        ],
+        "answer": 0,
+        "explanation": "Present simple works in the expected future clause."
+      },
+      {
+        "prompt": "Take a spare card if you _____ one.",
+        "options": [
+          "will need",
+          "need",
+          "are need",
+          "would need"
+        ],
+        "answer": 1,
+        "explanation": "Use need after if to state a condition."
+      },
+      {
+        "prompt": "If nobody confirms the name, _____ the plant on the small table.",
+        "options": [
+          "will leave",
+          "leave",
+          "leaving",
+          "left"
+        ],
+        "answer": 1,
+        "explanation": "The main clause is an imperative."
+      },
+      {
+        "prompt": "Which opening presents the bell as an expected event?",
+        "options": [
+          "If the bell rang",
+          "When the bell rings",
+          "If the bell had rung",
+          "While the bell will ring"
+        ],
+        "answer": 1,
+        "explanation": "When establishes the expected trigger."
+      },
+      {
+        "prompt": "_____ anyone asks about the delay, explain where the gardener is.",
+        "options": [
+          "If",
+          "Until",
+          "During",
+          "Despite"
+        ],
+        "answer": 0,
+        "explanation": "The action is necessary only if somebody asks."
+      },
+      {
+        "prompt": "When the table opens, donors _____ choose a plant.",
+        "options": [
+          "can",
+          "are can",
+          "could to",
+          "can to"
+        ],
+        "answer": 0,
+        "explanation": "A modal is followed by choose."
+      },
+      {
+        "prompt": "Which instruction requires confirmation first?",
+        "options": [
+          "Move the pot before we confirm the name.",
+          "We confirm the name after moving it.",
+          "Move every pot when the bell rings.",
+          "Move the pot if the name is confirmed."
+        ],
+        "answer": 3,
+        "explanation": "Only the first makes confirmation the condition."
+      }
+    ],
+    "transfer": "Write three helper instructions. Use if for an uncertain case, when for a planned event, and mark the single action attached to each clause."
+  },
+  "vocabulary": [
+    {
+      "word": "seedling",
+      "meaning": "a very young plant",
+      "example": "This seedling came from a friend's garden.",
+      "pair": "grow a seedling"
+    },
+    {
+      "word": "donor",
+      "meaning": "a person who gives something",
+      "example": "Ask the donor where the seed came from.",
+      "pair": "thank the donor"
+    },
+    {
+      "word": "swap",
+      "meaning": "exchange things",
+      "example": "We swap plants every spring.",
+      "pair": "plant swap"
+    },
+    {
+      "word": "confirm",
+      "meaning": "check that something is certain",
+      "example": "The gardener confirmed the name.",
+      "pair": "confirm the name"
+    },
+    {
+      "word": "reuse",
+      "meaning": "use something again",
+      "example": "We reuse clean pots.",
+      "pair": "reuse a pot"
+    },
+    {
+      "word": "spare",
+      "meaning": "available because it is extra",
+      "example": "There is a spare card in the tin.",
+      "pair": "a spare card"
+    },
+    {
+      "word": "check in",
+      "meaning": "report that you have arrived",
+      "example": "Please check in at the desk.",
+      "pair": "check in at the desk"
+    },
+    {
+      "word": "reserve",
+      "meaning": "keep for a purpose",
+      "example": "They reserve a few plants for beginners.",
+      "pair": "reserve a place"
+    },
+    {
+      "word": "source",
+      "meaning": "where something came from",
+      "example": "Write the source on the card.",
+      "pair": "identify a source"
+    },
+    {
+      "word": "protect",
+      "meaning": "keep something safe",
+      "example": "The cover will protect the notes from rain.",
+      "pair": "protect from rain"
+    },
+    {
+      "word": "belong",
+      "meaning": "be in the right place or group",
+      "example": "The new card belongs beside that pot.",
+      "pair": "belong with it"
+    },
+    {
+      "word": "delay",
+      "meaning": "make something happen later",
+      "example": "The train delay changed her arrival time.",
+      "pair": "a short delay"
+    }
+  ],
+  "speaking": {
+    "audience": "An early visitor with an unnamed plant",
+    "first": "Make notes from the notice and check-in. Give a 90-second answer explaining the separate table, swap allowance and spare service. Replay it and mark the detail a visitor might miss.",
+    "change": "The gardener will arrive after noon.",
+    "second": "Record a short shift handover that distinguishes both noon activities and gives a line to use with a visitor in the wrong queue.",
+    "checklist": [
+      "Names the correct event times",
+      "Explains which decision depends on confirmation",
+      "Gives a clear next action."
+    ]
+  },
+  "writing": {
+    "audience": "People who have not arrived yet",
+    "first": "Draft a 120–150 word notice covering arrival, labels, swap allowance and spares. Make a fact list from the two documents first.",
+    "change": "Check-in moves beside the side fence. The gardener is delayed. The two main times remain the same.",
+    "second": "Write the replacement notice. Highlight two changed sentences and one important detail you deliberately kept.",
+    "checklist": [
+      "New location appears near the start",
+      "Spare plants and unnamed plants remain separate",
+      "If and when introduce the intended conditions."
+    ]
+  },
+  "immersion": {
+    "role": "Welcome desk volunteer",
+    "goal": "Prepare a visitor pack for a swap when some plants have no name.",
+    "constraints": [
+      "Two signs can be printed",
+      "The spare and unnamed stations stay separate",
+      "Do not guess plant names"
+    ],
+    "change": "A donor leaves a photograph of an unlabelled pot and asks for an answer today.",
+    "deliverables": [
+      "A fact-and-source table",
+      "Two signs with distinct headings",
+      "A three-line desk script",
+      "A reply to the donor and a note about what cannot be promised"
+    ],
+    "checklist": [
+      "Each sign gives a different route",
+      "The photo can be matched with its pot",
+      "No claim of identification without evidence",
+      "The donor can tell what happens next."
+    ]
+  }
+}

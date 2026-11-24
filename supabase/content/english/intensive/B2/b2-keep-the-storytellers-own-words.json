@@ -1,0 +1,394 @@
+{
+  "slug": "b2-keep-the-storytellers-own-words",
+  "title": "Keep the Storyteller's Own Words",
+  "level": "B2",
+  "summary": "Decide what a translated oral-history extract can say while separating speaker intent, editorial context and publication permission.",
+  "documents": [
+    {
+      "title": "Notes for making a bilingual exhibit",
+      "text": "For the exhibition The Street Before the Market, the museum has permission to show a short extract from each participant's interview inside the gallery. The permission form does not cover the website, promotional leaflets, or videos shown at outside events. The clips do not have to be funny or dramatic; choose the part that helps a visitor understand an ordinary action. A transcript and an English translation will be displayed together below each speaker's name. When a phrase has no direct English equivalent, the translator can use an English phrase with a similar purpose and give the literal meaning on a separate context card. We have room on the main caption for up to 34 English words. Do not put the translator's note inside quotation marks or inside the speaker's translated words. Any speaker can ask to see the planned caption before the exhibition opens. Exhibition staff should mention a requested revision in the working file, even if they choose wording that does not reproduce the request word for word."
+    },
+    {
+      "title": "Caption draft and margin note",
+      "text": "In the selected extract, Mina remembers how her mother put an extra cloth over a market basket before passing it to a neighbor. She says, 'She gave the basket a second coat.' The phrase can mean protecting something so carefully that someone else knows it mattered. It does not necessarily tell us that there were two pieces of cloth. Our working translation reads, 'My mother wrapped the basket with extra care before passing it to Mrs. Deren.' In the draft caption, the next sentence inside the quotation marks says, 'This custom helped families carry supplies through the dust.' Mina did later say it was dusty in the street, but she did not connect this particular habit to dust. She actually explained that Mrs. Deren was moving that day and the two families were returning each other's baskets. I propose moving the family context to the separate card and dropping the general claim about why people wrapped them. We could still print the literal phrase there if Mina would like it included."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Mina and the project editor",
+      "text": "Editor: I have the sentence about extra care here. Would you prefer us to say exactly what you said about the coat?\n\nMina: Keep it on the small card if you like. My mother was a tailor, which made the expression sound right to her. But I didn't mean she made a cover for the basket. She used the cloth that was there.\n\nEditor: And what about Mrs. Deren's name? Your first interview used only her surname.\n\nMina: Her daughter asked if we could leave it out of the caption. She doesn't mind the moving story, but she would prefer 'our neighbor.' I said I would ask you.\n\nEditor: There is one more request. The local news page wants to show the clip before the opening.\n\nMina: I haven't decided about that. Can you send me the exact part they are asking for, and tell me whether it will stay up after the exhibition closes?\n\nEditor: Of course. We'll keep that request separate from the permission to put it on the gallery wall."
+    },
+    {
+      "title": "One minute with the caption test team",
+      "text": "Ruth: The first visitor said she understood that the extra care mattered but assumed the mother gave the basket as a present. Did you hear that too?\n\nAslan: Yes. She saw the word 'passing' and thought the basket was full of gifts. The second visitor said 'passing' sounded like a brief action, but couldn't say whose basket it was.\n\nRuth: We could add 'back' after 'passed it.' We have room for that.\n\nAslan: Mina's original words in the clip don't say 'back,' though. That detail comes right after the part we picked.\n\nRuth: Then we should leave the translated quote as it is and clarify it on the note. For the next trial, show the note and quote together. Ask readers to say which detail came from which one.\n\nAslan: And ask how they know. If they guess from the photo, we still won't know whether the caption is clear.\n\nRuth: Mark what they point to as evidence. Some visitors see a card but don't read as far as the second sentence."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Where is the team currently permitted to show the selected recording?",
+      "options": [
+        "Within the exhibition gallery",
+        "On the exhibit's promotional web page",
+        "As part of outside event videos",
+        "In an electronic leaflet outside the museum"
+      ],
+      "answer": 0,
+      "explanation": "The permission applies only to use inside the gallery."
+    },
+    {
+      "prompt": "1. What guidance applies when a phrase has no close English match?",
+      "options": [
+        "Use only the literal form so the two texts can be matched word for word.",
+        "Use an English equivalent in the quote and explain the literal meaning separately.",
+        "Replace it with an interpretation that the speaker said elsewhere in the interview.",
+        "Keep the phrase in English quotation marks on the context card only."
+      ],
+      "answer": 1,
+      "explanation": "The instruction separates a readable translated quote from the added note."
+    },
+    {
+      "prompt": "1. How should staff handle a request that leads to a partial edit?",
+      "options": [
+        "Document the request in the working file.",
+        "Remove the interview from the gallery.",
+        "Show two versions of the caption directly on the wall.",
+        "Omit the request unless the exact wording is used."
+      ],
+      "answer": 0,
+      "explanation": "The working record retains the requested revision even if it is adapted."
+    },
+    {
+      "prompt": "2. Why should the dust sentence be dropped?",
+      "options": [
+        "The interview does not support the link between dust and this action.",
+        "The local street did not contain dust in the period described.",
+        "Mina said she had never seen someone wrap a basket.",
+        "The translator did not have enough room to quote the entire speech."
+      ],
+      "answer": 0,
+      "explanation": "Dust is mentioned, but the reason was added by the editor."
+    },
+    {
+      "prompt": "2. What might readers wrongly conclude from the literal word 'second'?",
+      "options": [
+        "That the basket changed owners twice",
+        "That Mrs. Deren had two mothers",
+        "That the mother used two cloths",
+        "That the mother learned sewing from her neighbor"
+      ],
+      "answer": 2,
+      "explanation": "The phrase describes a degree of care rather than a fixed number of covers."
+    },
+    {
+      "prompt": "2. Why is the basket-return detail a better candidate for the context card?",
+      "options": [
+        "It proves that all families in the market wrapped their baskets.",
+        "It explains why the permission form was signed twice.",
+        "It gives documented background without putting additional words in the chosen clip.",
+        "It removes the need for the translation."
+      ],
+      "answer": 2,
+      "explanation": "Mina describes the return elsewhere, but it is outside the translated excerpt."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What clarification does Mina make about her mother?",
+      "options": [
+        "She used the basket to carry sewing tools.",
+        "She learned the phrase from Mrs. Deren.",
+        "She used cloth on hand instead of making a cover.",
+        "She gave the basket to a different neighbor."
+      ],
+      "answer": 2,
+      "explanation": "Mina notes the tailoring connection, then rules out a cover made for that basket."
+    },
+    {
+      "prompt": "1. What change does Mina ask the editor to consider?",
+      "options": [
+        "Remove the entire moving story from all exhibits.",
+        "Include her mother's name on the main caption.",
+        "Change her own quote to mention two cloths.",
+        "Replace the neighbor's name with a description."
+      ],
+      "answer": 3,
+      "explanation": "She passes along a request for 'our neighbor' and says the moving detail can stay."
+    },
+    {
+      "prompt": "1. What information does Mina request before deciding about online use?",
+      "options": [
+        "Who has read the main caption and how many words it contains",
+        "Which extract is requested and how long it will stay online",
+        "When the gallery wall will go up and what it looks like",
+        "Whether all other speakers have moved away"
+      ],
+      "answer": 1,
+      "explanation": "She asks for the exact part and whether it stays available after the exhibition."
+    },
+    {
+      "prompt": "2. Why do Ruth and Aslan decide against adding 'back' in the quote?",
+      "options": [
+        "The detail is true but lies outside the chosen excerpt.",
+        "The first visitor knew already that it was a return.",
+        "The source recording contains no basket return at all.",
+        "The English word limit has already been used up."
+      ],
+      "answer": 0,
+      "explanation": "Aslan locates the fact after the selected clip; Ruth wants the quote to match the clip."
+    },
+    {
+      "prompt": "2. What different inference did one visitor make about the basket?",
+      "options": [
+        "She thought it contained two pieces of cloth.",
+        "She thought it belonged to the museum.",
+        "She thought it was a present.",
+        "She thought it had been brought by the news page."
+      ],
+      "answer": 2,
+      "explanation": "The first visitor assumed the cloth-covered basket was being given as a gift."
+    },
+    {
+      "prompt": "2. Why should testers ask visitors to explain their reasoning?",
+      "options": [
+        "The museum wants visitors to complete a photography quiz.",
+        "A photo-based guess would tell little about clarity of the text.",
+        "It will help the translator identify the neighborhood by name.",
+        "A guess would require approval from all the speakers."
+      ],
+      "answer": 1,
+      "explanation": "Aslan distinguishes evidence of reading from a guess based on the image."
+    }
+  ],
+  "grammar": {
+    "focus": "Defining and non-defining relative clauses",
+    "explanation": "Use a defining clause to identify which person or thing you mean, with no commas. A non-defining clause gives extra information about someone or something already identified and takes commas in writing. That may introduce a defining clause, but use who or which for a non-defining one.",
+    "examples": [
+      {
+        "before": "Mina, that appears in the recording, approved the new name.",
+        "after": "Mina, who appears in the recording, approved the new name.",
+        "why": "Use who after the comma for extra information about a named person."
+      },
+      {
+        "before": "We used the clip, that began with the sound of a basket.",
+        "after": "We used the clip that began with the sound of a basket.",
+        "why": "The clause identifies which clip was selected; no comma is needed."
+      },
+      {
+        "before": "The clip about the basket, which Mina asked us to shorten is ready.",
+        "after": "The clip about the basket, which Mina asked us to shorten, is ready.",
+        "why": "Use a pair of commas because the main clause already identifies the clip."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Mina, ___ speaks in the selected clip, asked for a change.",
+        "options": [
+          "that",
+          "which",
+          "who",
+          "whose it"
+        ],
+        "answer": 2,
+        "explanation": "The commas set off extra information about a person, so use who."
+      },
+      {
+        "prompt": "The card ___ explains the expression needs a shorter heading.",
+        "options": [
+          "that",
+          "who",
+          "where it",
+          "whose its"
+        ],
+        "answer": 0,
+        "explanation": "The clause identifies a card through what it does."
+      },
+      {
+        "prompt": "Which version treats the textile detail as extra information?",
+        "options": [
+          "Mina's mother who was a tailor often used the expression.",
+          "Mina's mother that was a tailor, often used the expression.",
+          "Mina's mother, that was a tailor, often used the expression.",
+          "Mina's mother, who was a tailor, often used the expression."
+        ],
+        "answer": 3,
+        "explanation": "Both commas and who set off the detail."
+      },
+      {
+        "prompt": "This is the student ___ draft had a sentence about dust.",
+        "options": [
+          "whom",
+          "whose",
+          "which",
+          "who she"
+        ],
+        "answer": 1,
+        "explanation": "Whose connects the student with the draft."
+      },
+      {
+        "prompt": "Which means the restriction affected only clips without web permission?",
+        "options": [
+          "The clips, which lacked web permission, stayed in the gallery.",
+          "The clips, that lacked web permission, stayed in the gallery.",
+          "The clips lacked web permission, which stayed in the gallery.",
+          "The clips that lacked web permission stayed in the gallery."
+        ],
+        "answer": 3,
+        "explanation": "The defining clause picks out the clips that meet the condition."
+      },
+      {
+        "prompt": "The gallery, ___ the talks are recorded, is closed today.",
+        "options": [
+          "where",
+          "who",
+          "whose",
+          "that"
+        ],
+        "answer": 0,
+        "explanation": "Where introduces extra information about the place."
+      },
+      {
+        "prompt": "Which combines the sentences as extra information about a named publication? 'Market Stories is a local page. It asked for the clip.'",
+        "options": [
+          "Market Stories, that is a local page, asked for the clip.",
+          "Market Stories which a local page, asked for the clip.",
+          "Market Stories, which a local page, asked for the clip.",
+          "Market Stories, which is a local page, asked for the clip."
+        ],
+        "answer": 3,
+        "explanation": "The clause is complete and enclosed in commas."
+      },
+      {
+        "prompt": "Find a heading that identifies a subset of interview records.",
+        "options": [
+          "Interviews, which need a second permission check",
+          "Interviews, that need a second permission check",
+          "Interviews that need a second permission check",
+          "Interviews who need a second permission check"
+        ],
+        "answer": 2,
+        "explanation": "A defining clause gives the condition for inclusion."
+      }
+    ],
+    "transfer": "Write four sentences about a different local memory and its use. Use defining clauses to identify a clip and a context card, then add non-defining details about the named speaker and a specific caption. Read your sentences aloud with meaningful pauses."
+  },
+  "vocabulary": [
+    {
+      "word": "extract",
+      "meaning": "a piece selected from a longer recording or text",
+      "example": "The gallery will display an extract from the interview.",
+      "pair": "a short extract"
+    },
+    {
+      "word": "literal",
+      "meaning": "following the exact or direct meaning of words",
+      "example": "The literal translation sounded as if there were two cloths.",
+      "pair": "a literal translation"
+    },
+    {
+      "word": "equivalent",
+      "meaning": "something that has a matching purpose or value",
+      "example": "The team found an English equivalent for the phrase.",
+      "pair": "a close equivalent"
+    },
+    {
+      "word": "margin note",
+      "meaning": "a brief comment at the side of a draft",
+      "example": "The margin note explains why a sentence was removed.",
+      "pair": "add a margin note"
+    },
+    {
+      "word": "permission",
+      "meaning": "agreement allowing a particular use or action",
+      "example": "The team needs separate permission for the video.",
+      "pair": "obtain permission"
+    },
+    {
+      "word": "quotation marks",
+      "meaning": "paired symbols showing words as spoken or quoted",
+      "example": "Keep editorial background outside the quotation marks.",
+      "pair": "put in quotation marks"
+    },
+    {
+      "word": "excerpt",
+      "meaning": "a selected part of a larger work",
+      "example": "The final excerpt lasts twenty seconds.",
+      "pair": "choose an excerpt"
+    },
+    {
+      "word": "put words in someone's mouth",
+      "meaning": "make it appear that a person said something they did not say",
+      "example": "The edit risked putting words in Mina's mouth.",
+      "pair": "avoid putting words in someone's mouth"
+    },
+    {
+      "word": "evoke",
+      "meaning": "bring a feeling or memory to mind",
+      "example": "The phrase evokes Mina's mother at work.",
+      "pair": "evoke a memory"
+    },
+    {
+      "word": "attribution",
+      "meaning": "information about who supplied a statement, image or idea",
+      "example": "The small print gives the attribution for the photograph.",
+      "pair": "check the attribution"
+    },
+    {
+      "word": "word for word",
+      "meaning": "using exactly the same words",
+      "example": "The original phrase need not be rendered word for word.",
+      "pair": "translate word for word"
+    },
+    {
+      "word": "editorial",
+      "meaning": "relating to choices about content before publication",
+      "example": "The note explains an editorial decision.",
+      "pair": "an editorial decision"
+    }
+  ],
+  "speaking": {
+    "audience": "The speaker and an exhibit coordinator",
+    "first": "Prepare a 2–3 minute conversation. Read your proposed caption, explain the separate context note, and ask one neutral question about gallery publication and one about the unapproved online request.",
+    "change": "The speaker accepts the short caption but says her mother's tailoring should be documented on the context card. She wants to decide on web use after opening day.",
+    "second": "Record a second two-minute take. Confirm the change, explain the translation without saying it is exact, and separate the two publication decisions before ending.",
+    "checklist": [
+      "Invite a response without pressuring",
+      "Confirm how the neighbor will be described",
+      "Separate literal meaning from caption",
+      "Respect the timing of the online decision"
+    ]
+  },
+  "writing": {
+    "audience": "A volunteer preparing the gallery display",
+    "first": "Write a 34-word maximum translated caption, a 60–90 word context card, and a short internal note about permissions. Identify which statements are the participant's and which are your own.",
+    "change": "The web editor asks for a 110–140 word preview tonight. The gallery quote remains approved for its original use; web permission is still pending.",
+    "second": "Write the preview using a description of the project and the planned translation process. In a separate short sentence to the web editor, explain what you need before adding an extract.",
+    "checklist": [
+      "Caption stays within 34 words",
+      "Added claims have source support",
+      "Online scope is clear",
+      "Public and internal materials use suitable tones"
+    ]
+  },
+  "immersion": {
+    "role": "Bilingual exhibit editor",
+    "goal": "Create and test a caption set that communicates an ordinary memory while protecting the speaker's control over its use.",
+    "constraints": [
+      "34 English words at most in the quote",
+      "Use 'our neighbor' in place of the other family's name",
+      "Gallery permission does not allow online or outside copies"
+    ],
+    "change": "The layout team can show only one line of primary text above a folded context card. Some readers will never open the card.",
+    "deliverables": [
+      "Lay out a short quotation and clearly attributed folded note",
+      "Keep an internal revision and permission record with three decisions",
+      "Write three neutral visitor-test questions and a tally sheet distinguishing quote, note and image",
+      "Revise the visible line to prevent one predictable misunderstanding, then justify the choice in a one-minute briefing"
+    ],
+    "checklist": [
+      "No unsupported meaning is added to the speaker's words",
+      "A reader can identify speaker and editor text",
+      "The preview stays within current permission",
+      "The test can uncover at least two different misunderstandings"
+    ]
+  }
+}

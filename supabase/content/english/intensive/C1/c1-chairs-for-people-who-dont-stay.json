@@ -1,0 +1,394 @@
+{
+  "slug": "c1-chairs-for-people-who-dont-stay",
+  "title": "Chairs for People Who Don’t Stay",
+  "level": "C1",
+  "summary": "Revise a temporary seating plan for a wholesale produce hall without relying on occupancy counts alone.\n\nReading: Trace an unloaded visitor and a buyer with a trolley through the three seating locations. Mark where each written source supplies an observation and where you had to supply a guess. Propose a trial observation that could correct one of your guesses.\n\nVocabulary: Group the words into movement, visual information and consequences. Write pairs of short instructions for buyers and staff, using a different collocation for evidence and for action. Hide the key words and recover them from purpose alone.",
+  "documents": [
+    {
+      "title": "Design team memo",
+      "text": "The east hall has a wide aisle that connects the market entrance with the collection desks. The management team has ordered eighteen replacement chairs. The design group proposes installing ten along the side wall, dividing the rest between the upstairs gallery and the covered entrance. The aisle itself must remain clear. When the old chairs were scattered down the centre, sellers regularly moved them out of the way of their trolleys. Visitors then found that the location of a seat changed from one day to the next.\n\nA weekday survey found that the chairs near the collection desks were occupied for a greater proportion of the morning than chairs in either of the other spaces. The designers therefore propose putting most of the new seating in that area. Staff would attach the wall row to two rails so that individual chairs could not drift into the aisle. The two other groups would be movable.\n\nThe proposal assumes that people choosing where to wait see all three places as reasonable options. We have not addressed how a person discovers that their order is ready. The collection clerk currently calls out a stall number. The upstairs gallery is outside the range of most announcements, and there is no display at the covered entrance."
+    },
+    {
+      "title": "Volunteer access walk notes",
+      "text": "I walked the route with a buyer who routinely collects six boxes of greens before opening his shop. He said the old movable chairs were useful because he could rest while the boxes stayed beside him. He never took a seat near the wall. It meant either leaving the boxes in the aisle or blocking the feet of somebody sitting in the next chair. I had written down that he did not make use of existing seating. I had to add “when loaded” for the entry to make sense.\n\nThe placement also affects smaller purchases. An older visitor said she sat on the entrance side only when another customer agreed to relay her stall number. She did not feel comfortable asking again the following day, so she stood close to the desk instead. Neither observation measures how many people would move if they could see whether their order was ready.\n\nI suggest testing two changes separately. Mark a short bay beside a seat where a trolley can stand without obstructing either the aisle or the wall row. On different mornings, display the collection numbers at the entrance on a trial board. Record whether customers wait elsewhere and why they chose to do so. If we put both changes in at once, we will know much less about which one helped."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Conversation beside the collection desk",
+      "text": "Lina: The budget doesn't cover an automatic screen. Would giving everyone a printed order slip solve part of the problem?\n\nKam: They already have slips. What they don't know is when their boxes go onto the shelf. I can mark that on a board, but I can’t leave the desk each time a box arrives.\n\nLina: What if a volunteer stays by the entrance and checks with you every five minutes?\n\nKam: Then it will help only while the volunteer is there. If the board looks official, somebody might assume their boxes aren't ready because the number hasn't appeared.\n\nLina: Can we make the update time visible? A visitor could see it was last checked at ten past.\n\nKam: We can try that for one morning. I also need a way to announce that we've stopped updating it. A stale board is not the same as an empty one.\n\nLina: I can put a card beside it that says go to the desk when the board is paused. But that still sends people to the desk if they miss the update time.\n\nKam: Yes. Put that sentence high enough on the card so somebody sees it before they sit down. And can we test reading it while somebody is standing between the chairs and the board?"
+    },
+    {
+      "title": "Sellers’ representative reports after a trial",
+      "text": "At eight o'clock, a few buyers put their trolleys in the marked bay and actually sat down. A florist had been using the same corner to assemble buckets for collection, so she moved her work to the other end of her stall. We had inadvertently made it harder for her to hear the porter approaching. That did not appear in the tally of seated customers. Her assistant brought it up when we walked round after the trial.\n\nLater the floor area stayed clear even with several people waiting. We had a useful sign that the bay was working for one purpose, and a good reason to ask who else had to adapt. I would retain the bay but move its far edge slightly, and give the florist a different place to assemble the buckets. I would not rely entirely on the florist to tell me whether the other stalls had lost anything.\n\nHere is what I would say to the manager. We can compare the aisle on a morning with and without a bay and ask who used it. We should also spend ten minutes learning which jobs have relied on the unmarked floor. It is possible to record a real gain for customers while overlooking an avoidable cost elsewhere."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Why are the designers fixing the chairs near the desks to rails?",
+      "options": [
+        "To limit the time customers may wait in them.",
+        "To make the collection clerk's voice carry farther.",
+        "To keep chairs from being moved into the trolley route.",
+        "To keep market owners from reclaiming chairs upstairs."
+      ],
+      "answer": 2,
+      "explanation": "The memo says fixed wall seats cannot drift into the aisle."
+    },
+    {
+      "prompt": "Which important part of waiting does the design memo leave unresolved?",
+      "options": [
+        "Whether people elsewhere can discover their order is ready.",
+        "Which periods the earlier survey examined.",
+        "How the replacement chairs will be purchased.",
+        "Whether sellers use trolleys in the aisle."
+      ],
+      "answer": 0,
+      "explanation": "Announcements do not reach all spaces and there is no entrance display."
+    },
+    {
+      "prompt": "What did the volunteer need to qualify in the buyer’s record?",
+      "options": [
+        "The buyer had previously been assigned a seat upstairs.",
+        "Seat use depended on whether the buyer had boxes to keep beside him.",
+        "Only buyers who had collected six boxes were asked to comment.",
+        "The preference applied only before his shop opened."
+      ],
+      "answer": 1,
+      "explanation": "The buyer can rest when boxes and seating can be adjacent without blocking others."
+    },
+    {
+      "prompt": "Why did an older visitor stop sitting near the entrance?",
+      "options": [
+        "The stall number never appeared on her printed order slip.",
+        "The seats had to be moved as soon as she arrived.",
+        "She was asked not to stop other visitors walking by.",
+        "She did not want to depend repeatedly on somebody relaying her number."
+      ],
+      "answer": 3,
+      "explanation": "She worried about asking a second time, so stood near the desk."
+    },
+    {
+      "prompt": "What benefit comes from testing changes on different mornings?",
+      "options": [
+        "It lets staff stop tracking reasons for choosing seats.",
+        "It helps disentangle the bay’s effect from that of the display.",
+        "It enables a stronger conclusion even when buyer behaviour is unobserved.",
+        "It allows orders to be called out in fewer areas."
+      ],
+      "answer": 1,
+      "explanation": "The notes explicitly say trying both at once would obscure their individual effects."
+    },
+    {
+      "prompt": "What is the central difference between the sources?",
+      "options": [
+        "One rejects fixing any chairs; the other endorses fixing them all.",
+        "One supports two display boards and the other one display.",
+        "One starts from where chairs are used; the other asks why using a chair might be difficult.",
+        "One tracks buyers and the other only tracks sellers."
+      ],
+      "answer": 2,
+      "explanation": "Observed occupancy captures the current conditions; the walk reveals barriers under those conditions."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why could a board with delayed updates be misleading?",
+      "options": [
+        "It could remove the need to check the time on order slips.",
+        "It could imply the clerk is collecting the wrong boxes.",
+        "Customers could see another person’s name on it.",
+        "Customers could take silence as evidence their order isn’t ready."
+      ],
+      "answer": 3,
+      "explanation": "Kam distinguishes an apparent status from the fact nobody has updated it."
+    },
+    {
+      "prompt": "What fallback do Kam and Lina propose?",
+      "options": [
+        "Erase all stall numbers each minute.",
+        "Let customers move the board themselves.",
+        "Direct customers to the desk when updates stop.",
+        "Stop printing order slips."
+      ],
+      "answer": 2,
+      "explanation": "Lina proposes an explicit paused message pointing to the desk."
+    },
+    {
+      "prompt": "Why should someone stand between the chairs and board in testing?",
+      "options": [
+        "To practise calling two stall numbers at once.",
+        "To test whether another person can block important instructions.",
+        "To measure a direct line between the board and the trolley bay.",
+        "To see how quickly a volunteer can check the box shelf."
+      ],
+      "answer": 1,
+      "explanation": "Kam wants to test the visibility of the card under actual waiting conditions."
+    },
+    {
+      "prompt": "Which consequence did the trial tally miss?",
+      "options": [
+        "Several buyers asked the clerk to relocate the board.",
+        "The florist had more difficulty hearing the porter from her new place.",
+        "The pilot chairs made it impossible to keep trolleys in the bay.",
+        "A buyer stood because the upstairs space was blocked off."
+      ],
+      "answer": 1,
+      "explanation": "The florist’s lost cue was reported afterward and not counted with seats."
+    },
+    {
+      "prompt": "What does the sellers' representative propose keeping?",
+      "options": [
+        "The florist’s new position, without further inquiry",
+        "A permanent tally as the sole assessment",
+        "Only the chairs against the wall",
+        "The marked bay, with an adjustment to its edge"
+      ],
+      "answer": 3,
+      "explanation": "The representative recommends keeping the gain while adjusting the boundary and checking other jobs."
+    },
+    {
+      "prompt": "What issue occurs in both recordings?",
+      "options": [
+        "A visible improvement can leave a separate practical requirement untested.",
+        "No member of staff should be responsible for live information.",
+        "A customer count determines who works by the desk.",
+        "A permanent position is always worse than a temporary one."
+      ],
+      "answer": 0,
+      "explanation": "The display’s apparent authority can hide staleness and the seat tally hides a seller’s work disruption."
+    }
+  ],
+  "grammar": {
+    "focus": "Reduced relative clauses and scope",
+    "explanation": "An active relative can often become an -ing phrase and a passive relative a past participle. The shortened clause describes the noun it follows. If scope, time or the responsible actor might be ambiguous, a full clause offers more control.",
+    "examples": [
+      {
+        "before": "The customers which wait at the entrance need another cue.",
+        "after": "The customers waiting at the entrance need another cue.",
+        "why": "Waiting actively describes customers."
+      },
+      {
+        "before": "The boards updating at the desk show the time.",
+        "after": "The boards updated at the desk show the time.",
+        "why": "Staff update boards, so a passive reduction is needed."
+      },
+      {
+        "before": "The space cleared by the steward for a trolley was not a formal bay.",
+        "after": "The space the steward cleared for a trolley was not a formal bay.",
+        "why": "A full relative explicitly retains who did the work."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which reduction says a chair was placed by somebody else?",
+        "options": [
+          "The chairs installing near the wall are fixed.",
+          "The chairs installed near the wall are fixed.",
+          "The chairs having install near the wall are fixed.",
+          "The chairs which installing near the wall are fixed."
+        ],
+        "answer": 1,
+        "explanation": "Installed is a past participle describing chairs as the objects of installation."
+      },
+      {
+        "prompt": "Which sentence describes customers actively waiting?",
+        "options": [
+          "Customers stood near the desk can hear the announcement.",
+          "Customers are standing near the desk can hear the announcement.",
+          "Customers standing near the desk can hear the announcement.",
+          "Customers been standing near the desk can hear the announcement."
+        ],
+        "answer": 2,
+        "explanation": "Standing is an active reduced relative for those who are standing."
+      },
+      {
+        "prompt": "Who was near the corner in ‘We spoke to the florist working beside the bay’?",
+        "options": [
+          "The people who spoke",
+          "The trolley",
+          "The florist",
+          "A porter"
+        ],
+        "answer": 2,
+        "explanation": "Working modifies the adjacent noun florist."
+      },
+      {
+        "prompt": "Which sentence clearly identifies volunteers as the people updating the board?",
+        "options": [
+          "The board the volunteers update shows the last check time.",
+          "The volunteers updated by the board show the last check time.",
+          "The board update shows volunteers the time of checks.",
+          "The board updating the volunteers shows the last check time."
+        ],
+        "answer": 0,
+        "explanation": "The full relative puts volunteers explicitly in the subject position."
+      },
+      {
+        "prompt": "Which version preserves the past fact in ‘the desks that stood here before the renovation’?",
+        "options": [
+          "The desks which are standing here",
+          "The desks being renovated here",
+          "The desks standing here now",
+          "The desks that used to stand here"
+        ],
+        "answer": 3,
+        "explanation": "Used to retains the past-only meaning that standing alone may lose."
+      },
+      {
+        "prompt": "Rewrite ‘the number that is displayed at the entrance’ economically.",
+        "options": [
+          "the number to display the entrance",
+          "the number displaying at the entrance",
+          "the number displays at the entrance",
+          "the number displayed at the entrance"
+        ],
+        "answer": 3,
+        "explanation": "Displayed keeps the original passive relation."
+      },
+      {
+        "prompt": "Which sentence makes it clear an aisle can still be obstructed even when customers use the right furniture?",
+        "options": [
+          "Trolleys that were parking the aisle can still block the wall.",
+          "Trolleys parked too far from the wall can still block the aisle.",
+          "Trolleys parking the wall can still block the aisle.",
+          "Trolleys when park too far can still block the aisle."
+        ],
+        "answer": 1,
+        "explanation": "Parked states a passive relation and too far identifies the problematic position."
+      },
+      {
+        "prompt": "Which revision distinguishes the florist affected by the change from someone who actively changed the bay?",
+        "options": [
+          "The florist whose work was displaced by the bay offered a compromise.",
+          "The bay whose florist was working changed the compromise.",
+          "The florist displacing work by the bay offered a compromise.",
+          "The florist was displacing the bay, offering a change."
+        ],
+        "answer": 0,
+        "explanation": "The full relative identifies the effect on the florist’s work without assigning her responsibility."
+      }
+    ],
+    "transfer": "Rewrite an instruction card with two active and two passive reduced relatives. Ask another reader to underline the noun each one describes. Restore the full clause wherever they choose a different noun."
+  },
+  "vocabulary": [
+    {
+      "word": "obstruct",
+      "meaning": "block a route or view",
+      "example": "Please do not obstruct the entrance.",
+      "pair": "obstruct a route"
+    },
+    {
+      "word": "designate",
+      "meaning": "formally assign for a purpose",
+      "example": "The team designated a corner for returning crates.",
+      "pair": "designate a bay"
+    },
+    {
+      "word": "occupancy",
+      "meaning": "extent to which a place is in use",
+      "example": "High occupancy may reflect the only available option.",
+      "pair": "occupancy rate"
+    },
+    {
+      "word": "stale",
+      "meaning": "out of date",
+      "example": "The screen warned that information was stale.",
+      "pair": "stale information"
+    },
+    {
+      "word": "fallback",
+      "meaning": "plan used when the first one fails",
+      "example": "They adopted a printed fallback for the busy morning.",
+      "pair": "fallback procedure"
+    },
+    {
+      "word": "relay",
+      "meaning": "pass a message to somebody else",
+      "example": "The assistant relayed the clerk’s answer.",
+      "pair": "relay a message"
+    },
+    {
+      "word": "visibility",
+      "meaning": "ease of seeing something",
+      "example": "A low shelf improved visibility of the display.",
+      "pair": "improve visibility"
+    },
+    {
+      "word": "adjacent",
+      "meaning": "next to",
+      "example": "Crates go in the bay adjacent to the wall.",
+      "pair": "adjacent bay"
+    },
+    {
+      "word": "displace",
+      "meaning": "force something to move from its usual place",
+      "example": "Storing bags there displaced two lifts.",
+      "pair": "displace an activity"
+    },
+    {
+      "word": "distinguish",
+      "meaning": "tell apart",
+      "example": "The key should distinguish waiting areas from routes.",
+      "pair": "distinguish between uses"
+    },
+    {
+      "word": "informal",
+      "meaning": "not officially designated or arranged",
+      "example": "The corner had become an informal workspace.",
+      "pair": "informal arrangement"
+    },
+    {
+      "word": "unintended",
+      "meaning": "not planned",
+      "example": "The new layout had an unintended effect on deliveries.",
+      "pair": "unintended consequence"
+    }
+  ],
+  "speaking": {
+    "audience": "Shoppers and stall workers at an opening briefing",
+    "first": "Describe and defend a trial route with the trolley bay, updates, and a reliable fallback. Narrate a loaded customer’s journey and an unencumbered customer’s journey.",
+    "change": "The market lends you a sign, but short-term staff cannot supply updates. An adjacent stall gets an urgent morning delivery.",
+    "second": "Give a separate three-minute announcement. Route a buyer to a dependable status source and explain how you will change the trial after the delivery.",
+    "checklist": [
+      "Explain what staff actually update.",
+      "Include one route with a load and one without.",
+      "Distinguish tested facts from expectations.",
+      "Repeat one essential instruction at the close."
+    ]
+  },
+  "writing": {
+    "audience": "Market manager who wants a countable success measure",
+    "first": "Write a 350-word trial proposal with an observation table. Specify what to count and what short interviews can find that a count misses. Set a stop condition.",
+    "change": "The board has helped buyers sit but was stale for 20 minutes. The florist reports needing a substitute work spot.",
+    "second": "Send a fresh short recommendation that interprets both outcomes and names a person responsible for each correction.",
+    "checklist": [
+      "Compare both forms of evidence.",
+      "Label the two changes separately.",
+      "Include an information-failure threshold.",
+      "Attribute responsibility without blaming volunteers."
+    ]
+  },
+  "immersion": {
+    "role": "Temporary market operations lead",
+    "goal": "Improve waiting without pushing hidden work into another corner.",
+    "constraints": [
+      "The main aisle stays clear all morning.",
+      "Stallholders can use one person per shift to log trial problems.",
+      "Reserved gathering space cannot stand idle when deliveries are late.",
+      "One notice must work when the update board is paused."
+    ],
+    "change": "Half the entrance is closed during the trial, and uncollected orders still have to move once.",
+    "deliverables": [
+      "Produce an annotated schematic with a contingency route.",
+      "Run an oral walk-through from arrival through pickup.",
+      "Submit a short results memo with a change you would reverse and one you would retest."
+    ],
+    "checklist": [
+      "Follow both people and boxes.",
+      "Expose what existing observers cannot see.",
+      "Separate reversal from retest.",
+      "Preserve routes during the closure."
+    ]
+  }
+}

@@ -310,6 +310,9 @@ verify_jwt = false
 [functions.hub]
 verify_jwt = false
 
+[functions.english-intensive]
+verify_jwt = false
+
 [functions.content-registry]
 verify_jwt = false
 

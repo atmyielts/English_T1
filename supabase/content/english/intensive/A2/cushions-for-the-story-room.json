@@ -1,0 +1,405 @@
+{
+  "slug": "cushions-for-the-story-room",
+  "title": "Cushions for the story room",
+  "level": "A2",
+  "summary": "Use a fabric collection list, a hall calendar and delivery details to plan two visits to the adult reading room. Use the present continuous to say what is already arranged. Update your plan and handover note when a visit moves and one cover has a new home.",
+  "documents": [
+    {
+      "title": "Clean fabric collection list",
+      "text": "All the fabric on this list is clean. It came from people who live near the hall. There is enough blue fabric for two large covers and enough green fabric for one large cover. The yellow fabric is for two small covers. The cream fabric is for one small cover. The blue and yellow covers are already finished. The green and cream fabric is still in flat pieces. Please leave those pieces in the fabric box for next week. On the finished covers, the labels show the colour and size. The two blue covers also have numbers, Blue 1 and Blue 2. The yellow covers have the same label."
+    },
+    {
+      "title": "Hall calendar, 12–13 October",
+      "text": "Tuesday 12 October. At 10:00, Sam meets Lina at the front desk and picks up the first bag of covers. The story room is booked for an adult reading group from 10:15 to 12:00. Sam can go in at 10:05 or after the group leaves. Wednesday 13 October. At 15:30, Sam meets desk volunteer Noor at the front desk and picks up the second bag. The story room is booked for a book club from 14:00 to 15:15. Sam can take the covers in after pickup. Do not go into a booked room. Leave covers you cannot put away with the person at the front desk."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Lina’s voice message",
+      "text": "Hi Sam, it's Lina. I'm bringing the four finished covers to the hall on Tuesday. I'm meeting you at the front desk at ten. I'll have a big bag and a small bag. The big one has both blue covers. The small one has both yellow covers. The blue covers are quite thick, so even one of them is too big for the small bag. Could you take the big bag into the story room on Tuesday? I'll leave the small bag with Noor. The green and cream fabric can stay in the fabric box. I hope to come back next week, but I haven't picked a day yet."
+    },
+    {
+      "title": "A quick interview with Sam",
+      "text": "Interviewer: Sam, why are you going back to the hall on Wednesday? Sam: I'm returning library books first. Then I'm picking up the second bag of covers at three thirty. Interviewer: Do you have room for a big bag on that trip? Sam: No. I'm going home on the bus with my shopping. I can carry the small bag of covers as well, but that's all. Interviewer: Where will you put the covers before you leave? Sam: In the basket by the story room door. If I can't get into the room, I'll leave the bag with Noor at the front desk. My bus leaves at four ten."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In “Clean fabric collection list”, which covers are ready to use?",
+      "options": [
+        "One large green cover and one small cream cover",
+        "Two large blue covers and one large green cover",
+        "Two large blue covers and two small yellow covers",
+        "Two small yellow covers and one small cream cover"
+      ],
+      "answer": 2,
+      "explanation": "The list says both blue covers and both yellow covers are already finished."
+    },
+    {
+      "prompt": "Why does “Clean fabric collection list” include the names Blue 1 and Blue 2?",
+      "options": [
+        "To help people tell the two large blue covers apart",
+        "To show that the blue covers come in two sizes",
+        "To give names to the two pieces of yellow fabric",
+        "To tell people when to collect each blue cover"
+      ],
+      "answer": 0,
+      "explanation": "The two blue covers have the same colour and size, so their numbers tell them apart."
+    },
+    {
+      "prompt": "You find a flat cream piece. What should you do, according to “Clean fabric collection list”?",
+      "options": [
+        "Put it with the finished small covers.",
+        "Give it a number like the blue covers.",
+        "Take it to the story room for use today.",
+        "Leave it in the fabric box for next week."
+      ],
+      "answer": 3,
+      "explanation": "The cream fabric is still a flat piece, and the list says to leave it in the fabric box."
+    },
+    {
+      "prompt": "According to “Hall calendar, 12–13 October”, when can Sam enter the story room soon after picking up the first bag?",
+      "options": [
+        "Tuesday at 10:15",
+        "Tuesday at 10:05",
+        "Tuesday at 11:00",
+        "Tuesday at 09:55"
+      ],
+      "answer": 1,
+      "explanation": "Sam picks up the first bag at 10:00 and can enter at 10:05 before the booking."
+    },
+    {
+      "prompt": "What is the order of events on Wednesday in “Hall calendar, 12–13 October”?",
+      "options": [
+        "Sam picks up the bag, the book club ends, then Sam goes into the room.",
+        "Sam enters the room, the book club ends, then Sam picks up the bag.",
+        "The book club ends, Sam picks up the bag, then Sam can go into the room.",
+        "The book club ends, Sam enters the room, then Sam picks up the bag."
+      ],
+      "answer": 2,
+      "explanation": "The book club ends at 15:15, and Sam can enter after the 15:30 pickup."
+    },
+    {
+      "prompt": "What should Sam do if the room is booked, according to “Hall calendar, 12–13 October”?",
+      "options": [
+        "Put the covers inside while the group is there.",
+        "Leave the covers on the floor outside the room.",
+        "Take the covers home and bring them back next week.",
+        "Leave the covers with the person at the front desk."
+      ],
+      "answer": 3,
+      "explanation": "The calendar says to leave covers with the person at the front desk if Sam cannot put them away."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What is Lina mainly doing in “Lina’s voice message”?",
+      "options": [
+        "Asking Sam to sort the donated fabric by size",
+        "Confirming a meeting and explaining which bag goes where",
+        "Finding out when Sam’s bus leaves the hall",
+        "Asking Noor to choose a day for next week"
+      ],
+      "answer": 1,
+      "explanation": "Lina confirms the Tuesday meeting and says Sam takes the big bag while Noor keeps the small one."
+    },
+    {
+      "prompt": "In “Lina’s voice message”, what is inside the small bag?",
+      "options": [
+        "One blue cover and one yellow cover",
+        "The green and cream fabric",
+        "Both blue covers",
+        "Both yellow covers"
+      ],
+      "answer": 3,
+      "explanation": "Lina says the small bag has both yellow covers and the big bag has both blue covers."
+    },
+    {
+      "prompt": "In “Lina’s voice message”, which visit does Lina hope to make but still need to choose a day for?",
+      "options": [
+        "Lina’s visit next week",
+        "Lina’s visit to the hall on Tuesday",
+        "Lina’s meeting with Sam at ten",
+        "Sam’s trip into the story room on Tuesday"
+      ],
+      "answer": 0,
+      "explanation": "Lina hopes to come back next week, but she says she has not picked a day."
+    },
+    {
+      "prompt": "In “A quick interview with Sam”, what is Sam doing just before picking up the second bag?",
+      "options": [
+        "Putting the yellow covers in the basket",
+        "Taking the bus home",
+        "Returning library books",
+        "Leaving a bag with Noor"
+      ],
+      "answer": 2,
+      "explanation": "Sam says the library books come first and the bag pickup follows at three thirty."
+    },
+    {
+      "prompt": "Why is the small bag the right choice for Wednesday in “A quick interview with Sam”?",
+      "options": [
+        "Sam has to fit the bag inside the basket.",
+        "Sam can carry only the small bag along with the shopping on the bus.",
+        "Sam is also taking the big bag home for Lina.",
+        "Sam has to give the big bag to the interviewer before leaving."
+      ],
+      "answer": 1,
+      "explanation": "Sam explains that the shopping is going on the bus too, leaving room for only the small bag."
+    },
+    {
+      "prompt": "What happens at 4:10 in “A quick interview with Sam”?",
+      "options": [
+        "The second bag is ready at the front desk.",
+        "Sam returns the library books.",
+        "Sam puts the bag in the basket.",
+        "Sam’s bus leaves."
+      ],
+      "answer": 3,
+      "explanation": "Sam gives 4:10 as the bus departure time and 3:30 as the pickup time."
+    }
+  ],
+  "grammar": {
+    "focus": "Present continuous for definite future arrangements",
+    "explanation": "Use am, is or are with a verb ending in -ing to talk about a future arrangement. An arrangement is something you have already agreed or booked. For example, say “I'm meeting Noor on Wednesday at 15:30” when you and Noor have agreed to meet. Use a day, date or time to show when it is happening. A place can make your message clearer too. For a plan you still need to arrange, say “I hope to visit next week” or “I want to visit next week.” When a meeting moves, use the new day and time. You can also say “I'm not coming on Wednesday” if someone still expects you then.",
+    "examples": [
+      {
+        "before": "I want to meet Noor on Wednesday.",
+        "after": "I'm meeting Noor at the front desk on Wednesday at 15:30.",
+        "why": "Noor and I have agreed on the time and place."
+      },
+      {
+        "before": "Lina hopes to bring the bags.",
+        "after": "Lina is bringing both bags on Tuesday at ten.",
+        "why": "Lina has confirmed when she is bringing the bags."
+      },
+      {
+        "before": "We’re taking the cream fabric next week.",
+        "after": "We hope to take the cream fabric next week. We still need to choose a day.",
+        "why": "There is no agreed day, so the new sentence shows that this is still a hope."
+      },
+      {
+        "before": "I'm picking up the bag on Wednesday at 15:30.",
+        "after": "I'm picking up the bag on Tuesday at 15:30.",
+        "why": "The pickup is still arranged, but it has moved one day earlier."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Eva has agreed to meet you at the side door on Monday at nine. Which message uses the present continuous and gives the agreed details?",
+        "options": [
+          "I'm meeting Eva at the side door on Monday at nine.",
+          "I hope to meet Eva at the side door on Monday at nine.",
+          "Eva is meeting me at the front door on Monday at nine.",
+          "We're meeting at the side door on Tuesday at nine."
+        ],
+        "answer": 0,
+        "explanation": "“I'm meeting” shows the arrangement and keeps the agreed day, time and door."
+      },
+      {
+        "prompt": "Leo and Asha have booked the hall for Friday at six. Tell a colleague about their arrangement using the present continuous.",
+        "options": [
+          "Leo and Asha is using the hall on Friday at six.",
+          "Leo and Asha hope to use the hall on Friday at six.",
+          "Leo and Asha are using the hall on Friday at six.",
+          "Leo and Asha are use the hall on Friday at six."
+        ],
+        "answer": 2,
+        "explanation": "Use “are using” with two names and give the time they booked."
+      },
+      {
+        "prompt": "You would like to visit Jo next week, but you have not arranged the visit with Jo. Which message tells your colleague that?",
+        "options": [
+          "I'm visiting Jo on Monday at eleven.",
+          "Jo and I are meeting next week. We've agreed on it.",
+          "I'm not visiting Jo next week. The visit is cancelled.",
+          "I hope to visit Jo next week. I still need to ask."
+        ],
+        "answer": 3,
+        "explanation": "“I hope to visit” and “I still need to ask” show that nobody has confirmed the visit."
+      },
+      {
+        "prompt": "Maya moved her pickup from Thursday at two to Wednesday at two. Tell the desk volunteer the new arrangement using the present continuous.",
+        "options": [
+          "Maya is picking up the bag on Thursday at two.",
+          "Maya is picking up the bag on Wednesday at two.",
+          "Maya hopes to pick up the bag on Wednesday at two.",
+          "Maya is picking up the bag on Wednesday at three."
+        ],
+        "answer": 1,
+        "explanation": "“Is picking up” gives the confirmed new day and keeps the original time."
+      },
+      {
+        "prompt": "You know Tariq is meeting Bea tomorrow. Ask for the time of their arrangement using the present continuous.",
+        "options": [
+          "What time is Bea leaving tomorrow?",
+          "What time do you usually meet Bea?",
+          "What time are you meeting Bea tomorrow?",
+          "Where are you meeting Bea tomorrow?"
+        ],
+        "answer": 2,
+        "explanation": "“What time are you meeting” asks when Tariq and Bea have agreed to meet."
+      },
+      {
+        "prompt": "You have cancelled your Friday visit and agreed on a Saturday visit instead. Which message gives both facts using the present continuous?",
+        "options": [
+          "I'm not coming on Friday. I'm coming on Saturday.",
+          "I'm coming on Friday. I hope to come on Saturday too.",
+          "I'm not coming on Saturday. I'm coming on Friday.",
+          "I hope to come on Saturday. I still need to check."
+        ],
+        "answer": 0,
+        "explanation": "“I'm not coming” cancels Friday and “I'm coming” confirms Saturday."
+      },
+      {
+        "prompt": "You hear “We're dropping the boxes off at noon tomorrow.” Which detail shows the action is in the future?",
+        "options": [
+          "The speaker uses “we”.",
+          "The action is dropping something off.",
+          "The objects are boxes.",
+          "The speaker says “at noon tomorrow”."
+        ],
+        "answer": 3,
+        "explanation": "The words “at noon tomorrow” give a future time for the drop-off."
+      },
+      {
+        "prompt": "You and Ana agreed to bring labels at 14:00 on Tuesday. You would like to bring a basket too, but you still need to ask about it. Which message makes that clear?",
+        "options": [
+          "We're bringing the labels and the basket on Tuesday at 14:00. Both are arranged.",
+          "We're bringing the labels on Tuesday at 14:00. I hope to bring a basket too.",
+          "We hope to bring the labels. We're bringing a basket on Tuesday at 14:00.",
+          "We're bringing the labels on Wednesday. I still need to ask about a basket."
+        ],
+        "answer": 1,
+        "explanation": "“We're bringing” gives the fixed label delivery, and “I hope to bring” leaves the basket open."
+      }
+    ],
+    "transfer": "Write a short desk message for Saturday 16 October. You and Noor have agreed to check the story room basket at 11:00. You also hope to bring extra labels and still need to check whether there are any. Read your message aloud. Underline the present continuous and circle the date and time. Check that the extra labels sound like a plan you still need to arrange."
+  },
+  "vocabulary": [
+    {
+      "word": "cover",
+      "meaning": "a piece of cloth that goes around a cushion",
+      "example": "I took the cover off the cushion to wash it.",
+      "pair": "cushion cover"
+    },
+    {
+      "word": "fabric",
+      "meaning": "cloth used to make things",
+      "example": "The shop sells fabric for curtains and tablecloths.",
+      "pair": "cotton fabric"
+    },
+    {
+      "word": "donate",
+      "meaning": "give something to help other people",
+      "example": "We donate books to the community centre every spring.",
+      "pair": "donate books"
+    },
+    {
+      "word": "label",
+      "meaning": "a small piece of paper or cloth that gives information",
+      "example": "There is a label with my name on my lunch box.",
+      "pair": "a name label"
+    },
+    {
+      "word": "front desk",
+      "meaning": "the place near an entrance where someone helps visitors",
+      "example": "I asked for an extra towel at the front desk.",
+      "pair": "check in at the front desk"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go somewhere to collect something or someone",
+      "example": "Can you pick up my coat from the office?",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "drop off",
+      "meaning": "take something or someone to a place and leave them there",
+      "example": "I'll drop off the keys at your flat on my way home.",
+      "pair": "drop off the keys"
+    },
+    {
+      "word": "booked",
+      "meaning": "saved for someone to use at an agreed time",
+      "example": "The meeting room is booked until lunch.",
+      "pair": "booked for an hour"
+    },
+    {
+      "word": "basket",
+      "meaning": "an open container you can put things in",
+      "example": "We keep fruit in a basket on the table.",
+      "pair": "a laundry basket"
+    },
+    {
+      "word": "errand",
+      "meaning": "a short trip to do a practical job",
+      "example": "I have one errand after work. I need to collect my glasses.",
+      "pair": "run an errand"
+    },
+    {
+      "word": "leave with",
+      "meaning": "give something to a person to keep for you",
+      "example": "Please leave the spare key with our neighbour.",
+      "pair": "leave a message with reception"
+    },
+    {
+      "word": "a day earlier",
+      "meaning": "on the day before the day first planned",
+      "example": "The shop called, so I collected my bike a day earlier.",
+      "pair": "arrive a day earlier"
+    }
+  ],
+  "speaking": {
+    "audience": "Noor, the hall’s front desk volunteer",
+    "first": "Read the hall calendar. On Tuesday, Lina brings the big bag with both blue covers and leaves the small bag with Noor. It has both yellow covers. On Wednesday, you can take only the small bag. Put the covers in the basket by the story room door or leave the bag with Noor if the room is booked. Make two small sets of notes, one for each visit. For each one, write the date, pickup time, person, bag and room. Then record a short voice message to Noor. Use two brief turns, one for each visit, and say what you will do if you cannot enter the story room. Use the present continuous once or twice for arrangements. Listen back and check that Noor can tell which bag to keep.",
+    "change": "Your library errand and second pickup move from Wednesday to Tuesday 12 October at 15:30. Noor is still at the front desk. Put Blue 2 in the quiet room on the morning visit. The quiet room is free at 10:05.",
+    "second": "Record a new message. Say the two Tuesday pickup times and explain where Blue 1, Blue 2 and the two yellow covers are going. Keep Lina as your morning contact and Noor as your afternoon contact. The small bag is still the only bag you can carry on the second trip. Listen back for any old Wednesday details.",
+    "checklist": [
+      "I gave two dates and pickup times in the first message and two distinct Tuesday times in the new message.",
+      "I named the person and bag for each pickup.",
+      "I sent Blue 2 to the quiet room in the new message and kept Blue 1 and the two yellow covers for the story room.",
+      "I used the present continuous for one or two agreed arrangements in each take.",
+      "I explained what to do if I cannot enter the story room."
+    ]
+  },
+  "writing": {
+    "audience": "Noor and the evening volunteer who takes over the front desk",
+    "first": "Write a 50–90-word handover note for the desk. Read the hall calendar. The Tuesday bag from Lina is large and contains both blue covers. The Wednesday bag with Noor is small and contains both yellow covers. Leave the green and cream fabric in the box. Before writing, sort the list into finished covers and fabric for later. Give the two visits their own lines. For each visit, include the date, pickup time, who has the bag, what is inside and where the covers go. End with what to do if the story room is booked.",
+    "change": "The second errand and pickup are now on Tuesday 12 October at 15:30 at the front desk. At 10:05 that morning, put Blue 2 in the quiet room, which is free then. The story room is free after noon.",
+    "second": "Rewrite the note in 50–90 words so the evening volunteer can use it on its own. Replace the Wednesday entry and give the two blue covers separate destinations. Keep the 10:00 meeting with Lina, the two yellow covers together in their small bag and the rule about leaving covers at the front desk if a room is booked. Reread the note in time order.",
+    "checklist": [
+      "Both versions give a date, pickup time, contact and bag for each visit.",
+      "The revised note puts both pickups on Tuesday and sends only Blue 2 to the quiet room.",
+      "The note keeps the green and cream fabric in the fabric box for next week.",
+      "At least one sentence uses the present continuous for an agreed pickup.",
+      "The revised note is 50–90 words and contains enough information for the next volunteer to act."
+    ]
+  },
+  "immersion": {
+    "role": "Sam, planning two visits in a separate version of the delivery change",
+    "goal": "Build an original two-visit plan from the collection list, hall calendar and the bag details below. Then make a revised plan that gets covers to the right rooms and tells the next desk volunteer exactly what to do with any cover that must wait.",
+    "constraints": [
+      "Use the original Tuesday 10:00 pickup with Lina for both blue covers in the big bag and Wednesday 15:30 pickup with Noor for the two yellow covers in the small bag. Use the change below for your revised plan.",
+      "Leave the green and cream fabric in the fabric box for next week.",
+      "On the second trip you can carry only one small bag. A blue cover is too big for that bag.",
+      "Keep Blue 1 and the two yellow covers for the story room. Under the change, Blue 2 is for the quiet room.",
+      "Enter rooms only when they are free. Allow five minutes from the front desk to either room. You can reach both rooms on the same visit only if both are free when you arrive at them.",
+      "On the revised second visit you must leave the hall by 15:45 to catch your bus."
+    ],
+    "change": "The second errand and pickup move to Tuesday 12 October at 15:30 with Noor at the front desk. Blue 2 now goes to the quiet room. In this version, a new 09:00 to 16:00 booking replaces the quiet room’s earlier availability, but the story room is free after noon. Noor can keep a blue cover behind the desk. Evening volunteer Kit can take it to the quiet room at 16:10 if you leave a clear note.",
+    "deliverables": [
+      "Make two tables, one for the original plan and one for the revised plan. Give each table exactly two visit rows with pickup date and time, contact, bag contents and what happens to each cover.",
+      "Make one desk label for the cover that must wait. Give its number, where it waits, its final room and who takes it there at what time.",
+      "Write a 50–90-word handover note to Kit. State what happened on each visit, what is waiting at the desk and what Kit is doing at 16:10. Use the present continuous for at least one confirmed arrangement.",
+      "Write a two-sentence check. Explain why you cannot deliver Blue 2 yourself and why the yellow covers can still go to the story room on the second visit."
+    ],
+    "checklist": [
+      "My original plan gets the blue covers into the story room before Tuesday’s booking and the yellow covers there after Wednesday’s pickup.",
+      "My revised plan puts Blue 1 in the story room on the morning visit and leaves Blue 2 with Noor before I leave.",
+      "My revised afternoon visit starts at 15:30 and gives me time to deliver the small bag before leaving by 15:45.",
+      "My label and note both tell Kit to take Blue 2 to the quiet room at 16:10, after the room is free.",
+      "My two plans account for exactly four finished covers each and leave the unfinished fabric in the fabric box."
+    ]
+  }
+}

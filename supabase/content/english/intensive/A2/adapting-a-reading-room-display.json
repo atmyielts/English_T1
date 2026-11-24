@@ -1,0 +1,398 @@
+{
+  "slug": "adapting-a-reading-room-display",
+  "title": "Adapting a reading-room display",
+  "level": "A2",
+  "summary": "Use the handling notes, route card and trial-visit details to explain a trial setup, write a short visitor guide, and show the team how copies and labels move from a work bag to the display.",
+  "documents": [
+    {
+      "title": "Object Handling Notes",
+      "text": "The Grammar Book is a real textbook. Keep it closed on its blue pad, with the front cover up. Do not put a label on the book or on its pad. The other two documents, the Lunch List and the Class Rules, are facsimiles. They are paper copies you can move. At 9:20, take the copies out of the grey work bag on the staff desk. Leave them flat while you check their names. Each copy has a matching name label in the front pocket of the bag. Match both labels to the copies before you take anything to the display."
+    },
+    {
+      "title": "Room Route Card",
+      "text": "Visitors enter by the glass door and leave by the side door. Keep the middle of the room clear. Stop 1 is the low table by the window. It has space for one paper copy and its label on a short stand. Stop 2 is the high shelf by the wall. It has a flat space for one paper copy and a blue pad for the closed Grammar Book. There is a tall label stand beside the shelf. The wall above the shelf also has an approved clip for a paper label. At either stop, keep the paper copy flat so visitors can see the whole page."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Curator’s Setup Briefing",
+      "text": "Here’s the order for the trial visit. Yesterday we put the Class Rules at the window first. Then we put the Lunch List on the wall shelf. Today, swap those two copies. The Lunch List goes at the window and the Class Rules goes on the wall shelf. The Grammar Book stays closed on the blue pad. Do the trial setup at 9:30, after you match the labels at the staff desk. I’ll walk the route at 9:40 to see if each name is easy to find. The trial visit starts at the glass door at 10:00. Please have the tables and shelf ready before the group comes in."
+    },
+    {
+      "title": "Teacher’s Voice Message",
+      "text": "Hi, it’s Lina, the teacher for the trial group. We’ll arrive at the glass door at 10:00 and leave through the side door at 10:25. One visitor, Sam, told me how he likes to read a display. He looks for the object name first. Then he reads one short line about what it shows. He’d like to read that line for himself, so please put it in the guide. He asked to start at the low table, where he can get close to the paper. A guide at the entrance would help him find that table. Please give the other visitors the same guide so everyone can follow the route."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Skim Object Handling Notes. What kind of help do the notes give?",
+      "options": [
+        "They tell visitors how to go around the room.",
+        "They explain how to prepare and handle the objects.",
+        "They tell the teacher when to bring the group.",
+        "They explain what the words on each document mean."
+      ],
+      "answer": 1,
+      "explanation": "The notes say how to keep the book closed and how to prepare the copies and labels."
+    },
+    {
+      "prompt": "Scan Object Handling Notes for 9:20. What should you do at that time?",
+      "options": [
+        "Put the blue pad on the high shelf.",
+        "Take the two name labels to the display.",
+        "Put the real book into the grey bag.",
+        "Take the two paper copies out at the staff desk."
+      ],
+      "answer": 3,
+      "explanation": "The notes give 9:20 as the time to take the copies out of the bag on the staff desk."
+    },
+    {
+      "prompt": "Reread the last two sentences of Object Handling Notes. A copy is ready to move, but its name label is still in the bag. What should you do?",
+      "options": [
+        "Find both labels in the front pocket and match them to the copies first.",
+        "Move the ready copy first and bring both labels later.",
+        "Take both labels to the display and match them there.",
+        "Put the ready copy on the book’s blue pad while you check the names."
+      ],
+      "answer": 0,
+      "explanation": "Both labels are in the front pocket, and the notes say to match them before taking anything to the display."
+    },
+    {
+      "prompt": "Skim Room Route Card. How does it organize information for the display team?",
+      "options": [
+        "It lists jobs from the earliest time to the latest time.",
+        "It groups the objects by the material they are made from.",
+        "It gives the entry and exit, then describes two numbered stops.",
+        "It lists the questions visitors may ask about each object."
+      ],
+      "answer": 2,
+      "explanation": "The card names the glass and side doors, then describes Stop 1 and Stop 2."
+    },
+    {
+      "prompt": "Scan Room Route Card. Where is the approved wall clip?",
+      "options": [
+        "By the glass door, near the entrance.",
+        "Above the high shelf at Stop 2.",
+        "Beside the low table at Stop 1.",
+        "By the side door, near the exit."
+      ],
+      "answer": 1,
+      "explanation": "The card puts the high shelf at Stop 2 and says the clip is on the wall above it."
+    },
+    {
+      "prompt": "Reread Room Route Card. A team member needs to set out two copies. Which plan fits the space and leaves the route clear?",
+      "options": [
+        "Put both copies on the low table and leave the shelf for the book.",
+        "Put one copy on the high shelf and one on a stand in the middle.",
+        "Put one copy flat on the low table and stand the other up on the shelf.",
+        "Put one copy flat at each stop and leave the middle of the room empty."
+      ],
+      "answer": 3,
+      "explanation": "The card gives space for one copy at each stop and says to keep copies flat and the middle clear."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Curator’s Setup Briefing once for the main point. What is the curator asking the team to do today?",
+      "options": [
+        "Move the trial visit to a later time.",
+        "Change which door the group uses.",
+        "Swap the two copies and leave the book closed on its pad.",
+        "Keep yesterday’s display order and take the book away."
+      ],
+      "answer": 2,
+      "explanation": "The curator says to swap the two copies today and keep the Grammar Book closed on its blue pad."
+    },
+    {
+      "prompt": "Listen again to Curator’s Setup Briefing. Which job should be on your 9:40 reminder?",
+      "options": [
+        "The curator walks the route and checks how easy the names are to find.",
+        "The team matches the labels at the staff desk.",
+        "The team starts the trial setup.",
+        "The group starts the trial visit at the glass door."
+      ],
+      "answer": 0,
+      "explanation": "The curator gives 9:40 for walking the route and checking whether each name is easy to find."
+    },
+    {
+      "prompt": "In Curator’s Setup Briefing, the curator describes yesterday and today. Which note shows today’s order from the window to the wall shelf?",
+      "options": [
+        "Class Rules at the window, then Lunch List on the shelf.",
+        "Grammar Book at the window, then Class Rules on the shelf.",
+        "Lunch List at the window, then Grammar Book alone on the shelf.",
+        "Lunch List at the window, then Class Rules on the shelf."
+      ],
+      "answer": 3,
+      "explanation": "The curator says that today the Lunch List goes at the window and the Class Rules goes on the wall shelf."
+    },
+    {
+      "prompt": "Listen to Teacher’s Voice Message once for the main request. What does Lina want the guide to help visitors do?",
+      "options": [
+        "Find a place where they can leave their bags.",
+        "Find the first table and read a short line about what an object shows.",
+        "Choose which documents the team should put on display.",
+        "Find where to meet the curator after the visit."
+      ],
+      "answer": 1,
+      "explanation": "Lina asks for a guide at the entrance to help visitors find the low table and read a short line about the object."
+    },
+    {
+      "prompt": "Listen again to Teacher’s Voice Message and note both doors and times. Where and when does the group leave?",
+      "options": [
+        "At the glass door at 10:00.",
+        "At the side door at 10:00.",
+        "At the side door at 10:25.",
+        "At the glass door at 10:25."
+      ],
+      "answer": 2,
+      "explanation": "Lina says the group arrives at the glass door at 10:00 and leaves through the side door at 10:25."
+    },
+    {
+      "prompt": "In Teacher’s Voice Message, which guide layout follows the reading order Sam asked for?",
+      "options": [
+        "Give the object name, then one short line about what it shows.",
+        "Give a short line about the object, then put its name at the bottom.",
+        "Give the object name, then a question to ask the teacher.",
+        "Give a room direction, then two long lines about the object."
+      ],
+      "answer": 0,
+      "explanation": "Sam says he looks for the object name first and reads one short line about what it shows next."
+    }
+  ],
+  "grammar": {
+    "focus": "Before and after with actions, and first and then for past steps",
+    "explanation": "Use before to show that one action happens earlier. Use after to show that one action comes later. You can start with the time phrase: ‘After I checked the names, I moved the copies.’ Use a comma after that opening phrase. You can also put it at the end: ‘I moved the copies after I checked the names.’ When both actions are finished, use past verbs such as checked, put, and went. First and then tell the steps in time order. Try a short report: ‘First, I checked the names. Then I moved the copies.’ When you read a sentence with before or after, underline both actions and number them in the order they happened.",
+    "examples": [
+      {
+        "before": "I moved the copies. I checked their names earlier.",
+        "after": "Before I moved the copies, I checked their names.",
+        "why": "Before shows that checking happened first, even though moving comes first in the sentence."
+      },
+      {
+        "before": "I put the guide by the door. Later, I walked the route.",
+        "after": "I walked the route after I put the guide by the door.",
+        "why": "After links the walk to the earlier action of putting out the guide."
+      },
+      {
+        "before": "I took the list from the bag and put it on the table.",
+        "after": "First, I took the list from the bag. Then I put it on the table.",
+        "why": "First and then give a clear two-step report in the order the actions happened."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "At 8:50, I opened the room. At 9:00, I turned on the lights. Which sentence matches?",
+        "options": [
+          "Before I opened the room, I turned on the lights.",
+          "First, I turned on the lights. Then I opened the room.",
+          "After I opened the room, I turned on the lights.",
+          "I opened the room after I turned on the lights."
+        ],
+        "answer": 2,
+        "explanation": "Opening the room happened at 8:50, before the lights went on at 9:00."
+      },
+      {
+        "prompt": "I wiped the shelf before I put the copy on it. Which note gives the same order?",
+        "options": [
+          "First, I wiped the shelf. Then I put the copy on it.",
+          "First, I put the copy on the shelf. Then I wiped the shelf.",
+          "After I put the copy on the shelf, I wiped it.",
+          "Before I wiped the shelf, I put the copy on it."
+        ],
+        "answer": 0,
+        "explanation": "Before links wiping the shelf with the later action of putting the copy there."
+      },
+      {
+        "prompt": "Yesterday Nadia counted the guides and then put them beside the door. Complete her report: ‘After I counted the guides, I ___ them beside the door.’",
+        "options": [
+          "will put",
+          "am putting",
+          "putting",
+          "put"
+        ],
+        "answer": 3,
+        "explanation": "Put is the past form here because both actions finished yesterday."
+      },
+      {
+        "prompt": "I took the old sign down after I printed the new sign. Which action happened first?",
+        "options": [
+          "I took the old sign down.",
+          "I printed the new sign.",
+          "I put up the new sign.",
+          "I read the old sign."
+        ],
+        "answer": 1,
+        "explanation": "After I printed the new sign means the printing happened before I took the old sign down."
+      },
+      {
+        "prompt": "I wrote the label, tried it in the clip, and checked it from the door. Start with ‘First, I wrote the label.’ Which sentence reports only the next step?",
+        "options": [
+          "Then I checked it from the door.",
+          "Before I wrote it, I tried it in the clip.",
+          "Then I tried it in the clip.",
+          "After I checked it from the door, I tried it in the clip."
+        ],
+        "answer": 2,
+        "explanation": "Trying the label in the clip was step two, before the check from the door."
+      },
+      {
+        "prompt": "Mina checked the exit before she moved the chair. Which sentence starts with ‘After’ and keeps the same order?",
+        "options": [
+          "After she moved the chair, Mina checked the exit.",
+          "After she moved the chair, Mina checked the chair.",
+          "After she checked the chair, Mina moved it.",
+          "After she checked the exit, Mina moved the chair."
+        ],
+        "answer": 3,
+        "explanation": "Checking the exit was the earlier action, so it follows After in the new sentence."
+      },
+      {
+        "prompt": "At 9:28, we checked the labels. At 9:32, we moved the copies. Which word completes the past report? ‘We checked the labels ___ we moved the copies.’",
+        "options": [
+          "before",
+          "after",
+          "then",
+          "first"
+        ],
+        "answer": 0,
+        "explanation": "Before links the two actions and shows that the 9:28 check came earlier."
+      },
+      {
+        "prompt": "Put these finished jobs in a report: 1. check the route, 2. return the bag. Which report gives the order and uses past verbs for both jobs?",
+        "options": [
+          "First, I return the bag. Then I checked the route.",
+          "First, I checked the route. Then I returned the bag.",
+          "First, I returned the bag. Then I checked the route.",
+          "First, I check the route. Then I return the bag."
+        ],
+        "answer": 1,
+        "explanation": "Checked and returned are past verbs, and the route check comes first in the job list."
+      }
+    ],
+    "transfer": "Imagine you finished three closing jobs. You checked the shelf, took the two copies back to the staff desk, and put them in the grey bag, in that order. Write a short note for the next team. Use first and then in one part, and before or after in another. Number the actions beside your note to check the order, then underline your past verbs."
+  },
+  "vocabulary": [
+    {
+      "word": "display",
+      "meaning": "a group of things set out for people to see",
+      "example": "The shop has a display of winter hats by the door.",
+      "pair": "window display"
+    },
+    {
+      "word": "facsimile",
+      "meaning": "a copy that looks like the original document",
+      "example": "I looked at a facsimile of an old letter in the library.",
+      "pair": "facsimile of a letter"
+    },
+    {
+      "word": "front cover",
+      "meaning": "the outside front part of a book",
+      "example": "There is a picture of a train on the front cover.",
+      "pair": "on the front cover"
+    },
+    {
+      "word": "pad",
+      "meaning": "a soft piece of material that protects or supports something",
+      "example": "I put the hot pan on a thick pad.",
+      "pair": "protective pad"
+    },
+    {
+      "word": "lie flat",
+      "meaning": "rest on a surface without bending or standing up",
+      "example": "The letter can lie flat in this wide box.",
+      "pair": "lie flat on a table"
+    },
+    {
+      "word": "front pocket",
+      "meaning": "a small space for things on the front of a bag or piece of clothing",
+      "example": "I keep my keys in the front pocket of my backpack.",
+      "pair": "front pocket of a bag"
+    },
+    {
+      "word": "match",
+      "meaning": "find what goes with something",
+      "example": "Can you match each lid to the right jar?",
+      "pair": "match a label to a copy"
+    },
+    {
+      "word": "route",
+      "meaning": "the way you go from one place to another",
+      "example": "We took a route through the park to the station.",
+      "pair": "follow a route"
+    },
+    {
+      "word": "shelf",
+      "meaning": "a flat place, often on a wall, where you put things",
+      "example": "The cups are on the shelf above the sink.",
+      "pair": "top shelf"
+    },
+    {
+      "word": "stand",
+      "meaning": "something that holds an object up",
+      "example": "I put my phone on a stand to read the recipe.",
+      "pair": "label stand"
+    },
+    {
+      "word": "clip",
+      "meaning": "a small object that holds something in place",
+      "example": "I used a clip to hold the bag of rice shut.",
+      "pair": "spring clip"
+    },
+    {
+      "word": "swap",
+      "meaning": "exchange two things or their places",
+      "example": "Can we swap seats so I can sit by the window?",
+      "pair": "swap seats"
+    }
+  ],
+  "speaking": {
+    "audience": "The curator who will walk the route at 9:40",
+    "first": "The curator put the Class Rules at the window first yesterday, then the Lunch List on the wall shelf. Today those two copies swap places at the 9:30 trial setup. The closed Grammar Book stays on its blue pad. The curator will check the labels at 9:40. Pick six facts from this update and Room Route Card. Sort them into yesterday’s order, today’s order, and today’s check. Choose a sensible order for the 9:30 setup. Imagine you have followed it. Give two short turns. In the first, answer ‘What did you put out first, and what did you do next?’ Use first and then. In the second, answer ‘What will I find at each stop?’ Use the two stands from the route card.",
+    "change": "At 9:35, the tall label stand beside the high shelf becomes unavailable. Move the paper Class Rules label to the approved wall clip above the high shelf before the curator’s 9:40 check.",
+    "second": "Give the curator a second take in two short turns. Answer ‘What did you change before my check?’ and ‘What will I find at the window and on the wall shelf?’ Use before or after once. Keep both copies in today’s order, keep the book closed, and say which label still uses a stand.",
+    "checklist": [
+      "I named the Lunch List at the window and the Class Rules on the wall shelf.",
+      "I reported the steps with first and then in my first take and with before or after in my second take.",
+      "I said that the Lunch List label stays on the short stand and the Class Rules label moves to the wall clip.",
+      "I said that the Grammar Book stays closed on the blue pad.",
+      "I used 9:40 for the curator’s check."
+    ]
+  },
+  "writing": {
+    "audience": "Sam and the other visitors in the trial group",
+    "first": "Reread Room Route Card. The guests arrive at 10:00 and leave at 10:25. They need a guide that starts at the low table, gives the object name first and follows it with one short line they can read for themselves. Make two columns for things visitors need to find and things they need to read. Write a 50–90-word guide for the glass door. Start at the low table. Use each copy’s name as a heading, then give one short line about what it shows. The Lunch List lists food for lunch. The Class Rules lists things students must do in class. Tell visitors where to find both labels and how to leave.",
+    "change": "At 9:35, the tall stand beside the high shelf becomes unavailable. The paper Class Rules label goes in the approved wall clip above the shelf. At 9:50, put the revised guide on the entry board just inside the glass door.",
+    "second": "Write a clean second version of your guide. Update where visitors look for the Class Rules label. Keep the short stand for the Lunch List, the two object names and their short lines, and the directions to the side door. Add a short line about the closed Grammar Book. Read your guide as if you are at the entrance, and mark the words that take you from one stop to the next.",
+    "checklist": [
+      "My final guide is 50–90 words and starts at the low table by the window.",
+      "At each stop, the copy’s full name comes before one short line about what it shows.",
+      "I tell visitors to look for the Lunch List label on the short stand and the Class Rules label in the clip above the shelf.",
+      "I mention that the Grammar Book stays closed and direct visitors to the side door.",
+      "My guide uses short lines that a visitor can read in order from the entry board."
+    ]
+  },
+  "immersion": {
+    "role": "Display assistant making a plan for the staff desk",
+    "goal": "Use this practice version with the Class Rules label already in the wall clip at 9:30. Make a plan another display assistant can follow from the grey work bag to both stops.",
+    "constraints": [
+      "Start at the staff desk at 9:20. The grey bag holds the copies, and its front pocket holds the two paper labels.",
+      "Match both names to the copies before moving anything from the desk. Begin the trial setup at 9:30.",
+      "Put the Lunch List flat on the low window table and the Class Rules flat on the high wall shelf. Keep the middle of the room clear.",
+      "Keep the real Grammar Book closed, front cover up, on the blue pad. Keep the pad and book clear of labels.",
+      "Use the short stand at Stop 1 and the approved wall clip above Stop 2. Have both names ready for the 9:40 check."
+    ],
+    "change": "At 9:32, the Class Rules label is ready, but a fold hides half its name when you put it in the wall clip. A blank card and a thick black pen are on the staff desk. Use them to make a new label before the 9:40 check. Keep the route clear on your trip back to the desk.",
+    "deliverables": [
+      "A staff-desk chart with one row for each copy. In each row, show where the copy and label start, where the copy goes, and what holds its label.",
+      "A replacement label with the full name Class Rules on one line. Mark its place on the chart as the approved wall clip above Stop 2.",
+      "A numbered handover note with four to six steps. Include the desk check, the move to both stops, the new label, and the 9:40 check. Use first and then or before and after to show the order."
+    ],
+    "checklist": [
+      "I can follow each copy and its label from the bag to a named stop by reading one row.",
+      "My note puts the 9:20 desk check before the 9:30 move.",
+      "I have shown how the replacement label gets from the staff desk to the wall clip before 9:40.",
+      "The replacement label shows the full name Class Rules, and my chart puts the Lunch List label on the short stand.",
+      "My chart or handover note shows that both copies lie flat, the middle stays clear, and the closed Grammar Book stays on its blue pad."
+    ]
+  }
+}

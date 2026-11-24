@@ -1,0 +1,394 @@
+{
+  "slug": "c1-one-flight-two-good-landings",
+  "title": "One Flight, Two Good Landings",
+  "level": "C1",
+  "summary": "Redesign a paper-aircraft workshop so that participants can distinguish two kinds of useful performance.\n\nReading: Build six sample results for two flight designs. Use the guide to score distance and target success independently. Then find one claim a tutor can make from your figures and one claim the public demonstration does not justify.\n\nVocabulary: Use one set of words for aircraft movement and another for trial evidence. Describe the same imaginary flight in both registers, then check that the evidence description names an outcome rather than an impression.",
+  "documents": [
+    {
+      "title": "Science club activity guide",
+      "text": "The bridge hall has a marked line at one end and a smooth floor where paper aircraft can land. The first version of our programme gave every group six throws and recorded the greatest distance. We asked participants to alter only one feature between designs. Some groups tried a wider wing and compared the result with a narrower one. Others changed where they clipped a small clip onto the nose. We cannot compare the groups directly when their starting designs were different.\n\nThe next club session begins with a demonstration of two aims. A performance carrier must go beyond a broad line. An instrument carrier must land inside a marked square. In the first, we count distance from launch to first contact with the floor. In the second, we count six first contacts and note how many were inside the square. A plane that slides after landing does not move its contact point.\n\nWe can make a single table for both aims, but the distance column will not tell a pilot whether the plane is suitable for the target. Give each team a base plane, a sample record and one invitation to explain why a useful result came from a flight that looked poor."
+    },
+    {
+      "title": "Tutor’s proposal for an open demonstration",
+      "text": "People who come to our open day will vary considerably in how they can launch a plane. In the workshop room, different groups could throw from a comfortable height. For a scored comparison, one person should throw both versions while the other records first contact. If a change of launcher is necessary, begin a new row. We do not need to present a difference in grip as a defect in somebody’s design.\n\nA demonstration can still be lively without turning the audience into a single contest. Put a tape circle a short distance away. Ask the audience which plane they would take for a long journey and which one they would choose to land inside it. After six tries, present all six results for the second purpose. If we show the best landing alone, both designs may appear equally reliable.\n\nI want every participant to explain how something changed. Therefore, if we have room for only one public throw per group, put the six-trial table next to the plane. The throw becomes an example of what people did rather than their chance to prove everything about its design."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two demonstrators compare an early test",
+      "text": "Vik: The green paper one landed on the edge of the square. I didn't mark it as a success; we had agreed that the line was outside.\n\nNeve: The audience can't hear what we agreed. Put the rule on the square. On the next try I can mark where the nose first touched, before it slides into a different place.\n\nVik: We could put the plane with the longest flight on the poster anyway. It went past the square on all but one throw.\n\nNeve: Then make it the distance example. The short orange plane went into the square four times. If you put both on the floor, compare how they answer different questions.\n\nVik: The orange one was launched by Sal and the green one was launched by me. That's a problem for saying the wing made the difference.\n\nNeve: Right. I can give you both versions for another six pairs of launches. Do you want to keep the launch height the same too?\n\nVik: We can draw a small mark on the wall and hold either plane beside it. The audience will still see us launch, but we won't make the claim that every throw was identical."
+    },
+    {
+      "title": "Participant’s account of the second attempt",
+      "text": "We started by bending both wings up at the edge. Then our plane climbed and dropped without reaching the tape. I wanted to bend them back, and Ana added a clip as well. The next flight looked steady. When the tutor asked which change had helped, I said it must have been the clip. Ana asked why I was so sure. I had seen the nose tip slightly, but I did not remember what we had done with the wings before the last good throw.\n\nWe made a clean pair for the open day. We marked both planes with the same tiny dot to show where to hold them. On one, we bent the edges as we had at first. We let the other remain flat. A friend offered to cut us a third with a longer tail, but we kept it for another task.\n\nI could still tell the audience about the flight I liked best. I just put it next to a record showing what we could compare. The quick demonstration gave us a nice moment to talk about; the paired trials gave us a reason to look for a possible design effect again."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Which two outcomes does the guide use?",
+      "options": [
+        "Distance to first contact and frequency of contacts in a square",
+        "Time in the air and length of slide after landing",
+        "Number of designs and maximum launch height",
+        "Distance between wings and angle of the first turn"
+      ],
+      "answer": 0,
+      "explanation": "The two tasks use different summaries of first contact."
+    },
+    {
+      "prompt": "Why can't the early groups be compared directly?",
+      "options": [
+        "They were asked to test only one feature.",
+        "They all agreed to measure the same flight.",
+        "They worked from different base designs.",
+        "They used six trials before changing."
+      ],
+      "answer": 2,
+      "explanation": "Different starting designs prevent a clean cross-group comparison."
+    },
+    {
+      "prompt": "What does the tutor propose after a launcher changes?",
+      "options": [
+        "Remove the launch and record a defect.",
+        "Start a separate row for the new launcher.",
+        "Give the new launcher a heavier plane.",
+        "Replace the score with a vote."
+      ],
+      "answer": 1,
+      "explanation": "The tutor wants launch information recorded as part of the comparison."
+    },
+    {
+      "prompt": "Why present six target results?",
+      "options": [
+        "Every throw made by the audience must count toward distance.",
+        "The teacher wants six different starting designs.",
+        "The distance from launch to contact is otherwise unknown.",
+        "The best landing cannot show how regularly a plane reaches the target."
+      ],
+      "answer": 3,
+      "explanation": "One success can conceal striking differences in the frequency of success."
+    },
+    {
+      "prompt": "What status does a single public flight have?",
+      "options": [
+        "An illustration, interpreted alongside the larger trial record",
+        "Proof of a wing’s general advantage",
+        "A complete substitute for the target table",
+        "A way to remove all differences in grip"
+      ],
+      "answer": 0,
+      "explanation": "The tutor proposes displaying the fuller evidence next to a lively example."
+    },
+    {
+      "prompt": "What principle do both sources support?",
+      "options": [
+        "Judge the whole test by the most dramatic flight.",
+        "Choose a performance measure appropriate to the use at issue.",
+        "Discard any first landing outside a target.",
+        "Give every team the same overall rank across aims."
+      ],
+      "answer": 1,
+      "explanation": "Both separate different purposes and the evidence relevant to each."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why didn't Vik count the green landing as successful?",
+      "options": [
+        "He could not see where it first touched the floor.",
+        "Neve lost the record of the throw.",
+        "The plane reached the wrong room.",
+        "The group had excluded the boundary line."
+      ],
+      "answer": 3,
+      "explanation": "Vik says they had agreed the marking line counted as outside."
+    },
+    {
+      "prompt": "What could mislead a viewer after first contact?",
+      "options": [
+        "The thrower has stopped holding it level.",
+        "The next plane has a longer tail.",
+        "The plane can slide into another position.",
+        "The small square is taped onto a poster."
+      ],
+      "answer": 2,
+      "explanation": "The slide changes its final position without changing the scored contact."
+    },
+    {
+      "prompt": "Why does Vik hesitate to attribute the difference to wing design?",
+      "options": [
+        "The green one landed in the wrong part of a different hall.",
+        "Different participants threw the aircraft.",
+        "The two wings were the only known difference.",
+        "Both planes had identical results."
+      ],
+      "answer": 1,
+      "explanation": "The trial mixed a launcher change with a design comparison."
+    },
+    {
+      "prompt": "Why was the participant's first attribution to the clip weak?",
+      "options": [
+        "The clip had not actually been added.",
+        "The flight followed more than one adjustment.",
+        "It had already been tested under exactly the same wing angle.",
+        "Nobody remembered which plane belonged to each group."
+      ],
+      "answer": 1,
+      "explanation": "Wing shape and clip changed before the same attractive flight."
+    },
+    {
+      "prompt": "What task is the extra tail design saved for?",
+      "options": [
+        "A separate experiment rather than the comparison already planned",
+        "Taking a plane to a longer-distance hall on open day",
+        "Replacing one of the samples midway through the test",
+        "Making both wings bend in the same direction"
+      ],
+      "answer": 0,
+      "explanation": "The team retains a clear comparison and postpones the extra change."
+    },
+    {
+      "prompt": "Which conclusion can be drawn from both recordings?",
+      "options": [
+        "An audience should be told which design wins before launching.",
+        "Longer flights always show steadier aircraft.",
+        "A good test requires physically identical throws.",
+        "A striking demonstration has narrower evidential value than a controlled comparison."
+      ],
+      "answer": 3,
+      "explanation": "The conversations both distinguish a good example from evidence isolating a change."
+    }
+  ],
+  "grammar": {
+    "focus": "Participle adjectives and precise comparisons",
+    "explanation": "An -ed adjective often describes an affected person or object, whereas its -ing counterpart describes what has that effect. Degree and comparison also matter: more reliable is meaningful only if the relevant outcome and comparator are clear. Some participles retain their literal passive or active sense.",
+    "examples": [
+      {
+        "before": "The team was confusing by the success rule.",
+        "after": "The team was confused by the success rule.",
+        "why": "Confused describes the people affected by the wording."
+      },
+      {
+        "before": "The unexpected pattern was surprised.",
+        "after": "The unexpected pattern was surprising.",
+        "why": "The pattern surprised someone; it did not experience surprise."
+      },
+      {
+        "before": "The design is more successful.",
+        "after": "The design hit the target more often than the original did.",
+        "why": "The claim now names the comparator and tested outcome."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which says a rule caused people to be puzzled?",
+        "options": [
+          "The rule was confusing for new pilots.",
+          "The rule was confused for new pilots.",
+          "The rule had confusedly for new pilots.",
+          "The new pilots were confusing by the rule."
+        ],
+        "answer": 0,
+        "explanation": "Confusing describes the source of the puzzlement."
+      },
+      {
+        "prompt": "Which describes a group's response to its results?",
+        "options": [
+          "The group was disappointing by the narrow spread of scores.",
+          "The group was disappointed by the narrow spread of scores.",
+          "The narrow spread was disappointed by the group.",
+          "The group disappointed by the spread before hearing it."
+        ],
+        "answer": 1,
+        "explanation": "Disappointed describes the group experiencing the outcome."
+      },
+      {
+        "prompt": "Which attributes the change in impressions to the demonstration?",
+        "options": [
+          "The demonstration convinced itself that trials were limited.",
+          "The demonstration was convinced, although there were limited trials.",
+          "The demonstration was convincing, although the underlying trials were limited.",
+          "The trials were convinced of their own demonstration."
+        ],
+        "answer": 2,
+        "explanation": "Convincing describes an impression produced in the observer."
+      },
+      {
+        "prompt": "A volunteer recorded all the trials. Which identifies the affected objects?",
+        "options": [
+          "The trials recorded by the volunteer are in the table.",
+          "The trials recording the volunteer are in the table.",
+          "The volunteer recordings the trials are in the table.",
+          "The trials recorded the volunteer is in the table."
+        ],
+        "answer": 0,
+        "explanation": "Recorded acts as a passive participle for the trials that were logged."
+      },
+      {
+        "prompt": "Which distinguishes spectator reaction from reliability?",
+        "options": [
+          "The excited flight had to occur all four times.",
+          "The exciting flight occurred once; the steadier design reached the target four times.",
+          "The flight's excitement proves it was always reliable.",
+          "The more exciting pilot was automatically the steadier design."
+        ],
+        "answer": 1,
+        "explanation": "One adjective describes the audience's likely reaction; the comparative has a concrete outcome."
+      },
+      {
+        "prompt": "Which appropriately describes results a changed launcher could affect?",
+        "options": [
+          "Those results are exciting, so they provide enough control.",
+          "Those results are limiting the launcher as a design.",
+          "The design is convinced by the results.",
+          "Those results are limited as evidence of a design effect."
+        ],
+        "answer": 3,
+        "explanation": "Limited describes the evidentiary reach rather than general appeal."
+      },
+      {
+        "prompt": "Which compares reproducibility instead of maximum distance?",
+        "options": [
+          "The orange plane had the most attractive colour.",
+          "The orange plane went farther once than every green flight.",
+          "The orange plane was the first to cross the hall.",
+          "The orange plane reached the square on more launches than the green plane did."
+        ],
+        "answer": 3,
+        "explanation": "More launches reaching the target is a frequency comparison."
+      },
+      {
+        "prompt": "What ambiguity remains in ‘The newer plane was better’?",
+        "options": [
+          "What adjective inflection newer uses",
+          "Whether the plane was made of paper",
+          "What outcome and comparator ‘better’ refers to",
+          "Whether the word plane is singular"
+        ],
+        "answer": 2,
+        "explanation": "A better outcome must be identified and relevant comparison supported."
+      }
+    ],
+    "transfer": "Write a five-sentence trial account separating what an observer felt from what the flight record establishes. Use four participle adjectives and two comparisons whose metrics and comparators are explicit."
+  },
+  "vocabulary": [
+    {
+      "word": "trajectory",
+      "meaning": "path taken by an object in motion",
+      "example": "The first trajectory rose sharply.",
+      "pair": "flight trajectory"
+    },
+    {
+      "word": "reproducible",
+      "meaning": "able to be obtained again under similar conditions",
+      "example": "The second test gave a reproducible result.",
+      "pair": "reproducible result"
+    },
+    {
+      "word": "baseline",
+      "meaning": "starting point used for comparison",
+      "example": "We folded a simple baseline first.",
+      "pair": "baseline design"
+    },
+    {
+      "word": "steady",
+      "meaning": "stable rather than fluctuating",
+      "example": "The carrier held a steady course.",
+      "pair": "steady course"
+    },
+    {
+      "word": "launch",
+      "meaning": "send a thing into movement",
+      "example": "One pilot launched both designs.",
+      "pair": "launch an aircraft"
+    },
+    {
+      "word": "glide",
+      "meaning": "move smoothly through the air without power",
+      "example": "The plane glided towards the square.",
+      "pair": "gentle glide"
+    },
+    {
+      "word": "contact",
+      "meaning": "point or act of touching another thing",
+      "example": "The recorder marked first contact.",
+      "pair": "first contact"
+    },
+    {
+      "word": "boundary",
+      "meaning": "line marking the limit of an area",
+      "example": "The group excluded throws on the boundary.",
+      "pair": "boundary line"
+    },
+    {
+      "word": "parameter",
+      "meaning": "feature whose value affects an operation or test",
+      "example": "The launch height was the fixed parameter.",
+      "pair": "fixed parameter"
+    },
+    {
+      "word": "target",
+      "meaning": "mark or result aimed at",
+      "example": "The group recorded hits inside the target.",
+      "pair": "hit the target"
+    },
+    {
+      "word": "reliability",
+      "meaning": "extent of consistent results",
+      "example": "Six attempts revealed a difference in reliability.",
+      "pair": "test reliability"
+    },
+    {
+      "word": "plausible",
+      "meaning": "credible or possible given what is known",
+      "example": "A grip difference is a plausible explanation.",
+      "pair": "plausible explanation"
+    }
+  ],
+  "speaking": {
+    "audience": "A visiting family choosing a plane for one of two purposes",
+    "first": "Demonstrate a model with two stated outcomes. Report one imaginary sample flight for each, ask two short questions and give the family the evidence table they need before deciding.",
+    "change": "The event moves to a smaller room and targets cannot be placed as far away as planned.",
+    "second": "Create a second live explanation and propose a revised goal. Tell the family which previous results can inform their choice and which need repeating.",
+    "checklist": [
+      "Explain when a boundary point counts.",
+      "Separate the demonstration from comparative evidence.",
+      "Describe the design difference being examined.",
+      "Use precise degree language for one finding."
+    ]
+  },
+  "writing": {
+    "audience": "Science club assistant writing the next instructor guide",
+    "first": "Write a one-page instruction sheet, a blank table and a brief paragraph interpreting two invented lines of data. Identify an avoidable confound.",
+    "change": "One team’s best distance is much larger than the others but it cannot reproduce it with a second launcher.",
+    "second": "Write a separate results note with one follow-up trial. Keep the largest observation visible without treating it as typical.",
+    "checklist": [
+      "State exactly which outcomes are measured.",
+      "Record every result relevant to repeatability.",
+      "Avoid treating different launchers as interchangeable.",
+      "Revise the conclusion when the interpretation changes."
+    ]
+  },
+  "immersion": {
+    "role": "Coordinator of the paper-aircraft exhibition",
+    "goal": "Run two kinds of trial and prepare a fair comparison from the resulting evidence.",
+    "constraints": [
+      "Participants have different comfortable launch heights.",
+      "No trial may continue if a person is in the landing area.",
+      "Only two base designs can be compared during a demonstration.",
+      "Visitors should understand distance and target reliability independently."
+    ],
+    "change": "Only one end of the hall is available, and staff ask you to replace the distant tape line with a near target.",
+    "deliverables": [
+      "Produce a paper or drawn prototype and two matching trial records.",
+      "Create a visitor briefing, with a comparison claim tested against the record.",
+      "Show your revised outcome definition and explain why it suits the smaller venue."
+    ],
+    "checklist": [
+      "Count first contact using a clear definition.",
+      "Compare like with like.",
+      "Identify a limit that the event cannot correct.",
+      "Preserve a meaningful choice between the models."
+    ]
+  }
+}

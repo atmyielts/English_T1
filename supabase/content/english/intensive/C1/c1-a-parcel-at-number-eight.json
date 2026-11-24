@@ -1,0 +1,394 @@
+{
+  "slug": "c1-a-parcel-at-number-eight",
+  "title": "A Parcel at Number Eight",
+  "level": "C1",
+  "summary": "Develop a two-voice short story about a parcel that two neighbours are equally sure belongs somewhere else.\n\nReading: Re-read both extracts in reverse order. Annotate what each narrator saw, heard from the niece, or inferred. Identify two true observations that seem to fit an unconfirmed story and describe what would require changing if both parcels had looked different.\n\nVocabulary: Write two versions of a paragraph with the same events. Use a different set of unit words to make one voice certain and the other provisional, then point out which vocabulary changed viewpoint without adding a fact.",
+  "documents": [
+    {
+      "title": "Fiction extract: Tomas's side of the fence",
+      "text": "On Thursday someone placed a parcel on the narrow wall between my front step and Mrs Vale’s. I did not know who it belonged to. The rain had lifted the near corner of the label and left it folded like a flap. I could see the figure eight on it. Both cottages were numbered eight once, before the old road struck off to the right. Mine says number eight Willow Bank on the council’s letters. Hers says number eight Willow Rise. The two black figures on our doors are identical.\n\nI should have left the parcel there. A puddle had formed over half the top of the wall, and I thought she would mind if it was washing things for the small hotel. I brought it inside without trying to read underneath the wet part of the label. There was no sound when I turned it, but one side sagged as though a heavy thing had slid there.\n\nI told myself I would knock after lunch. When I opened my own front door the parcel was gone. I had left it beside the umbrella stand. The wet marks were still on the floor. Across the path, Mrs Vale was on a chair, screwing a white plate under her door number. It said THIS IS WILLOW RISE."
+    },
+    {
+      "title": "Fiction extract: Mrs Vale's kitchen",
+      "text": "My son had told me he was sending a new door plate. I asked him to wait until we had agreed what it should say. He lives forty miles away and receives photographs of every repair without ever hearing how the work changes what we do. He said Willow Rise was the obvious thing to write. I was thinking about people carrying their cases to the hotel. They ask for number eight naturally enough. I had wanted the plate to show which way they should turn when they reached the cottages.\n\nAt twelve my niece came in through the back of Tomas’s place to bring across a pot we had borrowed. She must have seen the parcel there, because she asked if I had ordered something heavy. She did not bring it out; she thought he had put it aside for me and would ring. She and I opened the packet my son sent after the postman brought it to the kitchen door. The plate inside was as rectangular and definite as a statement she knew I had not meant to make.\n\nI put it up at once. Tomas saw me touch the screwdriver to the last screw. I had been thinking about sending him a note since the summer, when a visitor woke him by knocking at midnight. Now he looked as if I had sent the note to the whole street instead."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "First table read, between two actors",
+      "text": "Director: When Tomas says the parcel was gone, please don't pause like a detective who knows the next clue. He has very little evidence. The pause is his first chance to wonder whether he did the right thing.\n\nOli: I think he suspects Mrs Vale took it. Could he sound annoyed?\n\nDirector: He might become annoyed if he interprets the plate as a message. But the audience has not seen her kitchen scene yet. Let the irritation arrive when the plate appears, so the two things become linked in his mind.\n\nSima: When I say my niece saw the parcel, Mrs Vale hasn’t handled his packet. I don't want to sound like I already know whether somebody removed it.\n\nDirector: Right. She can describe her niece coming in, but even the niece didn’t check the label. There are two parcels, not two explanations of the same parcel.\n\nOli: Then can we let people hear the ends of the sentences about the wet mark and plate in close succession?\n\nDirector: Try it. If we play them close, listeners may draw a conclusion for which neither of them can vouch. That is useful if the next voice makes them hear the gap."
+    },
+    {
+      "title": "Director reflects after a seated audience test",
+      "text": "Three people at the test thought the parcel beside Tomas’s umbrella stand held the plate. When Mrs Vale began to describe her kitchen, two of them changed their mind before the plate was actually mentioned. They noticed what she said about the postman. One person still assumed she had seen the package inside Tomas’s hallway and arranged to receive it separately. That is a possible explanation of what the characters know. It is not given as an event, and it matters if audiences leave expecting an answer about who took it.\n\nWe could end with the postman explaining everything. I would rather let the end settle a smaller question. Tomas is entitled to feel that a sign has appeared without consultation. Mrs Vale is entitled to install it after years of driving guests to the next door to collect their cases. They can find an agreement about where to turn without introducing an official who knows what happened to a package.\n\nThere is one cue that I do want to make clearer. The postman arrives at her kitchen with another packet. Giving that turn a full sentence may keep the end open without making the action needlessly confusing."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Why does Tomas move the parcel?",
+      "options": [
+        "He hears something inside that is about to break.",
+        "He can read an address naming his house.",
+        "He agreed to collect a plate from the hotel.",
+        "He thinks it may be exposed to rain and Mrs Vale might need it."
+      ],
+      "answer": 3,
+      "explanation": "The puddle and his guess about hotel supplies prompt him to bring it in."
+    },
+    {
+      "prompt": "What clue lets Tomas see an apparent connection with Mrs Vale?",
+      "options": [
+        "His umbrella stand bears her street name.",
+        "The plate appears after the parcel disappears.",
+        "The back door is always open on Thursdays.",
+        "The niece signs the old postal label."
+      ],
+      "answer": 1,
+      "explanation": "The narrative places disappearance and the new plate close without proving a causal link."
+    },
+    {
+      "prompt": "What does Mrs Vale really want a sign to do?",
+      "options": [
+        "Preserve the confusing names of both roads.",
+        "Explain why Tomas should receive her hotel deliveries.",
+        "Help people with cases choose the right direction.",
+        "Give her distant son evidence of every change."
+      ],
+      "answer": 2,
+      "explanation": "She wants a navigational cue that serves guests."
+    },
+    {
+      "prompt": "Which event is known only through Mrs Vale's perspective?",
+      "options": [
+        "Tomas had brought a parcel inside before lunch.",
+        "The white plate carries the name of her street.",
+        "Tomas sees the number eight on the wet label.",
+        "A postman delivered the plate packet to her kitchen door."
+      ],
+      "answer": 3,
+      "explanation": "The second passage tells of a separate delivery at the kitchen door."
+    },
+    {
+      "prompt": "What remains unresolved by both extracts?",
+      "options": [
+        "Which door had a white plate fixed to it",
+        "How the parcel Tomas brought inside disappeared",
+        "Who sent Mrs Vale the plate",
+        "What the first visible label digit was"
+      ],
+      "answer": 1,
+      "explanation": "Both stories explain the plate and observations, not the missing packet’s fate."
+    },
+    {
+      "prompt": "What relationship between neighbours can the account of the sign develop?",
+      "options": [
+        "An action can feel addressed to someone who was never directly consulted.",
+        "Mrs Vale cannot remember what the summer visitor did.",
+        "The son has agreed to change the family address.",
+        "Tomas believes Mrs Vale can open his packages."
+      ],
+      "answer": 0,
+      "explanation": "The sign seems public and personal to Tomas even though Mrs Vale associates it with a recurring problem."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why should Tomas avoid an immediately knowing tone?",
+      "options": [
+        "The plot reveals the missing parcel in the next sentence.",
+        "He is supposed to have agreed to the sign nearby.",
+        "His character only has limited evidence at that point.",
+        "It would hide the address from the actor playing the niece."
+      ],
+      "answer": 2,
+      "explanation": "The director wants concern to precede speculation that arises at the plate."
+    },
+    {
+      "prompt": "What distinction must Sima's delivery retain?",
+      "options": [
+        "The niece's sight of one parcel is not knowledge about either label.",
+        "The same parcel is taken to both doors by the postman.",
+        "The niece delivers the second plate to Tomas.",
+        "Mrs Vale tests two signs using photographs."
+      ],
+      "answer": 0,
+      "explanation": "Neither woman has checked the parcel inside Tomas’s place."
+    },
+    {
+      "prompt": "Why place the wet mark and plate lines close together?",
+      "options": [
+        "To make the listener forget who has the screwdriver.",
+        "To invite a tentative inference the other voice will qualify.",
+        "To show the actors should exchange dialogue mid-scene.",
+        "To supply definitive evidence about the packet’s removal."
+      ],
+      "answer": 1,
+      "explanation": "Juxtaposition can suggest a causal story before the evidence for it is examined."
+    },
+    {
+      "prompt": "Which point helped two listeners revise their first idea?",
+      "options": [
+        "The niece put the packet outside again.",
+        "Mrs Vale mentioned the postman’s arrival.",
+        "Tomas read the folded label underneath.",
+        "Mrs Vale named the hotel’s supplier."
+      ],
+      "answer": 1,
+      "explanation": "The review says the shift came when they heard what she said about the postman."
+    },
+    {
+      "prompt": "Which ending does the director prefer?",
+      "options": [
+        "Use the postman to account for all routes.",
+        "Have Mrs Vale remove the sign and never mention why.",
+        "State which actor understands the missing parcel best.",
+        "Resolve a practical question between the neighbours and keep the package mystery open."
+      ],
+      "answer": 3,
+      "explanation": "The director wants a directional agreement without implying the disappearance has been solved."
+    },
+    {
+      "prompt": "What is the purpose of the proposed additional sentence?",
+      "options": [
+        "Make the separate kitchen delivery clear while preserving deliberate ambiguity.",
+        "Confirm that the plate was inside Tomas’s parcel.",
+        "Give the audience another official suspect.",
+        "Identify a witness who arranged both deliveries."
+      ],
+      "answer": 0,
+      "explanation": "Clarity about distinct parcels allows uncertainty about the missing one to remain intentional."
+    }
+  ],
+  "grammar": {
+    "focus": "Narrative time and the past perfect",
+    "explanation": "The past perfect can move the reader to a time before an already past point of view. Past simple usually carries the present line of past events. Past continuous helps set activity in progress rather than completed before the viewpoint. Mark viewpoint shifts only where the order is not clear.",
+    "examples": [
+      {
+        "before": "When I came back, someone moved it.",
+        "after": "When I came back, someone had moved it.",
+        "why": "The change was complete before the return."
+      },
+      {
+        "before": "She thought he puts it aside.",
+        "after": "She thought he had put it aside.",
+        "why": "The putting aside preceded her past thought."
+      },
+      {
+        "before": "He knocked. I had opened the door.",
+        "after": "He knocked. I opened the door.",
+        "why": "If the opening follows the knock, keep the past sequence."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "I noticed an empty shelf, and the removal was already complete. Which fits?",
+        "options": [
+          "When I came in, somebody had cleared the shelf.",
+          "When I came in, somebody cleared the shelf.",
+          "When I came in, somebody was clearing the shelf.",
+          "When I came in, somebody will clear the shelf."
+        ],
+        "answer": 0,
+        "explanation": "Had cleared makes the removal complete before the viewing point."
+      },
+      {
+        "prompt": "The action is incomplete when Tomas sees it. Choose correctly.",
+        "options": [
+          "When Tomas looked out, Mrs Vale had tightened the screw.",
+          "After Tomas looked out, Mrs Vale would have tightened it.",
+          "When Tomas looked out, Mrs Vale was tightening the screw.",
+          "Tomas looked out because Mrs Vale had finished tightening it."
+        ],
+        "answer": 2,
+        "explanation": "Was tightening brings the observer into an ongoing action."
+      },
+      {
+        "prompt": "Which word order helps explain an earlier promise from the niece’s viewpoint?",
+        "options": [
+          "She remembered that she has promise to bring the pot.",
+          "She remembered that she had promised to bring the pot.",
+          "She remembered that she promised it at some point tomorrow.",
+          "She remembered that she would promise it yesterday."
+        ],
+        "answer": 1,
+        "explanation": "The remembered promise precedes the viewpoint at remembered."
+      },
+      {
+        "prompt": "Tomas lifted the parcel and then carried it to the umbrella stand. Which tells the chronology naturally?",
+        "options": [
+          "Tomas had carried it inside before lifting it.",
+          "Tomas had lifted and would carry it before he saw it.",
+          "Tomas lifted the parcel and carried it inside.",
+          "After carrying it inside, Tomas lifted it off the wall."
+        ],
+        "answer": 2,
+        "explanation": "The pair of simple past verbs puts actions in the given order."
+      },
+      {
+        "prompt": "Which marks unverified suspicion about earlier time?",
+        "options": [
+          "Tomas wondered whether someone had taken it.",
+          "Tomas knew why someone took it.",
+          "Tomas confirmed somebody had returned it.",
+          "Tomas saw somebody take it."
+        ],
+        "answer": 0,
+        "explanation": "Wondered plus whether keeps the earlier act as a possibility."
+      },
+      {
+        "prompt": "Which would make the plate’s installation prior to the visitor’s arrival?",
+        "options": [
+          "After our visitor came, we fixed the plate.",
+          "When our visitor came, he watched us fix it.",
+          "When our visitor came, we were fixing the plate.",
+          "By the time our visitor came, the plate had been fixed."
+        ],
+        "answer": 3,
+        "explanation": "Had been fixed is a completed earlier passive action."
+      },
+      {
+        "prompt": "Which sentence indicates a recurring past state before the changes?",
+        "options": [
+          "Each cottage is now number eight Willow Rise.",
+          "Both cottages are renumbered next month.",
+          "The road was split when the first visitor is arriving.",
+          "Both cottages had been called number eight before the road split."
+        ],
+        "answer": 3,
+        "explanation": "Had been called places the shared name before the split."
+      },
+      {
+        "prompt": "Why use ‘My son had sent it’ rather than ‘My son sent it’ after ‘I found the envelope’?",
+        "options": [
+          "It makes sending later than discovery.",
+          "It explicitly shifts back before that discovery.",
+          "It states the son was still writing as the envelope opened.",
+          "It makes the claim less true than a past simple claim."
+        ],
+        "answer": 1,
+        "explanation": "The perfect signals prior time; it does not express uncertainty."
+      }
+    ],
+    "transfer": "Lay out the known actions on two parallel timelines. Draft a 110-word narration from the niece's point of view, using one past perfect to distinguish an earlier event and one past continuous for a visible action."
+  },
+  "vocabulary": [
+    {
+      "word": "juxtapose",
+      "meaning": "place together to invite comparison",
+      "example": "The scene juxtaposes a new sign and a missing parcel.",
+      "pair": "juxtapose two images"
+    },
+    {
+      "word": "unresolved",
+      "meaning": "not settled or explained",
+      "example": "The direction was settled, but the theft remained unresolved.",
+      "pair": "remain unresolved"
+    },
+    {
+      "word": "insinuate",
+      "meaning": "imply something indirectly, often unkindly",
+      "example": "His question insinuated she knew more than she said.",
+      "pair": "insinuate wrongdoing"
+    },
+    {
+      "word": "viewpoint",
+      "meaning": "position from which a story is seen",
+      "example": "The new scene changes the viewpoint.",
+      "pair": "narrative viewpoint"
+    },
+    {
+      "word": "inadvertent",
+      "meaning": "not intentional",
+      "example": "The comment sounded like an inadvertent accusation.",
+      "pair": "inadvertent admission"
+    },
+    {
+      "word": "focal",
+      "meaning": "central to attention",
+      "example": "The sign is a focal detail in the street scene.",
+      "pair": "focal point"
+    },
+    {
+      "word": "definite",
+      "meaning": "clear and certain",
+      "example": "She wanted a definite answer before attaching the plate.",
+      "pair": "definite answer"
+    },
+    {
+      "word": "sequence",
+      "meaning": "arrangement of actions in order",
+      "example": "The sequence invites the listener to connect two events.",
+      "pair": "sequence of events"
+    },
+    {
+      "word": "vouch",
+      "meaning": "give assurance about something",
+      "example": "Tomas could not vouch for the delivery time.",
+      "pair": "vouch for accuracy"
+    },
+    {
+      "word": "withhold",
+      "meaning": "deliberately leave something unsaid or unreleased",
+      "example": "The playwright withholds the origin of the first package.",
+      "pair": "withhold information"
+    },
+    {
+      "word": "presume",
+      "meaning": "suppose in advance from grounds that may be insufficient",
+      "example": "Don't presume the person at the door has read the sign.",
+      "pair": "presume familiarity"
+    },
+    {
+      "word": "misdirection",
+      "meaning": "detail that draws attention to a misleading possibility",
+      "example": "The overlapping number provides misdirection.",
+      "pair": "deliberate misdirection"
+    }
+  ],
+  "speaking": {
+    "audience": "A small cast about to rehearse both viewpoints",
+    "first": "Perform the two short extracts with your own transitions. Use a four-minute directors' discussion to defend what the audience can infer after each voice.",
+    "change": "Your audience cannot see the screw and the wet mark; they hear the piece without staging.",
+    "second": "Make a new staged reading that uses explicit verbal cues for observable events without making the actors accuse somebody of taking the parcel.",
+    "checklist": [
+      "Give the two voices distinct attitudes.",
+      "Make event order recoverable after one performance.",
+      "Keep one plausible inference unconfirmed.",
+      "Ask listeners to separate a clue from a conclusion."
+    ]
+  },
+  "writing": {
+    "audience": "A programme editor who wants a complete short play",
+    "first": "Draft a 430-word third scene in which the neighbours agree on a direction sign without determining the parcel’s fate. Add an author’s note on two tense decisions.",
+    "change": "The chair asks for a version in which the first voice is the niece, before the two neighbours speak.",
+    "second": "Write a fresh opening in the niece's register. Rearrange the suspense and add a short note on what she cannot know.",
+    "checklist": [
+      "Mark time shifts consistently.",
+      "Keep access to facts point-of-view dependent.",
+      "Resolve something different from the original mystery.",
+      "Check that the new opening does not retell both original voices."
+    ]
+  },
+  "immersion": {
+    "role": "Story editor preparing a staged reading",
+    "goal": "Balance concrete clarity and purposeful uncertainty for an audience hearing the story once.",
+    "constraints": [
+      "Two cottages carry the same number.",
+      "A delivered plate and an earlier parcel are distinct.",
+      "No sustained explanation from the postman can be added.",
+      "The ending must give the neighbours a usable next step."
+    ],
+    "change": "An early audience assumes the act of accepting an unexplained parcel is itself a crime and misses the point about the sign.",
+    "deliverables": [
+      "Write a cue sheet that distinguishes events from inferences.",
+      "Perform a revised scene or describe all its acting beats in writing.",
+      "Prepare two alternate endings and justify which one leaves the intended question open."
+    ],
+    "checklist": [
+      "Give each voice a stake beyond solving the parcel.",
+      "Use specific sound or visual cues.",
+      "Keep uncertainty limited to claims the story actually leaves open.",
+      "Test a plausible alternate reading against the final script."
+    ]
+  }
+}

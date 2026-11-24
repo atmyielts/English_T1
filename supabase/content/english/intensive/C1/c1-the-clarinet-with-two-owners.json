@@ -1,0 +1,394 @@
+{
+  "slug": "c1-the-clarinet-with-two-owners",
+  "title": "The Clarinet on Two Timetables",
+  "level": "C1",
+  "summary": "Design a school instrument-lending arrangement that protects progress as well as attendance.\n\nReading: Draw the first two weeks as an on-site and take-home timetable. Insert each plausible conflict where a written source supports it, then reroute one handover. Briefly defend when an apparently equal allocation could produce an unequal opportunity.\n\nVocabulary: Decide which words describe opportunity, responsibility or a physical problem. Use two from each category to draft partly completed borrower records and to explain orally why a symptom by itself cannot tell you who caused a fault.",
+  "documents": [
+    {
+      "title": "Music department notice to families",
+      "text": "The Dew Mill music department has twelve clarinets for twenty-three beginners. Until this year, a pupil kept an instrument at home from the first lesson until the December concert. The waiting list admitted beginners as instruments were returned. This meant that some pupils had practised at home for months before another pupil handled an instrument for the first time. For the autumn term, the department proposes assigning most instruments to pairs. Each instrument would transfer on a Tuesday. Both pupils could keep a personal mouthpiece, cleaning cloth and music at home.\n\nSix pupils have applied for the new ensemble. Its Thursday rehearsal assumes that a clarinet is available. We can leave three instruments at school for that rehearsal, but the room is normally locked at four. A member of staff could check out instruments only if the Thursday sports programme gives up a little of its storage time.\n\nFamilies are asked to keep the clarinet in its case when travelling and report any problem before passing it on. A school technician will check the instruments twice per term. Scratches that were present on arrival will be included in a condition record, so the next borrower is not held responsible for them."
+    },
+    {
+      "title": "Letter from a beginner and her parent",
+      "text": "The alternating loan gives me a better chance of playing at all, and I do not want to be moved back to a waiting list. I would like the department to think about how long our turns actually are. I often leave school before Tuesday’s last lesson because my brother’s group rehearses at the other end of town. I can pick up the clarinet on Wednesday, but I have a longer bus journey then. If the other learner then has to borrow the case again for Thursday ensemble, I might have just one easy evening of home practice during my turn.\n\nWe suggest giving each pair a planning sheet for their first two weeks. Write down the evenings when either of us can play, the ensemble days and one way to swap the instrument without both of us being there. This is not a request to keep first choice every week. It would let us see a problem before it becomes somebody’s missed practice.\n\nMy mother worries that people will keep handing a faulty key to another person rather than risk being charged for breaking it. Give us a separate way to report how an instrument plays, and say what the technician will check before deciding what happened."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Music teacher and caretaker discuss the Thursday loan",
+      "text": "Joel: We can leave three instruments in the side room on Thursday. I worry that someone will carry a case home automatically and the other beginner will come for it on Friday.\n\nSuri: Make the rehearsal instruments a separate colour on the shelf and put Thursday-only tags on them. The two-person loans can still change on Tuesday.\n\nJoel: I could put the initials of both borrowers on a label. The volunteer wants full names because she only knows the ensemble learners.\n\nSuri: At the sign-out desk, fine. I wouldn't put names on every case in the shared corridor. Add a case number and keep a private sheet that tells a volunteer which case a learner needs.\n\nJoel: Could we let somebody sign a blank return column in the morning to save us waiting after rehearsal?\n\nSuri: That would tell you a case was returned before anyone knows it happened. Better to allow one verified entry at the end, even if an adult has to check three cases before locking.\n\nJoel: Let’s give you a key for the ten minutes after ensemble and ask the volunteers to try the system before using it with pupils. They may have an easier way to tell the case colours apart."
+    },
+    {
+      "title": "Technician comments on the first loan week",
+      "text": "Two musicians had written that a low key was difficult to play. One added that it worked normally after a few minutes. At the bench I found the key itself moved without much pressure. The unit at the lower end did not seal unless it had been fitted squarely. I made a mark in the instructions and asked both learners to try it. By the next day both had a better result.\n\nMy concern is that if we call every message a damage report, people will hesitate to tell us what happened. Difficulty when playing can come from different sources. It may be a matter of fitting the sections together or a problem needing repair. For a young player the distinction is often impossible to make. Let them tell us what they heard and what they were doing, and leave the diagnosis to a short check.\n\nWe can still hold somebody responsible when a case is brought back with a new crack and we know when it happened. But for this first exercise the most important thing was hearing from two learners before either decided the other had damaged it. Neither earlier condition record had a box for that sort of information."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What problem is the paired loan meant to reduce?",
+      "options": [
+        "The need for a technician to inspect instruments",
+        "Long delays for beginners on the waiting list",
+        "The number of pupils allowed to join the ensemble",
+        "The cost of individual practice items"
+      ],
+      "answer": 1,
+      "explanation": "The previous full-term loan delayed first access until places opened."
+    },
+    {
+      "prompt": "What makes reserving instruments for Thursday uncertain?",
+      "options": [
+        "Three instruments have already been sold.",
+        "Staff need temporary use of a room occupied by another programme.",
+        "The ensemble must check instruments at home first.",
+        "Thursday’s rehearsal has no fixed day."
+      ],
+      "answer": 1,
+      "explanation": "The limited storage arrangement requires coordinating use of the locked room."
+    },
+    {
+      "prompt": "Why might equal calendar periods produce unequal access?",
+      "options": [
+        "A pupil’s travel and other rehearsal needs change practical practice evenings.",
+        "Only beginners play at home.",
+        "Parents refuse alternating transfers outright.",
+        "The department has no equipment records."
+      ],
+      "answer": 0,
+      "explanation": "The letter asks planners to count playable evenings rather than nominal dates."
+    },
+    {
+      "prompt": "What would the planning sheet make possible?",
+      "options": [
+        "Charging families for delayed returns each week",
+        "Forcing both musicians to practise on the same evenings",
+        "Keeping a permanent first borrower",
+        "Spotting conflicts between practice, transport and handover in advance"
+      ],
+      "answer": 3,
+      "explanation": "Learners would forecast sessions and choose a suitable swap method."
+    },
+    {
+      "prompt": "What is the parent’s concern about the proposed record?",
+      "options": [
+        "It gives the technician an extra evening at school.",
+        "It cannot record the names of both borrowers.",
+        "It could discourage reporting a playing problem if it is treated as damage.",
+        "It makes every existing scratch automatically the borrower's fault."
+      ],
+      "answer": 2,
+      "explanation": "The letter asks for a separate way to report instrument behaviour."
+    },
+    {
+      "prompt": "What do the documents still need to reconcile?",
+      "options": [
+        "Wider participation and a handover that provides usable practice time",
+        "Which instrument can take a personal mouthpiece",
+        "Who owns the school’s existing instruments",
+        "Whether all instruments must be at school all week"
+      ],
+      "answer": 0,
+      "explanation": "The department addresses access while the learner identifies what effective time requires."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why give rehearsal cases different identifying tags?",
+      "options": [
+        "So the cases can leave unrecorded.",
+        "So short rehearsal access cannot be confused with take-home borrowing.",
+        "So volunteers can read a musician’s full name from the corridor.",
+        "So the two learners can start swapping on Thursday."
+      ],
+      "answer": 1,
+      "explanation": "Suri distinguishes rehearsal reserves from paired Tuesday loans."
+    },
+    {
+      "prompt": "Why limit names to the desk’s private sheet?",
+      "options": [
+        "The case needs to be identified without sharing pupils’ names in the corridor.",
+        "Volunteers must never know which musicians are playing.",
+        "Parents are required to sign all cases together.",
+        "The tags are too small to show any serial number."
+      ],
+      "answer": 0,
+      "explanation": "A public case number and private lookup serve different audiences."
+    },
+    {
+      "prompt": "What is wrong with signing a return column early?",
+      "options": [
+        "It transfers responsibility to the first player.",
+        "It falsely suggests the physical return has already happened.",
+        "It makes the case remain overnight.",
+        "It reveals differences in player experience."
+      ],
+      "answer": 1,
+      "explanation": "Suri says to record return after inspecting it."
+    },
+    {
+      "prompt": "What observation helped the technician diagnose the low key?",
+      "options": [
+        "The lower piece sealed properly only if fitted squarely.",
+        "A new crack prevented the case closing.",
+        "The key mechanism needed strong pressure.",
+        "Both recorded scratches were on the mouthpiece."
+      ],
+      "answer": 0,
+      "explanation": "The problem lay in assembly even though it looked like a key fault."
+    },
+    {
+      "prompt": "Why distinguish a symptom report from a damage report?",
+      "options": [
+        "Eligible borrow dates need no separate record.",
+        "A defect is irrelevant unless staff can see it from the corridor.",
+        "A musician should always be responsible for repairing the key.",
+        "A player can describe an experience without prematurely assigning fault."
+      ],
+      "answer": 3,
+      "explanation": "The technician wants early reports without a forced diagnosis or accusation."
+    },
+    {
+      "prompt": "How do the recordings treat administrative wording?",
+      "options": [
+        "Colour tags should replace all condition records.",
+        "Each field should identify the last person who used the case.",
+        "A record should state what actually happened or was observed.",
+        "An unverified record is useful as long as the handwriting is clear."
+      ],
+      "answer": 2,
+      "explanation": "Return and condition claims both need verification rather than assumptions."
+    }
+  ],
+  "grammar": {
+    "focus": "What-clefts for contrast and priorities",
+    "explanation": "A what-clause can introduce the shared topic and the clause after be can highlight the contrast. Use what we need is a plan for a requirement and what they did was check the seal for an action. Ensure the source describes that action and avoid transferring emphasis into a stronger claim.",
+    "examples": [
+      {
+        "before": "What we need it is a space to practise.",
+        "after": "What we need is a space to practise.",
+        "why": "The what-clause is already the subject."
+      },
+      {
+        "before": "What we did was checked the joint.",
+        "after": "What we did was check the joint.",
+        "why": "After what we did was, a plain action verb is idiomatic."
+      },
+      {
+        "before": "What the log records is that the case arrived at four.",
+        "after": "What the log records is the arrival time.",
+        "why": "The single focused noun is enough when the time is printed alongside."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which focuses on the actual requirement rather than who provided it?",
+        "options": [
+          "What we need is a verified return time.",
+          "What we needing is a verified return time.",
+          "What we need it is to verify the time.",
+          "It was Joel who verified the time."
+        ],
+        "answer": 0,
+        "explanation": "What we need introduces the topic and verified return time gives the focus."
+      },
+      {
+        "prompt": "Which highlights a completed action without a tense error?",
+        "options": [
+          "What did they do was check the three cases together.",
+          "What they did was checked the three cases together.",
+          "What they did they checked the three cases together.",
+          "What they did was check the three cases together."
+        ],
+        "answer": 3,
+        "explanation": "Did supplies past tense and the focused action follows as a plain verb."
+      },
+      {
+        "prompt": "Which sentence contrasts two possible accounts of a playing problem?",
+        "options": [
+          "What she damages a key is what she reported.",
+          "She reported damage, which confirmed what we thought.",
+          "What she reported was difficulty with a key, not a diagnosis of damage.",
+          "It was a reported diagnosis that caused the reported difficulty."
+        ],
+        "answer": 2,
+        "explanation": "The clause focuses the exact distinction she made."
+      },
+      {
+        "prompt": "Which question does ‘What worried Suri was an unverified return’ primarily answer?",
+        "options": [
+          "What worried Suri?",
+          "How much did the repair cost?",
+          "When did Suri get worried?",
+          "Who returned the instrument?"
+        ],
+        "answer": 0,
+        "explanation": "The slot highlighted after was identifies her worry."
+      },
+      {
+        "prompt": "Which contrasts the object needed with an unnecessary location detail?",
+        "options": [
+          "What they wanted it was a different room.",
+          "It was under the stairs that they wanted an instrument.",
+          "What they wanted was an available instrument, not a different room.",
+          "Where they wanted was a different room."
+        ],
+        "answer": 2,
+        "explanation": "A what-cleft can contrast alternatives explicitly."
+      },
+      {
+        "prompt": "Choose the matching emphasis for ‘the technician, rather than the pupil, decided the cause’.",
+        "options": [
+          "What the pupil did was decide the cause.",
+          "It was the technician who decided the cause.",
+          "It was the cause that decided the technician.",
+          "What the technician decided was a case colour."
+        ],
+        "answer": 1,
+        "explanation": "It was the technician puts contrast on the person who performed the action."
+      },
+      {
+        "prompt": "Which cleft stays within evidence that the home rehearsal opportunity was lost?",
+        "options": [
+          "What the pupil caused was a faulty key.",
+          "What the pupil missed was a chance to practise at home.",
+          "It was at home that the key became faulty.",
+          "What the pupil believed proves the instrument cannot work."
+        ],
+        "answer": 1,
+        "explanation": "The stated fact supports lost practice, not responsibility or diagnosis."
+      },
+      {
+        "prompt": "Which rewrite highlights an action that has yet to happen?",
+        "options": [
+          "What we did next was ask both borrowers about the seal.",
+          "What we found was that both had already fixed the seal.",
+          "What we should did next was ask both buyers about the seal.",
+          "What we should do next is ask both borrowers about the seal."
+        ],
+        "answer": 3,
+        "explanation": "The should construction identifies a next action rather than claiming it is done."
+      }
+    ],
+    "transfer": "Record a ninety-second recommendation contrasting access, custody and working condition. Use two different clefts, then paraphrase them without emphasis. Check whether the emphasis adds information or merely marks it."
+  },
+  "vocabulary": [
+    {
+      "word": "alternate",
+      "meaning": "take place one after another in repeated turns",
+      "example": "The pairs alternate on Tuesdays.",
+      "pair": "alternate turns"
+    },
+    {
+      "word": "allocate",
+      "meaning": "assign to a particular person or use",
+      "example": "The department will allocate a case to each pair.",
+      "pair": "allocate resources"
+    },
+    {
+      "word": "assembly",
+      "meaning": "process of fitting pieces together",
+      "example": "The problem occurred during assembly.",
+      "pair": "incorrect assembly"
+    },
+    {
+      "word": "custody",
+      "meaning": "responsibility for holding or looking after a thing",
+      "example": "The record shows who had custody of the case.",
+      "pair": "temporary custody"
+    },
+    {
+      "word": "ensemble",
+      "meaning": "group of people performing together",
+      "example": "The beginner joined a small ensemble.",
+      "pair": "school ensemble"
+    },
+    {
+      "word": "diagnose",
+      "meaning": "identify the underlying cause",
+      "example": "The technician diagnosed a sealing problem.",
+      "pair": "diagnose a fault"
+    },
+    {
+      "word": "liability",
+      "meaning": "legal or practical responsibility for a loss",
+      "example": "The notice does not assign liability for old marks.",
+      "pair": "assume liability"
+    },
+    {
+      "word": "verified",
+      "meaning": "checked and confirmed as true",
+      "example": "Only verified returns enter the daily count.",
+      "pair": "verified return"
+    },
+    {
+      "word": "entitlement",
+      "meaning": "established right to receive something",
+      "example": "The rehearsal reservation creates an entitlement to one instrument.",
+      "pair": "basic entitlement"
+    },
+    {
+      "word": "seal",
+      "meaning": "close firmly enough to prevent air escaping",
+      "example": "The joint failed to seal on the left side.",
+      "pair": "form a seal"
+    },
+    {
+      "word": "symptom",
+      "meaning": "observable sign of a possible fault",
+      "example": "A faint sound was the first symptom.",
+      "pair": "report a symptom"
+    },
+    {
+      "word": "slot",
+      "meaning": "designated space or period for an activity",
+      "example": "The afternoon slot gives us ten quiet minutes.",
+      "pair": "practice slot"
+    }
+  ],
+  "speaking": {
+    "audience": "Two beginners and a busy equipment volunteer",
+    "first": "Use a simulated first week to show the difference between check-out, expected return and verified return. Give a reassuring explanation of how to report a suspect key.",
+    "change": "A performer has a changed Thursday rehearsal and one learner cannot travel to school on Tuesday.",
+    "second": "Negotiate a separate two-week plan aloud. Explain the trade-off with requested practice slots, then give a handover each learner can repeat accurately.",
+    "checklist": [
+      "Explain two workable alternatives.",
+      "Distinguish condition from custody.",
+      "Keep private details out of the public label.",
+      "Test what the beginners understand about reporting."
+    ]
+  },
+  "writing": {
+    "audience": "Music department lead evaluating the change to pooled instruments",
+    "first": "Write a 370-word evaluation proposal that distinguishes nominal loan days from usable practice time. Include an incident form with separate entry types.",
+    "change": "A case is overdue and the last confirmed return entry belongs to the rehearsal reserve, not the paired loan.",
+    "second": "Write a fresh incident memo with a clear chain of custody and two next steps that avoid accusing either learner.",
+    "checklist": [
+      "Preserve exact dates and categories.",
+      "Write what is observed separately from suspected cause.",
+      "Include both access and repair indicators.",
+      "Make the changed schedule affect your recommendation."
+    ]
+  },
+  "immersion": {
+    "role": "Coordinator of an instrument pool",
+    "goal": "Create a fair rotation and a paper system that a new tutor can use on a busy day.",
+    "constraints": [
+      "Twelve instruments and twenty-three beginners.",
+      "Three cases can be reserved on site if storage hours are agreed.",
+      "A return can be entered only after somebody sees the actual case.",
+      "A symptom report cannot itself determine liability."
+    ],
+    "change": "The designated storage room will be unavailable for one week because a floor is being repaired.",
+    "deliverables": [
+      "Produce a full week of bookings and a two-person contingency plan.",
+      "Create three worked sample records and show their differences.",
+      "Teach a new volunteer to route a disputed case without blocking the rehearsal."
+    ],
+    "checklist": [
+      "Keep Thursday reserve and paired loan identifiers distinct.",
+      "Trace each custody change.",
+      "Explain an adjustment for missing practice hours.",
+      "Use a separate maintenance check for any diagnosis."
+    ]
+  }
+}

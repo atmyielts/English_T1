@@ -1,0 +1,425 @@
+{
+  "slug": "rain-gauge-notebook",
+  "title": "The rain gauge notebook",
+  "level": "A2",
+  "summary": "You help a neighborhood club move three days of rain gauge readings from a paper notebook to an online form. Start by sorting the paper entries and checking which times belong in the form. Study how to tell what happened while another action was in progress. Use the vocabulary cards to make and check your own examples. Give a spoken handover, write a notebook correction, and finish by preparing entries for a form with limited space.",
+  "documents": [
+    {
+      "title": "Maple Garden notebook",
+      "text": "Monday 6 May, 8:00 a.m. — 4 mm. Lina read the tube by the bench and wrote the number on line 1. She emptied the tube after the reading.\nTuesday 7 May, 8:00 a.m. — line 2 is blank. Lina wrote in the margin that she found a chip at the top of the tube. There is no number for Tuesday.\nWednesday 8 May, 7:50 a.m. — 6 mm on line 3. Sam checked the tube and wrote the number. At 8:10 a.m. he copied that same reading onto line 4 because he thought line 3 was empty. He did not check the tube again. He put a small star next to the copied line."
+    },
+    {
+      "title": "Before you fill in the form",
+      "text": "Start with the date and garden name on each notebook entry. Use the time when the person read the tube. If someone copied the reading later, keep the first entry and mark the copy as REPEAT in the notebook. Leave the copy out of the form. If an entry has no reading, choose MISSING and leave the number box empty. Use 0 only if someone checked the tube and found no water. Put details about broken or new tubes in the Notes box. Keep the notebook line number in your notes so you can find the entry again. Before you save, compare each form entry with its notebook line."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Sam's message about Wednesday",
+      "text": "Hi Lina, it's Sam. I was closing my kitchen window on Tuesday night when the rain started. I looked at the clock and it was ten past nine. That's the time the rain started, so please keep it out of the reading time box. On Wednesday morning I checked the tube at seven fifty. The water reached the line marked six millimeters. That's the number I wrote down. Rosa asked me later if I knew how much rain fell before midnight. I only checked the tube in the morning, so I can't give her a number for that part of the night."
+    },
+    {
+      "title": "Lina's handover about the new tube",
+      "text": "Hello, it's Lina with a quick handover for the next recorder. On Tuesday morning I found a chip at the top of the tube beside the bench. I carried it to the shed. While I was looking for a spare tube, I found a card with the garden name on it. I used that card to label the spare. I put the new plastic tube beside the bench at twelve thirty in the afternoon on Tuesday. It was empty when I put it there. I left Tuesday's reading blank because I didn't read the old tube that morning. You'll find the old tube on the bottom shelf in the shed."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read “Maple Garden notebook” once for the dates. What did Lina do after she took Monday's reading?",
+      "options": [
+        "She took the tube to the shed.",
+        "She emptied the tube.",
+        "She put a star next to the entry.",
+        "She wrote the reading again on the next line."
+      ],
+      "answer": 1,
+      "explanation": "The Monday entry says Lina emptied the tube after she read it."
+    },
+    {
+      "prompt": "Reread the two Wednesday entries in “Maple Garden notebook.” Why is there a star next to line 4?",
+      "options": [
+        "It shows that Sam checked the tube twice.",
+        "It points to a change in the reading.",
+        "It marks a line with no time.",
+        "It marks the line where Sam copied an earlier reading."
+      ],
+      "answer": 3,
+      "explanation": "Sam put the star beside line 4 after copying the reading from line 3."
+    },
+    {
+      "prompt": "Make a three-day list from “Maple Garden notebook.” Which day has an entry with no number anywhere for that day?",
+      "options": [
+        "Tuesday",
+        "Monday",
+        "Wednesday",
+        "Monday and Wednesday"
+      ],
+      "answer": 0,
+      "explanation": "Tuesday's entry is blank, and the margin note only describes the chip."
+    },
+    {
+      "prompt": "Read “Before you fill in the form” for its main purpose. What does it help you do?",
+      "options": [
+        "Choose a safe place for a new tube.",
+        "Plan who will take readings each morning.",
+        "Move notebook readings into a form and check them.",
+        "Find out how much rain fell before midnight."
+      ],
+      "answer": 2,
+      "explanation": "The checklist explains which details to enter and how to check them before saving."
+    },
+    {
+      "prompt": "Reread the rules for numbers in “Before you fill in the form.” What should you do for a day with no reading?",
+      "options": [
+        "Choose MISSING and enter 0.",
+        "Choose MISSING and leave the number box empty.",
+        "Enter the last number and add a note.",
+        "Leave the day out of the form."
+      ],
+      "answer": 1,
+      "explanation": "The checklist says to choose MISSING and keep the number box empty."
+    },
+    {
+      "prompt": "Use “Maple Garden notebook” and “Before you fill in the form.” Which Wednesday entry should go into the form before you get any new information?",
+      "options": [
+        "Line 3 with 7:50 a.m. and 6 mm",
+        "Line 4 with 8:10 a.m. and 6 mm",
+        "Line 3 with 8:10 a.m. and 6 mm",
+        "Both lines with their own times"
+      ],
+      "answer": 0,
+      "explanation": "Sam read the tube at 7:50, and the checklist says to leave copies out."
+    },
+    {
+      "prompt": "Use “Before you fill in the form” to sort these details. Where should you put the information about the new tube?",
+      "options": [
+        "In the reading time box",
+        "In the number box",
+        "In the garden name box",
+        "In the Notes box"
+      ],
+      "answer": 3,
+      "explanation": "The checklist says to put details about broken or new tubes in Notes."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to “Sam's message about Wednesday” once. What does Sam mainly want Lina to understand?",
+      "options": [
+        "How to find the tube beside the bench",
+        "Why Wednesday needs a new tube",
+        "Which time is for the rain and which time is for the reading",
+        "Who should take the reading on Thursday"
+      ],
+      "answer": 2,
+      "explanation": "Sam gives both times and tells Lina which one belongs in the reading box."
+    },
+    {
+      "prompt": "Listen to “Sam's message about Wednesday” again. Note the two times with a few words next to each. What happened at 9:10 p.m. on Tuesday?",
+      "options": [
+        "The rain started.",
+        "Sam checked the tube.",
+        "Rosa asked Sam a question.",
+        "Sam copied the reading."
+      ],
+      "answer": 0,
+      "explanation": "Sam says the rain started while he was closing his kitchen window at 9:10."
+    },
+    {
+      "prompt": "In “Sam's message about Wednesday,” why can't Sam give Rosa a number for the rain before midnight?",
+      "options": [
+        "He forgot to write down the number in the morning.",
+        "He could only read the time on the clock.",
+        "He used a tube with no numbers on it.",
+        "He only checked the tube the next morning."
+      ],
+      "answer": 3,
+      "explanation": "His only check was in the morning, so he has no separate reading for before midnight."
+    },
+    {
+      "prompt": "Listen to “Lina's handover about the new tube.” Write short notes and put her actions in order. What did she find while she was looking for a spare tube?",
+      "options": [
+        "A card with the reading time",
+        "A card with the garden name",
+        "A notebook on the bottom shelf",
+        "A chip from the old tube"
+      ],
+      "answer": 1,
+      "explanation": "Lina says she found a card with the garden name and used it to label the spare."
+    },
+    {
+      "prompt": "Listen to “Lina's handover about the new tube” again. Which detail tells the next recorder where to find the old tube now?",
+      "options": [
+        "Beside the bench",
+        "On the top shelf in the shed",
+        "On the bottom shelf in the shed",
+        "By the shed door"
+      ],
+      "answer": 2,
+      "explanation": "At the end of the handover, Lina puts the old tube on the bottom shelf in the shed."
+    },
+    {
+      "prompt": "Use “Lina's handover about the new tube” to check your notes. Which entry correctly records the change of tube?",
+      "options": [
+        "Tuesday, 12:30 p.m. — new plastic tube beside the bench",
+        "Tuesday, 8:00 a.m. — new plastic tube in the shed",
+        "Tuesday, 12:30 p.m. — old chipped tube back beside the bench",
+        "Wednesday, 7:50 a.m. — new plastic tube beside the bench"
+      ],
+      "answer": 0,
+      "explanation": "Lina says she put the new plastic tube beside the bench at twelve thirty on Tuesday."
+    },
+    {
+      "prompt": "Compare “Lina's handover about the new tube” and “Sam's message about Wednesday.” Which detail describes water that a recorder measured?",
+      "options": [
+        "The rain that began at 9:10 p.m.",
+        "The 6 mm Sam saw at 7:50 a.m.",
+        "The empty spare tube Lina put out at 12:30 p.m.",
+        "The rain before midnight that Rosa asked about"
+      ],
+      "answer": 1,
+      "explanation": "Sam saw the water reach the six millimeter mark when he checked the tube."
+    }
+  ],
+  "grammar": {
+    "focus": "Past simple and past continuous with when and while",
+    "explanation": "Use the past simple for finished actions in a report. For example, Sam checked the tube and wrote a number. Use the past continuous for an action that was already happening at a time in the past. Make it with was or were and the verb ending in -ing. You can join a background action and a new event with when or while. In “I was closing the window when it started to rain,” closing the window was already in progress. In “While I was looking for a spare, I found a card,” the search was already in progress. The background can come first or second. Underline the background and circle the new event in each worked example.",
+    "examples": [
+      {
+        "before": "Lina began to look for a spare. She found a card during the search.",
+        "after": "While Lina was looking for a spare, she found a card.",
+        "why": "The search was already happening when Lina found the card."
+      },
+      {
+        "before": "I started closing the window. The rain started before I finished closing it.",
+        "after": "I was closing the window when the rain started.",
+        "why": "Closing the window was in progress, and the start of the rain was a new event."
+      },
+      {
+        "before": "We started checking the form. The screen went dark during the check.",
+        "after": "The screen went dark while we were checking the form.",
+        "why": "The new event comes first in the sentence, and we were checking is the background action."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Jo began carrying a box to the shed. A handle broke halfway there. Which sentence shows what Jo was doing when it broke?",
+        "options": [
+          "Jo carried the box to the shed when a handle broke.",
+          "Jo was carrying the box to the shed when a handle broke.",
+          "Jo was carrying the box to the shed after a handle broke.",
+          "While Jo was breaking a handle, she carried the box to the shed."
+        ],
+        "answer": 1,
+        "explanation": "Jo was carrying the box already, and the handle broke during that action."
+      },
+      {
+        "prompt": "Ben and I started checking the dates. We found a wrong date during the check. Complete the report. “While we ___ the dates, we ___ a wrong one.”",
+        "options": [
+          "was checking / found",
+          "checked / were finding",
+          "were checking / were finding",
+          "were checking / found"
+        ],
+        "answer": 3,
+        "explanation": "Were checking gives the background action, and found gives the event that happened during it."
+      },
+      {
+        "prompt": "Nora began writing a label. Halfway through, her pen ran out of ink. Which sentence reports the pen running out as a finished event during the writing?",
+        "options": [
+          "Nora's pen ran out of ink while she was writing the label.",
+          "Nora was writing the label while her pen was running out of ink.",
+          "Nora wrote the label after her pen ran out of ink.",
+          "Nora's pen ran out of ink before she started writing the label."
+        ],
+        "answer": 0,
+        "explanation": "Was writing shows that the label was already in progress when the ink ran out."
+      },
+      {
+        "prompt": "At 4:00, Pat opened the form. At 4:02, Pat saved it. Choose the sentence that gives both finished actions in order.",
+        "options": [
+          "Pat was opening the form when it saved.",
+          "While Pat was saving the form, Pat opened it.",
+          "Pat opened the form and then saved it.",
+          "When Pat saved the form, Pat opened it."
+        ],
+        "answer": 2,
+        "explanation": "Opened and saved describe two finished steps, and then gives their order."
+      },
+      {
+        "prompt": "At 8:00, I was halfway through washing a cup. Then the doorbell rang. Report the start of the ringing as a finished event. “I ___ a cup when the doorbell ___.”",
+        "options": [
+          "washed / was ringing",
+          "was washing / rang",
+          "were washing / rang",
+          "was washing / was ringing"
+        ],
+        "answer": 1,
+        "explanation": "Was washing shows what I was doing already, and rang gives the new event."
+      },
+      {
+        "prompt": "Tariq noticed a loose page during his walk to the bench. Choose the sentence that begins with the finished event and then gives the background.",
+        "options": [
+          "While Tariq was walking to the bench, he noticed a loose page.",
+          "Tariq was noticing a loose page while he walked to the bench.",
+          "Tariq noticed a loose page before he started walking to the bench.",
+          "Tariq noticed a loose page while he was walking to the bench."
+        ],
+        "answer": 3,
+        "explanation": "Noticed comes first, and was walking tells what was happening at that moment."
+      },
+      {
+        "prompt": "Two volunteers were halfway through moving a table when a pencil fell. Which question asks what they were doing at that moment?",
+        "options": [
+          "What were the volunteers doing when the pencil fell?",
+          "What did the volunteers do after the pencil fell?",
+          "What fell while the volunteers were moving the table?",
+          "When did the volunteers finish moving the table?"
+        ],
+        "answer": 0,
+        "explanation": "Were doing asks about an action already in progress when the pencil fell."
+      },
+      {
+        "prompt": "Eva was already waiting by the gate. Mo arrived at 8:05. Report Mo’s arrival at 8:05 as a finished event during Eva’s wait. “___ Eva was waiting by the gate, Mo ___.”",
+        "options": [
+          "After / was arriving",
+          "While / was arriving",
+          "While / arrived",
+          "Before / arrived"
+        ],
+        "answer": 2,
+        "explanation": "While introduces Eva's wait, and arrived gives Mo's arrival as a finished event."
+      }
+    ],
+    "transfer": "Write a two-sentence handover using these practice facts. At 3:15 p.m. on Thursday, you were looking for a lid in the shed and found a spare label. You put it in the top drawer. Give the discovery in one sentence with when or while and the next action in a separate sentence. Underline the action in progress and circle the two finished actions. Read both sentences aloud."
+  },
+  "vocabulary": [
+    {
+      "word": "reading",
+      "meaning": "a number that a tool shows",
+      "example": "The reading on the kitchen scale was 200 grams.",
+      "pair": "take a reading"
+    },
+    {
+      "word": "tube",
+      "meaning": "a long round container or pipe",
+      "example": "I keep my rolled drawing in a cardboard tube.",
+      "pair": "plastic tube"
+    },
+    {
+      "word": "chip",
+      "meaning": "a small mark left when a piece breaks off",
+      "example": "There is a chip on the edge of my plate.",
+      "pair": "a chip in the rim"
+    },
+    {
+      "word": "spare",
+      "meaning": "extra and ready to use if needed",
+      "example": "I keep a spare key in my bag.",
+      "pair": "spare battery"
+    },
+    {
+      "word": "entry",
+      "meaning": "one item written in a record",
+      "example": "I made an entry in my diary about the train trip.",
+      "pair": "make an entry"
+    },
+    {
+      "word": "margin",
+      "meaning": "the space along the edge of a page",
+      "example": "I drew a small arrow in the margin.",
+      "pair": "left margin"
+    },
+    {
+      "word": "blank",
+      "meaning": "with nothing written or printed there",
+      "example": "Please turn to a blank page for your shopping list.",
+      "pair": "leave a box blank"
+    },
+    {
+      "word": "copy",
+      "meaning": "write the same words or numbers again",
+      "example": "I copied the address onto a card.",
+      "pair": "copy a phone number"
+    },
+    {
+      "word": "label",
+      "meaning": "put a name or description on something",
+      "example": "We labeled the jars before we put them away.",
+      "pair": "label a box"
+    },
+    {
+      "word": "leave out",
+      "meaning": "to choose not to include or add something",
+      "example": "I left out the onions when I made the salad.",
+      "pair": "leave out a detail"
+    },
+    {
+      "word": "compare",
+      "meaning": "look at things to see how they are alike or different",
+      "example": "I compared the prices of two bags of rice.",
+      "pair": "compare two lists"
+    },
+    {
+      "word": "handover",
+      "meaning": "information you give to the next person doing a job",
+      "example": "In my handover, I told my coworker which orders were ready.",
+      "pair": "a quick handover"
+    }
+  ],
+  "speaking": {
+    "audience": "The next neighborhood club recorder, who needs to know what happened before taking the next reading.",
+    "first": "Make a cue card with three lines, one for each day. Add one cue about the old tube. Use the notebook and these updates to check your facts. Sam was closing his kitchen window at 9:10 p.m. on Tuesday when the rain started. Lina took the chipped tube to the bottom shelf in the shed and set up a new empty tube by the bench at 12:30 p.m. on Tuesday. Record an update in three short connected turns covering Monday, Tuesday, and Wednesday. Use when or while once or twice to report what happened during another action. Listen back and check your times.",
+    "change": "A new message from Lina says she moved the old chipped tube at 4:15 p.m. on Wednesday. It is now in the blue box by the shed door. The new plastic tube is still beside the bench.",
+    "second": "Record the update again with the new location and the time of the move. Keep Tuesday's replacement time and the location of the new tube. Keep the account of all three days. Finish by telling the next recorder where to find each tube now.",
+    "checklist": [
+      "I give Monday's 4 mm and say that Tuesday's reading is missing.",
+      "I give 7:50 a.m. for Wednesday's 6 mm and explain the 8:10 a.m. copy.",
+      "I keep the start of the rain at 9:10 p.m. on Tuesday separate from the reading time.",
+      "I say that Lina moved the old tube at 4:15 p.m. on Wednesday and name its new location.",
+      "I use when or while with an action in progress and a finished event.",
+      "My listener can tell which tube is beside the bench."
+    ]
+  },
+  "writing": {
+    "audience": "The neighborhood club volunteer who will enter the notebook readings into the online form.",
+    "first": "Draw four rows for notebook lines 1 to 4. For each row, jot down the date, the reading or its status, and what should go into the form. Use your rows to draft a 50–90-word correction for the volunteer. Give Tuesday's missing status and explain the two Wednesday times. Include the Tuesday tube change in a short note. Lina put a new empty plastic tube beside the bench at 12:30 p.m. on Tuesday and moved the old tube to the shed.",
+    "change": "Sam checks the location and sends a correction. On Wednesday 8 May, the 6 mm reading at 7:50 a.m. came from the tube in Willow Garden. The notebook has no Wednesday reading for Maple Garden. Line 4 is still a copy of line 3.",
+    "second": "Revise your 50–90-word correction. Label line 3 Willow Garden and keep its reading time and number. Mark line 4 as a repeat of line 3. Give Maple Garden a separate Wednesday MISSING entry with an empty number box and “No notebook line” in Notes. Keep Monday's reading, Tuesday's missing status, and the note about the new tube.",
+    "checklist": [
+      "My correction names lines 3 and 4 so the volunteer can find them.",
+      "I put 6 mm and 7:50 a.m. together under Willow Garden.",
+      "I mark Maple Garden's Tuesday and Wednesday readings MISSING and leave both number boxes empty.",
+      "I keep Monday's 4 mm at 8:00 a.m. under Maple Garden.",
+      "I include the new plastic tube beside the bench at 12:30 p.m. on Tuesday.",
+      "I reread the correction as the volunteer and check that every instruction can be followed."
+    ]
+  },
+  "immersion": {
+    "role": "You are the club volunteer preparing the final form entries and a paper list of work to finish.",
+    "goal": "Prepare a set of entries you can save today and a paper list you can use at your next visit. Make it easy to tell which garden each reading belongs to and what still needs to be entered.",
+    "constraints": [
+      "Use the writing task's correction about Willow Garden as your latest information about the readings.",
+      "For each form row, show the garden, date, time, number, status, and Notes. Use READING for a row with a measured number.",
+      "For MISSING rows, leave both the time and number fields empty. The Tuesday 8:00 a.m. notebook time was for the visit.",
+      "Keep the repeated line in the notebook record and leave it out of the form.",
+      "Each Notes box has room for ten words. Use the paper list for equipment details that do not fit.",
+      "Lina moved the old chipped tube again at 4:15 p.m. on Wednesday. It is now in the blue box by the shed door. The new tube is still beside the bench."
+    ],
+    "change": "At 5:00 p.m. on Wednesday, the club form starts accepting Maple Garden entries only. Willow Garden becomes available again at 9:00 a.m. on Thursday. You can save Maple Garden today. Keep Willow's reading on paper so you can add it on Thursday with its original reading date and time.",
+    "deliverables": [
+      "Make three ready-to-save Maple Garden rows, one each for Monday 6 May, Tuesday 7 May, and Wednesday 8 May. Include the available notebook line numbers in Notes. The Wednesday row may say “No notebook line”.",
+      "Write one paper reminder for Thursday with the time Willow Garden becomes available and all the details needed to enter line 3. Add a separate line stating what to do with line 4.",
+      "Write two short equipment notes on the paper list. Include when and where the new tube was put out and when and where the old tube was last moved.",
+      "Record a two- or three-sentence end-of-day update for the next volunteer. Say which garden you can save today and what to enter on Thursday."
+    ],
+    "checklist": [
+      "My three Maple Garden rows show one reading and two missing days.",
+      "My Wednesday Maple Garden row has empty time and number fields.",
+      "My paper reminder keeps Wednesday 8 May at 7:50 a.m. as the Willow reading time and shows Thursday at 9:00 a.m. as the time the form opens for Willow.",
+      "I can find the original Wednesday reading on line 3 and the repeat on line 4.",
+      "Every form note has ten words or fewer, and the equipment notes give both tube locations.",
+      "The recorded update matches the rows and the paper reminder."
+    ]
+  }
+}

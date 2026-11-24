@@ -1,0 +1,391 @@
+{
+  "slug": "b1-the-library-trolley-at-three-stops",
+  "title": "A Library Trolley at Three Stops",
+  "level": "B1",
+  "summary": "Make book borrowing work on a moving route with a shorter stop and a missed return.",
+  "documents": [
+    {
+      "title": "Route card for the library trolley",
+      "text": "The trolley takes a small selection of books to three buildings on Wednesday. It stops in the dining room at ten, outside the music room at eleven and at the north door at eleven forty. We can carry only twenty-four books each week. People visiting the last stop can ask for a title to be kept there. Write your name and the title on the sheet by Monday evening so the library can put a band around the book.\n\nPlease bring back books before you choose new ones. If your weekly stop is cancelled, keep the book until the next visit or leave it in the return box at the main library. The trolley worker gives people a date card to take away. Do not put the card inside a book that somebody else borrowed. Each card is for a particular person. The book's title is printed on it so that people can tell them apart."
+    },
+    {
+      "title": "Notes after last Wednesday",
+      "text": "The second stop ran late because a few children wanted help finding a book that was easy enough to read. They had all looked at the front covers, but they were not sure where to find the short books. We moved the shorter books to the top shelf and made a sign with three sample covers. That made it easier for a visitor to ask for another book like one of those.\n\nThe last stop needs a different change. Three titles were waiting for named visitors. One visitor had changed their mind, but there was no note on the title sheet. We held the book until the trolley left. A visitor who came later would have borrowed it if we had known it was free. Add a column for cancellations before Wednesday. On the route, ask visitors whether they can tell us before we reach the last stop if they no longer need something. Keep the books ready for people who still plan to collect them."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A request for a book at another stop",
+      "text": "Visitor: I put my name down for River Stories at the north door. Can I take it here in the dining room instead?\n\nTrolley worker: Yes, if I have it. Could you tell me the name on the sheet? I will check the band before I take it off the shelf.\n\nVisitor: It should say Mara. I need the longer edition. The one on the top has only a few short stories.\n\nTrolley worker: I have the long one in the top part of the trolley, behind the sign. Let me mark your name as collected. That way the person at the north door won't look for it later.\n\nVisitor: I also brought back the book I had last week. Can I keep the old date card as a note of the title?\n\nTrolley worker: You can keep it. I will give you another card for the book you are taking today. Check the new date before you leave."
+    },
+    {
+      "title": "The music teacher calls the route worker",
+      "text": "Teacher: We have a small concert rehearsal outside the music room this week. Can you stop at the side door instead?\n\nRoute worker: I can do that, but I can only stay for ten minutes. If we wait for every person to choose a book, I'll miss the time at the north door.\n\nTeacher: What if we make it a returns stop this week? We can collect requests for the following Wednesday instead. I can put a return box on the chair beside me.\n\nRoute worker: That's possible. Some people may already have asked us to keep a book. Could you find out who they are and see whether they can pick it up at the last stop?\n\nTeacher: Yes. I'll tell people who need a different plan to speak to me before Tuesday evening. Can you leave a reminder near the music room?\n\nRoute worker: I'll put one on the usual shelf with an arrow to the side door."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why should a visitor request a title by Monday evening?",
+      "options": [
+        "The trolley leaves on Monday night.",
+        "The title sheet closes at the last stop.",
+        "Staff can mark it for collection.",
+        "The worker returns the book to its author."
+      ],
+      "answer": 2,
+      "explanation": "The deadline gives staff time to add the band."
+    },
+    {
+      "prompt": "1. What happens if a stop is cancelled?",
+      "options": [
+        "The borrower has to travel to the first stop.",
+        "The card has to be put back in the book.",
+        "The book can be kept until the next visit or left at the main library.",
+        "The book can only be returned the following month."
+      ],
+      "answer": 2,
+      "explanation": "The notice gives two alternatives."
+    },
+    {
+      "prompt": "1. Why is the title printed on a date card?",
+      "options": [
+        "It tells passengers which stop is next.",
+        "It helps people distinguish cards for different books.",
+        "It makes the trolley carry fewer books.",
+        "It shows which books are easy to read."
+      ],
+      "answer": 1,
+      "explanation": "The final sentence explains the identification purpose."
+    },
+    {
+      "prompt": "2. What helped children find shorter books?",
+      "options": [
+        "Moving them and showing sample covers",
+        "Holding every book until the last stop",
+        "Adding a second request sheet",
+        "Writing their names on the covers"
+      ],
+      "answer": 0,
+      "explanation": "The first paragraph describes a location change and a sign."
+    },
+    {
+      "prompt": "2. Why was one last-stop book never lent?",
+      "options": [
+        "Its original borrower arrived too early.",
+        "Staff did not know the reservation was no longer wanted.",
+        "The worker took it to the music room.",
+        "The longer edition was on another shelf."
+      ],
+      "answer": 1,
+      "explanation": "The team held it because there was no cancellation note."
+    },
+    {
+      "prompt": "2. What change is proposed to the title sheet?",
+      "options": [
+        "Make one card for every stop.",
+        "Add a cancellation column.",
+        "Limit each person to shorter books.",
+        "Keep the dates on another page."
+      ],
+      "answer": 1,
+      "explanation": "The new column gives staff a way to release a title."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What book does Mara actually want?",
+      "options": [
+        "The edition with a few short stories",
+        "The longer edition of River Stories",
+        "The book she returned last week",
+        "One without a card"
+      ],
+      "answer": 1,
+      "explanation": "Mara gives a distinct edition clue."
+    },
+    {
+      "prompt": "1. Why mark the reservation as collected?",
+      "options": [
+        "The last-stop worker will not search for it.",
+        "The band can stay on the book.",
+        "Mara can borrow another book sooner.",
+        "The return card becomes unnecessary."
+      ],
+      "answer": 0,
+      "explanation": "The worker explains the effect on a later colleague."
+    },
+    {
+      "prompt": "1. What will Mara get for today's book?",
+      "options": [
+        "A second copy of the book",
+        "A new date card",
+        "A new request band",
+        "A return box number"
+      ],
+      "answer": 1,
+      "explanation": "The last line gives the new card and a date check."
+    },
+    {
+      "prompt": "2. What limits the music room stop?",
+      "options": [
+        "A rehearsal and only ten available minutes",
+        "A delayed delivery of short books",
+        "No return box in the library",
+        "Too many staff at the north door"
+      ],
+      "answer": 0,
+      "explanation": "The teacher wants a different location and the worker cannot stay long."
+    },
+    {
+      "prompt": "2. What will the temporary stop mainly handle?",
+      "options": [
+        "Finding and reading new books",
+        "Long individual advice sessions",
+        "Returns and requests for next Wednesday",
+        "Collecting all unreserved books"
+      ],
+      "answer": 2,
+      "explanation": "The teacher suggests a returns-only visit with requests for the next one."
+    },
+    {
+      "prompt": "2. What will point people to the side door?",
+      "options": [
+        "Names on the trolley band",
+        "A notice at the north door",
+        "A reminder and arrow near the usual stop",
+        "A text in each borrowed book"
+      ],
+      "answer": 2,
+      "explanation": "The worker offers to leave a reminder on the familiar shelf."
+    }
+  ],
+  "grammar": {
+    "focus": "Reported requests with ask and tell",
+    "explanation": "Use ask + person + to + verb for a request. Use tell + person + to + verb for an instruction. When reporting a yes/no question, use ask + if or whether and normal statement order.",
+    "examples": [
+      {
+        "before": "I asked her could I get it early.",
+        "after": "I asked her whether I could get it early.",
+        "why": "An indirect question uses whether and statement order."
+      },
+      {
+        "before": "He told to me wait here.",
+        "after": "He told me to wait here.",
+        "why": "Put the person directly after told."
+      },
+      {
+        "before": "She asked I mark the title.",
+        "after": "She asked me to mark the title.",
+        "why": "Use me and to mark for a reported request."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The worker asked Mara _____ the name on the sheet.",
+        "options": [
+          "confirming",
+          "confirmed",
+          "to confirm",
+          "will confirm"
+        ],
+        "answer": 2,
+        "explanation": "The request uses ask someone to do something."
+      },
+      {
+        "prompt": "Mara asked _____ she could collect it early.",
+        "options": [
+          "to",
+          "that to",
+          "which she",
+          "whether"
+        ],
+        "answer": 3,
+        "explanation": "Whether introduces a yes/no question."
+      },
+      {
+        "prompt": "The teacher told _____ to put the box by the chair.",
+        "options": [
+          "we",
+          "us",
+          "ours",
+          "our"
+        ],
+        "answer": 1,
+        "explanation": "The object form us follows told."
+      },
+      {
+        "prompt": "Which version reports a question correctly?",
+        "options": [
+          "He asked if the side door would be open.",
+          "He asked would the side door be open.",
+          "He asked if would the side door be open.",
+          "He asked that is the side door open."
+        ],
+        "answer": 0,
+        "explanation": "A reported question uses if and statement order."
+      },
+      {
+        "prompt": "They asked the worker _____ the reminder where people usually wait.",
+        "options": [
+          "leaves",
+          "leaving",
+          "leave to",
+          "to leave"
+        ],
+        "answer": 3,
+        "explanation": "To leave gives the action requested."
+      },
+      {
+        "prompt": "Our teacher _____ us to return the book.",
+        "options": [
+          "said",
+          "spoke",
+          "talked",
+          "told"
+        ],
+        "answer": 3,
+        "explanation": "Told takes a person plus to."
+      },
+      {
+        "prompt": "Which reports an instruction about a card?",
+        "options": [
+          "She told him to keep the card.",
+          "She told him keep the card.",
+          "She told to keep him the card.",
+          "She said him to keep the card."
+        ],
+        "answer": 0,
+        "explanation": "Use told + him + to keep."
+      },
+      {
+        "prompt": "The visitor asked if the other books _____ available next week.",
+        "options": [
+          "would be",
+          "would are",
+          "will has",
+          "have be"
+        ],
+        "answer": 0,
+        "explanation": "Would be fits an earlier question about a future time."
+      }
+    ],
+    "transfer": "Turn three lines from the conversations into reported requests. Pass the resulting note to a partner who has not read the conversation and ask them to explain the plan."
+  },
+  "vocabulary": [
+    {
+      "word": "trolley",
+      "meaning": "a cart that is pushed",
+      "example": "The trolley turns at the north door.",
+      "pair": "library trolley"
+    },
+    {
+      "word": "edition",
+      "meaning": "a particular version of a published work",
+      "example": "Mara wanted the longer edition.",
+      "pair": "revised edition"
+    },
+    {
+      "word": "reserved",
+      "meaning": "kept for a named person",
+      "example": "The copy is reserved until noon.",
+      "pair": "reserve a copy"
+    },
+    {
+      "word": "cancellation",
+      "meaning": "a decision not to use something already arranged",
+      "example": "Add a cancellation to the list.",
+      "pair": "record a cancellation"
+    },
+    {
+      "word": "band",
+      "meaning": "a strip fastened around something",
+      "example": "Put a band around the reserved title.",
+      "pair": "paper band"
+    },
+    {
+      "word": "route",
+      "meaning": "the way followed to reach several places",
+      "example": "The route starts in the dining room.",
+      "pair": "follow a route"
+    },
+    {
+      "word": "collect",
+      "meaning": "go and get something",
+      "example": "Mara collected it early.",
+      "pair": "collect a book"
+    },
+    {
+      "word": "return",
+      "meaning": "bring or send something back",
+      "example": "Please return the book next week.",
+      "pair": "return a book"
+    },
+    {
+      "word": "arrow",
+      "meaning": "a sign that points in a direction",
+      "example": "Follow the arrow to the side door.",
+      "pair": "direction arrow"
+    },
+    {
+      "word": "selection",
+      "meaning": "the items chosen from a larger set",
+      "example": "The trolley carries a small selection.",
+      "pair": "book selection"
+    },
+    {
+      "word": "sample",
+      "meaning": "an example that represents one type",
+      "example": "Compare the three sample covers.",
+      "pair": "sample cover"
+    },
+    {
+      "word": "deadline",
+      "meaning": "the latest time for something to be done",
+      "example": "Monday is the deadline for a request.",
+      "pair": "meet a deadline"
+    }
+  ],
+  "speaking": {
+    "audience": "A visitor who planned to borrow at the music room",
+    "first": "Give a 90-second route explanation using both written sources. Explain the cancellation and request rules with an example.",
+    "change": "The music room becomes a return and request stop for one week.",
+    "second": "Record a short announcement for visitors and an extra answer for somebody who reserved a title.",
+    "checklist": [
+      "Distinguishes borrowing from requesting",
+      "Gives the temporary location",
+      "Reports the worker's request accurately"
+    ]
+  },
+  "writing": {
+    "audience": "One child who uses the music room and an older library helper",
+    "first": "Write a 125–155 word instruction sheet. Explain how to use the current reservation sheet, title band and date card.",
+    "change": "The usual stop will not lend books this week.",
+    "second": "Write a public notice of up to 75 words and a separate helper note. Keep the future borrowing plan and same-day exception consistent.",
+    "checklist": [
+      "Shows an exact action at each stop",
+      "Keeps editions and people traceable",
+      "Uses a reported request to explain why a change was made"
+    ]
+  },
+  "immersion": {
+    "role": "Trolley route helper",
+    "goal": "Prepare a usable update for a route with one temporary change.",
+    "constraints": [
+      "No more than twenty-four books",
+      "Music room is returns and requests only",
+      "People who cancel should be recorded"
+    ],
+    "change": "A visitor reserved the long version of a title but receives a short one in the same cover.",
+    "deliverables": [
+      "A corrected route card",
+      "Two named claims from the source with records",
+      "A 90-second helper script",
+      "A sample title sheet entry and date card"
+    ],
+    "checklist": [
+      "Edition can be checked without opening another record",
+      "The change does not move the last stop",
+      "Visitors know how to collect a reserved title"
+    ]
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "slug": "c1-a-choir-without-a-uniform",
+  "title": "A Choir without a Uniform",
+  "level": "C1",
+  "summary": "Develop stage clothing instructions that distinguish listening, visibility and a sense of belonging.\n\nReading: Place the requirements in three groups: what a listener needs, what a singer needs and what the photograph needs. Link each to a line in the circular or response, then build an outfit option that fits two constraints without requiring a purchase.\n\nVocabulary: Put six terms to work in a wardrobe note and two lighting notes. Separate the name of a garment part from the effect of its shape. Replace each vague description with a collocation that gives a singer or technician something to check.",
+  "documents": [
+    {
+      "title": "Concert committee’s costume circular",
+      "text": "For the spring programme we have hired a theatre with a dark rear curtain. Our worn black shirts were satisfactory in the smaller exhibition room, where singers stood close to the front row. Our photographer says eyes tended to disappear against the theatre curtain during the test. She proposes a pale shirt under a dark jacket. The singers on the outer ends will sit down in the first piece and must be able to stand without stepping on loose fabric.\n\nNot everybody owns a light shirt or a dark jacket. The hire fund can lend eight jackets for the night, but orders must be made by the end of next week. The committee does not want singers to buy an item in order to take part. If a dark jacket differs by a few shades from another, that is unlikely to matter from the rear row. We do need to avoid individual garments that reflect the spotlights or make noise as people move.\n\nA group photograph will be taken before the doors open. Members may opt out of appearing in it and still sing. We would like volunteers to wear possible choices at Tuesday’s rehearsal so the stage team can compare the view from three positions rather than guessing from a phone picture."
+    },
+    {
+      "title": "Section leader’s response",
+      "text": "Most members seem prepared to make a shared appearance. The two questions I keep getting are how to tell what counts as pale, and how close a singer must get to the example in the circular. One person has a coat she wears in a dark blue. It looks black until she stands by something black. Another has a white shirt but needs to wear a warm layer because he waits outside after the last bus. Neither is trying to ignore the group plan. They do not yet know which differences the audience can notice.\n\nPlease give people one clothing requirement at a time and a reason. If the face is lost against the background, say where the lighter colour helps. It may be a panel at the collar or a scarf without a loose end. If the floor movement matters, let us see which foot movements are needed.\n\nI would avoid saying that matching demonstrates commitment. It was a financial relief when the loan offer came in. I would not want people to feel they must explain why they need it. Offer a fitting time that the whole group can attend, and let every singer pick a number instead of giving a reason."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Two singers try out the possible clothes",
+      "text": "Hal: My shirt is much lighter than these jackets. The conductor told me I can't turn my head if I fold the collar this high.\n\nDee: Put it how you normally would. I'll go to the back. Can you look up and then down like you do when you're moving between the two pages of music?\n\nHal: Was the main light on the first time?\n\nDee: Only at the right. The second time I could see your face whenever the light crossed in front. I lost the person on your left for longer even though she was dressed as we asked.\n\nHal: We ought to tell the stage technician before ordering anything. If she can put another lamp there, we may not have to change every shirt.\n\nDee: Yes, but I still heard somebody’s cuff catch on a page all the way across the room. That has nothing to do with which side the light comes from.\n\nHal: Let’s make that a different test. We can practise a page turn in silence without asking the whole choir to wear the same sleeve. I will send the technician the two positions where I stood. We should change one light at a time."
+    },
+    {
+      "title": "Assistant director’s message after the trial",
+      "text": "The second lamp was more useful than expected. A singer at the far end became much easier to see, even though she wore the same top as before. We still found that a jacket made it hard for one bass to reach for his folder. He had borrowed the largest one in the cupboard and could hardly close it. Getting a larger size by Thursday will be difficult, and I do not plan to ask him to wear the wrong size for a photograph.\n\nIn the final instruction we can ask for a visible light area near the face, quiet fabric, and enough room at the arms and feet. These are reasons people can test at home. A matching outfit is one way to achieve them. In the rehearsal report, please say we corrected a problem with the lighting as well.\n\nOne final detail: the pre-concert photograph will be moved to the empty side hall. If you don't want to appear, leave your folder on your chair and wait in the foyer. That is a way of arranging the photo. It does not change which music anybody sings or where they stand when the doors open."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What is the original reason for a light area near the face?",
+      "options": [
+        "The corridor was too cold for dark shirts.",
+        "The outer singers stood too far ahead.",
+        "The group portrait requires everyone in white.",
+        "Faces were difficult to see against the backdrop."
+      ],
+      "answer": 3,
+      "explanation": "The circular links visibility to lighting and the dark curtain."
+    },
+    {
+      "prompt": "Which loan constraint is explicit?",
+      "options": [
+        "Singers must supply reasons for borrowing one.",
+        "Eight jackets can be ordered through the hire fund.",
+        "Loans are available only to the front row.",
+        "The hire fund offers eight complete outfits."
+      ],
+      "answer": 1,
+      "explanation": "The committee has use of a limited number of jackets."
+    },
+    {
+      "prompt": "What motive does the section leader reject as a reason for exact uniformity?",
+      "options": [
+        "Scholarly assessment of lighting",
+        "Preventing a loose garment catching",
+        "Making a person visible",
+        "Demonstrating commitment"
+      ],
+      "answer": 3,
+      "explanation": "The response asks the committee not to equate matching with commitment."
+    },
+    {
+      "prompt": "What does the blue coat illustrate?",
+      "options": [
+        "An item’s appearance depends on what surrounds it.",
+        "Coats cannot be assessed indoors.",
+        "A singer must arrive from the last bus in darker clothing.",
+        "The loan policy excludes shades between blue and black."
+      ],
+      "answer": 0,
+      "explanation": "The coat changes in appearance next to black."
+    },
+    {
+      "prompt": "Why offer a fitting open to all members?",
+      "options": [
+        "It guarantees eight jackets will fit every person.",
+        "Singers will no longer need a stage rehearsal.",
+        "It allows borrowing without a personal explanation.",
+        "It makes matching an enforceable financial requirement."
+      ],
+      "answer": 2,
+      "explanation": "A general time and a number avoid asking individual borrowers to justify themselves."
+    },
+    {
+      "prompt": "What should instructions do according to both texts?",
+      "options": [
+        "Give the photograph the same eligibility rules as the performance.",
+        "Set practical limits members can test without demanding identical purchases.",
+        "Require new clothes even when a shared stage effect already exists.",
+        "Choose a size before testing how singers move."
+      ],
+      "answer": 1,
+      "explanation": "Both discuss alternatives within requirements tied to what people see, hear or do."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What additional test does Dee propose by going to the back?",
+      "options": [
+        "Count how many singers brought their own coat.",
+        "Find out whether members have ordered jackets.",
+        "Determine how warm Hal is in the foyer.",
+        "Check face visibility during normal page-side movements."
+      ],
+      "answer": 3,
+      "explanation": "She asks Hal to move his head as in the performance while she observes."
+    },
+    {
+      "prompt": "What caused a singer to remain less visible despite compliant clothing?",
+      "options": [
+        "She wore a size borrowed the day before.",
+        "The existing light did not illuminate her position as well.",
+        "The photographer deleted the left side of the picture.",
+        "She sat out the experiment and never moved."
+      ],
+      "answer": 1,
+      "explanation": "Dee’s observations vary by light direction and stage position."
+    },
+    {
+      "prompt": "Why test the cuff sound separately?",
+      "options": [
+        "It is caused by excessive lighting.",
+        "It can be observed only outside the theatre.",
+        "It is a distinct issue from visual lighting.",
+        "The audience asked for identical sleeves."
+      ],
+      "answer": 2,
+      "explanation": "Page-turn noise requires a different observation and remedy."
+    },
+    {
+      "prompt": "What did the second lamp accomplish?",
+      "options": [
+        "It made the singer on the right more difficult to see.",
+        "It created a reason to restrict people in the photograph.",
+        "It improved visibility without a clothing change for one singer.",
+        "It removed the need to check movement at the arms."
+      ],
+      "answer": 2,
+      "explanation": "The recording explicitly keeps clothing fixed for that comparison."
+    },
+    {
+      "prompt": "Why might the bass reject the borrowed jacket?",
+      "options": [
+        "It interferes with reaching for the music.",
+        "He is unwilling to use the fitting slot.",
+        "It is a lighter colour than the committee asked for.",
+        "It is reserved for a photograph participant."
+      ],
+      "answer": 0,
+      "explanation": "The jacket is the largest available but still restricts his movement."
+    },
+    {
+      "prompt": "Where should somebody who opts out of the photo go?",
+      "options": [
+        "Away from the concert before the first piece",
+        "The foyer after leaving their music in position",
+        "A different place on stage during performance",
+        "The empty side hall with the photographer"
+      ],
+      "answer": 1,
+      "explanation": "The message gives a separate venue and action for people opting out."
+    }
+  ],
+  "grammar": {
+    "focus": "Contrasting purpose, cause and result",
+    "explanation": "Use so that or in order to for an intended outcome. Because and because of explain a cause; therefore signals a conclusion or effect. Preserve the difference between something done with an aim and something shown to achieve it.",
+    "examples": [
+      {
+        "before": "We added a lamp because that we could see the singers.",
+        "after": "We added a lamp so that we could see the singers.",
+        "why": "The clause explains the goal of adding light."
+      },
+      {
+        "before": "The cuff made a sound because of it caught on the folder.",
+        "after": "The cuff made a sound because it caught on the folder.",
+        "why": "Because introduces a full finite clause."
+      },
+      {
+        "before": "The collar moved therefore the bass looked down.",
+        "after": "The bass looked down. As a result, the collar moved.",
+        "why": "Separate the clauses and make the direction clear if that is what was observed."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Choose language giving the aim of a test rather than promising the result.",
+        "options": [
+          "We tried the scarf so that we could check visibility at the back.",
+          "We tried the scarf because we had already proved visibility.",
+          "We tried the scarf because of we could check visibility.",
+          "The scarf improved visibility; therefore the test could not be undone."
+        ],
+        "answer": 0,
+        "explanation": "The so that clause names what the test was designed to learn."
+      },
+      {
+        "prompt": "The technician aimed to make faces visible. Which is grammatical and accurate?",
+        "options": [
+          "The technician changed the lamp because of make faces visible.",
+          "The technician changed the lamp thereby of faces visible.",
+          "The technician changed the lamp because that faces became visible.",
+          "The technician changed the lamp in order to make faces visible."
+        ],
+        "answer": 3,
+        "explanation": "In order to introduces the intended effect with an infinitive."
+      },
+      {
+        "prompt": "Which correctly introduces a noun phrase as cause?",
+        "options": [
+          "The folders rattled therefore the metal clips.",
+          "The folders rattled because the metal clips.",
+          "The folders rattled because of the metal clips.",
+          "The folders rattled so that the metal clips."
+        ],
+        "answer": 2,
+        "explanation": "Because of can take a noun phrase without a finite verb."
+      },
+      {
+        "prompt": "Which presents the observation as evidence for an action?",
+        "options": [
+          "The sleeve was different because of it snagged twice.",
+          "The cuff snagged twice in order to choose a different sleeve.",
+          "We chose a different sleeve so that the cuff snagged twice.",
+          "The cuff snagged twice, so we chose a different sleeve."
+        ],
+        "answer": 3,
+        "explanation": "So links an observation to the decision it prompted."
+      },
+      {
+        "prompt": "Choose a correctly punctuated result.",
+        "options": [
+          "The volunteers lost the first slot therefore the fitting started later.",
+          "The volunteers lost the first slot therefore, and the fitting started later.",
+          "The volunteers lost the first slot. Therefore, the fitting started later.",
+          "The volunteers lost the first slot, therefore started later they fitted."
+        ],
+        "answer": 2,
+        "explanation": "A separate sentence allows sentence adverb therefore to connect the reported effect."
+      },
+      {
+        "prompt": "Which separates aim from actual outcome?",
+        "options": [
+          "She was visible; therefore the lamp failed to illuminate her.",
+          "We added a light to help the outer singer, but her face was still hard to see.",
+          "Because of making her visible, we added a light, and so her face was still hard to see.",
+          "The outer singer had become visible, so we added the same lamp to achieve that outcome."
+        ],
+        "answer": 1,
+        "explanation": "The infinitive expresses intention and but introduces the differing result."
+      },
+      {
+        "prompt": "Which says the space meeting both needs was chosen for two stated purposes?",
+        "options": [
+          "We chose the hall so the stage clear and protect the rehearsal.",
+          "We chose the hall to keep the stage clear and to protect the rehearsal.",
+          "We chose the hall therefore the stage clear and to protect the rehearsal.",
+          "We chose the hall because of the stage clear and protect the rehearsal."
+        ],
+        "answer": 1,
+        "explanation": "Parallel to-infinitives express each of the intended results."
+      },
+      {
+        "prompt": "Which respects an untested causal relationship?",
+        "options": [
+          "The jacket may have helped because its collar was lighter, but we also changed the light.",
+          "The light changed so that the jacket was confirmed as the cause.",
+          "The jacket proved the single cause because its collar was lighter and the light changed.",
+          "The collar was lighter; therefore no other factor could have mattered."
+        ],
+        "answer": 0,
+        "explanation": "The uncertainty is appropriate when more than one factor changed."
+      }
+    ],
+    "transfer": "Write three short stage directions and a five-line evaluation report. Mark every cause, stated intention and observed result. Replace at least one claim that makes two changes sound like a controlled comparison."
+  },
+  "vocabulary": [
+    {
+      "word": "cuff",
+      "meaning": "end part of a sleeve at the wrist",
+      "example": "A loose cuff brushed the folder.",
+      "pair": "loose cuff"
+    },
+    {
+      "word": "backdrop",
+      "meaning": "material or scenery behind performers",
+      "example": "The singers stood against a dark backdrop.",
+      "pair": "stage backdrop"
+    },
+    {
+      "word": "snag",
+      "meaning": "catch unexpectedly on an object",
+      "example": "The lining snagged on a chair.",
+      "pair": "snag on a handle"
+    },
+    {
+      "word": "collar",
+      "meaning": "part of a garment around the neck",
+      "example": "The singer lowered his collar before reading.",
+      "pair": "fold a collar"
+    },
+    {
+      "word": "fitting",
+      "meaning": "occasion for trying on clothes to test size",
+      "example": "The next fitting is open to the whole choir.",
+      "pair": "attend a fitting"
+    },
+    {
+      "word": "illumination",
+      "meaning": "light cast on a space",
+      "example": "The added lamp improved illumination at the edge.",
+      "pair": "adequate illumination"
+    },
+    {
+      "word": "muted",
+      "meaning": "subdued or less bright",
+      "example": "The room makes colours look muted.",
+      "pair": "muted colours"
+    },
+    {
+      "word": "accommodate",
+      "meaning": "provide what is needed by someone or something",
+      "example": "A shorter jacket accommodates the seated movement.",
+      "pair": "accommodate movement"
+    },
+    {
+      "word": "cohesive",
+      "meaning": "forming a connected whole",
+      "example": "The group maintained a cohesive appearance.",
+      "pair": "cohesive appearance"
+    },
+    {
+      "word": "disclose",
+      "meaning": "reveal an otherwise private fact",
+      "example": "The form did not ask members to disclose financial need.",
+      "pair": "disclose a reason"
+    },
+    {
+      "word": "spotlight",
+      "meaning": "powerful light directed at a selected place",
+      "example": "The spotlights reached the centre but not the side.",
+      "pair": "adjust a spotlight"
+    },
+    {
+      "word": "optional",
+      "meaning": "available by choice and not required",
+      "example": "Participation in the portrait was optional.",
+      "pair": "optional activity"
+    }
+  ],
+  "speaking": {
+    "audience": "Choir members with different mobility needs and budgets",
+    "first": "Lead a five-minute demonstration. Describe one workable outfit and two other ways to achieve the visual and movement goals. Test understanding by asking somebody to describe an option they already own.",
+    "change": "A singer needs a warmer layer, while a neighbour asks that a scarf with a long end not be used on the steps.",
+    "second": "Run a second briefing with a garment or paper model. Explain why both requests matter and present an acceptable alternative.",
+    "checklist": [
+      "Separate appearance from conduct and commitment.",
+      "Give a fitting route that needs no justification.",
+      "Use purpose and result language accurately.",
+      "Include a clear photograph instruction."
+    ]
+  },
+  "writing": {
+    "audience": "Stage director balancing an equipment budget and a lost rehearsal",
+    "first": "Prepare an updated 350-word advisory note, a three-row decision table and a shorter instruction to singers. Identify what can be tested separately.",
+    "change": "An extra light is available but broken fabric tags cannot be removed before opening.",
+    "second": "Write a new prioritised update. Compare one stage correction with one garment correction and propose who should check each.",
+    "checklist": [
+      "Keep the timing realistic.",
+      "Use observable requirements rather than shade names alone.",
+      "Distinguish intended changes from evidence of success.",
+      "Keep the opt-out operational and separate."
+    ]
+  },
+  "immersion": {
+    "role": "Production assistant for the final rehearsal",
+    "goal": "Deliver clothing, lighting and participation instructions that work across the whole stage.",
+    "constraints": [
+      "Small hire stock with a fixed ordering date.",
+      "Clothing must not interrupt movement or page turns.",
+      "Photo participation remains voluntary.",
+      "You may observe from three audience positions only."
+    ],
+    "change": "The last two minutes of rehearsal must be silent, and a spotlight cannot be adjusted while all singers are on the riser.",
+    "deliverables": [
+      "Produce a short sequence of tests and expected observations.",
+      "Draft instructions for borrowing, fitting and changes after test results.",
+      "Give a revised demonstration after the silent-time restriction."
+    ],
+    "checklist": [
+      "Keep one factor stable per comparison.",
+      "Offer more than one clothing solution.",
+      "Separate rehearsal use from portrait use.",
+      "Make revised observations possible in the available time."
+    ]
+  }
+}

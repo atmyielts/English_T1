@@ -2,6 +2,7 @@
 // who switched the reminder on and linked Telegram are considered; delivery goes
 // through send-telegram, which applies quiet hours, caps and dedupe.
 import { loadNotebookStats } from "../_shared/english-learning.ts";
+import { playableCatalog } from "../_shared/english-recorded-listening.ts";
 import {
   type AttemptRow,
   type CatalogItem,
@@ -78,7 +79,7 @@ const loadCatalog = async (sb: any, languageId: string): Promise<CatalogItem[]> 
     ])
     .limit(2000);
   if (error) throw new Error(`Failed to load catalog: ${error.message}`);
-  return (data ?? [])
+  const items = (data ?? [])
     .filter((row: Record<string, unknown>) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
     .map((row: Record<string, unknown>) => ({
       id: String(row.id),
@@ -90,6 +91,7 @@ const loadCatalog = async (sb: any, languageId: string): Promise<CatalogItem[]> 
       difficulty: Number(row.difficulty ?? 0.5),
       tags: Array.isArray(row.tags) ? (row.tags as unknown[]).map(String).slice(0, 12) : [],
     }));
+  return await playableCatalog(sb, languageId, items);
 };
 
 const loadAttempts = async (sb: any, userId: string, languageId: string): Promise<AttemptRow[]> => {

@@ -1,0 +1,394 @@
+{
+  "slug": "c1-the-box-with-room-to-spare",
+  "title": "The Box with Room to Spare",
+  "level": "C1",
+  "summary": "Write packing specifications that preserve a cooperative’s pottery while letting receivers unpack it reliably.\n\nReading: Trace three observed states of the same crate, from acceptance through unpacking to empty return. List which parts could move and quote evidence for the relevant movement. Mark the disputed timing and design one drawing position that could remove the ambiguity.\n\nVocabulary: Label a sketch using component words, then write five phrases naming the state of each component at a particular stage. Reconstruct the labels from a clean sketch and mark the difference between condition, size and position.",
+  "documents": [
+    {
+      "title": "Workshop circular: a new returnable crate",
+      "text": "The Sand River cooperative sends glazed bowls to markets in three nearby towns. We have replaced single-use dividers with a crate holding up to twenty-four small bowls. The handles fold flat and the lid can be secured with a paper seal. Our first two dispatches arrived intact. A third buyer reported two chips and said the lid was undamaged when the driver brought it to the desk. The empty crate came back with an unbroken central divider and a removable end piece folded below the base.\n\nWe cannot tell from the crate alone when the piece folded. The loading sheet says the driver accepted twenty-four bowls. It does not say whether the end piece was upright at that time. One potter remembers pressing on it when closing the lid. Another says it would have been impossible to see from where he stood. Rather than giving one interpretation to the buyer, we plan to ask her to describe unpacking from the moment the seal was cut.\n\nPending that account, the workshop will ship at most twenty bowls per crate, with the last section blocked by a full spacer. We have made no change to the returns instructions. Carrying the empty crate by its front handle must leave all dividers inside."
+    },
+    {
+      "title": "Market partner’s receiving notes",
+      "text": "At the market the crate was placed on a half-width counter. It looked like the replacement container we had been expecting, except that a strip at the near end said ‘lift here’. I assumed the packing sections would stay in the box when I lifted the strip. One corner did stay. The rest lifted at an angle and the bowls slid together. I put the pieces down again immediately. When we took the bowls out one at a time, two rims already had pale marks.\n\nThe job could be done safely here if we knew the sequence. I would not give an unpacker a single instruction to ‘remove the insert’. That can refer to the spacers or the tray. Start with a direction to put the whole crate on the wide table, even if it weighs more than is comfortable for one person. Then show which piece can come out while the bowls are still inside. I would test the wording with someone who has not worked in your shop.\n\nPlease send us a drawing of the folded end piece. It may match what I lifted, but I cannot identify it from your description. Once I know the parts, I can say which of them we moved."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Conversation during a test unpacking",
+      "text": "Nico: I thought twenty bowls meant one less per row. This sheet shows a solid spacer all the way across the final section.\n\nZara: Yes. The empty space would let pieces slide without that spacer. Stand the crate on the wide bench and keep the divider in when you take bowls out.\n\nNico: The tab says lift here. I’m going to lift this end.\n\nZara: Stop there. That tab belongs to the empty crate. It folds the support in so the crate can stand flat. It should be hidden under the lid during unpacking.\n\nNico: If I don't know that, there's an obvious arrow and nothing else. Can we put the first direction across the lid before I get to see the tab?\n\nZara: Cut the seal after putting the crate flat. Then take each bowl out before folding the tab. Which of those needs a drawing?\n\nNico: I want to know what flat means if there’s a little stand by the counter. I can follow a drawing of the feet on the same bench.\n\nZara: Good. Let's ask somebody to try with nothing except that drawing and the new label."
+    },
+    {
+      "title": "A carrier talks through a collection problem",
+      "text": "The first round of empty crates was supposed to return with the afternoon truck. At the market, staff stacked the crates with the front handles facing the wall. I turned those around that I could. One handle was holding a paper token to show which group had sent it. When the lid was closed the token slipped through and knocked a divider upright. The crate would not sit flush on the one below. We did not lose anything, but the volume was suddenly larger than the space I had been given.\n\nI asked the market to label the side that remains visible after turning it. That would let me know where it comes from while I check only the handle. An instruction to ‘fold all pieces down’ would be too general, because some of the dividers are designed to stay upright even in an empty crate. Give me a picture of a crate ready to stack.\n\nI cannot ask a buyer to dismantle it for collection. It is easy to lose the small parts when the truck comes late and people have put the workbench away. We should keep one set of instructions for removing bowls, and a much shorter one for the person who only has to close and stack an empty crate."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What remains unknown after inspecting the returned crate?",
+      "options": [
+        "Whether the lid showed damage when delivered",
+        "Whether the third shipment contained any bowls",
+        "When the end piece folded",
+        "Whether the empty container came back"
+      ],
+      "answer": 2,
+      "explanation": "The cooperative has observations but cannot time the folding."
+    },
+    {
+      "prompt": "How will interim dispatches use the final section?",
+      "options": [
+        "Fill it with a full spacer and carry at most twenty bowls.",
+        "Fill it with four more bowls than before.",
+        "Remove the divider and leave the space open.",
+        "Replace spacers with an additional paper seal."
+      ],
+      "answer": 0,
+      "explanation": "The first letter specifies both the reduced load and the spacer."
+    },
+    {
+      "prompt": "What caused the buyer’s tray to lift at an angle?",
+      "options": [
+        "A spacer turned sideways after the bowls came out.",
+        "One corner stayed in place when the other parts came up.",
+        "The driver pushed it from below the counter.",
+        "The handle opened after it was safely unloaded."
+      ],
+      "answer": 1,
+      "explanation": "She describes uneven motion and bowls then sliding."
+    },
+    {
+      "prompt": "Why does the buyer want a drawing of the folded piece?",
+      "options": [
+        "She can identify the piece by colour but needs its proper name.",
+        "She intends to build her own crate.",
+        "She needs to check whether it is the part she moved.",
+        "She wants the workshop to take immediate responsibility."
+      ],
+      "answer": 2,
+      "explanation": "The current description does not let her match it reliably."
+    },
+    {
+      "prompt": "Which direction would be inadequate for the buyer?",
+      "options": [
+        "Take bowls out individually",
+        "Use the wide counter for unpacking",
+        "Place the crate on its full base before opening",
+        "‘Remove the insert’ without visual identification"
+      ],
+      "answer": 3,
+      "explanation": "The phrase insert could refer to several parts."
+    },
+    {
+      "prompt": "Which conclusion is warranted from both accounts?",
+      "options": [
+        "The driver saw all the bowls collide.",
+        "The buyer definitely caused both chips.",
+        "The workshop loaded an unsafe crate knowingly.",
+        "A packing label could have contributed to the chip event, while timing still needs evidence."
+      ],
+      "answer": 3,
+      "explanation": "The ambiguous label and observed sliding matter but do not prove when damage occurred."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What did Nico initially misunderstand about the reduced load?",
+      "options": [
+        "He expected an additional layer of bowls.",
+        "He expected to receive empty crates only.",
+        "He thought all dividers had to be removed.",
+        "He expected fewer bowls in each row rather than an entire blocked section."
+      ],
+      "answer": 3,
+      "explanation": "Zara says the final section is filled by a full-width spacer."
+    },
+    {
+      "prompt": "What action is the existing tab intended for?",
+      "options": [
+        "Removing the full spacer first",
+        "Folding a support after the crate is empty",
+        "Lifting all bowls at once",
+        "Checking the shipping seal"
+      ],
+      "answer": 1,
+      "explanation": "The tab belongs to the empty-crate arrangement."
+    },
+    {
+      "prompt": "What does Nico want a drawing to establish?",
+      "options": [
+        "The route of the afternoon truck",
+        "The paper's resistance to moisture",
+        "How the base should rest on the bench",
+        "Which colour of glaze each buyer takes"
+      ],
+      "answer": 2,
+      "explanation": "His example of a little stand illustrates the need to define flat visually."
+    },
+    {
+      "prompt": "Why could one crate no longer stack flush?",
+      "options": [
+        "A paper token caused a divider to stand up.",
+        "The front handle was painted over.",
+        "The truck parcel was being stored in the crate.",
+        "The rim of every bowl had been chipped."
+      ],
+      "answer": 0,
+      "explanation": "The falling token dislodged the divider even though nothing was lost."
+    },
+    {
+      "prompt": "What are buyers asked to leave inside an empty crate?",
+      "options": [
+        "Any damaged bowl and its loose rim",
+        "The old shipping seal and order note",
+        "Several spare bowls to hold it flat",
+        "Dividers and small components required for return"
+      ],
+      "answer": 3,
+      "explanation": "The carrier discourages dismantling because it puts parts at risk of loss."
+    },
+    {
+      "prompt": "What requirement links both recordings?",
+      "options": [
+        "Drivers can remove all inserts regardless of load.",
+        "The same broad instruction is safest for every role.",
+        "Different actions need directions located where the relevant user sees them.",
+        "Every person should test a crate before buying bowls."
+      ],
+      "answer": 2,
+      "explanation": "One label directs unpacking; another picture or visible tag guides stacking."
+    }
+  ],
+  "grammar": {
+    "focus": "Comparatives and limited quantities",
+    "explanation": "At most caps a quantity; at least sets a floor. Fewer counts separate items and less often describes an amount, space or time. A negative comparative can change the direction of an instruction. Identify the relevant dimension before writing shorter or higher.",
+    "examples": [
+      {
+        "before": "Carry exactly twenty bowls or fewer.",
+        "after": "Carry at most twenty bowls.",
+        "why": "The cap allows any safe lower number."
+      },
+      {
+        "before": "The platform needs fewer space.",
+        "after": "The platform needs less space.",
+        "why": "Space here is an uncounted amount."
+      },
+      {
+        "before": "Do not use a table no wider than the base.",
+        "after": "Use a table at least as wide as the base.",
+        "why": "A direct lower bound is easier to interpret than nested negation."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which expresses a maximum of twenty rather than a required total?",
+        "options": [
+          "A crate must contain more than twenty bowls.",
+          "A crate must contain exactly twenty bowls.",
+          "A crate may contain at most twenty bowls.",
+          "A crate must contain at least twenty bowls."
+        ],
+        "answer": 2,
+        "explanation": "At most sets a ceiling inclusive of twenty."
+      },
+      {
+        "prompt": "Which talks about individual removable components?",
+        "options": [
+          "This version has fewer loose inserts.",
+          "This version has less loose inserts.",
+          "This version has no lesser space.",
+          "This version has fewest volume."
+        ],
+        "answer": 0,
+        "explanation": "Inserts are countable units."
+      },
+      {
+        "prompt": "Which expresses reduced uncounted volume?",
+        "options": [
+          "The new stack needs fewer room on the truck.",
+          "The new stack has the least crates compared to this crate.",
+          "The new stack needs few room on the truck.",
+          "The new stack needs less room on the truck."
+        ],
+        "answer": 3,
+        "explanation": "Room is a mass noun in this sense."
+      },
+      {
+        "prompt": "A safe counter reaches at least twelve centimetres past the base. Which fits?",
+        "options": [
+          "A counter with twelve centimetres to spare meets the stated minimum.",
+          "Eleven meets the specified minimum.",
+          "Twelve is too much because the extra room must be exactly eleven.",
+          "Fifteen exceeds the permissible maximum of twelve."
+        ],
+        "answer": 0,
+        "explanation": "At least is inclusive and supplies no upper limit."
+      },
+      {
+        "prompt": "Which is equivalent to ‘boxes must be no heavier than sixteen kilos’?",
+        "options": [
+          "A box must weigh sixteen kilos or more.",
+          "A box may weigh sixteen kilos or less.",
+          "A box must weigh over sixteen kilos.",
+          "A box must weigh less than sixteen except when it weighs less than fifteen."
+        ],
+        "answer": 1,
+        "explanation": "No heavier than specifies an inclusive upper bound."
+      },
+      {
+        "prompt": "Which labels a single comparison without exaggeration?",
+        "options": [
+          "With the foot folded, this is the most low of any crate ever.",
+          "With the foot folded, this crate is lower than the other one.",
+          "With the foot folded, less crate was needed.",
+          "With the foot folded, this crate is lowest than a spare crate."
+        ],
+        "answer": 1,
+        "explanation": "The comparative identifies the action and actual comparator."
+      },
+      {
+        "prompt": "A requirement says ‘Leave an opening wider than the handle.’ Which passes?",
+        "options": [
+          "An opening one centimetre narrower than the handle.",
+          "An opening with walls higher than the handle.",
+          "An opening that exceeds the handle’s width by one centimetre.",
+          "An opening equal to the handle’s width."
+        ],
+        "answer": 2,
+        "explanation": "Wider than excludes equality and compares widths."
+      },
+      {
+        "prompt": "Which explains the opposite effects on two quantities?",
+        "options": [
+          "Removing the spacer gives fewer capacity but leaves least protection from slide.",
+          "Removing the spacer gives more protection and no capacity remains by definition.",
+          "Removing the spacer gives a larger load and fewer protection.",
+          "Removing the spacer gives more capacity but leaves less protection from sliding."
+        ],
+        "answer": 3,
+        "explanation": "More capacity and less protection refer to different dimensions."
+      }
+    ],
+    "transfer": "Define a container of your choice with two minimums, two maximums and a compact illustration. Ask a partner to name one borderline example that passes and one that does not."
+  },
+  "vocabulary": [
+    {
+      "word": "divider",
+      "meaning": "part dividing a space into sections",
+      "example": "A divider keeps bowls from touching.",
+      "pair": "removable divider"
+    },
+    {
+      "word": "glaze",
+      "meaning": "thin hardened layer on ceramic",
+      "example": "The thin glaze chipped on one edge.",
+      "pair": "glossy glaze"
+    },
+    {
+      "word": "spacer",
+      "meaning": "part holding objects a distance apart",
+      "example": "The last section needs a solid spacer.",
+      "pair": "insert a spacer"
+    },
+    {
+      "word": "flush",
+      "meaning": "level with another surface or lying flat against it",
+      "example": "The second lid would not lie flush.",
+      "pair": "sit flush"
+    },
+    {
+      "word": "dispatch",
+      "meaning": "sending goods to a destination",
+      "example": "Record the load before dispatch.",
+      "pair": "prepare for dispatch"
+    },
+    {
+      "word": "interlock",
+      "meaning": "fit or engage securely with another part",
+      "example": "The shapes interlock in a flat stack.",
+      "pair": "interlocking parts"
+    },
+    {
+      "word": "dimension",
+      "meaning": "measurable size in one direction",
+      "example": "The diagram lists each external dimension.",
+      "pair": "overall dimensions"
+    },
+    {
+      "word": "residue",
+      "meaning": "small amount remaining",
+      "example": "Stickers left a sticky residue on the lid.",
+      "pair": "adhesive residue"
+    },
+    {
+      "word": "misinterpret",
+      "meaning": "understand in an unintended way",
+      "example": "The assistant misinterpreted the small arrow.",
+      "pair": "misinterpret an instruction"
+    },
+    {
+      "word": "intact",
+      "meaning": "complete and undamaged",
+      "example": "The cooperative returned the lid intact.",
+      "pair": "remain intact"
+    },
+    {
+      "word": "traceability",
+      "meaning": "ability to follow an object or action through stages",
+      "example": "The label provides traceability for each crate.",
+      "pair": "improve traceability"
+    },
+    {
+      "word": "tolerance",
+      "meaning": "permitted range away from a reference value",
+      "example": "This hinge allows a small tolerance in width.",
+      "pair": "manufacturing tolerance"
+    }
+  ],
+  "speaking": {
+    "audience": "Buyer who handles the crate for the first time",
+    "first": "Talk a buyer through mock unpacking using household objects. Give the first action before the buyer sees the tab; let the person tell you what they think the remaining arrow means.",
+    "change": "The buyer has a narrow counter and cannot lift a full crate without help.",
+    "second": "Demonstrate a fresh workflow for receiving, unpacking and returning the box. Include a decision to delay rather than asking the buyer to improvise.",
+    "checklist": [
+      "Give separate conditions for a loaded and empty crate.",
+      "Use one inclusive bound correctly.",
+      "Point to each named component.",
+      "Agree on a safe place and person for each move."
+    ]
+  },
+  "writing": {
+    "audience": "Pottery cooperative selecting a replacement marking system",
+    "first": "Write a 350-word recommendation with a label, a drawing brief and a short account of the unresolved damage timing.",
+    "change": "The next shipment arrives with an intact seal but a pale rim mark. Staff completed your instruction test the previous day.",
+    "second": "Write a separate incident request that records facts and asks for observations that could distinguish packing damage from unpacking damage.",
+    "checklist": [
+      "Mention evidence from both written sources.",
+      "State which step the label controls.",
+      "Do not infer when a mark happened from an intact seal alone.",
+      "Specify a condition for restoring the larger load."
+    ]
+  },
+  "immersion": {
+    "role": "Returnable packaging coordinator",
+    "goal": "Create simple instructions that protect goods across loading, receiving and stacking.",
+    "constraints": [
+      "Interim load is twenty and includes a full spacer.",
+      "The buyer must retain all components.",
+      "Receivers are not always familiar with workshop language.",
+      "The carrier has a fixed maximum stack height."
+    ],
+    "change": "The lid artwork can only be printed in one colour and some old tabs remain in circulation.",
+    "deliverables": [
+      "Produce a complete three-stage label prototype with separate audiences.",
+      "Simulate two boundary cases for capacity and support.",
+      "Issue a revised rollout and explain how a first-use trial can falsify your assumption."
+    ],
+    "checklist": [
+      "Separate pre-dispatch, delivery and return records.",
+      "Make each threshold verifiable.",
+      "Keep a pictured cue when words may be confused.",
+      "Record remaining sources of damage uncertainty."
+    ]
+  }
+}

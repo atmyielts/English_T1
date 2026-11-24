@@ -1,0 +1,394 @@
+{
+  "slug": "c1-what-the-correction-has-to-reach",
+  "title": "What the Correction Has to Reach",
+  "level": "C1",
+  "summary": "Develop a local paper’s correction policy after a short story travelled farther than its source.\n\nReading: Follow the closure claim from the paper to a swimmer who never saw the article. In three versions, show what changes as the claim is copied and how responsibility or the booking advice survives. Quote the minimum evidence that should be retained in each.\n\nVocabulary: Use six terms to describe the route of an erroneous message and a correction. Then write what the same person would say in a conversation, an accountability note and a public sign. Check which register sounds natural for each collocation.",
+  "documents": [
+    {
+      "title": "Editor’s incident memorandum",
+      "text": "Last Tuesday the Market Street Bulletin reported that the indoor swimming pool would close at the end of the month. We had seen a notice headed ‘pool closing’ in the operations office. It referred to the small teaching pool during a four-day tiling job. The main pool will continue as normal. We corrected the online article at midday on Wednesday and printed a box on page two on Friday. By then a shortened version of the story had appeared in the noticeboards of three exercise groups. Their volunteers had copied the date and conclusion, not the link.\n\nThe online corrections page identifies what was wrong and what is true now. For a person finding our article through a search, the first line also says it was corrected. What we have not provided is a short correction that can stand on its own outside our pages. A group leader should not have to copy our full explanation just to repair a date and a claim.\n\nThe full explanation still matters. We read a room label as the name of a building, and we did not ask a duty manager before publishing. If we want other people to pass on the repair, we should make the new information portable without making our responsibility difficult to find."
+    },
+    {
+      "title": "Note from a swimming group organiser",
+      "text": "I made an announcement about the closure at the end of our Tuesday meeting. The Bulletin story was already in two other group notices, so I treated its agreement with them as reassurance. I found out later that all three came from the same short version. I have since received the correction as a link and heard the new dates on the phone. A member without web access asked whether the pool had changed its mind or whether there had never been a closure plan for the main pool.\n\nWhat I need is two sentences. The first can say the main pool stays open. The second should say what part actually closes and for how long. After those, give me a line that I can read aloud for anyone who remembers what I said last time. It should explain that I repeated something which had since been found to be mistaken. If it just says the opening hours are updated, people will assume a genuine decision changed again.\n\nI can use our next meeting to make the correction, but it falls after the start of the tiling work. Send a brief version to the people who post signs at the building now, so I can refer to something visible there."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Phone call between reporter and venue manager",
+      "text": "Reporter: I’ve drafted a card saying ‘Pool update: the main pool remains open’. Is that enough for your desk?\n\nManager: For the main pool, yes. People booking a first lesson need to know whether they should go to the teaching pool. The last line of your story gives the dates but calls it a smaller pool. That is not the name on our signs.\n\nReporter: We can use ‘teaching pool’ on the card. Can I say private lessons are cancelled?\n\nManager: No. Some moved to the shallow end of the main pool. It depends on how children enter the water. Give them the desk number rather than a universal answer.\n\nReporter: Would it help to show ‘corrected’ over the card, or would people read that as a sign the job itself has moved?\n\nManager: Say ‘Correction to Tuesday’s Bulletin’ if you need the title. People still need to understand the message even if Tuesday does not mean anything to them.\n\nReporter: Shall I send the paragraph to the three groups and ask them to say where they used it?\n\nManager: Yes. Please also send a ninety-character first line for the screen by the door. A message can be short without being vague."
+    },
+    {
+      "title": "Newsroom discussion once the card is released",
+      "text": "We received a reply from two of the groups within an hour. One replaced the printed notice with ours. One added the correction underneath the old notice with the original in slightly larger type. At the desk an attendant asked five swimmers what they had seen. Two knew the work concerned the teaching pool, one had seen both notices and was waiting to see which was more recent, and two had heard nothing. The small group was not a sample of everyone who read our story. It showed at least one way a visible correction could fail.\n\nA colleague suggested asking every group to take its own copy down. That would make the noticeboard look tidier, but we cannot replace every announcement that has been read aloud. We can ask hosts to say which part of their earlier message is wrong. If a neighbour paraphrases that, the important difference may survive.\n\nI would report our outreach in two lines: where we know the correction has been placed, and what we know about whether it was understood. The first line can be quite precise. The second will be limited. Reporting both is more helpful than adding all the messages we sent and calling that our reach."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What was mistaken about the original story?",
+      "options": [
+        "It confused the number of teaching lessons with visitor numbers.",
+        "It treated a closure of the teaching pool as closure of the main pool.",
+        "It reported tiling in the wrong district.",
+        "It used the wrong date for closing the entire building."
+      ],
+      "answer": 1,
+      "explanation": "The tiling affects the teaching pool; the main pool stays open."
+    },
+    {
+      "prompt": "What remedy does the editor identify as still missing?",
+      "options": [
+        "A note under the original article accessed from search",
+        "A print notice in the Bulletin itself",
+        "A full online explanation identifying what was wrong",
+        "A standalone short correction suitable for sharing elsewhere"
+      ],
+      "answer": 3,
+      "explanation": "The other measures already exist, but volunteers cannot easily relay them."
+    },
+    {
+      "prompt": "Why did the exercise organiser initially trust the report?",
+      "options": [
+        "A teacher had sent her independent confirmation.",
+        "Several notices agreed, and she took them as separate confirmation.",
+        "She had already seen the dates on the building sign.",
+        "A duty manager personally approved the newspaper story."
+      ],
+      "answer": 1,
+      "explanation": "She treated repeated material as corroboration without knowing it shared a source."
+    },
+    {
+      "prompt": "What does the organiser need the extra spoken line to distinguish?",
+      "options": [
+        "Teaching-pool use from booking fees at the main pool",
+        "Printed dates from online dates",
+        "A published policy from a private discussion about fees",
+        "A mistake in the earlier report from a change in a real plan"
+      ],
+      "answer": 3,
+      "explanation": "The member's question shows why a generic update invites a wrong inference."
+    },
+    {
+      "prompt": "Why does she request immediate posting at the venue?",
+      "options": [
+        "The next group meeting will be too late for part of the work.",
+        "People will have no phones when the tilers arrive.",
+        "The paper will no longer run a printed correction.",
+        "She intends to hold all meetings at the pool."
+      ],
+      "answer": 0,
+      "explanation": "Her next session is after work begins, so an earlier channel matters."
+    },
+    {
+      "prompt": "Where do the source writers agree?",
+      "options": [
+        "The only reliable correction is a full published article.",
+        "Original notices must be preserved beside corrected ones in identical type.",
+        "The corrected claim should remain understandable when it leaves the article.",
+        "A visible link is enough for all group members."
+      ],
+      "answer": 2,
+      "explanation": "Both propose standalone information for audiences who do not revisit the story."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Which precise name does the manager want used?",
+      "options": [
+        "Private lesson wing",
+        "Shallow pool",
+        "Teaching pool",
+        "Smaller pool"
+      ],
+      "answer": 2,
+      "explanation": "The venue's signs say teaching pool, a label users can match on arrival."
+    },
+    {
+      "prompt": "What instruction should people with private lessons receive?",
+      "options": [
+        "Wait for another newspaper story.",
+        "Contact the desk for an individual answer.",
+        "Assume their booking is cancelled.",
+        "Book a lesson in the main pool without calling."
+      ],
+      "answer": 1,
+      "explanation": "Private arrangements differ, so the venue desk is the correct contact."
+    },
+    {
+      "prompt": "What problem does the manager see with identifying only the past story?",
+      "options": [
+        "Someone who never saw it still needs a clear current message.",
+        "A person cannot remember which day the main pool opens.",
+        "The newspaper has already corrected it in print.",
+        "Mentioning Tuesday will make the new dates unreadable."
+      ],
+      "answer": 0,
+      "explanation": "A correction must make sense to people without knowledge of its publication history."
+    },
+    {
+      "prompt": "What limitation does the desk interview illustrate?",
+      "options": [
+        "A prominently placed correction prevents people asking a question.",
+        "Interviewees can never give meaningful information in small groups.",
+        "Placement does not ensure readers can tell which notice supersedes the other.",
+        "The two groups knowingly rejected the whole correction."
+      ],
+      "answer": 2,
+      "explanation": "One reader saw both versions but could not identify the latest."
+    },
+    {
+      "prompt": "Why should group hosts name exactly which part of their message was wrong?",
+      "options": [
+        "That distinction may remain clear even when people relay it again.",
+        "It makes it unnecessary to give the teaching pool's new dates.",
+        "It shows their original announcement came from an independent source.",
+        "It removes the need to publish a full accountability note."
+      ],
+      "answer": 0,
+      "explanation": "Specific repairs are more likely to survive paraphrase."
+    },
+    {
+      "prompt": "Which distinction informs the second recording’s final reporting proposal?",
+      "options": [
+        "Paper publication versus a digital archive",
+        "Existing bookings versus new bookings",
+        "Reason for closure versus the staff allowed to enforce it",
+        "Distribution evidence versus evidence of understanding"
+      ],
+      "answer": 3,
+      "explanation": "The team wants to report placement separately from whether people drew the intended conclusion."
+    }
+  ],
+  "grammar": {
+    "focus": "Reported speech and deictic reference",
+    "explanation": "In reported speech, adjust time and place references according to the later speaker’s viewpoint. Keep the original words in a direct quotation. Backshift can report what a speaker said without implying that the situation has since changed. Use if or whether for indirect yes/no questions.",
+    "examples": [
+      {
+        "before": "On Tuesday she said the work began tomorrow.",
+        "after": "On Tuesday she said the work would begin on Wednesday.",
+        "why": "Name the actual day when the reporting times differ."
+      },
+      {
+        "before": "I asked did the main pool close.",
+        "after": "I asked whether the main pool was closing.",
+        "why": "An indirect yes/no question takes declarative order after whether."
+      },
+      {
+        "before": "Last Friday the office said that the sign had changed yesterday.",
+        "after": "Last Friday the office said that the sign had changed on Thursday.",
+        "why": "A named day removes ambiguity about whose yesterday is meant."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "On Monday Mara said ‘We will post it tomorrow’. Written on Friday, which report anchors the day correctly?",
+        "options": [
+          "On Friday Mara said they would post it tomorrow.",
+          "On Monday Mara said they would post it on Saturday.",
+          "On Monday Mara said they had posted it the previous day.",
+          "On Monday Mara said they would post it on Tuesday."
+        ],
+        "answer": 3,
+        "explanation": "Tomorrow was Tuesday from Mara's Monday point of view."
+      },
+      {
+        "prompt": "Which turns ‘Are the lessons cancelled?’ into an indirect question?",
+        "options": [
+          "He asked whether were the lessons cancelled.",
+          "He asked whether the lessons were cancelled.",
+          "He asked that the lessons were cancelled.",
+          "He asked were the lessons cancelled."
+        ],
+        "answer": 1,
+        "explanation": "Whether plus subject before verb is the ordinary indirect construction."
+      },
+      {
+        "prompt": "Which is safest in a record written outside the venue?",
+        "options": [
+          "The manager said to change the signs over there.",
+          "The manager said these signs over here would change.",
+          "The manager said the signs here would change.",
+          "The manager said the signs by the teaching pool would change."
+        ],
+        "answer": 3,
+        "explanation": "Naming the place keeps the statement usable when the reader is elsewhere."
+      },
+      {
+        "prompt": "Which explicitly quotes the manager's exact words ‘There is no general closure’?",
+        "options": [
+          "The manager denied that anyone had confirmed a general closure.",
+          "The manager said, ‘There is no general closure.’",
+          "The manager said there is no closure at all.",
+          "The manager said there was no general closure."
+        ],
+        "answer": 1,
+        "explanation": "The marked direct quotation preserves the precise wording and tense."
+      },
+      {
+        "prompt": "The reporter relayed an earlier prediction without confirming what happened. Which sentence fits?",
+        "options": [
+          "The reporter said the pool would reopen on Friday.",
+          "The reporter had discovered that the pool was still shut.",
+          "The reporter confirmed that the pool reopened.",
+          "The pool reopened exactly as the reporter promised."
+        ],
+        "answer": 0,
+        "explanation": "Would reopen in the report conveys the projected event without verification."
+      },
+      {
+        "prompt": "Which makes a Monday notice usable the following Thursday?",
+        "options": [
+          "The Monday notice said work starts in two days, as it will now.",
+          "The Monday notice says work began a day ago.",
+          "The Monday notice said work would start that Wednesday.",
+          "The Monday notice said work would start tomorrow."
+        ],
+        "answer": 2,
+        "explanation": "Named days match the timing and survive being copied later."
+      },
+      {
+        "prompt": "Which keeps the note indirect and attributes a belief without endorsing it?",
+        "options": [
+          "The plan changed, the reader said correctly.",
+          "The reader knew the plan had changed.",
+          "The reader thought that the plan had changed.",
+          "The reader verified the new plan by checking the notice."
+        ],
+        "answer": 2,
+        "explanation": "Thought reports a belief; knew and verified introduce stronger claims."
+      },
+      {
+        "prompt": "Which reports an instruction without an indirect-question word order error?",
+        "options": [
+          "The manager told us to use the label ‘teaching pool’.",
+          "The manager said us to use the label ‘teaching pool’.",
+          "The manager told should we use ‘teaching pool’.",
+          "The manager asked would we use the label ‘teaching pool’."
+        ],
+        "answer": 0,
+        "explanation": "Told takes a recipient and to-infinitive for this instruction."
+      }
+    ],
+    "transfer": "Create a four-column audit of a shared notice: original words, who said them and when, safely reported wording, and what a later reader might misunderstand."
+  },
+  "vocabulary": [
+    {
+      "word": "retract",
+      "meaning": "withdraw a previously published claim",
+      "example": "The editor retracted the closure report.",
+      "pair": "retract a claim"
+    },
+    {
+      "word": "relay",
+      "meaning": "pass information to another person",
+      "example": "Please relay the corrected time.",
+      "pair": "relay a correction"
+    },
+    {
+      "word": "supersede",
+      "meaning": "replace as the current version",
+      "example": "The new card supersedes the one at the gate.",
+      "pair": "supersede a notice"
+    },
+    {
+      "word": "corroboration",
+      "meaning": "independent evidence supporting a claim",
+      "example": "Copied notices gave no independent corroboration.",
+      "pair": "independent corroboration"
+    },
+    {
+      "word": "erroneous",
+      "meaning": "incorrect or based on an error",
+      "example": "The original post drew an erroneous conclusion.",
+      "pair": "erroneous report"
+    },
+    {
+      "word": "accountable",
+      "meaning": "required to explain decisions and actions",
+      "example": "The newsroom remains accountable for the wording.",
+      "pair": "hold someone accountable"
+    },
+    {
+      "word": "ambiguous",
+      "meaning": "open to more than one interpretation",
+      "example": "The heading is ambiguous without a room name.",
+      "pair": "ambiguous wording"
+    },
+    {
+      "word": "portable",
+      "meaning": "usable away from its original setting",
+      "example": "Volunteers need a portable explanation.",
+      "pair": "portable message"
+    },
+    {
+      "word": "circulation",
+      "meaning": "distribution among people",
+      "example": "The false date stayed in circulation all week.",
+      "pair": "wide circulation"
+    },
+    {
+      "word": "universal",
+      "meaning": "applying to every case",
+      "example": "There is no universal answer for lessons.",
+      "pair": "universal rule"
+    },
+    {
+      "word": "enquiry",
+      "meaning": "request for information",
+      "example": "The duty desk handled fifty enquiries.",
+      "pair": "handle an enquiry"
+    },
+    {
+      "word": "explicit",
+      "meaning": "clearly stated without needing inference",
+      "example": "The card makes the earlier error explicit.",
+      "pair": "explicit acknowledgement"
+    }
+  ],
+  "speaking": {
+    "audience": "Venue attendants and exercise group leaders",
+    "first": "Deliver a two-minute correction followed by a live test: ask two listeners, one who heard the old story and one who did not, to explain the next action for a booking. Respond to their questions.",
+    "change": "A new caller reads you a printed card with no date and asks whether tomorrow’s lesson is cancelled.",
+    "second": "Run a separate mock phone call and an announcement for a person without internet access. Resolve the exact issue you can settle and direct them to the right answer for the rest.",
+    "checklist": [
+      "Clearly distinguish the correction from a changed plan.",
+      "Use the name people see at the venue.",
+      "Do not extrapolate a general rule for lessons.",
+      "Check whether a listener can give the instruction back."
+    ]
+  },
+  "writing": {
+    "audience": "Bulletin editor who must publish both a brief card and a longer explanation",
+    "first": "Write the two versions, plus a note identifying what each one must retain when forwarded. Use the timings and facts in both documents.",
+    "change": "A neighbourhood radio show will read only the first two sentences tomorrow.",
+    "second": "Write fresh radio text and a newsroom follow-up specifying what listeners should clarify at the venue.",
+    "checklist": [
+      "Use dates that make sense on the later day.",
+      "State what was inaccurate in the first story.",
+      "Include an action for bookings.",
+      "Explain how to test understanding beyond distribution."
+    ]
+  },
+  "immersion": {
+    "role": "Duty editor coordinating a public correction",
+    "goal": "Create a correction that survives different formats and remains answerable to the original claim.",
+    "constraints": [
+      "Some members have no internet access.",
+      "The entrance screen has room for one short line.",
+      "The venue decides individual lesson arrangements.",
+      "There is no count of every person who heard the original claim."
+    ],
+    "change": "A club reprints the old notice above the correction with both dates hidden.",
+    "deliverables": [
+      "Supply a screen line, printable card and live script for the club.",
+      "Prepare a follow-up test with two plausible wrong takeaways.",
+      "Write a brief retrospective naming the publishing error and its corrective practice."
+    ],
+    "checklist": [
+      "Design each format to stand on its own.",
+      "Separate publication, receipt and understanding.",
+      "Link the causal explanation to a newsroom decision.",
+      "Leave readers with the correct contact for a remaining question."
+    ]
+  }
+}

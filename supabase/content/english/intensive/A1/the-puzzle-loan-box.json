@@ -1,0 +1,426 @@
+{
+  "slug": "the-puzzle-loan-box",
+  "title": "The puzzle loan box",
+  "level": "A1",
+  "summary": "At Cedar Games Club, adults can take home a small wooden puzzle. Help the desk volunteers check two puzzles and get them ready to lend again.\n\nReading: Read the slip for the usual counts. Read the note for what is on the desk. Make two rows, one for each puzzle. Write the usual count and the pieces you see in the note. Read again and mark what you still need to check. Then answer the questions.\n\nListening: Listen to both recordings for the main idea. Listen again and make notes under three words: lids, pieces, times. Put the times in order. Listen once more to check the name and place and the time Jo can bring back the box. Then answer the questions.\n\nVocabulary: Put the cards in two groups: things at the desk and words you can use when you help. Say each pair aloud. Cover the words and use the meanings to find them again. Write four new lines for the club desk. Use each line to ask for something, give a count or tell someone where to go.",
+  "documents": [
+    {
+      "title": "Puzzle inventory slip",
+      "text": "Cedar Games Club has two small wooden puzzles for adults to borrow. Use this slip to check the pieces before you lend a puzzle. The blue puzzle is the easier one. It has six pieces. All six pieces are blue wooden boxes. The red puzzle has eight pieces. It has six red wooden boxes and two red wooden rings. The rings are pieces, too. Each puzzle has a lid. Leave the lids out of the count. Put the pieces on the desk in two groups, one for each puzzle. Count each group. Write the number on the loan card. Tell the next volunteer if a piece is missing."
+    },
+    {
+      "title": "Monday return note",
+      "text": "Hi Sam,\n\nBoth puzzles are back at the club. I put them on the front desk this morning. Under the blue lid, I found five blue wooden boxes and one loose wooden ring. I could not see the color of the loose ring. It is in a white cup now. Under the red lid, I found six red wooden boxes and one red wooden ring. Both lids are on the desk. Please keep the ring in the cup until you know where it goes. Leave both puzzles at the desk today. I put a blank loan card next to the cup.\n\nMia"
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Mia's phone message",
+      "text": "Hi Sam, it's Mia. I borrowed both puzzles on Friday. I brought them back at nine this morning. I left the club at nine fifteen. Jo called me after I left. He found one blue wooden box under a chair at his flat. We played the blue puzzle there on Sunday. Jo can bring the box to the club on Tuesday. He can come between four and four thirty in the afternoon. Please ask him to come to the front desk. I have one more thing to tell you. I put both lids on the front desk. The blue box at Jo's flat is a puzzle piece. Please count it when it comes back."
+    },
+    {
+      "title": "Sam's desk handover",
+      "text": "Hi, I'm Sam. I'm at the front desk now. Here is the plan for Tuesday. I arrive at three thirty in the afternoon. I can take the blue box from Jo between four and four thirty. I go home at five. Please leave the white cup on the front desk for me. I want to look at the loose ring in good light. The two lids stay with the puzzles. The lids cover the pieces. We count only the small wooden boxes and rings. When Jo brings the blue box, I will count the blue pieces again. Then I will write the new count on the loan card."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In “Puzzle inventory slip”, which puzzle is easier?",
+      "options": [
+        "The red puzzle",
+        "The two puzzles are equally easy",
+        "The blue puzzle",
+        "The slip does not say"
+      ],
+      "answer": 2,
+      "explanation": "The slip says the blue puzzle is the easier one."
+    },
+    {
+      "prompt": "In “Puzzle inventory slip”, what goes in the count for a complete red puzzle?",
+      "options": [
+        "Six red boxes and two red rings",
+        "Six red boxes and one red ring",
+        "Five red boxes and two red rings",
+        "Six red boxes, one ring and one lid"
+      ],
+      "answer": 0,
+      "explanation": "The slip lists six red wooden boxes and two red wooden rings."
+    },
+    {
+      "prompt": "Why does the club use “Puzzle inventory slip” before it lends a puzzle?",
+      "options": [
+        "To find out when the desk opens",
+        "To see who borrowed the puzzle last",
+        "To learn how to play the puzzle",
+        "To check that the puzzle has all its pieces"
+      ],
+      "answer": 3,
+      "explanation": "The slip gives the usual counts and asks volunteers to count each group."
+    },
+    {
+      "prompt": "In “Monday return note”, where is the loose ring now?",
+      "options": [
+        "Under the blue lid",
+        "In the white cup",
+        "Under the red lid",
+        "Next to the blank loan card"
+      ],
+      "answer": 1,
+      "explanation": "Mia says she put the loose ring in the white cup."
+    },
+    {
+      "prompt": "In “Monday return note”, what did Mia find under the red lid?",
+      "options": [
+        "Six red boxes and two red rings",
+        "Five red boxes and one red ring",
+        "Six red boxes and one red ring",
+        "Six red boxes and no rings"
+      ],
+      "answer": 2,
+      "explanation": "Mia says there were six red boxes and one red ring under the red lid."
+    },
+    {
+      "prompt": "In “Monday return note”, what does Mia ask Sam to do with the loose ring?",
+      "options": [
+        "Put it back under the blue lid",
+        "Add it to the red puzzle now",
+        "Take it home to check it",
+        "Keep it in the cup until he knows where it goes"
+      ],
+      "answer": 3,
+      "explanation": "Mia asks Sam to keep the ring in the cup until he knows where it goes."
+    },
+    {
+      "prompt": "In “Monday return note”, which note can Sam write about Monday?",
+      "options": [
+        "Both puzzles are back. Keep them at the front desk today.",
+        "Both puzzles are back. Lend them again this morning.",
+        "Only the blue puzzle is back. Wait for the red one.",
+        "Both puzzles are back. Move them away from the desk today."
+      ],
+      "answer": 0,
+      "explanation": "Mia says both puzzles are back and asks Sam to leave them at the desk today."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In “Mia's phone message”, when did Mia bring the puzzles back?",
+      "options": [
+        "At nine fifteen that morning",
+        "At nine that morning",
+        "On Friday",
+        "On Sunday"
+      ],
+      "answer": 1,
+      "explanation": "Mia brought them back at nine and left the club at nine fifteen."
+    },
+    {
+      "prompt": "In “Mia's phone message”, what did Jo find under a chair?",
+      "options": [
+        "The blue lid",
+        "A red wooden ring",
+        "A red wooden box",
+        "A blue wooden box"
+      ],
+      "answer": 3,
+      "explanation": "Mia says Jo found one blue wooden box under a chair at his flat."
+    },
+    {
+      "prompt": "In “Mia's phone message”, what should Sam ask Jo to do?",
+      "options": [
+        "Bring the box to the front desk on Tuesday between four and four thirty",
+        "Bring the box to the front desk on Tuesday at five",
+        "Bring the box to the front desk on Monday between four and four thirty",
+        "Bring the box to the club door on Tuesday at three thirty"
+      ],
+      "answer": 0,
+      "explanation": "Mia gives Tuesday from four to four thirty and asks Jo to use the front desk."
+    },
+    {
+      "prompt": "What is the main reason for “Mia's phone message”?",
+      "options": [
+        "To ask if she can borrow the red puzzle on Friday",
+        "To show Sam how to play the blue puzzle",
+        "To report a piece Jo found and say when he can bring it back",
+        "To ask Sam to lend Jo both puzzles on Tuesday"
+      ],
+      "answer": 2,
+      "explanation": "Mia tells Sam about the box Jo found and gives a time for Jo to bring it back."
+    },
+    {
+      "prompt": "In “Sam's desk handover”, what happens at three thirty on Tuesday?",
+      "options": [
+        "Jo gives Sam the blue box",
+        "Sam arrives at the front desk",
+        "Sam goes home",
+        "Sam writes the new count"
+      ],
+      "answer": 1,
+      "explanation": "Sam says he arrives at three thirty, before Jo's window starts at four."
+    },
+    {
+      "prompt": "In “Sam's desk handover”, why does Sam want the white cup at the desk?",
+      "options": [
+        "He wants to put the loan card in it.",
+        "He wants to give the cup to Jo.",
+        "He wants to put the blue box in it.",
+        "He wants to look at the ring in good light."
+      ],
+      "answer": 3,
+      "explanation": "Sam asks for the cup because he wants to look at the loose ring in good light."
+    },
+    {
+      "prompt": "In “Sam's desk handover”, what will Sam do first after Jo brings the blue box?",
+      "options": [
+        "Count the blue pieces again",
+        "Write the new count on the loan card",
+        "Go home",
+        "Count the two lids as pieces"
+      ],
+      "answer": 0,
+      "explanation": "Sam says he will count the blue pieces again and then write the new count."
+    }
+  ],
+  "grammar": {
+    "focus": "One box, two boxes. Regular singular and plural nouns with counts.",
+    "explanation": "Look at the number before the noun. After one, use the singular form. Write one ring or one box. After two or more, use the plural form. Most nouns add -s. Write two rings, three lids and four cups. For nouns like box, add -es. Write two boxes. You also add -es to words like dish and bench. A color word stays the same. Write one red ring and two red rings. When you check a list, read the number and the noun together. In a line with two counts, check each noun on its own.",
+    "examples": [
+      {
+        "before": "1 lids",
+        "after": "1 lid",
+        "why": "Use the singular lid after the number one."
+      },
+      {
+        "before": "4 ring",
+        "after": "4 rings",
+        "why": "Four means more than one. Add -s to ring."
+      },
+      {
+        "before": "3 boxs",
+        "after": "3 boxes",
+        "why": "Box ends in x. Add -es to make boxes."
+      },
+      {
+        "before": "2 reds rings",
+        "after": "2 red rings",
+        "why": "Keep rings because there are two. Red does not change."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The desk has one cup. Which label is correct?",
+        "options": [
+          "1 cups",
+          "1 cupes",
+          "1 cup",
+          "1 cupps"
+        ],
+        "answer": 2,
+        "explanation": "The number one takes the singular form of the noun, cup."
+      },
+      {
+        "prompt": "Choose the correct list for a bag with three clips and one card.",
+        "options": [
+          "3 clips and 1 card",
+          "3 clip and 1 cards",
+          "3 clip and 1 card",
+          "3 clips and 1 cards"
+        ],
+        "answer": 0,
+        "explanation": "Three takes the plural clips, and one takes the singular card."
+      },
+      {
+        "prompt": "June puts two small boxes on a shelf. What can she write?",
+        "options": [
+          "2 small box",
+          "2 small boxs",
+          "2 smalls boxes",
+          "2 small boxes"
+        ],
+        "answer": 3,
+        "explanation": "Add -es to box after two, and keep small the same."
+      },
+      {
+        "prompt": "A table has two dishes and one spoon. Which list is correct?",
+        "options": [
+          "2 dish and 1 spoon",
+          "2 dishes and 1 spoon",
+          "2 dishs and 1 spoon",
+          "2 dishes and 1 spoons"
+        ],
+        "answer": 1,
+        "explanation": "Dish takes -es after two, and spoon stays singular after one."
+      },
+      {
+        "prompt": "You have two green bags. Which label is correct?",
+        "options": [
+          "2 green bags",
+          "2 green bag",
+          "2 greens bags",
+          "2 green bages"
+        ],
+        "answer": 0,
+        "explanation": "Two takes the plural bags, and the color word green stays the same."
+      },
+      {
+        "prompt": "Only one key is in the drawer. Which note is correct?",
+        "options": [
+          "There is 1 keys in the drawer.",
+          "There is 1 keyes in the drawer.",
+          "There is 1 key in the drawer.",
+          "There is 1 keies in the drawer."
+        ],
+        "answer": 2,
+        "explanation": "After one, use the singular key to name the item in the drawer."
+      },
+      {
+        "prompt": "A room has three benches and two lamps. Which line is correct?",
+        "options": [
+          "3 bench and 2 lamps",
+          "3 benchs and 2 lamp",
+          "3 benches and 2 lamp",
+          "3 benches and 2 lamps"
+        ],
+        "answer": 3,
+        "explanation": "Add -es to bench after three and -s to lamp after two."
+      },
+      {
+        "prompt": "A club shelf holds one box and four games. Which shelf list is correct?",
+        "options": [
+          "1 boxes and 4 game",
+          "1 box and 4 games",
+          "1 box and 4 game",
+          "1 boxes and 4 games"
+        ],
+        "answer": 1,
+        "explanation": "One takes the singular box, and four takes the plural games."
+      }
+    ],
+    "transfer": "Make a short supply list for the desk. It needs one pen, two boxes and three cards. Now one card goes into a box, and a volunteer takes one box away with that card inside. Write a new list of the things still at the desk. Circle each number and check the noun beside it. Read both lists aloud."
+  },
+  "vocabulary": [
+    {
+      "word": "borrow",
+      "meaning": "take something and give it back later",
+      "example": "Can I borrow your pen to sign my name?",
+      "pair": "borrow a book"
+    },
+    {
+      "word": "lend",
+      "meaning": "give someone something to use and get back later",
+      "example": "I can lend you my bike for the day.",
+      "pair": "lend someone a pen"
+    },
+    {
+      "word": "piece",
+      "meaning": "one part of a thing",
+      "example": "One piece of my puzzle is on the floor.",
+      "pair": "a puzzle piece"
+    },
+    {
+      "word": "lid",
+      "meaning": "the top that covers a box or pot",
+      "example": "Put the lid on the pot, please.",
+      "pair": "the lid of a jar"
+    },
+    {
+      "word": "ring",
+      "meaning": "a round thing with a hole in the middle",
+      "example": "I put a wooden ring on the table.",
+      "pair": "a silver ring"
+    },
+    {
+      "word": "box",
+      "meaning": "a thing with sides and a bottom that can hold other things",
+      "example": "I keep old photos in a box.",
+      "pair": "a cardboard box"
+    },
+    {
+      "word": "loose",
+      "meaning": "not fixed firmly or not attached",
+      "example": "There is a loose button in my coat pocket.",
+      "pair": "a loose puzzle piece"
+    },
+    {
+      "word": "front desk",
+      "meaning": "the desk where people go for help when they come in",
+      "example": "I asked for my room key at the front desk.",
+      "pair": "at the front desk"
+    },
+    {
+      "word": "count",
+      "meaning": "find how many there are",
+      "example": "Please count the chairs before class.",
+      "pair": "count the coins"
+    },
+    {
+      "word": "missing",
+      "meaning": "away from the place where it should be",
+      "example": "One key is missing from the hook.",
+      "pair": "a missing page"
+    },
+    {
+      "word": "bring back",
+      "meaning": "take something to where it was before",
+      "example": "Please bring back my umbrella tomorrow.",
+      "pair": "bring back a book"
+    },
+    {
+      "word": "between",
+      "meaning": "in the time from one clock time to another",
+      "example": "Call me between six and seven this evening.",
+      "pair": "between two and three"
+    }
+  ],
+  "speaking": {
+    "audience": "Jo, the club member who found the blue box, and Sam, the volunteer at the front desk",
+    "first": "Jo found a blue wooden box under a chair at home. He can bring it to Sam at the front desk on Tuesday between 4:00 and 4:30 p.m. Make a friendly three-turn phone message. Play both parts yourself. First, as Sam, greet Jo and ask him to bring back the piece. Give the day, place and full time window. Second, as Jo, ask where to go and say what you found. Third, as Sam, answer and say that you have five blue boxes now. Make short notes, say the three turns aloud and listen back.",
+    "change": "Jo sends a new message. He works until four thirty on Tuesday. He can come between four forty and four fifty that afternoon. Sam can still meet him at the front desk.",
+    "second": "Make a second recording. Keep the friendly greeting, the three turns and the front desk. Give the new Tuesday time window in the first turn. As Jo, say you found one blue box and ask about the place. As Sam, answer and thank him. ",
+    "checklist": [
+      "I speak three short turns in the order Sam, Jo, Sam.",
+      "My first take gives Tuesday between four and four thirty.",
+      "My second take gives Tuesday between four forty and four fifty.",
+      "Jo asks about the place, and Sam says front desk.",
+      "I say five blue boxes in the first take and one blue box in the second."
+    ]
+  },
+  "writing": {
+    "audience": "The next Cedar Games Club desk volunteer",
+    "first": "Make one loan card with a row for each puzzle. Reread the inventory slip and return note. On paper or on screen, write the expected pieces and the pieces you can count now. Give the loose ring its own line. Add one short line about what the next volunteer should do. Use about 25–45 words across several lines. Check the card against both texts.",
+    "change": "Sam looks at the wooden ring in good light at the front desk. He sees red paint on it. It is the second red ring. He moves it from the white cup to the red puzzle. The blue box is still with Jo.",
+    "second": "Update the same card. Keep the expected counts. Put the ring in the red count and mark the red puzzle complete. Keep the blue count at five boxes. Replace the cup instruction with a short instruction to count the blue pieces again when Jo brings the box.",
+    "checklist": [
+      "The card has the names Blue puzzle and Red puzzle.",
+      "The expected count is six blue boxes and six red boxes plus two red rings.",
+      "The new red count is eight pieces, and the blue count is five pieces.",
+      "The card counts each piece once and leaves out both lids.",
+      "The last line tells the next volunteer when to count the blue pieces again."
+    ]
+  },
+  "immersion": {
+    "role": "Tuesday closing volunteer at Cedar Games Club",
+    "goal": "Get both puzzles ready for Wednesday. Make a label that helps an adult choose a puzzle, a count that another volunteer can check, and a return instruction that works while the front desk is closed.",
+    "constraints": [
+      "The display label has room for four short lines.",
+      "Put the easier puzzle first on the display label.",
+      "Write the number of boxes and rings on the inventory, with a total for each puzzle. Leave out the lids.",
+      "Give one place and one full time window for Wednesday returns.",
+      "Both puzzles must stay in the hall until a volunteer can count the pieces."
+    ],
+    "change": "The loose ring is now with the red puzzle. On Tuesday at four forty-five, Jo gives you the blue box at the front desk. You count six blue boxes. On Wednesday the front desk is closed. A volunteer can take returns at the hall table between six and seven in the evening. The small shelf at that table has room for one puzzle. There is room for the other puzzle in the cupboard next to the table.",
+    "deliverables": [
+      "Write a display label of up to four lines. Name both puzzles, say which is easier and say where to find each one. Choose which puzzle goes on the shelf.",
+      "Complete a two-row inventory with a box count, a ring count and a total for each puzzle. Add one line that says when Jo brought back the blue box.",
+      "Write a two-line Wednesday return instruction. Give the hall table and the full time window. Tell borrowers to give the puzzle to the volunteer."
+    ],
+    "checklist": [
+      "The blue puzzle comes first on the label and is marked as easier.",
+      "The label puts one puzzle on the shelf and one in the cupboard next to the table.",
+      "The blue row shows six boxes, zero rings and six pieces.",
+      "The red row shows six boxes, two rings and eight pieces.",
+      "The inventory records Jo's return as Tuesday at four forty-five.",
+      "The instruction sends borrowers to the hall table on Wednesday between six and seven in the evening."
+    ]
+  }
+}

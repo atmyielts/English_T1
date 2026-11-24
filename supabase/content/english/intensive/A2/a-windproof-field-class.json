@@ -1,0 +1,405 @@
+{
+  "slug": "a-windproof-field-class",
+  "title": "A windproof field class",
+  "level": "A2",
+  "summary": "Help an outdoor sketching class meet, find a good place to draw and keep its paper safe in the wind. Use the artist’s note and equipment notice to plan a welcome for a student. Use one and ones to make clear choices. Give directions, revise a class message and make a supply plan when two activities need the same shelter.",
+  "documents": [
+    {
+      "title": "Mara’s three-spot notebook",
+      "text": "I tried three places in the square this morning. The Lime Tree gives good shade, and I can see the clock clearly from there. There is only one short bench, with room for two people. At Garden Corner there are three long benches. It is a good place to sit and draw the flower beds, but a strong wind comes along the open side. Under the Market Roof, the low wall keeps most of the wind out. The light is fine for drawing objects on the table, but you cannot see the clock from there. I would use the roof for a paper test before asking people to draw outside."
+    },
+    {
+      "title": "Saturday route and equipment notice",
+      "text": "For Saturday’s sketching class, enter the square at the West Gate. Follow the wide, level path past the drinking fountain. Garden Corner is on the left. For the Market Roof, keep going past Garden Corner and turn right at the blue sign. There are steps at the East Gate. You can pick up boards and clips at the table under the Market Roof between 9:40 and 10:00. Use the flat rubber weights on the table to hold down loose paper indoors or under the roof. Leave stones on the ground. If you draw away from the table, use clips to hold your paper on your board. Return the boards and clips to the same table by 11:15."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Lena’s voice message",
+      "text": "Hi Mara, it’s Lena. I’m walking to class from Bridge Street. I’ll reach the West Gate at about 9:55. My bag is heavy today, so I’d like to put it down as soon as I get there. I’ve got my own board and two pencils, but I left my clips at home. Can I borrow two? I can come a little earlier next week, but today I need to leave the square at 10:45 to meet my sister. I’d love to draw the clock before I go. If there’s time for only one drawing, I’ll do the clock and save the flowers for next week."
+    },
+    {
+      "title": "Mara’s welcome announcement",
+      "text": "Good morning, everyone. We’re starting under the Market Roof at ten today. I know I said Garden Corner yesterday, but the wind is stronger now. First, clip a sheet to your board and see if the paper stays flat when you lift the board. After the test, we’ll go to the Lime Tree at 10:15 to draw the clock. Please leave the two places on the short bench for people who need to sit. If you’re happy to stand, stand beside the tree and keep the path clear. We’ll go to Garden Corner at 10:35. You’ll have ten minutes there to draw the flowers."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In “Mara’s three-spot notebook”, how many people can sit on the bench at the Lime Tree?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "answer": 1,
+      "explanation": "Mara says the Lime Tree has one short bench with room for two people."
+    },
+    {
+      "prompt": "In “Mara’s three-spot notebook”, what makes Garden Corner a good place for a seated drawing of the flower beds?",
+      "options": [
+        "There is a table for drawing small objects.",
+        "The tree gives shade across the whole area.",
+        "The low wall keeps most of the wind out.",
+        "There are three long benches."
+      ],
+      "answer": 3,
+      "explanation": "Mara mentions three long benches and says people can sit there to draw the flower beds."
+    },
+    {
+      "prompt": "What is the main purpose of “Mara’s three-spot notebook”?",
+      "options": [
+        "To compare what works well at three drawing spots",
+        "To tell learners when to collect drawing equipment",
+        "To explain how to make a sketch of the clock",
+        "To give walking directions between the three spots"
+      ],
+      "answer": 0,
+      "explanation": "Mara compares shade, seats, wind and what people can see from different places."
+    },
+    {
+      "prompt": "According to “Saturday route and equipment notice”, what should you do after you pass Garden Corner on the way to the Market Roof?",
+      "options": [
+        "Go through the East Gate.",
+        "Turn left at the next bench.",
+        "Turn right at the blue sign.",
+        "Stop beside the drinking fountain."
+      ],
+      "answer": 2,
+      "explanation": "The notice says to keep going past Garden Corner and turn right at the blue sign."
+    },
+    {
+      "prompt": "According to “Saturday route and equipment notice”, which plan follows both the pickup and return times for borrowed boards and clips?",
+      "options": [
+        "Pick them up at 9:30 and return them at 11:00.",
+        "Pick them up at 9:50 and return them at 11:10.",
+        "Pick them up at 10:05 and return them at 11:10.",
+        "Pick them up at 9:55 and return them at 11:20."
+      ],
+      "answer": 1,
+      "explanation": "Pickup runs from 9:40 to 10:00, and the return deadline is 11:15."
+    },
+    {
+      "prompt": "According to “Saturday route and equipment notice”, what should you use to hold paper on your board when you draw away from the table?",
+      "options": [
+        "Flat rubber weights",
+        "Small stones",
+        "A spare board",
+        "Clips"
+      ],
+      "answer": 3,
+      "explanation": "The notice says to clip paper to your board when you draw away from the table."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In “Lena’s voice message”, when does Lena expect to reach the West Gate?",
+      "options": [
+        "At about 9:45",
+        "At about 9:50",
+        "At about 9:55",
+        "At about 10:05"
+      ],
+      "answer": 2,
+      "explanation": "Lena says she is walking from Bridge Street and will reach the West Gate at about 9:55."
+    },
+    {
+      "prompt": "In “Lena’s voice message”, which items does Lena ask to borrow?",
+      "options": [
+        "Two clips",
+        "Two pencils",
+        "A board",
+        "A bag"
+      ],
+      "answer": 0,
+      "explanation": "Lena says she left her clips at home and asks if she can borrow two."
+    },
+    {
+      "prompt": "In “Lena’s voice message”, what does Lena plan to do if she has time for only one drawing?",
+      "options": [
+        "Draw the flowers today and the clock next week.",
+        "Draw both subjects on the same sheet today.",
+        "Save both drawings for next week.",
+        "Draw the clock today and the flowers next week."
+      ],
+      "answer": 3,
+      "explanation": "Lena says she will draw the clock and save the flowers for next week if time is short."
+    },
+    {
+      "prompt": "Why does Mara mention yesterday’s plan in “Mara’s welcome announcement”?",
+      "options": [
+        "To explain why the class will finish earlier today",
+        "To explain why the class is starting in a different place",
+        "To remind people where they left their boards yesterday",
+        "To explain why the flower drawing has been cancelled"
+      ],
+      "answer": 1,
+      "explanation": "Mara named Garden Corner yesterday, but today’s stronger wind makes her start under the Market Roof."
+    },
+    {
+      "prompt": "In “Mara’s welcome announcement”, what do learners do just before going to the Lime Tree?",
+      "options": [
+        "Draw the flowers for ten minutes.",
+        "Find a seat on the short bench.",
+        "Lift their boards to check that the clipped paper stays flat.",
+        "Put their pencils away for the next activity."
+      ],
+      "answer": 2,
+      "explanation": "Mara tells learners to lift their boards during the paper test before they go to the Lime Tree."
+    },
+    {
+      "prompt": "In “Mara’s welcome announcement”, what should someone do at the Lime Tree if they are happy to stand?",
+      "options": [
+        "Stand beside the tree and leave the path clear.",
+        "Sit on the short bench until someone needs it.",
+        "Stand on the path in front of the bench.",
+        "Walk ahead to Garden Corner and wait there."
+      ],
+      "answer": 0,
+      "explanation": "Mara tells people who can stand to stand beside the tree and keep the path clear."
+    }
+  ],
+  "grammar": {
+    "focus": "Using one and ones to avoid repeating the names of things",
+    "explanation": "Use one in place of a singular countable noun, such as board, bench or spot. Use ones in place of a plural countable noun, such as boards, benches or spots. First name the thing so the reader or listener knows what you mean. Say a small one when you want any small board. Say the small one when you mean a particular board. Use which one to ask someone to choose a single item and which ones to ask about several items. If you talk about boards and clips together, name the item again when the choice is unclear. Reread the examples and underline the noun each one or ones replaces.",
+    "examples": [
+      {
+        "before": "There is a long bench and a short bench. Use the short bench.",
+        "after": "There is a long bench and a short bench. Use the short one.",
+        "why": "One replaces bench. The word short tells us which bench to use."
+      },
+      {
+        "before": "We have large clips and small clips. Take the small clips.",
+        "after": "We have large clips and small clips. Take the small ones.",
+        "why": "Ones replaces clips. The word small tells us which clips to take."
+      },
+      {
+        "before": "I need a board. Is there a board by the door?",
+        "after": "I need a board. Is there one by the door?",
+        "why": "One replaces a board here. Any board by the door will do."
+      },
+      {
+        "before": "Some paths have steps. Which paths are level?",
+        "after": "Some paths have steps. Which ones are level?",
+        "why": "Ones replaces paths. The question asks about more than one possible path."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "You want a particular bench. Complete the reply. “There is a bench in the sun and a bench in the shade.” “Let’s sit on ___ in the shade.”",
+        "options": [
+          "the ones",
+          "one bench ones",
+          "the one",
+          "a ones"
+        ],
+        "answer": 2,
+        "explanation": "The one replaces the bench and identifies the particular bench in the shade."
+      },
+      {
+        "prompt": "Ask for any spare pencil without repeating pencil. “I dropped my pencil. Has anyone got ___?”",
+        "options": [
+          "one",
+          "the ones",
+          "a one",
+          "ones"
+        ],
+        "answer": 0,
+        "explanation": "One alone means a pencil here, and any spare pencil is fine."
+      },
+      {
+        "prompt": "Mara needs both flat weights. Which reply clearly offers them to her? “There are two flat weights and two round weights.”",
+        "options": [
+          "You can have the round ones.",
+          "You can have the flat one.",
+          "You can have a round one.",
+          "You can have the flat ones."
+        ],
+        "answer": 3,
+        "explanation": "The flat ones refers to both weights with the shape Mara needs."
+      },
+      {
+        "prompt": "Ask Lena to choose a single drawing spot from two. Avoid repeating spot. “We can use the shady spot or the sheltered spot. ___ do you prefer?”",
+        "options": [
+          "Which ones",
+          "Which one",
+          "Which one spot",
+          "Which a one"
+        ],
+        "answer": 1,
+        "explanation": "Which one asks Lena to pick a single spot from the two she knows about."
+      },
+      {
+        "prompt": "Two of six boards are ready. Ask which two without repeating boards. “Two boards are ready for the next group. ___ are ready?”",
+        "options": [
+          "Which ones",
+          "Which one",
+          "Which one board",
+          "Which a one"
+        ],
+        "answer": 0,
+        "explanation": "Which ones asks the listener to identify the two boards that are ready."
+      },
+      {
+        "prompt": "There are everyday pencils and two pencils for dark lines. Which instruction asks for both pencils for dark lines without repeating pencils?",
+        "options": [
+          "Bring a pencil for dark lines.",
+          "Bring the one for dark lines.",
+          "Bring the ones for dark lines.",
+          "Bring the everyday ones."
+        ],
+        "answer": 2,
+        "explanation": "The ones refers to the two pencils used for making dark lines."
+      },
+      {
+        "prompt": "Read the note. “Large boards and large clips are on the table. Bring the large ones to the tree.” You mean only the clips. Which edit makes that clear?",
+        "options": [
+          "Bring the large one to the tree.",
+          "Bring the large clips to the tree.",
+          "Bring the ones on the table to the tree.",
+          "Bring a large one to the tree."
+        ],
+        "answer": 1,
+        "explanation": "Both boards and clips are large, so naming the clips makes the instruction clear."
+      },
+      {
+        "prompt": "Any small board will do. Complete the reply without repeating board. “There are several large boards and several small boards. Can I take ___?”",
+        "options": [
+          "the large ones",
+          "the small ones",
+          "a large one",
+          "a small one"
+        ],
+        "answer": 3,
+        "explanation": "A small one asks for any single small board from the group."
+      }
+    ],
+    "transfer": "Make a four-line loan desk conversation for a learner who needs one board and two clips. Offer large and small boards, then offer long and short clips. Write the learner’s choices using one and ones. Read both parts aloud. Underline the word each one or ones replaces and check that your choices are clear."
+  },
+  "vocabulary": [
+    {
+      "word": "shade",
+      "meaning": "a place where direct sunlight does not reach",
+      "example": "We ate lunch in the shade of a tree.",
+      "pair": "sit in the shade"
+    },
+    {
+      "word": "bench",
+      "meaning": "a long seat for two or more people",
+      "example": "We waited on a bench outside the shop.",
+      "pair": "a park bench"
+    },
+    {
+      "word": "shelter",
+      "meaning": "protection from wind, rain or sun",
+      "example": "We found shelter under the bridge when it began to rain.",
+      "pair": "take shelter"
+    },
+    {
+      "word": "level path",
+      "meaning": "a walking route with no slope or steps",
+      "example": "The level path beside the river was easy to walk along.",
+      "pair": "follow the level path"
+    },
+    {
+      "word": "clip",
+      "meaning": "a small object that holds things together",
+      "example": "I used a clip to hold the three receipts together.",
+      "pair": "a metal clip"
+    },
+    {
+      "word": "weight",
+      "meaning": "a heavy object used to keep something in place",
+      "example": "I put a weight on the tablecloth so it would stay in place.",
+      "pair": "a rubber weight"
+    },
+    {
+      "word": "loose",
+      "meaning": "free to move because nothing is holding it in place",
+      "example": "A loose page fell out of my notebook.",
+      "pair": "a loose sheet"
+    },
+    {
+      "word": "keep clear",
+      "meaning": "leave an area open so people can use it",
+      "example": "Keep the doorway clear so we can carry the chairs inside.",
+      "pair": "keep the entrance clear"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go to a place and collect something",
+      "example": "I’ll pick up my keys from the front desk after lunch.",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "pass",
+      "meaning": "go by a place and continue past it",
+      "example": "You’ll pass a bakery on your way to the station.",
+      "pair": "pass the entrance"
+    },
+    {
+      "word": "borrow",
+      "meaning": "use something for a short time and give it back",
+      "example": "Can I borrow your ruler to draw this line?",
+      "pair": "borrow a book"
+    },
+    {
+      "word": "sketch",
+      "meaning": "a quick drawing with few details",
+      "example": "I made a sketch of my kitchen before I moved the table.",
+      "pair": "make a quick sketch"
+    }
+  ],
+  "speaking": {
+    "audience": "Lena, a learner walking to the square with her own board",
+    "first": "Lena reaches the West Gate around 9:55 and needs to leave at 10:45. Her bag is heavy. She has a board and pencils and needs two clips. If there is time for only one drawing, she wants to draw the clock. Mara starts the paper test under the Market Roof at 10:00. The group draws the clock at the Lime Tree at 10:15 and the flowers at Garden Corner at 10:35. Make short notes for Lena’s needs and put the three activities in order. Use the equipment notice for the route. Draft a small cue card with the route, clips and clock time. Record a short reply that guides Lena from the West Gate and helps her get ready before the 10:00 start. Tell her that loose clips and clips in pairs are on the table. Use ones to tell her to take the clips in pairs.",
+    "change": "Rain starts at 9:50. The clip box moves to a chair beside the blue sign from 9:55 until 10:05. The two types of clips are still in the box. The class starts under the Market Roof at 10:05, and the clock drawing still starts at 10:15.",
+    "second": "Cross out the old clip pickup point and class start time on your cue card. Make a new recording with three short connected parts covering the walk, the stop for clips and what happens next. Keep Lena’s gate, her own board and the clock time. Play back both takes and check that the new pickup point is easy to hear.",
+    "checklist": [
+      "I started at the West Gate and named the fountain, Garden Corner and the blue sign in order.",
+      "I told Lena to bring her own board and pick up two clips.",
+      "In my second take I named the chair by the blue sign and gave its pickup window.",
+      "I gave the updated 10:05 class start and the 10:15 clock drawing as different events.",
+      "I said clips before using ones and made the choice clear."
+    ]
+  },
+  "writing": {
+    "audience": "Saturday sketching group members who need a message they can read before leaving home",
+    "first": "Read Mara’s notebook for the best use of each spot. Reread the equipment notice and sort its details into route, pickup, use and return. Sort the vocabulary cards into places and route details, supplies, and actions. Write a short direction with pass and an equipment rule with clip. Use your notes to draft a 50–90-word message with a subject line, the level route to the Market Roof, the pickup window, the 10:00 paper test and the return time. Explain where people use clips and where they use weights.",
+    "change": "The wind gets stronger, so the 10:35 flower drawing moves from Garden Corner to the Market Roof. The table has two chairs and four rubber weights. Anyone who needs to sit can bring a folding stool. People who will stand must bring a board and two clips to the roof. Mara brings flowers to the roof for the group to draw.",
+    "second": "Revise your 50–90-word message so readers can see where to go at 10:35 and what to bring if they need a seat or plan to stand. Keep the West Gate route, pickup window, 10:00 paper test and return deadline. Read your first draft and revision side by side. Check that Garden Corner appears only as a point on the walking route in the revised message.",
+    "checklist": [
+      "I included a subject line and kept the message body within 50–90 words.",
+      "My revised message gives the 10:35 activity and places it under the Market Roof.",
+      "I distinguish a folding stool for someone who needs a seat from a board and two clips for someone who stands.",
+      "I kept the level route, pickup window, paper test time and return deadline.",
+      "I said to use clips on boards and weights for loose sheets on the table."
+    ]
+  },
+  "immersion": {
+    "role": "Class helper planning equipment in a separate version of the field class",
+    "goal": "Make a supply plan and a short set of directions so eight learners can draw at 10:50. Decide who sits at the roof table, who can stand, and how each person can keep a sheet of paper flat.",
+    "constraints": [
+      "Four learners are in the leaf group and four are in the square group. Two people in each group need to sit.",
+      "In the first plan, all four leaf group learners sit at the Market Roof table. The four square group learners use boards at Garden Corner, with two sitting on a bench and two standing.",
+      "Everyone has a pencil and a sheet of paper. There are six boards and eight clips to share. A learner drawing away from the table needs one board and two clips.",
+      "The Market Roof has one table, four chairs, room for four people at the table and six flat rubber weights. A sheet on the table needs one weight and no board.",
+      "Standing learners can use the open space beside the roof table if they keep the path clear. All borrowed equipment is due back at the roof table by 11:15."
+    ],
+    "change": "At 10:45 rain closes Garden Corner, so the square group must move under the Market Roof for its 10:50 drawing. The four chairs and table places must now serve both groups. Give seats to the four learners who need them. The two groups can still draw different things. The leaf group has leaves on the table, and the square group can draw the blue sign, which they can see from under the roof.",
+    "deliverables": [
+      "Make a first supply plan with one row for each group. List the spot, how many people sit or stand, and the number of boards, clips and weights each group needs.",
+      "Make a revised plan with four rows, covering the seated and standing learners in each group. Give each row a place, a drawing subject and exact counts of chairs, boards, clips and weights. Add a line with the spare supplies.",
+      "Write a 50–90-word instruction card for both groups. Give the 10:50 start, where each group should sit or stand, what each person should take and where and when to return it.",
+      "Read your card aloud once. Record a second take after checking it against the four rows. Name two choices, such as the chairs near the leaves and the chairs facing the sign, and use one or ones once to refer to a choice you have named."
+    ],
+    "checklist": [
+      "My revised plan gives two seats to each group and places all eight learners under the Market Roof.",
+      "Four learners use one weight each at the table, and four learners standing away from it use one board and two clips each.",
+      "My revised plan leaves two spare boards, two spare weights and zero spare clips.",
+      "My instructions keep the path clear and tell each group what to draw.",
+      "My card gives 10:50 as the start time and 11:15 as the deadline to return the equipment to the roof table.",
+      "A listener can tell which item or items I mean when I say one or ones."
+    ]
+  }
+}

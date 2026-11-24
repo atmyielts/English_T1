@@ -1,0 +1,394 @@
+{
+  "slug": "b2-a-parcel-code-that-arrives-late",
+  "title": "A Parcel Code That Arrives Late",
+  "level": "B2",
+  "summary": "Reconcile a parcel collection message with a terminal record and propose a workable service for riders without data access.",
+  "documents": [
+    {
+      "title": "Parcel pickup procedure at the station",
+      "text": "Local deliveries are placed into a row of numbered parcel lockers beside the station ticket hall. A text is normally sent when a parcel is loaded. It gives a six-digit code, the locker bank number and a collection deadline. The terminal opens a door only while its local clock is within the collection window. The mobile message includes the service's network time rather than the terminal's clock. If a customer reports that the code is late or not working, ask for the order reference and check the load and expiry times in the service record. Do not ask a customer to read out their full pickup code in the ticket hall. A member of the parcel team can arrange supervised collection when an eligible parcel is in the locker, but cannot reopen a locker that has been assigned to the returning courier. If the parcel has already left, log the return destination rather than promising an immediate second delivery. The station desk can check references from six until eight in the evening."
+    },
+    {
+      "title": "A supervisor's record of two cases",
+      "text": "For order K84, the courier pressed Load at 17:42 on Tuesday. The notification log says the text was sent at 17:46, but the customer's phone showed receipt at 19:54. The terminal logged an attempt at 19:51 by its own clock and displayed an expired-screen message when the account still showed a deadline of 20:00. A clock comparison at 20:08 found the terminal to be eleven minutes fast. The attempt displayed as 19:51 must therefore have occurred earlier in network time; it did not necessarily happen after the customer read that text. We have not yet confirmed that this failed attempt came from the customer or that the text was the source of the code entered. For a different reference, V31, the customer read the message on time but went to Bank Two instead of Bank Twelve. The photo of Bank Twelve is out of date because the station moved the signs near a different entrance last month. Record the two cases separately until the technical team confirms the cause of the expired-screen message."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A desk conversation with the customer",
+      "text": "Customer: This is K84. My message says I can collect until eight. I entered the code just before eight and it said expired. I had to turn on my phone outside the hall before the message arrived.\n\nDesk worker: I can look up your reference. Please keep the full code to yourself. Did you read the locker bank from the text, or did you already know which door to try?\n\nCustomer: I read Bank Twelve from the text. I remember checking because I thought it was the same number as my old order. There was someone trying the terminal before me, though.\n\nDesk worker: Do you know the time on your phone when you first tried?\n\nCustomer: I checked it before I entered the hall. I think it was 7:56, maybe a minute later.\n\nDesk worker: Thanks. I'll keep that as an estimate. The parcel team's record still shows the parcel on site. They will have to confirm whether a locker has been assigned for return."
+    },
+    {
+      "title": "Parcel team voice memo after closing",
+      "text": "I have checked the two records with the courier. Please do not close K84 as a customer error. The terminal can give the same expired message after entering a code for a different order, so the log entry at 19:51 is not enough to tell us whose code was used. Meanwhile, a later attempt at 20:08 terminal time appears in the maintenance log. If the eleven-minute difference stayed the same, that would be 19:57 network time, which is closer to the customer's estimate. Even so, we need to check the record before drawing a firm conclusion. V31 is easier to explain: the customer says 'number two' came from the sign in the old photo, not the text in the message. I have put the new map in the help page queue. For the next two days, if a customer calls before leaving home, give the bank number first and name the east ticket-hall entrance. Do not describe a locker by its color. Some of the doors are being repainted tonight."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What information should a desk worker request in public?",
+      "options": [
+        "The customer's full code",
+        "The terminal's administrator number",
+        "A photo of the courier's route",
+        "The order reference"
+      ],
+      "answer": 3,
+      "explanation": "The procedure says to use the reference and avoid asking for the full code publicly."
+    },
+    {
+      "prompt": "1. What determines whether the terminal can open a locker during collection?",
+      "options": [
+        "The instant the courier sent the first text only",
+        "Whether the customer's phone is online at the terminal",
+        "The number of orders assigned for delivery",
+        "Its own clock and the pickup window"
+      ],
+      "answer": 3,
+      "explanation": "The locally timed window controls whether a valid code can open a door."
+    },
+    {
+      "prompt": "1. When is supervised collection no longer available?",
+      "options": [
+        "As soon as the mobile notification appears late",
+        "Before the station desk reaches six in the evening",
+        "If the customer first went to the wrong bank",
+        "Once the locker has been assigned to the returning courier"
+      ],
+      "answer": 3,
+      "explanation": "The service note gives assignment for return as the limit on supervised collection."
+    },
+    {
+      "prompt": "2. With an eleven-minute clock difference, what is 19:51 on the terminal in network time?",
+      "options": [
+        "19:51",
+        "20:02",
+        "19:40",
+        "19:54"
+      ],
+      "answer": 2,
+      "explanation": "A fast terminal shows eleven minutes later than the real network reading, so subtract eleven."
+    },
+    {
+      "prompt": "2. What does the supervisor warn readers not to assume?",
+      "options": [
+        "That the text for K84 contained any deadline.",
+        "That V31 had a different order reference.",
+        "That a second entrance existed before last month.",
+        "That the earlier log entry came from the person who reported the problem."
+      ],
+      "answer": 3,
+      "explanation": "The person and source of the entered code are unverified."
+    },
+    {
+      "prompt": "2. How does the issue for V31 differ from K84?",
+      "options": [
+        "The correct bank was locked because its notification was never sent.",
+        "The case concerns finding the right bank rather than uncertainty about expiry.",
+        "The customer entered two codes into the same terminal.",
+        "The station did not load V31 until the desk had closed."
+      ],
+      "answer": 1,
+      "explanation": "The text arrived on time, but the person went to the wrong location."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. How does the customer say they identified Bank Twelve?",
+      "options": [
+        "From the old map",
+        "From the text message",
+        "From the other person at the terminal",
+        "From the yellow color of the doors"
+      ],
+      "answer": 1,
+      "explanation": "They remember checking the bank number from the text."
+    },
+    {
+      "prompt": "1. What detail is recorded as an estimate?",
+      "options": [
+        "The written deadline printed in the message",
+        "The time on the customer's phone before entering the hall",
+        "The order reference shown at the desk",
+        "The arrival time of the courier"
+      ],
+      "answer": 1,
+      "explanation": "The customer recalls 7:56 or a minute later; the worker logs that as approximate."
+    },
+    {
+      "prompt": "1. What has to be checked before supervised pickup can be offered?",
+      "options": [
+        "Whether the locker has been assigned for return",
+        "Whether Bank Two has been repainted",
+        "Whether the earlier customer read a different code",
+        "Whether the person can like the new map online"
+      ],
+      "answer": 0,
+      "explanation": "Being on site does not rule out assignment for return."
+    },
+    {
+      "prompt": "2. Why does the team keep the later attempt under review?",
+      "options": [
+        "It happened before the parcel was loaded and so must be an error.",
+        "It proves that the earlier lock time was from Bank Two.",
+        "The time fits the customer's account more closely but does not establish who tried.",
+        "It shows the real time clock in the help page was eleven minutes fast."
+      ],
+      "answer": 2,
+      "explanation": "20:08 terminal time would be 19:57 on the network, a closer but incomplete match."
+    },
+    {
+      "prompt": "2. Where did the V31 customer say they got the wrong bank number?",
+      "options": [
+        "The current text",
+        "An outdated picture of the sign",
+        "The service clock display",
+        "The first desk worker's note"
+      ],
+      "answer": 1,
+      "explanation": "The customer links number two to the old image."
+    },
+    {
+      "prompt": "2. What temporary directions should staff emphasize?",
+      "options": [
+        "The courier name and the color of the doors",
+        "The station reopening schedule and the order code",
+        "The address of the returning courier",
+        "The bank number and the east ticket-hall entrance"
+      ],
+      "answer": 3,
+      "explanation": "The voice memo asks staff to use the number, name the east entrance and avoid color."
+    }
+  ],
+  "grammar": {
+    "focus": "Degrees of certainty about past events",
+    "explanation": "Use must have plus a past participle for a strong deduction from evidence. Use may or might have for a possible explanation. Use can't have for a deduction that conflicts with reliable evidence. A confused timeline seldom justifies certainty about who acted.",
+    "examples": [
+      {
+        "before": "The first attempt must been someone else.",
+        "after": "The first attempt might have been someone else.",
+        "why": "May or might have been expresses a live possibility; it also repairs the verb construction."
+      },
+      {
+        "before": "The worker can't have saw the message at 19:40.",
+        "after": "The worker can't have seen the 19:54 message at 19:40 if the receipt time is correct.",
+        "why": "After have, choose the participle seen. Give the condition that supports the negative deduction."
+      },
+      {
+        "before": "If the clock offset was fixed, the attempt should have happened at 19:57 exactly.",
+        "after": "If the clock offset was fixed at eleven minutes, the 20:08 attempt must have happened at 19:57 network time.",
+        "why": "The number follows from the stated condition. It says nothing about who entered the code."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The notice arrived at 19:54. Without an earlier copy, the customer ___ read that notice at 19:40.",
+        "options": [
+          "must have",
+          "can't have",
+          "should have to",
+          "might has"
+        ],
+        "answer": 1,
+        "explanation": "The stated receipt time makes that earlier reading impossible under the given condition."
+      },
+      {
+        "prompt": "The record could match this customer or a different one. It ___ come from someone else.",
+        "options": [
+          "must have",
+          "can't have",
+          "might have",
+          "might has"
+        ],
+        "answer": 2,
+        "explanation": "Might have leaves the identity uncertain."
+      },
+      {
+        "prompt": "Choose the grammatically correct possibility.",
+        "options": [
+          "The screen may have showed an error for another order.",
+          "The screen may shown an error for another order.",
+          "The screen may has shown an error for another order.",
+          "The screen may have shown an error for another order."
+        ],
+        "answer": 3,
+        "explanation": "May takes have, followed by the participle shown."
+      },
+      {
+        "prompt": "Which states a strong deduction rather than a possibility?",
+        "options": [
+          "The terminal might have been fast.",
+          "The terminal could have been fast.",
+          "The terminal may have been fast.",
+          "The terminal must have been fast if the checked clocks differed this way."
+        ],
+        "answer": 3,
+        "explanation": "Must have marks the strongest affirmative conclusion in the choices."
+      },
+      {
+        "prompt": "The doors were painted only after closing. If the customer arrived before closing, they ___ seen the new color then.",
+        "options": [
+          "can't have",
+          "must have",
+          "need have",
+          "can't has"
+        ],
+        "answer": 0,
+        "explanation": "The earlier arrival rules out seeing the later color."
+      },
+      {
+        "prompt": "Rewrite 'Perhaps the map sent them to Bank Two' as a past possibility.",
+        "options": [
+          "The map may has sent them to Bank Two.",
+          "The map may have sent them to Bank Two.",
+          "The map can't have sent them to Bank Two.",
+          "The map must have send them to Bank Two."
+        ],
+        "answer": 1,
+        "explanation": "May have plus sent conveys an uncertain past cause."
+      },
+      {
+        "prompt": "Which observation should remain tentative until the order is matched?",
+        "options": [
+          "The later attempt must have used K84's code.",
+          "The later attempt can't have used K84's code.",
+          "The later attempt might has used K84's code.",
+          "The later attempt might have used K84's code."
+        ],
+        "answer": 3,
+        "explanation": "Might have keeps open the other possible identities."
+      },
+      {
+        "prompt": "Which report uses a strong deduction with complete verb forms?",
+        "options": [
+          "The earlier log must been recorded at 19:40.",
+          "The earlier log must have be recorded at 19:40.",
+          "The earlier log must have recording at 19:40.",
+          "The earlier log must have been recorded at 19:40 if the offset was unchanged."
+        ],
+        "answer": 3,
+        "explanation": "The passive past deduction uses must have been followed by the participle."
+      }
+    ],
+    "transfer": "Write five lines for a supervisor. Make one firm timing deduction with its assumption, two possible explanations and one impossible interpretation. In the final line, say what next observation could change one guess into a supported finding."
+  },
+  "vocabulary": [
+    {
+      "word": "locker",
+      "meaning": "a small locked cabinet or compartment used for temporary storage",
+      "example": "The driver put the delivery into a station locker.",
+      "pair": "open a locker"
+    },
+    {
+      "word": "terminal",
+      "meaning": "an electronic screen or device used to enter information",
+      "example": "Customers enter the code at the collection terminal.",
+      "pair": "use a terminal"
+    },
+    {
+      "word": "expiry",
+      "meaning": "the time after which something is no longer valid",
+      "example": "The complaint record lists the message and its expiry time.",
+      "pair": "an expiry time"
+    },
+    {
+      "word": "reference",
+      "meaning": "a number or code used to identify a record",
+      "example": "The agent asked for the order reference.",
+      "pair": "quote an order reference"
+    },
+    {
+      "word": "offset",
+      "meaning": "a difference between two measurements from comparable points",
+      "example": "Check the clock offset before comparing the logs.",
+      "pair": "an eleven-minute offset"
+    },
+    {
+      "word": "supervised",
+      "meaning": "watched or managed by a responsible person",
+      "example": "The parcel team can offer supervised pickup in some cases.",
+      "pair": "a supervised collection"
+    },
+    {
+      "word": "assign",
+      "meaning": "set aside a person or thing for a task or destination",
+      "example": "The courier assigned the box to the return route.",
+      "pair": "assign an item for return"
+    },
+    {
+      "word": "log",
+      "meaning": "keep a dated record of an event",
+      "example": "Log the failed attempt separately from the customer's report.",
+      "pair": "log an attempt"
+    },
+    {
+      "word": "tentative",
+      "meaning": "not final because more evidence is needed",
+      "example": "The identity match is a tentative finding.",
+      "pair": "a tentative explanation"
+    },
+    {
+      "word": "reconcile",
+      "meaning": "compare and make two records consistent or explain the difference",
+      "example": "The team had to reconcile the terminal and service times.",
+      "pair": "reconcile two records"
+    },
+    {
+      "word": "elapsed",
+      "meaning": "passed, when speaking of time",
+      "example": "Five minutes had elapsed before the clerk saw the alert.",
+      "pair": "time has elapsed"
+    },
+    {
+      "word": "outdated",
+      "meaning": "no longer accurate because something has changed",
+      "example": "The bank is still marked on the outdated picture.",
+      "pair": "an outdated map"
+    }
+  ],
+  "speaking": {
+    "audience": "A supervisor handling a complaint and a colleague covering the ticket desk",
+    "first": "Give a 2–3 minute handover. Convert both terminal times, distinguish the confirmed clock observation from an inferred match, and present what you can offer to the customer now.",
+    "change": "The courier has just locked in the return route for K84. V31 is still in a locker, and a parent is collecting it after the desk closes.",
+    "second": "Record a new two-minute handover. Say which action is still possible for each parcel, what directions the parent can use, and what response needs a different team.",
+    "checklist": [
+      "Use both reference numbers correctly",
+      "Avoid asking for the full private code",
+      "Make only qualified promises",
+      "Give one fact that could confirm a tentative match"
+    ]
+  },
+  "writing": {
+    "audience": "The customer support lead",
+    "first": "Write a 180–230 word note with the two distinct cases, two normalized time readings, two facts still unknown and one change that would help riders who cannot open a phone message inside.",
+    "change": "The station manager asks for a 100–130 word instruction for the hall sign, where nobody should discuss order numbers aloud.",
+    "second": "Write the public instruction and add a one-line internal note about the circumstance for supervised collection. Make the next action evident for someone who has no mobile data.",
+    "checklist": [
+      "Separate public instructions and internal criteria",
+      "State the right entrance",
+      "Use past modals to signal evidence quality",
+      "Avoid promising immediate replacement or return reversal"
+    ]
+  },
+  "immersion": {
+    "role": "Station parcel service lead",
+    "goal": "Prepare a time reconciliation, low-tech directions and an exception script that two desk workers can both use.",
+    "constraints": [
+      "Never request a full pickup code aloud in public",
+      "Check the assignment for return before offering help",
+      "Network time and terminal time need independent columns"
+    ],
+    "change": "The ticket-hall desk closes thirty minutes early today, and the help page cannot be updated until tomorrow.",
+    "deliverables": [
+      "Create a two-case timeline with normalized times and one unknown for each case",
+      "Draft a readable counter notice with bank and entrance information",
+      "Build a one-page exception tree with the first person, record and decision for each route",
+      "Role-play the closing announcement, then write a paper fallback that avoids a promise to reopen lockers"
+    ],
+    "checklist": [
+      "Any converted time follows the stated offset assumption",
+      "The visitor is sent to a specific place or help route",
+      "The two case explanations are still separate",
+      "No personal code is exposed by the process"
+    ]
+  }
+}

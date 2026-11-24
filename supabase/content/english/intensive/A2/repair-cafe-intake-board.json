@@ -1,0 +1,427 @@
+{
+  "slug": "repair-cafe-intake-board",
+  "title": "The repair café intake board",
+  "level": "A2",
+  "summary": "At a repair café, use the intake board, waiting-room notice and two owners’ requests to update records, ask a polite question, and prepare collection information. The repair plan changes after a volunteer checks an item.",
+  "documents": [
+    {
+      "title": "Saturday intake board",
+      "text": "Saturday 7 March. This board is for desk volunteers. Write a check date when you plan a first look. Write a return date when the owner can collect the item. A return date does not tell you if the item is fixed. A12 is Nila’s blue umbrella. Check it on 7 March. Leave its return date blank until the volunteer speaks to the desk. B08 is Omar’s green bag with a loose handle. Check it on 7 March. Omar can collect it that day from 11:30 to noon. C04 is Bea’s pair of black shoes. Check them on 14 March. Bea can collect them on 14 March from 11:30 to noon."
+    },
+    {
+      "title": "Notice in the waiting room",
+      "text": "Welcome to the repair café. If you bring an item, go to the desk first and tell us what you have brought. Keep the small ticket we give you. You can wait here if a volunteer is looking at your item today. Please leave the chairs by the door free for people who need them. If you need to leave before your item is ready, tell the desk. Come back during the collection time on your ticket. Show it at the desk before you take your item. If you lose your ticket, tell us your name and describe your item. We can use those details to find it on our list."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Nila’s voicemail before the check",
+      "text": "Hi, this is Nila. I’m calling about my blue umbrella, number A12. I left it at your desk at nine this morning. My sister has a blue umbrella too, so I checked the name inside mine before I brought it in. The one at your café is mine. I’ve already tried opening it once at home, but it didn’t stay open. I haven’t tried again. I can answer my phone until eleven today. After that, I’ll be at work, so please send me a text if you have news. Could you tell me if I need to come back today? I don’t have a collection time yet."
+    },
+    {
+      "title": "Omar’s voice reply about the bag",
+      "text": "Hello, it’s Omar, answering your message about B08. Yes, the green bag is mine. My friend carried it to the desk for me this morning because I was at work. He gave me the ticket when he came back, so I have it now. I’ve already taken my lunch box out of the bag, but my bus card is still in the front pocket. I haven’t tried to fix the handle yet. I can get to the café at eleven forty-five today. Please leave the card in the bag. At the desk, I’ll show my ticket and ask for the bag."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "R1. In “Saturday intake board”, what does a return date tell a desk volunteer?",
+      "options": [
+        "When a volunteer first looks at the item",
+        "When the owner can collect the item",
+        "When the owner brought the item",
+        "When the repair was finished"
+      ],
+      "answer": 1,
+      "explanation": "The board says the return date tells you when the owner can collect the item."
+    },
+    {
+      "prompt": "R2. According to “Saturday intake board”, what should the desk do with A12 before the volunteer speaks to them?",
+      "options": [
+        "Book collection at 11:30 on 7 March",
+        "Move the first check to 14 March",
+        "Give the item back as soon as Nila arrives",
+        "Record 7 March as the check date and leave the return date blank"
+      ],
+      "answer": 3,
+      "explanation": "The umbrella has a check on 7 March, and its return date stays blank until the volunteer speaks to the desk."
+    },
+    {
+      "prompt": "R3. A volunteer is making a list of items to check on 7 March. Which items belong on it, according to “Saturday intake board”?",
+      "options": [
+        "The blue umbrella and the green bag",
+        "The green bag and the black shoes",
+        "The blue umbrella and the black shoes",
+        "Only the green bag"
+      ],
+      "answer": 0,
+      "explanation": "The umbrella and bag both have a 7 March check. The shoes have a 14 March check."
+    },
+    {
+      "prompt": "R4. Who can use the 11:30 to noon collection window on 14 March, according to “Saturday intake board”?",
+      "options": [
+        "Nila only",
+        "Omar only",
+        "Bea only",
+        "Omar and Bea"
+      ],
+      "answer": 2,
+      "explanation": "Bea’s shoes have that window on 14 March. Omar’s window is on 7 March."
+    },
+    {
+      "prompt": "R5. In “Notice in the waiting room”, why should people leave the chairs by the door free?",
+      "options": [
+        "So owners have somewhere to put their items",
+        "So people who need those chairs can use them",
+        "So desk staff can sit there at noon",
+        "So volunteers can check items on the chairs"
+      ],
+      "answer": 1,
+      "explanation": "The notice asks visitors to save the chairs by the door for people who need them."
+    },
+    {
+      "prompt": "R6. According to “Notice in the waiting room”, what should you do before leaving if your item is still with the volunteer?",
+      "options": [
+        "Put your ticket on a chair",
+        "Wait by the door for the volunteer",
+        "Write a new collection time on the ticket",
+        "Tell the desk you need to leave"
+      ],
+      "answer": 3,
+      "explanation": "The notice says to tell the desk if you need to leave before your item is ready."
+    },
+    {
+      "prompt": "R7. You are at the desk without your ticket. Which details will help the desk find your item, according to “Notice in the waiting room”?",
+      "options": [
+        "Your name and what the item looks like",
+        "Your check date and the volunteer’s name",
+        "Your arrival time and your phone number",
+        "Your collection time and the number of people waiting"
+      ],
+      "answer": 0,
+      "explanation": "The notice says the desk can find the item using your name and a description of it."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "L1. In “Nila’s voicemail before the check”, how did Nila make sure she brought her own umbrella?",
+      "options": [
+        "She compared it with a photo at the desk.",
+        "She asked her sister to look at it.",
+        "She checked the name inside it.",
+        "She looked for a ticket on it."
+      ],
+      "answer": 2,
+      "explanation": "Nila says that both umbrellas are blue, so she checked the name inside hers."
+    },
+    {
+      "prompt": "L2. Which note about what Nila has already tried matches “Nila’s voicemail before the check”?",
+      "options": [
+        "She tried opening it once at home, but it didn’t stay open.",
+        "She opened it at the desk and it stayed open.",
+        "She tried to open it twice at home.",
+        "She has only looked at it and hasn’t tried to open it."
+      ],
+      "answer": 0,
+      "explanation": "Nila says she tried opening it once at home and hasn’t tried again."
+    },
+    {
+      "prompt": "L3. The desk has news at 11:15. What should it do, according to “Nila’s voicemail before the check”?",
+      "options": [
+        "Call Nila at work.",
+        "Call Nila’s sister.",
+        "Wait for Nila to arrive at noon.",
+        "Send Nila a text."
+      ],
+      "answer": 3,
+      "explanation": "Nila can take calls only until eleven and asks for a text after that."
+    },
+    {
+      "prompt": "L4. What does Nila want the desk to tell her in “Nila’s voicemail before the check”?",
+      "options": [
+        "Whether her sister can bring another umbrella",
+        "Whether she needs to come back today",
+        "Where she left her collection ticket",
+        "Who was at the desk at nine"
+      ],
+      "answer": 1,
+      "explanation": "Nila asks if she needs to come back today because she has no collection time yet."
+    },
+    {
+      "prompt": "L5. Who has the ticket now, according to “Omar’s voice reply about the bag”?",
+      "options": [
+        "The friend who took in the bag",
+        "The volunteer who will check the bag",
+        "Omar",
+        "The person who sent Omar the message"
+      ],
+      "answer": 2,
+      "explanation": "Omar says his friend gave him the ticket when the friend came back."
+    },
+    {
+      "prompt": "L6. A volunteer is making a note about the bus card. What should the note say, according to “Omar’s voice reply about the bag”?",
+      "options": [
+        "Give the card to Omar’s friend.",
+        "Check for the card inside the lunch box.",
+        "Take the card out and keep it at the desk.",
+        "Leave the card in the front pocket."
+      ],
+      "answer": 3,
+      "explanation": "Omar says the card is in the front pocket and asks staff to leave it in the bag."
+    },
+    {
+      "prompt": "L7. In “Omar’s voice reply about the bag”, what does 11:45 refer to?",
+      "options": [
+        "The time Omar can get to the café to ask for his bag",
+        "The time Omar’s friend brought the bag to the desk",
+        "The time the volunteer plans to check the handle",
+        "The time Omar plans to leave the café"
+      ],
+      "answer": 0,
+      "explanation": "Omar says he can get to the café at eleven forty-five and will show his ticket at the desk."
+    }
+  ],
+  "grammar": {
+    "focus": "Present perfect questions and updates with already and yet",
+    "explanation": "Use the present perfect to ask about a step when you want to know the situation now. Start a yes or no question with Have or Has. Then put the person, then the verb form you use after have. Say “Have you checked it yet?” or “Has Bea brought the ticket yet?” Put yet at the end of a question or a negative update. In an update about a step that is complete, put already after have or has. Say “We’ve already checked the bag.” Some forms change, like bring to brought and take to taken. If you say when a finished action happened, use the past simple. Say “We checked it at ten.”",
+    "examples": [
+      {
+        "before": "You have checked A12 yet?",
+        "after": "Have you checked A12 yet?",
+        "why": "Put Have before you in a yes or no question."
+      },
+      {
+        "before": "Omar has already took his lunch box out.",
+        "after": "Omar has already taken his lunch box out.",
+        "why": "Use taken after has. Already goes between has and taken here."
+      },
+      {
+        "before": "We haven’t yet given the bag back yet.",
+        "after": "We haven’t given the bag back yet.",
+        "why": "Use yet once. At the end, it shows the bag is still at the café."
+      },
+      {
+        "before": "Nila has left the umbrella at the desk at nine this morning.",
+        "after": "Nila left the umbrella at the desk at nine this morning.",
+        "why": "The sentence gives the exact time of a finished action, so use left without has."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "You need to know whether Bea has brought her ticket to the café. Which question works?",
+        "options": [
+          "Has Bea bring her ticket yet?",
+          "Does Bea brought her ticket yet?",
+          "Has Bea brought her ticket yet?",
+          "Have Bea brought her ticket yet?"
+        ],
+        "answer": 2,
+        "explanation": "Use has with Bea, then use brought after the subject."
+      },
+      {
+        "prompt": "The keys are out of the pocket now. Give the owner a positive update.",
+        "options": [
+          "I’ve already taken the keys out.",
+          "I’ve already took the keys out.",
+          "I’ve taken the keys out yet.",
+          "I haven’t taken the keys out yet."
+        ],
+        "answer": 0,
+        "explanation": "Already shows the step is complete, and taken follows have."
+      },
+      {
+        "prompt": "The café still has both items. Which line tells the desk that collection is still to come?",
+        "options": [
+          "Both owners have collected their items yet.",
+          "Both owners has already collected their items.",
+          "Both owners haven’t collect their items yet.",
+          "The owners haven’t collected either item yet."
+        ],
+        "answer": 3,
+        "explanation": "Haven’t collected either item yet tells us both items are still at the café."
+      },
+      {
+        "prompt": "You ask the volunteers whether the new list is ready. Choose the correct question.",
+        "options": [
+          "Have yet you written the new list?",
+          "Have you written the new list yet?",
+          "Have you write the new list yet?",
+          "Has you written the new list yet?"
+        ],
+        "answer": 1,
+        "explanation": "Have comes before you, written follows you, and yet comes at the end."
+      },
+      {
+        "prompt": "You know Kai sent the text. Which question asks who received it?",
+        "options": [
+          "Who Kai has sent the text to?",
+          "Who has Kai send the text to?",
+          "Who has sent Kai the text?",
+          "Who has Kai sent the text to?"
+        ],
+        "answer": 3,
+        "explanation": "Kai comes after has, and to shows you are asking about the person who received it."
+      },
+      {
+        "prompt": "Lena finished the first check at 10:20 on 7 March. Which line records when it happened?",
+        "options": [
+          "Lena has checked it at 10:20 on 7 March.",
+          "Lena has already check it at 10:20 on 7 March.",
+          "Lena checked it at 10:20 on 7 March.",
+          "Lena hasn’t checked it yet."
+        ],
+        "answer": 2,
+        "explanation": "The line gives a finished action and its exact time, so use checked without has."
+      },
+      {
+        "prompt": "One volunteer has finished reading the note. Which update can you give the owner?",
+        "options": [
+          "The volunteer has already read your note.",
+          "The volunteer has reads your note already.",
+          "The volunteer have already read your note.",
+          "The volunteer has read your note yet."
+        ],
+        "answer": 0,
+        "explanation": "Use has for one volunteer and put already before read here."
+      },
+      {
+        "prompt": "A colleague asks, “Have you given Ella her ticket yet?” Ella is still waiting for it. Which short reply fits?",
+        "options": [
+          "Yes, she has.",
+          "No, I haven’t.",
+          "No, she hasn’t.",
+          "Yes, I have."
+        ],
+        "answer": 1,
+        "explanation": "Use I to answer a question addressed to you. The ticket is still waiting to be given out."
+      }
+    ],
+    "transfer": "Imagine you open the desk and find two messages. Lee has sent a photo of a hat. Pat’s photo is still missing. Write a two-line update for the volunteer and one question asking Pat about the photo. Underline have or has and circle already or yet. Then change Lee’s update into a dated note saying the photo arrived at 9:10 today. Check that you use the past simple for that line."
+  },
+  "vocabulary": [
+    {
+      "word": "intake",
+      "meaning": "receiving things or people and recording their details",
+      "example": "At intake, I tell the volunteer my name and what is in the box.",
+      "pair": "intake desk"
+    },
+    {
+      "word": "loose",
+      "meaning": "able to move when it should stay firm",
+      "example": "One button on my coat is loose.",
+      "pair": "loose handle"
+    },
+    {
+      "word": "handle",
+      "meaning": "the part of an object you hold to use or carry it",
+      "example": "I hold the handle of the cup because the cup is hot.",
+      "pair": "door handle"
+    },
+    {
+      "word": "pair",
+      "meaning": "two things that go together",
+      "example": "I packed a pair of clean socks.",
+      "pair": "a pair of shoes"
+    },
+    {
+      "word": "check",
+      "meaning": "look at something to find out about it",
+      "example": "Please check the door before we leave.",
+      "pair": "check the label"
+    },
+    {
+      "word": "collect",
+      "meaning": "go somewhere to get something that is waiting for you",
+      "example": "I’ll collect my glasses after lunch.",
+      "pair": "collect a parcel"
+    },
+    {
+      "word": "ticket",
+      "meaning": "a small paper or digital record you can show when asked",
+      "example": "I put the ticket in my pocket after I left my coat at the desk.",
+      "pair": "show your ticket"
+    },
+    {
+      "word": "leave blank",
+      "meaning": "put no words or numbers in a space",
+      "example": "If you don’t have a car, leave the number plate box blank.",
+      "pair": "leave a box blank"
+    },
+    {
+      "word": "look up",
+      "meaning": "find information in a list or record",
+      "example": "I’ll look up the shop’s address before we go.",
+      "pair": "look up an address"
+    },
+    {
+      "word": "describe",
+      "meaning": "say what someone or something is like",
+      "example": "Can you describe the keys you lost?",
+      "pair": "describe an item"
+    },
+    {
+      "word": "ready",
+      "meaning": "finished or available for the next step",
+      "example": "Your sandwich is ready. You can take it now.",
+      "pair": "ready for collection"
+    },
+    {
+      "word": "front pocket",
+      "meaning": "a small space for things on the front of a bag or clothes",
+      "example": "My train ticket is in the front pocket of my backpack.",
+      "pair": "in the front pocket"
+    }
+  ],
+  "speaking": {
+    "audience": "Nila, the owner of the blue umbrella",
+    "first": "Prepare a short call to Nila at 10:00 on 7 March. Read the A12 entry. Nila has tried opening her blue umbrella once. It didn’t stay open, and she hasn’t tried again. She can answer a call until 11:00. Make three note cards for who and what, what she tried, and what the desk knows now. Record both sides of the call in three short turns. Ask if she has tried opening the umbrella again. Use the details above to give her reply. End with the check plan and say that the café hasn’t set a collection time yet.",
+    "change": "At 11:15 on 7 March, the volunteer tells you they checked A12 at 10:50. They can work on it at the next session on 14 March. Nila’s next update must arrive by text no later than 11:00 on 14 March.",
+    "second": "Record a short voice note as practice for a text update to Nila. Keep her name, the item and A12. Replace the planned check with the check that happened. Say that the café hasn’t repaired it yet. Give the date of the next session and explain when and how she will get news.",
+    "checklist": [
+      "I say Nila, blue umbrella and A12 clearly in both takes.",
+      "I ask one present perfect question with yet in the call and give a short reply based on Nila’s message.",
+      "In the second take I say the check happened at 10:50 and use yet for the repair.",
+      "I give 11:00 on 14 March as the time for news by text and leave collection open.",
+      "I listen to both takes and record one unclear line again."
+    ]
+  },
+  "writing": {
+    "audience": "The café desk volunteer who can look up B08 and Omar, who will use the collection ticket",
+    "first": "Reread the B08 entry. Omar has his ticket and can reach the café at 11:45. His bus card is in the green bag’s front pocket, and he wants it to stay there. Make a brief list of details the desk needs and details Omar needs to collect the bag. Write a polite one- or two-sentence lookup query to the desk volunteer. Ask if anyone has checked B08 yet and give enough information to find it. Then make a small printable collection ticket with a heading and separate lines for the item, number, owner, date, window and place. Use the café desk as the collection point. Keep both pieces together and make every line easy to find.",
+    "change": "At 11:20 on 7 March, the volunteer confirms they checked B08 at 11:10. Because the main desk is busy, Omar must collect the bag at the waiting-room side table between 11:40 and noon that day. His 11:45 arrival still works.",
+    "second": "Keep your first query as a record of what you asked. Below it, add one dated desk note recording the check and one line about the bus card. Make a fresh version of the ticket with the new place and window. Keep Omar’s name, the green bag, B08 and the original collection date. Add a line telling him to show the ticket.",
+    "checklist": [
+      "My query sounds polite and gives the desk B08 and a clear item description.",
+      "My query uses a present perfect question with yet.",
+      "My desk note records the 11:10 check on 7 March and says to leave the bus card in the front pocket.",
+      "The revised ticket says 7 March, 11:40 to noon and waiting-room side table.",
+      "The ticket has readable lines for Omar, B08, the green bag and the instruction to show the ticket."
+    ]
+  },
+  "immersion": {
+    "role": "You are starting the 14 March shift at the repair café collection desk.",
+    "goal": "Update the board for the next desk volunteer. Give Bea a clear plan for her shoes. Show when the café needs to contact Nila and what remains open on Omar’s earlier entry.",
+    "constraints": [
+      "Use C04 and both shoes in Bea’s record. The shoes are one item on the board.",
+      "Use the board and the 7 March speaking change to carry forward the information about A12. Its next update is due by text at 11:00 today.",
+      "Use Omar’s 7 March collection details only as a past entry. You have no report that he collected B08.",
+      "Bea says she can return on 21 March and still has her ticket. The café will know on 21 March if the repair is finished.",
+      "The replacement collection point for Bea is the café desk. She can take the shoes home even if the repair is unfinished."
+    ],
+    "change": "At 10:35 on 14 March, the volunteer checks C04. They can start the repair on 21 March at 10:00. Only one item can stay safely on the shelf for the week, and the umbrella was taken to the work table at 10:30 today. Bea can leave the shoes on that shelf, or take them home and bring them back by 10:00 on 21 March. She chooses to leave them. Her new collection window is 11:30 to noon on 21 March.",
+    "deliverables": [
+      "Write three board entries, one per item, with the item number and one clear next action or status. For C04 include the check time, shelf location, next repair session and new collection window.",
+      "Make one replacement ticket for Bea with her name, item number, item, collection date, window and place. Include a short instruction about showing the ticket.",
+      "Write a three- or four-line handover for the next desk volunteer. Say where the umbrella went, what update Nila needs and when, and why the shoes stay on the shelf. Use already or yet once.",
+      "Draft one sentence you can say to Bea if she asks whether she needs to bring the shoes back next week."
+    ],
+    "checklist": [
+      "I mark the C04 check as complete at 10:35 on 14 March and give 21 March at 10:00 as the planned start of repair.",
+      "I use the café desk and 11:30 to noon on 21 March on Bea’s ticket.",
+      "I explain that the shoes stay on the shelf and tell Bea what to do next.",
+      "I give 11:00 on 14 March as Nila’s text update time and record the umbrella’s move to the work table.",
+      "I keep the past collection plan for B08 without marking the bag collected.",
+      "I compare each date and item number on the ticket and handover with the board."
+    ]
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "slug": "c1-the-greenhouse-after-six",
+  "title": "The Greenhouse after Six",
+  "level": "C1",
+  "summary": "Design a greenhouse handover that catches an overnight heating fault without treating incomplete readings as proof.\n\nReading: Rebuild the known sequence from the six o’clock closing check to the following morning using only details you can support from the written sources. Mark where the device log, manual check or spoken report provides different information. Choose and justify the two most useful unknowns for the next handover.\n\nVocabulary: Write four specific notes for a supervisor. Use four unit collocations to separate the instrument, observation, suspected cause and action. Read them back with the technical nouns blanked out and see which reader can still identify exactly what to do.",
+  "documents": [
+    {
+      "title": "Internal incident report",
+      "text": "At six on Wednesday the two display thermometers in the teaching greenhouse both showed eighteen degrees. At seven the next morning the display at the door showed nineteen. In the propagation room, six trays of seedlings on a low bench had wilted. The horticulture team has not confirmed the cause. One of the bench sensors stopped transmitting after midnight and restarted shortly before the morning reading. From the two readings we can recover for that sensor, the room appears to have been at its usual temperature. This does not establish what happened during the gap.\n\nThe heating unit recorded an interruption lasting eleven minutes. The timer belongs to a controller that serves three rooms. Its log does not say which rooms received less heat or whether the interruption caused the wilt. Morning staff found that an inner door beside the low bench would not close properly. We have no record of its position at six the previous evening.\n\nFor the next five nights, staff should take a local reading at two benches before closing and check the inner door. Record the readings even when there is nothing unusual to report. On the first night the maintenance team will put a substitute sensor at the lower bench and leave the display unchanged."
+    },
+    {
+      "title": "Course coordinator’s proposed handover",
+      "text": "The greenhouse is used for morning classes and for evening practice groups. Both groups rely on a whiteboard listing actions for the other shift. At present a tutor adds a note only when something goes wrong. That works if we are certain the tutor looked at all the important places. Yesterday I asked whether a bench had been inspected and was told there had been no problems on it. This turned out to mean that the tutor had not received a report from that end of the room.\n\nI propose a small table with one column for what was checked, one for what was observed, and one for follow-up. The record should identify the location and time. A dash will not do: it can mean that an item was checked and found normal, or that the group was too busy to get there. Tutors should mark ‘not checked’ explicitly and name the next person who can act.\n\nWe should not ask a tired tutor to write an incident report every evening. Most lines should fit into a few plain words. During the five-night test, ask morning staff to mark any entry that they cannot act on without finding its author."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "An outgoing tutor and a morning tutor compare records",
+      "text": "Liz: At the end of my session I wrote, ‘Door fine.’ Does that work in the new table?\n\nJoni: Maybe. Which door did you look at? The main one and the propagation-room one are next to each other near the sill.\n\nLiz: The inner one. I turned the handle and it caught. I didn't go back after the students left through it.\n\nJoni: Then put ‘inner door latched at 17:55’. It says what you know and gives me a reason to check again if people were still moving tools afterwards.\n\nLiz: I was going to put in an explanation about the handle. One student said she had to pull twice last week.\n\nJoni: Keep that in a separate note. If it is in the same box I might read it as something you saw last night. We can tell maintenance where it came from.\n\nLiz: What should I write if I'm moving seedlings at closing and cannot go to the far bench?\n\nJoni: Put ‘not checked’ on it and say what morning staff should do first. If the first shift is on the school visit, name a person from the room next door. We can test whether the record reaches them."
+    },
+    {
+      "title": "Maintenance supervisor’s voice message",
+      "text": "This is Omar from maintenance. I have seen one photograph of the display, taken at seven. It shows a reading from the door thermistor rather than the probe we installed at the lower bench. The app shows a green mark when a device communicates. It does not show a green mark every minute that the temperature is in range. If anyone has understood green that way, please change the instruction on the whiteboard.\n\nThe substitute sensor stores a reading even when the room’s wireless link is unavailable. I will collect the stored data on Friday. Staff have offered to move that sensor to the middle shelf so they can read it without kneeling. I appreciate the offer, but we need it to stay where the problem was found. I can leave a second display higher up if that helps.\n\nThere are two things I want in tomorrow's handover. First, record a bench check with the location as well as the reading. Second, if a number looks unusual, avoid writing ‘heating failure’ as a label for it. Tell me the number and whether the display had recently restarted. I need enough detail to investigate the controller and sensor separately."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Which conclusion does the report rule out?",
+      "options": [
+        "That a controller recorded an interruption.",
+        "That two normal readings establish a normal temperature throughout the night.",
+        "That the inner door would not close properly in the morning.",
+        "That a problem was found at the lower bench."
+      ],
+      "answer": 1,
+      "explanation": "The bench sensor went offline, so the normal readings bracket an unobserved period."
+    },
+    {
+      "prompt": "What change is planned first?",
+      "options": [
+        "Add a substitute sensor at the lower bench.",
+        "Move the wilted trays to probe the source of the fault.",
+        "Replace the door display.",
+        "Give one controller to each class."
+      ],
+      "answer": 0,
+      "explanation": "The report explicitly provides for a substitute sensor while keeping the display."
+    },
+    {
+      "prompt": "Why does the coordinator dislike a dash?",
+      "options": [
+        "Readers cannot distinguish unchecked from checked and normal.",
+        "It is only used in incident reports.",
+        "It makes the display temperature hard to identify.",
+        "A dash names the wrong person to follow up."
+      ],
+      "answer": 0,
+      "explanation": "A single mark currently covers two distinct information states."
+    },
+    {
+      "prompt": "How does the coordinator propose testing the table?",
+      "options": [
+        "Review the original controller interruption.",
+        "Keep reading only when a problem occurs.",
+        "Identify entries whose authors have to be found before staff can act.",
+        "Require both shifts to write full reports."
+      ],
+      "answer": 2,
+      "explanation": "Morning staff will flag entries that fail in use without clarification."
+    },
+    {
+      "prompt": "What does the incident report establish about the controller?",
+      "options": [
+        "The controller caused six trays to wilt.",
+        "The clock stopped because the inner door jammed.",
+        "The propagation room went cold for eleven minutes.",
+        "One interruption occurred; its effects on the rooms are unclear."
+      ],
+      "answer": 3,
+      "explanation": "The shared controller log does not locate or identify effects."
+    },
+    {
+      "prompt": "What do the two documents have in common?",
+      "options": [
+        "They assume an empty field identifies the responsible person.",
+        "They distinguish evidence of ordinary conditions from absence of observation.",
+        "They rule out a heating interruption as a contributor.",
+        "They recommend waiting for a fault before recording temperatures."
+      ],
+      "answer": 1,
+      "explanation": "Both caution against interpreting missing observations as normal ones."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why replace ‘Door fine’ with Liz's revised entry?",
+      "options": [
+        "To preserve a location, time and observation someone can verify.",
+        "To prove a student caused the fault.",
+        "To distinguish the morning sensor from the controller log.",
+        "To establish nobody used the door after the check."
+      ],
+      "answer": 0,
+      "explanation": "Joni wants which door, what was checked, and when."
+    },
+    {
+      "prompt": "Why keep the student’s comment in a separate note?",
+      "options": [
+        "It is an earlier second-hand account.",
+        "It identifies which sensor sent a signal.",
+        "It is a repeat observation Liz made after the check.",
+        "It supplies the confirmed cause of wilt."
+      ],
+      "answer": 0,
+      "explanation": "Joni warns it could be mistaken for something Liz witnessed last night."
+    },
+    {
+      "prompt": "What does a green mark on the app indicate?",
+      "options": [
+        "Staff had performed a manual check.",
+        "A device has communicated.",
+        "The temperatures were within range all night.",
+        "The substitute sensor was moved."
+      ],
+      "answer": 1,
+      "explanation": "Omar separates communication from the measured condition."
+    },
+    {
+      "prompt": "Why should the sensor stay down low?",
+      "options": [
+        "The room’s wireless link reaches only floor level.",
+        "The setting on the display would otherwise change.",
+        "Its placement is relevant to where the fault was noticed.",
+        "Visitors must not be able to read any temperatures."
+      ],
+      "answer": 2,
+      "explanation": "He says the location needs to match where the problem was found."
+    },
+    {
+      "prompt": "What extra information does Omar want with an unusual value?",
+      "options": [
+        "The highest temperature from the door that day",
+        "A diagnosis of the heating controller",
+        "Which students were responsible for closing",
+        "Whether its display had restarted recently"
+      ],
+      "answer": 3,
+      "explanation": "Time and status help him test possible explanations separately."
+    },
+    {
+      "prompt": "What unites both recordings?",
+      "options": [
+        "Tutors should perform maintenance before leaving.",
+        "Staff should discard all second-hand information.",
+        "The whiteboard is only useful for urgent incidents.",
+        "A handover should let the reader separate observation from explanation."
+      ],
+      "answer": 3,
+      "explanation": "Both speakers keep observations specific and other evidence properly labelled."
+    }
+  ],
+  "grammar": {
+    "focus": "Past deductions and competing explanations",
+    "explanation": "Use must have for a strong inference, may have for a live possibility, and can't have where evidence rules a possibility out. Needn't have refers to an unnecessary act that nevertheless occurred. Should have can express an unmet expectation or an assessment of earlier action, rather than proof.",
+    "examples": [
+      {
+        "before": "The sensor must have failed because there is no reading.",
+        "after": "The sensor may have lost its link because there is no reading.",
+        "why": "A gap supports possibilities and does not diagnose the device."
+      },
+      {
+        "before": "The morning group needn't check it yesterday.",
+        "after": "The morning group needn't have checked it yesterday.",
+        "why": "The perfect modal describes a past check that did occur but proved unnecessary."
+      },
+      {
+        "before": "A reboot must finish by now, but we haven’t looked.",
+        "after": "The reboot should have finished by now, but we haven’t looked.",
+        "why": "The speaker reports an expectation without claiming confirmation."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The local data are missing, and either a signal loss or a power cut is possible. Choose appropriately.",
+        "options": [
+          "The wireless link can't have dropped.",
+          "The wireless link needn't have dropped.",
+          "The wireless link may have dropped.",
+          "The wireless link must have dropped."
+        ],
+        "answer": 2,
+        "explanation": "May have gives a plausible hypothesis without ruling out others."
+      },
+      {
+        "prompt": "A photograph shows the inner door open at 05:00. Choose the impossible claim to reject.",
+        "options": [
+          "It should have been closed at handover.",
+          "It may have been closed at 01:00.",
+          "It must have been photographed before opening time.",
+          "It can’t have been closed throughout the night."
+        ],
+        "answer": 3,
+        "explanation": "One counterexample rules out ‘throughout’ without settling other moments."
+      },
+      {
+        "prompt": "They took a second photograph, then found an identical timestamped copy. What conveys unnecessary effort that occurred?",
+        "options": [
+          "They needn't have taken another photograph.",
+          "They didn't have to take another photograph and did not.",
+          "They must have taken another photograph because it was required.",
+          "They can't have taken another photograph."
+        ],
+        "answer": 0,
+        "explanation": "Needn't have points to an act performed but unnecessary."
+      },
+      {
+        "prompt": "A stable live link and a full local record both show the bench probe at seventeen throughout. Which inference has the strongest support?",
+        "options": [
+          "The heating controller must have failed overnight.",
+          "The seedlings needn't have wilted overnight.",
+          "The inner door can't have opened overnight.",
+          "The bench probe must have been recording overnight."
+        ],
+        "answer": 3,
+        "explanation": "The two data sources support probe operation, not separate causes or conditions."
+      },
+      {
+        "prompt": "Which instruction recommends a step that was missed rather than claiming a deduction?",
+        "options": [
+          "The closing tutor can’t have known the location beside the reading.",
+          "The closing tutor should have written the location beside the reading.",
+          "The closing tutor must have written the location beside the reading.",
+          "The closing tutor may have written the location beside the reading."
+        ],
+        "answer": 1,
+        "explanation": "Should have here evaluates a duty that was not fulfilled."
+      },
+      {
+        "prompt": "Which rewording refuses to overstate the link between a restart and a spike?",
+        "options": [
+          "The restart must have accounted for the entire spike.",
+          "The restart needn't have shown a spike.",
+          "The restart might have contributed to the spike.",
+          "The restart couldn't have affected the spike at all."
+        ],
+        "answer": 2,
+        "explanation": "Might have leaves the contribution open for investigation."
+      },
+      {
+        "prompt": "There is only one door on that sensor circuit and a sealed log shows that circuit opened. Which sentence reflects a strong deduction about the circuit’s own door?",
+        "options": [
+          "That door must have opened.",
+          "That door cannot have opened.",
+          "That door should have opened but probably did not.",
+          "That door needn't have opened and remained shut."
+        ],
+        "answer": 0,
+        "explanation": "The combination is presented as sufficient evidence for a strong inference."
+      },
+      {
+        "prompt": "Which says a planned capture was expected by eight even though nobody confirmed it?",
+        "options": [
+          "The logger can't have captured an update by eight.",
+          "The logger should have captured an update by eight.",
+          "The logger must have captured an update by eight.",
+          "The logger needn't have captured an update by eight."
+        ],
+        "answer": 1,
+        "explanation": "Should have can express expectation when actual capture is unverified."
+      }
+    ],
+    "transfer": "Make a four-line evaluation after an invented reading gap. Give one warranted strong inference, one live hypothesis, one ruled-out claim and one missed expectation. Add the specific evidence licensing each form."
+  },
+  "vocabulary": [
+    {
+      "word": "propagation",
+      "meaning": "production of new plants",
+      "example": "The warm bench is reserved for propagation.",
+      "pair": "plant propagation"
+    },
+    {
+      "word": "transmit",
+      "meaning": "send a signal or data",
+      "example": "The sensor transmits a value each minute.",
+      "pair": "transmit readings"
+    },
+    {
+      "word": "interruption",
+      "meaning": "short break in an operation",
+      "example": "A brief interruption stopped the feed.",
+      "pair": "record an interruption"
+    },
+    {
+      "word": "latch",
+      "meaning": "fasten with a small mechanical catch",
+      "example": "The inner door does not latch without a pull.",
+      "pair": "latch the door"
+    },
+    {
+      "word": "handover",
+      "meaning": "transfer of duties or information",
+      "example": "The team changed its handover routine.",
+      "pair": "shift handover"
+    },
+    {
+      "word": "thermistor",
+      "meaning": "device whose electrical resistance varies with temperature",
+      "example": "The door thermistor is wired to the main display.",
+      "pair": "replace a thermistor"
+    },
+    {
+      "word": "probe",
+      "meaning": "part of an instrument that measures at a location",
+      "example": "A technician put the probe beside the tray.",
+      "pair": "temperature probe"
+    },
+    {
+      "word": "spike",
+      "meaning": "sudden sharp increase",
+      "example": "The plot showed a spike after a restart.",
+      "pair": "temporary spike"
+    },
+    {
+      "word": "timestamp",
+      "meaning": "time or date marker attached to a record",
+      "example": "The pictures had a matching timestamp.",
+      "pair": "check a timestamp"
+    },
+    {
+      "word": "baseline",
+      "meaning": "reference value for comparison",
+      "example": "Two evenings of readings gave us a baseline.",
+      "pair": "establish a baseline"
+    },
+    {
+      "word": "corroborate",
+      "meaning": "independently support an account",
+      "example": "The local log corroborated what the display showed.",
+      "pair": "corroborate a finding"
+    },
+    {
+      "word": "actionable",
+      "meaning": "specific enough for someone to act on",
+      "example": "The second note gave an actionable instruction.",
+      "pair": "actionable information"
+    }
+  ],
+  "speaking": {
+    "audience": "Two tutors taking over a shared evening space",
+    "first": "Give a short evidence briefing. Walk through four sample handover entries and explain which observations should go to maintenance and which should stay on the shift board.",
+    "change": "There is a cold reading but no timestamp. The last person who moved the bench sensor is unavailable.",
+    "second": "Make a new briefing for a substitute tutor. Identify what they can safely infer and model the exact message they should leave after going to the room.",
+    "checklist": [
+      "Include a location and time when known.",
+      "Use two past deduction forms accurately.",
+      "Keep the repair team’s task explicit.",
+      "Explain the danger of a status icon."
+    ]
+  },
+  "writing": {
+    "audience": "Head of horticulture before Friday’s sensor collection",
+    "first": "Write a one-page incident update with three sections: established, still possible, and next evidence. Ask for two narrowly defined checks.",
+    "change": "The stored data show a short dip at the low bench while the gateway remains green. Door position is still unknown.",
+    "second": "Write a fresh 300-word update that revises one claim, preserves the chronology and recommends an independent verification.",
+    "checklist": [
+      "Cite exact source evidence.",
+      "Distinguish signal from measurement.",
+      "Use a degree of certainty the log licenses.",
+      "Record what remains unchecked."
+    ]
+  },
+  "immersion": {
+    "role": "Duty coordinator for a teaching greenhouse",
+    "goal": "Design a reliable transition between night and morning groups.",
+    "constraints": [
+      "Staff have four minutes at closing.",
+      "One bench is inconvenient to reach with equipment.",
+      "The report must be readable by a tutor unfamiliar with the rooms.",
+      "The maintenance team needs verifiable details rather than guessed causes."
+    ],
+    "change": "The substitute sensor stays low but the substitute morning tutor must cover another site until 08:30.",
+    "deliverables": [
+      "Produce a handover grid and two fully worked entries.",
+      "Rehearse a phone call that distinguishes a missing fact from a bad reading.",
+      "Send a revised action request and decision trace after the staffing change."
+    ],
+    "checklist": [
+      "Assign an actual owner to unchecked work.",
+      "Keep fault hypotheses separate from observations.",
+      "Use the changed staffing explicitly.",
+      "Preserve the evidence custodian’s access to the local log."
+    ]
+  }
+}

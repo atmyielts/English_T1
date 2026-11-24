@@ -1,0 +1,394 @@
+{
+  "slug": "c1-the-caption-that-arrives-too-soon",
+  "title": "The Caption That Arrives Too Soon",
+  "level": "C1",
+  "summary": "Edit English captions for an imagined short film where a sound is noticed before it is understood.\n\nReading: Make two side-by-side columns for what a viewer hears or sees at each turn. Mark when the source and speaker become knowable, then draft cues at those points. Make the source reveal and the speech identification different sorts of decision.\n\nVocabulary: Choose six caption terms and use them to write two contrasting cue logs. Include one case where a correct word at the wrong moment misleads. Ask a partner to reconstruct both an onset and an overlap from your terms.",
+  "documents": [
+    {
+      "title": "Script supervisor’s notes for a short film",
+      "text": "In the film, Lina waits in a bus shelter while her father looks for the envelope she asked him to bring. For the first minute we hear a small click every time the wind rises. Lina checks the side of the shelter and then walks down to a gate. The camera stays at her shoulder. At one point she turns towards the viewer and says, ‘It’s come loose again.’ The line does not identify the object. Several seconds later the camera moves round the gate and a loose wooden address plaque becomes visible.\n\nThe first caption draft calls the noise ‘number plate clicking in the wind’. That description is accurate after the number appears. Before that, a person listening to the film hears a thin repeated sound rather than its explanation. A caption giving the cause immediately would alter the time of a small discovery that the director wants viewers to share with Lina.\n\nWe also need to keep the sound available when Lina speaks. The last click begins just as she opens her mouth, and her line is brief. It may need two separate captions. Keep any physical explanation out until the picture can confirm it."
+    },
+    {
+      "title": "Accessibility reviewer’s annotated reply",
+      "text": "Keeping back the cause is reasonable. Keeping back the sound isn’t. The first caption I received for review used the word ‘noise’ and was shown once, even though I could see Lina look up again at the second gust. A viewer needs to know that the small sound returns. You could write ‘light clicking’ first and ‘clicking again’ later. Nothing in those words commits the viewer to a place or object.\n\nThere is another moment to revise at the end. The father speaks from behind the camera while Lina looks away. If the caption has no speaker label, it seems she says ‘Found it’ without turning round. Her father has spoken earlier, and a listener recognises his voice immediately. An indication that it is her father should be available from the start of that line. Who is speaking is not a fact the film tries to withhold.\n\nAsk three viewers to mark where they first understood the cause of the clicking and who said ‘Found it’. They may be uncertain about the first answer briefly. There is no reason to design the same uncertainty into the second."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Editor and director try two timed caption versions",
+      "text": "Rafi: In the new cut, Lina looks behind her before the first caption reaches the screen. Shall I move the cue forward one second?\n\nJessa: Put it where the sound begins, not when we understand why she’s looking. If the caption arrives at the shot change, it may look as if it describes the place that comes next.\n\nRafi: I need another two seconds so people can finish reading. Could I shorten it?\n\nJessa: Try ‘faint clicking’. It has the relevant quality and no interpretation. Keep the cue seconds visible in the log so we can try both.\n\nRafi: At the end I offered ‘Man: Found it’. The reviewer says ‘Dad’ might be more useful.\n\nJessa: If we know he’s her father by then, yes. In a clip beginning at the gate maybe ‘Man’ would be all anybody knows. We can have a different cue for the preview.\n\nRafi: And I'll mark which cut the marker belongs to. Last time somebody put the preview captions into a screening with the original opening.\n\nJessa: Run both versions once with the sound down before you export. I want to know what a viewer can work out, not just whether the file has a caption on each line."
+    },
+    {
+      "title": "Reviewer speaks after a screening",
+      "text": "Two viewers thought that the first click came from a bicycle because Lina passed a wheel on the way to the gate. They did not mind finding out later that it came from the wooden address plaque. A third viewer said the second click appeared after she had stopped looking at the gate and thought it referred to something else. I checked the log and the words ‘again’ were correct in the file. They were carried over onto a later shot for longer than planned. The placement worked against what the language said.\n\nOne helpful explanation came from a viewer who had not seen the earlier version. She could choose between two sounds in the street even with the captions on, and could follow when the film stopped making those alternatives plausible. That seems a better standard than getting her to guess the same object before seeing it.\n\nFor the final test I would ask people to identify a change in the sequence, not give them ‘address plaque’ as one of a set of answers before they watch. Their hesitation can reveal what the film still leaves undetermined. A prepared list might reveal the answer itself."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Why delay saying what makes the click?",
+      "options": [
+        "The driver does not want viewers to hear the sound at all.",
+        "The audience is supposed to discover its source when Lina does.",
+        "The label would identify the wrong character.",
+        "The recording has no sound in the early scene."
+      ],
+      "answer": 1,
+      "explanation": "The early sound is available but not its source before the visual reveal."
+    },
+    {
+      "prompt": "What makes the last click especially awkward to caption?",
+      "options": [
+        "It begins just as Lina is speaking.",
+        "It no longer matters once her father speaks.",
+        "It always goes unheard when the wind rises.",
+        "It comes from a completely different gate."
+      ],
+      "answer": 0,
+      "explanation": "The caption may need to coexist with the brief spoken line."
+    },
+    {
+      "prompt": "What information was missing from the reviewer’s initial draft?",
+      "options": [
+        "The first scene has no wind at all.",
+        "Lina addresses somebody before the gate.",
+        "The father speaks behind the camera.",
+        "The sound repeats."
+      ],
+      "answer": 3,
+      "explanation": "One general cue did not reflect that the sound returned."
+    },
+    {
+      "prompt": "Why identify the father early in the final line?",
+      "options": [
+        "The line represents the sound of the envelope opening.",
+        "The film never shows a father and daughter together.",
+        "His voice is recognisable and his identity is not part of the suspense.",
+        "Viewers should know in advance what he finds."
+      ],
+      "answer": 2,
+      "explanation": "The reviewer protects equivalent information that the soundtrack already provides."
+    },
+    {
+      "prompt": "What are reviewers asked to track?",
+      "options": [
+        "When people identify the sound’s cause and who they think speaks",
+        "How many times each character uses a particular word",
+        "How many viewers know the actors outside the film",
+        "Whether captions must follow the same colour in every shot"
+      ],
+      "answer": 0,
+      "explanation": "The proposed two answers test managed delay and speaker recognition separately."
+    },
+    {
+      "prompt": "Where do the sources agree?",
+      "options": [
+        "All speaker identities should come after their lines.",
+        "A caption should provide no sound information while the actor turns.",
+        "Captions should convey a sound before naming its otherwise unconfirmed cause.",
+        "The source of the clicking must remain obscure through the ending."
+      ],
+      "answer": 2,
+      "explanation": "Both want the immediate sound event without premature identification."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What should determine the initial caption onset?",
+      "options": [
+        "When the caption reader looks away",
+        "When the source first appears in the picture",
+        "When the sound starts",
+        "When the wind visibly stops"
+      ],
+      "answer": 2,
+      "explanation": "Jessa specifies sound onset before interpretation."
+    },
+    {
+      "prompt": "Why use a different speaker label in an isolated preview?",
+      "options": [
+        "All viewers are expected to have seen the full film already.",
+        "The preview avoids every speaker label.",
+        "The father's voice is not used in the preview.",
+        "The preview may not establish the man’s relationship to Lina."
+      ],
+      "answer": 3,
+      "explanation": "A label should reflect what is available in that particular cut."
+    },
+    {
+      "prompt": "Why associate each marker with a specific cut?",
+      "options": [
+        "To prevent caption cues for one version being applied to another.",
+        "To hide the start of Lina’s line completely.",
+        "To replace rehearsals with a written explanation.",
+        "To help the director set a new venue price."
+      ],
+      "answer": 0,
+      "explanation": "A version mix-up happened in an earlier screening."
+    },
+    {
+      "prompt": "What made one viewer separate the second click from the first?",
+      "options": [
+        "The director changed the source into a bicycle.",
+        "The file omitted the recurrence entirely.",
+        "The viewer saw the plate earlier than everybody else.",
+        "The cue lingered into a later shot despite saying ‘again’."
+      ],
+      "answer": 3,
+      "explanation": "Timing over a different shot undermined the sensible wording."
+    },
+    {
+      "prompt": "Why did two bicycle guesses not count as failures?",
+      "options": [
+        "The visual screen causes every caption to show a wheel.",
+        "The film permits a tentative source before revealing the number.",
+        "Their choice was the explanation supplied by the director.",
+        "A caption deliberately described a bicycle bell."
+      ],
+      "answer": 1,
+      "explanation": "The reviewer values whether people can revise a plausible guess at the intended moment."
+    },
+    {
+      "prompt": "Why avoid a list of possible causes before testing?",
+      "options": [
+        "It can supply the solution the test is meant to measure.",
+        "It prevents the viewers reading any other word.",
+        "It would shift the length of the film itself.",
+        "It helps identify when Lina looks up."
+      ],
+      "answer": 0,
+      "explanation": "A prepared option can reveal the plaque before the film does."
+    }
+  ],
+  "grammar": {
+    "focus": "Time clauses in ongoing sequences",
+    "explanation": "As and while can place events in overlapping time. Until marks an endpoint. By the time introduces a vantage point by which another event has already happened. As soon as indicates the first available time. Choose precision about any overlap or gap that matters.",
+    "examples": [
+      {
+        "before": "Leave the caption on by Lina’s speech begins.",
+        "after": "Leave the caption on until Lina’s speech begins.",
+        "why": "Until makes the speech an endpoint."
+      },
+      {
+        "before": "By the time the picture changed, she saw the number already.",
+        "after": "By the time the picture changed, she had already seen the number.",
+        "why": "The past perfect explicitly puts seeing before the later change."
+      },
+      {
+        "before": "Display another cue after the two sounds overlap.",
+        "after": "Display another cue while the two sounds overlap.",
+        "why": "While puts the display during the shared time, if that is the intended direction."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The line must stop precisely at the cut. Which fits?",
+        "options": [
+          "Put it on by the time the film ends.",
+          "Keep the line on screen until the cut.",
+          "Keep the line on while the credits roll.",
+          "Start the line after the cut."
+        ],
+        "answer": 1,
+        "explanation": "Until specifies the endpoint rather than a new start."
+      },
+      {
+        "prompt": "Which means the earlier action was complete before the picture changed?",
+        "options": [
+          "By the time the scene changed, she had already turned.",
+          "While the scene changed, she was turning.",
+          "As the scene changed, she started turning.",
+          "Until the scene changed, she waited before turning."
+        ],
+        "answer": 0,
+        "explanation": "By the time and had already turned establish completion before the change."
+      },
+      {
+        "prompt": "Which places reading during the continued sound?",
+        "options": [
+          "Leave the words on screen while the clicking continues.",
+          "Remove the words by the time the clicking begins.",
+          "Do not show the words until the clicking is over.",
+          "Display the words after the clicking has stopped."
+        ],
+        "answer": 0,
+        "explanation": "While keeps display and continued sound overlapping."
+      },
+      {
+        "prompt": "Which starts a caption as promptly as possible after a recognisable event?",
+        "options": [
+          "Add the label only after he stops speaking.",
+          "Add the label before anyone has spoken.",
+          "Add the label as soon as his voice begins.",
+          "Add the label by the closing credits."
+        ],
+        "answer": 2,
+        "explanation": "As soon as binds onset to the first recognition opportunity."
+      },
+      {
+        "prompt": "Which means the cue begins before a new shot and remains after it?",
+        "options": [
+          "The cue begins only after the new shot starts.",
+          "The cue is removed before the shot change.",
+          "The cue stays on screen across the cut.",
+          "The cue stops as soon as the picture cuts."
+        ],
+        "answer": 2,
+        "explanation": "Across the cut describes a span on both sides of the boundary."
+      },
+      {
+        "prompt": "Which states two actions are simultaneous without asserting one caused the other?",
+        "options": [
+          "Lina looked up because the wood clicked.",
+          "The wood clicked in order for Lina to look up.",
+          "Lina’s look made the wood click.",
+          "As Lina looked up, the wood clicked."
+        ],
+        "answer": 3,
+        "explanation": "As places the actions together without committing to a cause."
+      },
+      {
+        "prompt": "Which gives a live instruction using the usual tense in the time clause?",
+        "options": [
+          "We’ll reveal the object when the camera will move.",
+          "We’ll reveal the object when the camera moves.",
+          "We revealed it tomorrow when it moves.",
+          "We will have revealed it until the camera won't move."
+        ],
+        "answer": 1,
+        "explanation": "The future main clause combines with present moves in the dependent time clause."
+      },
+      {
+        "prompt": "Which clarifies that disclosure is forbidden before the reveal?",
+        "options": [
+          "Name the sound's source while it is still concealed.",
+          "Name the sound’s source by the opening shot.",
+          "Do not name the sound’s source while the number is visible.",
+          "Do not name the sound’s source until the number is visible."
+        ],
+        "answer": 3,
+        "explanation": "Not until makes the reveal the first permitted point."
+      }
+    ],
+    "transfer": "Use four different time connectors to write a timing sheet from a 45-second silent clip or sequence you design. Ask a partner to draw the interval where every cue is visible."
+  },
+  "vocabulary": [
+    {
+      "word": "cue",
+      "meaning": "signal or unit that begins at a defined time",
+      "example": "Place the cue at the first click.",
+      "pair": "caption cue"
+    },
+    {
+      "word": "reveal",
+      "meaning": "moment a previously hidden fact becomes known",
+      "example": "The final scene delays the reveal.",
+      "pair": "visual reveal"
+    },
+    {
+      "word": "onscreen",
+      "meaning": "visible on a display",
+      "example": "The title remains onscreen for two seconds.",
+      "pair": "appear onscreen"
+    },
+    {
+      "word": "overlap",
+      "meaning": "share some time or area",
+      "example": "The two voices overlap briefly.",
+      "pair": "overlap in time"
+    },
+    {
+      "word": "caption",
+      "meaning": "text showing speech or significant sound",
+      "example": "The caption indicates the off-screen voice.",
+      "pair": "display a caption"
+    },
+    {
+      "word": "faint",
+      "meaning": "barely noticeable",
+      "example": "A faint click came from the gate.",
+      "pair": "faint sound"
+    },
+    {
+      "word": "linger",
+      "meaning": "remain longer than expected",
+      "example": "The cue lingers after the shot changes.",
+      "pair": "linger onscreen"
+    },
+    {
+      "word": "attribution",
+      "meaning": "assignment to a source or person",
+      "example": "The label helps with speaker attribution.",
+      "pair": "speaker attribution"
+    },
+    {
+      "word": "premature",
+      "meaning": "happening before the right time",
+      "example": "A premature explanation spoils the moment.",
+      "pair": "premature disclosure"
+    },
+    {
+      "word": "off-screen",
+      "meaning": "not visible in the current image",
+      "example": "The reply comes from an off-screen voice.",
+      "pair": "off-screen voice"
+    },
+    {
+      "word": "synchronise",
+      "meaning": "make separate events align in time",
+      "example": "They synchronised the cue with the cut.",
+      "pair": "synchronise with speech"
+    },
+    {
+      "word": "unfold",
+      "meaning": "become clear in stages",
+      "example": "Let the sequence unfold for the viewer.",
+      "pair": "story unfolds"
+    }
+  ],
+  "speaking": {
+    "audience": "Film editor, director and viewer testing the sequence",
+    "first": "Verbally pitch two caption strategies using a ten-line cue sequence for the story. Explain what a viewer should know at two exact moments and perform the scene with somebody reading your captions.",
+    "change": "An independent clip begins on the shot of the gate and omits the father's first appearance.",
+    "second": "Run a new pitch for the shortened clip. Retain the intended suspense where possible and give the appropriate speaker cue for new viewers.",
+    "checklist": [
+      "Preserve sound before diagnosis.",
+      "Use an exact timing boundary.",
+      "Treat visible facts and heard facts independently.",
+      "Test whether the two edits invite different inferences."
+    ]
+  },
+  "writing": {
+    "audience": "Postproduction lead choosing a caption file",
+    "first": "Draft a one-page cue sheet and a 300-word rationale. Provide a sound cue, a speaker cue and a useful review question that avoids revealing the answer.",
+    "change": "A viewer reads ‘clicking again’ at the next scene because the line stays too long.",
+    "second": "Write a fresh technical handoff that corrects timing and preserves reading time. Propose two ways to test if the old confusion is gone.",
+    "checklist": [
+      "Name which edit each cue is for.",
+      "Use equivalent information when one mode is unavailable.",
+      "Make the timing and reasoning consistent.",
+      "Avoid telling the reviewer the expected object before the scene."
+    ]
+  },
+  "immersion": {
+    "role": "Caption editor responsible for two versions of a short film",
+    "goal": "Deliver captions and a testing process that keep the timing of discovery available to viewers.",
+    "constraints": [
+      "The first two clicks must have a readable cue.",
+      "Their source remains unexplained before the reveal.",
+      "A speaker label must be appropriate to each cut.",
+      "Some viewers will test the film with its sound off."
+    ],
+    "change": "The festival requests a shorter edit with a hard cut after the second sound.",
+    "deliverables": [
+      "Produce short and long timing maps with specific cue text.",
+      "Write a short account of which viewer inferences are intended.",
+      "Conduct a blind reading or silent test and document the revised export decision."
+    ],
+    "checklist": [
+      "Deliver separate notes for each cut.",
+      "Explain where each cue starts and stops.",
+      "Leave intentional uncertainty distinct from a missing clue.",
+      "Use test results to support the final timing."
+    ]
+  }
+}

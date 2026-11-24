@@ -1,4 +1,4 @@
-import { edge } from '../../lib/api';
+import { ApiError, edge } from '../../lib/api';
 
 export type ListeningQuestion = { id: string; type: 'mcq'; prompt: string; options: string[]; focus?: 'gist' | 'detail' };
 
@@ -19,7 +19,10 @@ export type ListeningItem = {
   estimated_minutes: number;
 };
 
-export type DictationTarget = { segment_index: number; segment_text: string; focus_phrase: string | null };
+export type DictationTarget = {
+  segment_index: number; segment_text: string; focus_phrase: string | null;
+  starts_at_seconds?: number | null; ends_at_seconds?: number | null;
+};
 export type Segment = DictationTarget;
 
 export type DictationIssue = {
@@ -82,6 +85,13 @@ export const getItem = (slug: string, signal?: AbortSignal) =>
     query: { language_code: 'en' },
     signal,
   });
+
+export const getRecordedSlugs = (signal: AbortSignal) =>
+  edge<{ slugs: string[] }>('listening-content', '/recordings', { query: { language_code: 'en' }, signal })
+    .catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 404) return { slugs: [] };
+      throw error;
+    });
 
 export const submitItem = (slug: string, body: ListeningSubmitBody) =>
   edge<ListeningSubmitResponse>('listening-content', `/items/${encodeURIComponent(slug)}/submit`, {

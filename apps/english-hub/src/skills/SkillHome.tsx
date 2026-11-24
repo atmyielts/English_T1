@@ -1,3 +1,4 @@
+import { IntensiveLink } from '../pages/intensive/IntensiveLink';
 import { Suspense, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
@@ -35,12 +36,14 @@ export const SkillHome = ({
   tools = [],
   extra,
   itemHref = (item) => encodeURIComponent(item.slug),
+  readyItems,
 }: {
   skill: SkillKey;
   tools?: SkillTool[];
   /** Skill-specific panel shown above the library (e.g. the vocabulary notebook). */
   extra?: ReactNode;
   itemHref?: (item: CatalogEntry) => string;
+  readyItems?: ReadonlySet<string>;
 }) => {
   const t = useT();
   const { date } = useI18n();
@@ -60,7 +63,7 @@ export const SkillHome = ({
     [catalog.data],
   );
   const best = catalog.data?.best_scores ?? {};
-  const next = pickNext(items, best, level);
+  const next = pickNext(readyItems ? items.filter((item) => readyItems.has(item.slug)) : items, best, level);
   const levelsPresent = CEFR_LEVELS.filter((entry) => items.some((item) => item.level === entry));
   const visible = filter === 'all' ? items : items.filter((item) => item.level === filter);
   const done = items.filter((item) => best[item.id] !== undefined).length;
@@ -98,6 +101,8 @@ export const SkillHome = ({
         </section>
       ) : null}
 
+      {!paused ? <IntensiveLink skill={skill} level={level} /> : null}
+
       {extra}
 
       <div className="en-grid-2">
@@ -120,6 +125,7 @@ export const SkillHome = ({
             <ul className="en-list">
               {visible.map((item) => {
                 const score = best[item.id];
+                const comingSoon = readyItems && !readyItems.has(item.slug);
                 const content = (
                   <>
                     <span className={`en-check ${score !== undefined ? 'is-done' : ''}`.trim()} aria-hidden="true">{score !== undefined ? '✓' : ''}</span>
@@ -129,13 +135,13 @@ export const SkillHome = ({
                     </span>
                     <span className="en-item-meta">
                       {item.level ? <LevelBadge level={item.level} muted={item.level !== level} /> : null}
-                      <Tag>{t('common.minutesShort', { count: item.minutes })}</Tag>
+                      <Tag>{comingSoon ? t('intensive.audioSoon') : t('common.minutesShort', { count: item.minutes })}</Tag>
                     </span>
                   </>
                 );
                 return (
                   <li key={item.id}>
-                    {locked ? <div className="en-item">{content}</div> : <Link className={`en-item ${score !== undefined ? 'is-done' : ''}`.trim()} to={itemHref(item)}>{content}</Link>}
+                    {locked || comingSoon ? <div className="en-item">{content}</div> : <Link className={`en-item ${score !== undefined ? 'is-done' : ''}`.trim()} to={itemHref(item)}>{content}</Link>}
                   </li>
                 );
               })}

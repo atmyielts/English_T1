@@ -1,0 +1,394 @@
+{
+  "slug": "b1-what-to-put-in-the-harvest-box",
+  "title": "What to Put in the Harvest Box",
+  "level": "B1",
+  "summary": "Check two lists, assemble fair boxes from a school garden and tell families exactly when they can collect them.",
+  "documents": [
+    {
+      "title": "Instructions on the garden gate",
+      "text": "This Friday, the school garden will give out eight free harvest boxes to families. Six families have chosen the standard box. Two asked for a box without onions. The volunteer making each box should start with two cucumbers and four tomatoes. Then add one bunch of onions to each standard box. Use a white label for the standard box and a yellow label for the box with no onions. Write the collection name on the label, whichever color you use. Put the ready boxes on the long table in the shade of the gate. They can be collected from three until a quarter to four. If a family cannot come during that time, ask them to reply by two to make a new plan. There is no need to pick extra vegetables just in case. The small tomatoes next to the shed need another week to grow. If we run short, speak to the garden lead before promising that a box is ready."
+    },
+    {
+      "title": "Marta checks the harvest",
+      "text": "I counted sixteen cucumbers and thirty tomatoes ready for Friday. Two more tomatoes will probably be ready in the morning, but leave them on the plant now. I checked the reserve box inside the shed as well. It has four cucumbers left from Wednesday and no tomatoes. The cucumbers are fine, but tell people they should use those first. The onions are already in six bunches. All eight empty boxes are under the long table. I moved the two yellow labels to the first drawer in the shed because they were blowing away. While I was there, I found a note from a family called Karim. They were on last month's list but are not on my copy of the list for this Friday. Please check the online list before writing their name on a label. A spare empty box is not a sign that an extra family can collect vegetables this week. If both tomatoes are ready on Friday, we will only have enough for the eight boxes we planned."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "The first family calls",
+      "text": "Parent: Hello. I am calling about the box for Nora Salim. The note says she can collect it from three. Could she come at ten to four? Her music lesson runs a little late.\n\nVolunteer: We finish collecting at a quarter to four, so ten to four is past the usual time. I can ask the garden lead about leaving it somewhere different. Is your box the standard one?\n\nParent: No, we asked for no onions. Also, Nora's brother could collect it instead if you can leave the box by the school office. He's normally there at three fifteen.\n\nVolunteer: That might be easier. Can you give me his first name so I can make a note beside Nora's?\n\nParent: Yes, it's Ilya. Let me check with him. Can I text the garden number before two?\n\nVolunteer: Please do. The garden lead will look at the messages then, and we can keep your collection name on the yellow label until we hear back."
+    },
+    {
+      "title": "A volunteer checks the shelf",
+      "text": "Lee: I can see some tomatoes in these boxes already. Have you finished all eight?\n\nMarta: Seven. I took the two ripe tomatoes from the plant this morning, but one of the thirty in the tray is split. The last box only has three good tomatoes.\n\nLee: Can I add a piece of cucumber to that family box?\n\nMarta: Let's ask the garden lead. One of the families on the standard list said they would take a smaller share if we were short. We can't assume that means they want a different vegetable. Please check which name it was.\n\nLee: I can read the collection list, but I can't see where their reply was saved.\n\nMarta: Look in the messages with a green star. I marked it just before lunch. If there's no answer about the cucumber by the time they come, say what is in the box before you hand it over.\n\nLee: I'll cross off the fourth tomato on the list, too, so the count stays right."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What should be on all eight labels?",
+      "options": [
+        "An onion symbol",
+        "A time for each family",
+        "A collection name",
+        "A message saying what is missing"
+      ],
+      "answer": 2,
+      "explanation": "Both label colors need the name of the person collecting."
+    },
+    {
+      "prompt": "1. How many tomatoes are needed for the planned boxes?",
+      "options": [
+        "30",
+        "32",
+        "16",
+        "24"
+      ],
+      "answer": 1,
+      "explanation": "Eight boxes with four tomatoes each require 32."
+    },
+    {
+      "prompt": "1. What should a volunteer do if there is not enough produce?",
+      "options": [
+        "Pick all of the small tomatoes immediately.",
+        "Leave families to divide vegetables on the table.",
+        "Promise everybody a larger box next week.",
+        "Check with the garden lead first."
+      ],
+      "answer": 3,
+      "explanation": "A lead must be consulted before a box is promised."
+    },
+    {
+      "prompt": "2. What should a family be told if older cucumbers are added?",
+      "options": [
+        "Bring them back if they are split.",
+        "Store them at the gate until next week.",
+        "Use those cucumbers first.",
+        "Take only one new cucumber."
+      ],
+      "answer": 2,
+      "explanation": "The reserve cucumbers are usable but should be eaten ahead of the fresh ones."
+    },
+    {
+      "prompt": "2. What does the note about the Karim family indicate?",
+      "options": [
+        "A ninth box must be prepared immediately.",
+        "Their label was moved to the drawer.",
+        "The volunteer has to verify the current list.",
+        "They asked for cucumbers instead of onions."
+      ],
+      "answer": 2,
+      "explanation": "A note and a name from last month do not confirm a booking this week."
+    },
+    {
+      "prompt": "2. How could the eight-box tomato count be met before damage is noticed?",
+      "options": [
+        "Find two tomatoes in the reserve box.",
+        "Return the small tomatoes to the garden next week.",
+        "Ask two of the families to share a box.",
+        "Use the 30 counted and two more that ripen by morning."
+      ],
+      "answer": 3,
+      "explanation": "The tray has 30 and two more may become ready, with no tomatoes in reserve."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What problem does the parent raise at the start?",
+      "options": [
+        "A box was labeled with the wrong family name.",
+        "Nora did not order onions but received them.",
+        "The school office is closing at three fifteen.",
+        "Nora could arrive after the collection period."
+      ],
+      "answer": 3,
+      "explanation": "Her music lesson could delay her until ten to four, five minutes after the usual end."
+    },
+    {
+      "prompt": "1. Which possible solution still has to be checked?",
+      "options": [
+        "Nora goes to her lesson with the box already packed.",
+        "The garden lead gives Nora a different label.",
+        "Nora's brother collects near the school office at 3:15.",
+        "The volunteer packs onions in Nora's box for her brother."
+      ],
+      "answer": 2,
+      "explanation": "The parent suggests Ilya could collect, then says she must check with him."
+    },
+    {
+      "prompt": "1. What will happen to the collection label for now?",
+      "options": [
+        "It will be switched to white.",
+        "It will show a time of 3:50.",
+        "It will keep Nora's name.",
+        "It will go into the green-star folder."
+      ],
+      "answer": 2,
+      "explanation": "The volunteer explicitly keeps the current name on the yellow label until a reply."
+    },
+    {
+      "prompt": "2. Why does the final box have only three tomatoes?",
+      "options": [
+        "One tomato in the earlier count was split.",
+        "One family took a box before it was finished.",
+        "The two tomatoes on the plant were not ripe.",
+        "Lee used the fourth to mark the next list."
+      ],
+      "answer": 0,
+      "explanation": "The two new tomatoes were picked, but one of the original thirty became unusable."
+    },
+    {
+      "prompt": "2. What does Marta want Lee to check in the messages?",
+      "options": [
+        "Whether the first seven boxes have been placed in the shade",
+        "Which family volunteered to take a smaller share",
+        "Whether the spare cucumbers are still at the gate",
+        "Which volunteer picked the new tomatoes"
+      ],
+      "answer": 1,
+      "explanation": "A green-star message records which standard-box family had offered to take less."
+    },
+    {
+      "prompt": "2. What should the volunteer say if the change is not agreed by collection time?",
+      "options": [
+        "Say there is an extra tomato in the next box.",
+        "Promise a cucumber replacement without asking.",
+        "Ask the family to take an unmarked box.",
+        "Tell the family exactly what is in the box."
+      ],
+      "answer": 3,
+      "explanation": "Marta advises describing actual contents before handing over the box."
+    }
+  ],
+  "grammar": {
+    "focus": "Countable quantities and enough",
+    "explanation": "Use many or a number with countable plural items like tomatoes. Use much with uncountable amounts like space or time. Enough works before a noun. Place enough after an adjective such as ripe.",
+    "examples": [
+      {
+        "before": "There aren't much tomatoes in the reserve box.",
+        "after": "There aren't many tomatoes in the reserve box.",
+        "why": "Tomatoes are countable plural items."
+      },
+      {
+        "before": "Are there boxes enough for eight shares?",
+        "after": "Are there enough boxes for eight shares?",
+        "why": "Enough usually comes before the noun."
+      },
+      {
+        "before": "The tomatoes are not enough ripe yet.",
+        "after": "The tomatoes are not ripe enough yet.",
+        "why": "Enough follows the adjective ripe."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "How ___ boxes have yellow labels?",
+        "options": [
+          "much",
+          "many",
+          "a lot",
+          "enough of"
+        ],
+        "answer": 1,
+        "explanation": "Use how many for a number of countable boxes."
+      },
+      {
+        "prompt": "There isn't ___ space on the short table for all eight boxes.",
+        "options": [
+          "much",
+          "many",
+          "a few",
+          "several"
+        ],
+        "answer": 0,
+        "explanation": "Space has an uncountable meaning here."
+      },
+      {
+        "prompt": "The vegetables are fresh ___ to give to someone today.",
+        "options": [
+          "enough",
+          "a lot",
+          "plenty of",
+          "much of"
+        ],
+        "answer": 0,
+        "explanation": "Enough follows the adjective fresh."
+      },
+      {
+        "prompt": "We have thirty good tomatoes, but that is not ___ for eight standard shares of four.",
+        "options": [
+          "many of",
+          "enough",
+          "a few",
+          "several of"
+        ],
+        "answer": 1,
+        "explanation": "Enough means the amount needed for the planned use."
+      },
+      {
+        "prompt": "Which phrase means a small number of names?",
+        "options": [
+          "A little names",
+          "A name many",
+          "Much names",
+          "A few names"
+        ],
+        "answer": 3,
+        "explanation": "A few modifies a plural count noun."
+      },
+      {
+        "prompt": "We have ___ cucumbers from Wednesday, so we can complete this box.",
+        "options": [
+          "a little",
+          "a few",
+          "much",
+          "any much"
+        ],
+        "answer": 1,
+        "explanation": "Cucumbers are countable, and a few is a usable small amount."
+      },
+      {
+        "prompt": "Which asks about the amount of time before the list closes?",
+        "options": [
+          "How many time is left?",
+          "How much time is left?",
+          "How many times are left?",
+          "Is it much the time left?"
+        ],
+        "answer": 1,
+        "explanation": "How much asks about an uncountable amount of time."
+      },
+      {
+        "prompt": "There is ___ room in the second drawer for the two labels.",
+        "options": [
+          "many",
+          "a few",
+          "several",
+          "enough"
+        ],
+        "answer": 3,
+        "explanation": "Enough can modify the uncountable noun room."
+      }
+    ],
+    "transfer": "Add three things to a box inventory and make up four counts. Write a 100-word handover using many, much, enough before a noun, and enough after an adjective. Ask a partner to identify each shortage."
+  },
+  "vocabulary": [
+    {
+      "word": "harvest",
+      "meaning": "take ripe food from a plant or field",
+      "example": "We harvest the tomatoes on Friday morning.",
+      "pair": "harvest vegetables"
+    },
+    {
+      "word": "standard",
+      "meaning": "following the usual type or plan",
+      "example": "A standard box includes onions.",
+      "pair": "the standard box"
+    },
+    {
+      "word": "onion bunch",
+      "meaning": "a group of onions tied or held together",
+      "example": "Place one onion bunch next to the cucumbers.",
+      "pair": "add an onion bunch"
+    },
+    {
+      "word": "in the shade",
+      "meaning": "away from direct sunlight",
+      "example": "The long table is in the shade.",
+      "pair": "leave boxes in the shade"
+    },
+    {
+      "word": "collect",
+      "meaning": "go somewhere and get something",
+      "example": "Nora will collect her box after school.",
+      "pair": "collect a box"
+    },
+    {
+      "word": "run short",
+      "meaning": "have less than you need",
+      "example": "We may run short of ripe vegetables.",
+      "pair": "run short of tomatoes"
+    },
+    {
+      "word": "ripe",
+      "meaning": "fully grown and ready to eat",
+      "example": "Pick a tomato only when it is ripe.",
+      "pair": "a ripe tomato"
+    },
+    {
+      "word": "reserve",
+      "meaning": "kept in case extra supplies are needed",
+      "example": "The reserve box had four cucumbers.",
+      "pair": "a reserve supply"
+    },
+    {
+      "word": "split",
+      "meaning": "cracked or opened into two parts",
+      "example": "A split tomato cannot go into the box.",
+      "pair": "a split tomato"
+    },
+    {
+      "word": "share",
+      "meaning": "one person's part of a larger amount",
+      "example": "We have a smaller share for the last group.",
+      "pair": "a fair share"
+    },
+    {
+      "word": "mark",
+      "meaning": "put a sign or label on something",
+      "example": "Marta marked the reply with a star.",
+      "pair": "mark a message"
+    },
+    {
+      "word": "hand over",
+      "meaning": "give something directly to someone",
+      "example": "Check the name before you hand over the box.",
+      "pair": "hand over a box"
+    }
+  ],
+  "speaking": {
+    "audience": "A new volunteer preparing the remaining family boxes",
+    "first": "Give a two-minute handover using the notice and the harvest figures. Explain what goes in each kind of box, how to label it and what to say about an older cucumber.",
+    "change": "One tomato is unusable and a family has said they can take a smaller share, but you cannot find that reply.",
+    "second": "Make a second one-minute handover and role-play a polite question to the garden lead. Explain what you will tell the family if its box is short.",
+    "checklist": [
+      "Use the correct label colors",
+      "Give quantities without guessing",
+      "State the normal collection end",
+      "Suggest a next step for the shortage"
+    ]
+  },
+  "writing": {
+    "audience": "The Salim family",
+    "first": "Write a 110–140 word reply giving the usual collection window, confirming the no-onion box, and telling the family which person's name will be used until they confirm a change.",
+    "change": "The office will close at three. The garden lead can hold the box at the gate until 3:45 but needs the brother's name confirmed before two.",
+    "second": "Write a 70–100 word text directly to the parent explaining the revised choice. Make the request clear and offer a time within the window.",
+    "checklist": [
+      "Keep the tone friendly",
+      "Separate the usual and changed arrangements",
+      "Use accurate numbers and names",
+      "Check that the family knows how and when to reply"
+    ]
+  },
+  "immersion": {
+    "role": "School garden table lead",
+    "goal": "Make a visible collection and inventory system for eight boxes that can handle one damaged item.",
+    "constraints": [
+      "Two no-onion boxes have yellow labels",
+      "No more than 31 good tomatoes are available after the damage",
+      "The gate team takes normal collection only until 3:45"
+    ],
+    "change": "Two families arrive together. One person knows the correct name but not the label color, and another asks to collect a neighbor's box.",
+    "deliverables": [
+      "Make a box-count and actual-content table and mark the shortage",
+      "Write a label key and a 60-word table sign",
+      "Build a three-question collection check that does not reveal private details on the sign",
+      "Role-play two handovers and revise one confusing question"
+    ],
+    "checklist": [
+      "The table total matches actual contents",
+      "Labels identify people and box types",
+      "The exception message says what help is available",
+      "The collection system works for two people at once"
+    ]
+  }
+}

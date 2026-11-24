@@ -1,0 +1,403 @@
+{
+  "slug": "two-clocks-at-the-bakery-counter",
+  "title": "Two clocks at the bakery counter",
+  "level": "A1",
+  "summary": "It is your first day at the bakery counter. Use a job card and a tea-break note to find out who puts each bag on the pickup shelf. Check which clock works. Then tell a customer where and when to get their bread, and write a four-line card for a helper.",
+  "documents": [
+    {
+      "title": "Morning Job Card",
+      "text": "Nina opens the door at 9:00. Customers wait by the door before it opens. The pickup shelf is next to the counter. There are two bags for pickup this morning. The white bag has rye bread. Nina puts it on the shelf at 9:10. The blue bag has oat bread. Ben puts it on the shelf at 9:20. These are the first times customers can get the bags. Customers can also come later, before 10:00. Use the shelf clock for the pickup times. At the counter, ask each customer for the name of their bread. Then show them the pickup shelf."
+    },
+    {
+      "title": "Note for the Tea Break",
+      "text": "Hi Jo,\nI start my tea break at 9:15. I come back to the counter at 9:30. Ben stays at the counter with you. The white bag is on the pickup shelf before I go. The blue bag is still behind the counter when I leave. Ben puts it on the shelf at the time on the job card. If someone comes early for the blue bag, show them the chair by the window. They can wait there. There is a small card and a pen next to the chair. Write the bread name on the card if a customer wants a note.\nThanks,\nNina"
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Nina Shows Jo the Counter",
+      "text": "Hi, Jo. Come to the counter with me. I open the door at nine. Look, the first two customers are here. They wait by the door while I open it. Now look at the shelf clock. It says nine ten. I have the white bag in my hand. This bag has rye bread. I put it on the pickup shelf now. See the shelf next to the counter? That is where the customers get it. The blue bag is for oat bread. It stays behind the counter for now. Leave that bag there. Ben comes to put it out later."
+    },
+    {
+      "title": "Ben's Message for Jo",
+      "text": "Hi, Jo. It's Ben. Here's a quick message about the clocks. I check the two clocks before I put out the blue bag. First the shelf clock says nine fifteen. Five minutes later it says nine twenty. The door clock says eight fifty both times. The door clock has stopped. Use the shelf clock today. It is nine twenty now. I put the blue bag on the pickup shelf now. It has the oat bread. A customer is in the chair by the window. Please tell her the oat bread is ready. She can come to the shelf and get it."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "In Morning Job Card, what time does Nina open the door?",
+      "options": [
+        "9:10",
+        "9:20",
+        "9:00",
+        "10:00"
+      ],
+      "answer": 2,
+      "explanation": "The first line says Nina opens the door at 9:00."
+    },
+    {
+      "prompt": "In Morning Job Card, which line tells you what to do when a customer comes to the counter?",
+      "options": [
+        "Ask for the name of their bread.",
+        "Put the blue bag behind the counter.",
+        "Sit in the chair by the window.",
+        "Write the time on the white bag."
+      ],
+      "answer": 0,
+      "explanation": "Near the end, the card tells the helper to ask each customer for the bread name."
+    },
+    {
+      "prompt": "You read 9:12 on the shelf clock. In Morning Job Card, which bag can a customer get now?",
+      "options": [
+        "Only the blue bag",
+        "Both bags",
+        "Neither bag",
+        "Only the white bag"
+      ],
+      "answer": 3,
+      "explanation": "The white bag goes on the shelf at 9:10 and the blue bag goes out at 9:20."
+    },
+    {
+      "prompt": "In Note for the Tea Break, how long is Nina away from the counter?",
+      "options": [
+        "Five minutes",
+        "Fifteen minutes",
+        "Ten minutes",
+        "Thirty minutes"
+      ],
+      "answer": 1,
+      "explanation": "Nina leaves at 9:15 and says she comes back at 9:30, fifteen minutes later."
+    },
+    {
+      "prompt": "What does Note for the Tea Break help Jo do?",
+      "options": [
+        "Find out how to open the bakery door",
+        "Learn how to check the two clocks",
+        "Help customers while Nina is away",
+        "Choose a new pickup time for both bags"
+      ],
+      "answer": 2,
+      "explanation": "Nina gives her break times and tells Jo where early customers can wait."
+    },
+    {
+      "prompt": "In Note for the Tea Break, someone comes early for the blue bag and wants a note. What does Jo write?",
+      "options": [
+        "The bread name",
+        "Ben's name",
+        "Nina's return time",
+        "The bag color"
+      ],
+      "answer": 0,
+      "explanation": "Nina says to write the bread name on the small card."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In Nina Shows Jo the Counter, where do the first two customers wait?",
+      "options": [
+        "By the window",
+        "By the door",
+        "At the pickup shelf",
+        "Behind the counter"
+      ],
+      "answer": 1,
+      "explanation": "Nina says the first two customers wait by the door while she opens it."
+    },
+    {
+      "prompt": "In Nina Shows Jo the Counter, what does Nina put on the pickup shelf?",
+      "options": [
+        "The blue bag",
+        "A clock",
+        "A name card",
+        "The white bag"
+      ],
+      "answer": 3,
+      "explanation": "Nina says she has the white bag in her hand and puts it on the shelf now."
+    },
+    {
+      "prompt": "In Nina Shows Jo the Counter, where should Jo leave the oat bread for now?",
+      "options": [
+        "Behind the counter",
+        "On the pickup shelf",
+        "In the chair",
+        "By the door"
+      ],
+      "answer": 0,
+      "explanation": "Nina says the blue bag has oat bread and stays behind the counter for now."
+    },
+    {
+      "prompt": "In Ben's Message for Jo, what does Ben do first?",
+      "options": [
+        "He puts the blue bag on the shelf.",
+        "He speaks to the customer in the chair.",
+        "He checks the two clocks.",
+        "He takes the white bag to the counter."
+      ],
+      "answer": 2,
+      "explanation": "Ben says he checks the two clocks before he puts out the blue bag."
+    },
+    {
+      "prompt": "In Ben's Message for Jo, how does Ben know the door clock has stopped?",
+      "options": [
+        "It reads 9:15 when he first looks.",
+        "It says 8:50 both times he looks.",
+        "It shows the same time as the shelf clock.",
+        "It moves five minutes ahead of the shelf clock."
+      ],
+      "answer": 1,
+      "explanation": "The shelf clock moves from 9:15 to 9:20 while the door clock stays at 8:50."
+    },
+    {
+      "prompt": "In Ben's Message for Jo, what can Jo tell the customer in the chair?",
+      "options": [
+        "Your rye bread is ready by the door.",
+        "Your oat bread is still behind the counter.",
+        "Your oat bread is ready at 9:30.",
+        "Your oat bread is ready now on the pickup shelf."
+      ],
+      "answer": 3,
+      "explanation": "Ben puts the blue bag on the shelf at 9:20 and says the oat bread is ready."
+    }
+  ],
+  "grammar": {
+    "focus": "Present simple for one person and for two or more people",
+    "explanation": "Use the present simple to say what people do at work or on a plan. When the subject is one person’s name, he or she, add s to verbs like open, start, put and wait. Say “Nina opens the door” and “Ben puts the bag on the shelf.” With two names, a plural noun like customers, or they, use the verb with no s. Say “Nina and Ben open the door” and “Customers wait by the door.” When you change the person in a sentence, look at the verb again. Circle who does the action. Underline the verb. Then read the whole line with its time or place.",
+    "examples": [
+      {
+        "before": "Nina and Ben open the door at nine.",
+        "after": "Nina opens the door at nine.",
+        "why": "Nina is one person, so open changes to opens."
+      },
+      {
+        "before": "Jo starts work at nine.",
+        "after": "Jo and Ben start work at nine.",
+        "why": "Jo and Ben are two people, so starts changes to start."
+      },
+      {
+        "before": "The customers put their cards on the table.",
+        "after": "The customer puts her card on the table.",
+        "why": "The customer is one person, so put changes to puts."
+      },
+      {
+        "before": "The helper waits by the door.",
+        "after": "The helpers wait by the door.",
+        "why": "The helpers are two or more people, so waits changes to wait."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "A job card gives Kim's usual first job. Which line is correct?",
+        "options": [
+          "Kim open the side door at eight.",
+          "Kim opening the side door at eight.",
+          "Kim opens the side door at eight.",
+          "Kim to open the side door at eight."
+        ],
+        "answer": 2,
+        "explanation": "Kim is one person, so the present simple verb is opens."
+      },
+      {
+        "prompt": "Eva and Sam have the same break time every day. Which line is correct?",
+        "options": [
+          "Eva and Sam start their break at ten.",
+          "Eva and Sam starts their break at ten.",
+          "Eva and Sam starting their break at ten.",
+          "Eva and Sam to start their break at ten."
+        ],
+        "answer": 0,
+        "explanation": "Eva and Sam are two people, so use start without s."
+      },
+      {
+        "prompt": "A note says “Mila puts the name cards on the table.” Now Mila and Dan do the job together. Which new line is correct?",
+        "options": [
+          "Mila and Dan puts the name cards on the table.",
+          "Mila and Dan putting the name cards on the table.",
+          "Mila and Dan to put the name cards on the table.",
+          "Mila and Dan put the name cards on the table."
+        ],
+        "answer": 3,
+        "explanation": "The new subject has two names, so puts changes to put."
+      },
+      {
+        "prompt": "Use she for Rosa. Which line says where Rosa usually waits?",
+        "options": [
+          "She wait by the stairs.",
+          "She waits by the stairs.",
+          "She waiting by the stairs.",
+          "She to wait by the stairs."
+        ],
+        "answer": 1,
+        "explanation": "The subject she means one person, so wait takes an s."
+      },
+      {
+        "prompt": "A sign says where people wait each morning. Which line is correct?",
+        "options": [
+          "The visitors wait by the gate.",
+          "The visitors waits by the gate.",
+          "The visitors waiting by the gate.",
+          "The visitors to wait by the gate."
+        ],
+        "answer": 0,
+        "explanation": "The visitors means more than one person, so use wait without s."
+      },
+      {
+        "prompt": "The old line says “Lee and Pat start at eight.” Today only Lee starts at eight. Which line fits?",
+        "options": [
+          "Lee starting at eight.",
+          "Lee start at eight.",
+          "Lee to start at eight.",
+          "Lee starts at eight."
+        ],
+        "answer": 3,
+        "explanation": "The new subject is Lee alone, so start changes to starts."
+      },
+      {
+        "prompt": "Choose the correct pair of lines for a work plan.",
+        "options": [
+          "Amir open the door. The helpers waits outside.",
+          "Amir opens the door. The helpers waits outside.",
+          "Amir opens the door. The helpers wait outside.",
+          "Amir open the door. The helpers wait outside."
+        ],
+        "answer": 2,
+        "explanation": "Amir takes opens because he is one person, and the helpers takes wait because it is plural."
+      },
+      {
+        "prompt": "A note says “Omar puts the pens by the sign.” Replace Omar with he and keep the same job. Which line fits?",
+        "options": [
+          "He put the pens by the sign.",
+          "He puts the pens by the sign.",
+          "He putting the pens by the sign.",
+          "He to put the pens by the sign."
+        ],
+        "answer": 1,
+        "explanation": "He still means one person, so the verb stays puts."
+      }
+    ],
+    "transfer": "Make a two-line plan for a meeting room. Ava opens the room at six. The visitors wait by the stairs. Now write a new plan for two changes. Ava and Leo open the room, and only one visitor waits. Keep the time and place. Circle each subject and check both verbs. Read the new plan aloud."
+  },
+  "vocabulary": [
+    {
+      "word": "counter",
+      "meaning": "a long table where people can ask for or get things",
+      "example": "Please leave your key on the counter.",
+      "pair": "front counter"
+    },
+    {
+      "word": "pickup shelf",
+      "meaning": "a shelf where people get things that are ready for them",
+      "example": "My book is on the pickup shelf.",
+      "pair": "check the pickup shelf"
+    },
+    {
+      "word": "bag",
+      "meaning": "something you can carry things in",
+      "example": "I put my phone in my bag.",
+      "pair": "paper bag"
+    },
+    {
+      "word": "ready",
+      "meaning": "there for you to get or use now",
+      "example": "Your room is ready.",
+      "pair": "ready for pickup"
+    },
+    {
+      "word": "tea break",
+      "meaning": "a short rest from work when you can have tea",
+      "example": "We sit outside on our tea break.",
+      "pair": "take a tea break"
+    },
+    {
+      "word": "wait",
+      "meaning": "stay in a place until something happens",
+      "example": "We wait for the bus near the park.",
+      "pair": "wait in line"
+    },
+    {
+      "word": "next to",
+      "meaning": "at the side of something and very close to it",
+      "example": "My shoes are next to the bed.",
+      "pair": "sit next to me"
+    },
+    {
+      "word": "behind",
+      "meaning": "at the back of something",
+      "example": "The bike is behind the house.",
+      "pair": "behind the door"
+    },
+    {
+      "word": "early",
+      "meaning": "before the given or usual time",
+      "example": "I get to class early on Mondays.",
+      "pair": "arrive early"
+    },
+    {
+      "word": "come back",
+      "meaning": "return to a place",
+      "example": "Please come back after lunch.",
+      "pair": "come back tomorrow"
+    },
+    {
+      "word": "put out",
+      "meaning": "put something where people can see it or take it",
+      "example": "They put out cups for the meeting.",
+      "pair": "put out chairs"
+    },
+    {
+      "word": "clock",
+      "meaning": "a thing that shows the time",
+      "example": "The clock on my desk says seven.",
+      "pair": "wall clock"
+    }
+  ],
+  "speaking": {
+    "audience": "A bakery customer at the counter who wants oat bread",
+    "first": "Read Morning Job Card. Ben will put the blue oat-bread bag on the pickup shelf at 9:20. The door clock is stopped, so use the shelf clock. Make four short notes: bread, color, time and place. It is 9:15 on the shelf clock. Read each customer question and say a short answer aloud. “Is my oat bread ready now?” “Where do I get it?” “What color is my bag?” In your first answer, say what Ben does and when.",
+    "change": "The customer comes back at 9:20 on the shelf clock. Today a new volunteer, Ana, puts the blue bag on the pickup shelf at 9:25. The oat bread is still behind the counter.",
+    "second": "Answer these customer questions aloud: “Can I get it now?” “Who puts it out?” “Where do I go at 9:25?” Use Ana and 9:25 in your new answers. Keep the bread, bag color and pickup place from your notes. Listen to your own answer or say it again slowly. Use “puts” when you say what Ana does.",
+    "checklist": [
+      "I answer each question in one or two short sentences.",
+      "In my first take I say Ben puts out the bag at 9:20.",
+      "In my second take I say Ana puts out the bag at 9:25 and it is still early.",
+      "I say the oat bread is in the blue bag and pickup is at the shelf next to the counter."
+    ]
+  },
+  "writing": {
+    "audience": "A substitute helper who starts at the bakery counter tomorrow",
+    "first": "Read the job card once for the order of the morning. Read it again and note who opens the door, who puts out each bag and which clock to use. Write a four-line briefing card of about 25 to 45 words. Give one line each for the door, the white bag, the blue bag and the clock. Name the pickup shelf on the card.",
+    "change": "Tomorrow, Ravi puts the white bag with rye bread on the pickup shelf at 9:05. Nina still opens the door at 9:00.",
+    "second": "Write the whole four-line card again. Change the white bag line to name Ravi and give 9:05. Keep the door, blue bag and clock details. Check that each bag line gives a person, an action and a time. Circle the verb after each name and read the card once as the new helper.",
+    "checklist": [
+      "My card has four short lines and about 25 to 45 words.",
+      "My door line says Nina opens the door at 9:00.",
+      "My new card says Ravi puts the white rye bag on the pickup shelf at 9:05.",
+      "I keep Ben, the blue oat bag and 9:20 together.",
+      "My card tells the helper to use the shelf clock."
+    ]
+  },
+  "immersion": {
+    "role": "Bakery counter helper while Nina is on her tea break",
+    "goal": "Set up pickup so two customers know where to wait and when they can get their bread. Leave Ben a short note he can use when he gets to the pickup table.",
+    "constraints": [
+      "It is 9:18 on the shelf clock. Use that clock for all times.",
+      "Both customers are already inside. One wants rye and one wants oat.",
+      "The rye bag is white and ready now. You can move it to the new pickup place now.",
+      "The oat bag is blue and stays behind the counter until the new pickup time.",
+      "Customers can wait in two chairs by the window."
+    ],
+    "change": "At 9:18, a box blocks the pickup shelf. Use the small table by the window for both bags until 10:00. A new volunteer, Lila, puts the blue bag on that table at 9:28. The white bag can go there now.",
+    "deliverables": [
+      "Make two short plan lines, one per bag. Give each bag's bread name, color, pickup place and first pickup time at the table.",
+      "Write a two-line sign for the old shelf. Give the new pickup place and the time the table closes.",
+      "Say one short reply to each customer. Tell the rye customer where to go and tell the oat customer where to wait and when to come to the table.",
+      "Write two short lines for Ben. Say what Lila does and where the two customers can wait."
+    ],
+    "checklist": [
+      "I send both customers to the small table by the window for pickup.",
+      "I say the rye bread is ready now at 9:18 and the oat bread is ready at 9:28.",
+      "My sign gives 10:00 as the end time for pickup at the table.",
+      "My note to Ben uses “Lila puts” and “customers wait” or “customers can wait.”",
+      "I compare all four pieces of work and check that the times and places match."
+    ]
+  }
+}

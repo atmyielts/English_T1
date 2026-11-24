@@ -1,0 +1,425 @@
+{
+  "slug": "choosing-seats-for-the-screen",
+  "title": "Choosing seats for the screen",
+  "level": "A2",
+  "summary": "A community theatre is holding a film-caption practice night. Compare a seat-row card with a booking message to work out sightlines and ticket deadlines. Suggest seats for two adult learners and revise your choices when the seating changes.",
+  "documents": [
+    {
+      "title": "Seat-row card",
+      "text": "This card shows which seats were available before the desk received Maya’s request. Read this card from the screen to the back wall. Row A is nearest the screen. Captions appear at the bottom of the screen and may feel too close there. Row B is behind A. B1 is beside the left aisle, and B2 is next to it, one seat in. Both are open to book. Row C is behind B. C1 and C2 are in the middle of the row and have a clear view of the bottom of the screen. Both are open to book. C3 is at the right end of that row. It is reserved and has more space in front. Row D is last. D1 and D2 are beside the back door, but the captions look smaller from there."
+    },
+    {
+      "title": "Booking reply",
+      "text": "Hi Maya, thanks for asking about Friday’s film-caption practice night. I can hold B1 and C1 in your name. You can pick up the tickets at the front desk from 6:10 to 6:25. After 6:25, we can offer those seats to someone else. Please tell us by 6:00 if you only need one ticket. The hall opens at 6:15, and the short film starts at 6:40. You asked about C3 too. We keep that seat for a separate request list until 6:35. At 6:35, ask us at the desk. We can offer it only if it is still free. See you Friday, Jo"
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A walk from the hall door",
+      "text": "I’m Lina, one of the volunteers. Come in through the main hall door. You’ll be on the right side of the room, level with row C. From there, turn left and walk along the back of row C to reach the left aisle. Use that aisle to get to B1. You can see the whole screen from B1, but you look across it from the side. In the middle of row C, you can look straight at the screen. The captions are at the bottom. Now look behind you. The back door is beside row D. You can leave through it after the film. Please use the main hall door to come in tonight."
+    },
+    {
+      "title": "A call about two seat lists",
+      "text": "Hello, this is Sam at the theatre desk. You asked if arriving at 6:30 is early enough to pick up the tickets in Maya’s name. Those seats are on our booking list. We keep them for you until 6:25. If you come at 6:30, ask what’s free, because we may have given them to someone else. We also have a separate request list for C3. At 6:35, we check that list. If nobody on it still needs C3, we can offer the seat at the desk. You can’t pick up a ticket for C3 before that check. If you’re running late, come to the desk first. The film starts at 6:40."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "On the Seat-row card, how are the rows put in order?",
+      "options": [
+        "From the left aisle to the right end",
+        "From the busiest row to the quietest",
+        "From the screen to the back wall",
+        "From the back door to the screen"
+      ],
+      "answer": 2,
+      "explanation": "The first line tells you to start at the screen and read toward the back wall."
+    },
+    {
+      "prompt": "Which plan in words matches the Seat-row card?",
+      "options": [
+        "Screen, then A, B, C, D. B1 is by the left aisle.",
+        "Screen, then A, C, B, D. B1 is by the left aisle.",
+        "Screen, then A, B, C, D. B2 is by the left aisle.",
+        "Screen, then B, A, C, D. B1 is by the left aisle."
+      ],
+      "answer": 0,
+      "explanation": "A is nearest the screen, B and C come next, and B1 touches the left aisle."
+    },
+    {
+      "prompt": "According to the Seat-row card, which seat could you book for someone who wants the middle of a row and a clear view of the captions?",
+      "options": [
+        "B1",
+        "D2",
+        "C3",
+        "C2"
+      ],
+      "answer": 3,
+      "explanation": "C2 is open to book and sits in the middle with a clear view of the screen’s bottom."
+    },
+    {
+      "prompt": "On the Seat-row card, which two seats are next to each other, with one at the left aisle and one a seat in?",
+      "options": [
+        "C1 and C2",
+        "B1 and B2",
+        "D1 and D2",
+        "C2 and C3"
+      ],
+      "answer": 1,
+      "explanation": "The card puts B1 beside the left aisle and B2 next to B1, one seat in."
+    },
+    {
+      "prompt": "According to the Booking reply, which plan lets Maya collect both held tickets before the hall opens?",
+      "options": [
+        "Go to the front desk at 6:05.",
+        "Go to the front desk at 6:12.",
+        "Go to the front desk at 6:20.",
+        "Go to the front desk at 6:30."
+      ],
+      "answer": 1,
+      "explanation": "Ticket pickup begins at 6:10, and the hall opens at 6:15, so 6:12 fits both details."
+    },
+    {
+      "prompt": "Which request does Jo make in the Booking reply if Maya only needs one ticket?",
+      "options": [
+        "Ask for C3 at 6:35.",
+        "Pick up the ticket by 6:10.",
+        "Come to the hall as soon as it opens.",
+        "Tell the theatre by 6:00."
+      ],
+      "answer": 3,
+      "explanation": "Jo asks Maya to tell the theatre by 6:00 if she only needs one ticket."
+    },
+    {
+      "prompt": "What is Jo doing in the last part of the Booking reply?",
+      "options": [
+        "Explaining when Maya can ask about C3",
+        "Giving Maya directions to C3",
+        "Offering to hold C3 in Maya’s name",
+        "Asking Maya to choose a seat by 6:15"
+      ],
+      "answer": 0,
+      "explanation": "Jo says Maya can ask about C3 at 6:35 and get it only if it is free."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "In A walk from the hall door, where are you just after you enter through the main hall door?",
+      "options": [
+        "On the left side, level with row B",
+        "At the front, beside row A",
+        "On the right side, level with row C",
+        "At the back, beside row D"
+      ],
+      "answer": 2,
+      "explanation": "Lina says you are on the right side, level with row C, when you come in."
+    },
+    {
+      "prompt": "Which plan in words matches the way to B1 in A walk from the hall door?",
+      "options": [
+        "From the main hall door, go behind row C to the left aisle, then follow it to B1.",
+        "From the main hall door, go behind row C to the right aisle, then follow it to B1.",
+        "From the main hall door, go behind row D to the left aisle, then follow it to B1.",
+        "From the back door, go behind row C to the left aisle, then follow it to B1."
+      ],
+      "answer": 0,
+      "explanation": "Lina starts at the main hall door and goes behind row C to the left aisle."
+    },
+    {
+      "prompt": "In A walk from the hall door, Lina compares B1 with the middle of row C. Where would you sit to look straight at the screen?",
+      "options": [
+        "B1",
+        "The right end of row C",
+        "Beside the back door",
+        "The middle of row C"
+      ],
+      "answer": 3,
+      "explanation": "Lina says you look across the screen from B1 and straight at it from the middle of C."
+    },
+    {
+      "prompt": "How does Lina explain the back door in A walk from the hall door?",
+      "options": [
+        "It is where you collect tickets before the film.",
+        "It is a way to leave after the film.",
+        "It is the door everyone uses to come in.",
+        "It is the place to wait for a seat in row C."
+      ],
+      "answer": 1,
+      "explanation": "Lina points out the door beside row D and says you can leave through it after the film."
+    },
+    {
+      "prompt": "In A call about two seat lists, what does Sam say to do if you arrive at 6:30 for Maya’s tickets?",
+      "options": [
+        "Go straight to the seats held for Maya.",
+        "Wait at the hall door until 6:35.",
+        "Ask at the desk which seats are still free.",
+        "Pick up Maya’s tickets when the film starts."
+      ],
+      "answer": 2,
+      "explanation": "Sam says the booking hold ends at 6:25, so those seats may be gone at 6:30."
+    },
+    {
+      "prompt": "According to A call about two seat lists, when can Sam first offer C3 to someone who is not on the request list?",
+      "options": [
+        "At 6:25, if Maya misses her ticket pickup",
+        "At 6:30, if someone asks at the desk",
+        "At 6:40, after the film has started",
+        "At 6:35, if nobody on the list still needs it"
+      ],
+      "answer": 3,
+      "explanation": "Sam checks the request list at 6:35 and can offer C3 only if nobody there still needs it."
+    },
+    {
+      "prompt": "What is Sam mainly explaining in A call about two seat lists?",
+      "options": [
+        "When the booking hold ends and when visitors can ask about C3",
+        "Why people in row D may find the captions small",
+        "Which door to use if you get to the hall late",
+        "Which seats you can book together in the same row"
+      ],
+      "answer": 0,
+      "explanation": "Sam explains the 6:25 booking deadline and then describes a separate 6:35 check for C3."
+    }
+  ],
+  "grammar": {
+    "focus": "Too before an adjective, enough after an adjective, and enough before a noun",
+    "explanation": "Use too before an adjective when something causes a problem. These letters are too small means that the person has trouble reading them. Use adjective + enough when something meets a need. The letters are big enough means that the person can read them. With not, you can describe a problem another way. The letters aren’t big enough tells us that they need to be bigger. When you talk about an amount or a number, put enough before the noun. We have enough time means we have the time we need. We have enough seats means everyone can sit. Circle the word that comes after enough or just before it. Is it a thing you can count or measure, or a word that describes something?",
+    "examples": [
+      {
+        "before": "The print is small too for me to read.",
+        "after": "The print is too small for me to read.",
+        "why": "Put too before small to show that the size causes a problem."
+      },
+      {
+        "before": "The light is enough bright to read this card.",
+        "after": "The light is bright enough to read this card.",
+        "why": "Put enough after bright to say the light meets your need."
+      },
+      {
+        "before": "We have chairs enough for both visitors.",
+        "after": "We have enough chairs for both visitors.",
+        "why": "In this everyday sentence, put enough before the plural noun chairs."
+      },
+      {
+        "before": "This shelf isn’t enough low for me to reach.",
+        "after": "This shelf isn’t low enough for me to reach.",
+        "why": "Put enough after low, even when you use isn’t."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "You cannot read the poster because the letters are very small. What do you say?",
+        "options": [
+          "The letters are enough small to read.",
+          "The letters are small too to read.",
+          "The letters are too small to read.",
+          "The letters are small enough to read."
+        ],
+        "answer": 2,
+        "explanation": "Too goes before small and shows that the size makes reading difficult."
+      },
+      {
+        "prompt": "There are three people and three chairs. What do you tell the person bringing chairs?",
+        "options": [
+          "We have enough chairs for everyone.",
+          "We don’t have enough chairs for everyone.",
+          "We have enough tables for everyone.",
+          "We have too few chairs for everyone."
+        ],
+        "answer": 0,
+        "explanation": "Three chairs meet the group’s need, and enough goes before the noun chairs."
+      },
+      {
+        "prompt": "You can easily hear your friend at the café now. Which sentence says why?",
+        "options": [
+          "It’s too loud for us to talk here.",
+          "It’s quiet too for us to talk here.",
+          "It’s enough quiet for us to talk here.",
+          "It’s quiet enough for us to talk here."
+        ],
+        "answer": 3,
+        "explanation": "Enough goes after quiet because the café now lets you talk easily."
+      },
+      {
+        "prompt": "Your bag won’t fit because the shelf is narrow. Complete the message. That shelf isn’t ___ for my bag.",
+        "options": [
+          "enough wide",
+          "wide enough",
+          "too wide",
+          "narrow enough"
+        ],
+        "answer": 1,
+        "explanation": "Wide enough means having the width you need, and isn’t shows that the shelf lacks it."
+      },
+      {
+        "prompt": "The bus leaves in ten minutes. The walk takes two minutes. Complete the message. We have ___ to walk to the stop.",
+        "options": [
+          "enough room",
+          "too little time",
+          "enough seats",
+          "enough time"
+        ],
+        "answer": 3,
+        "explanation": "Enough comes before time, and ten minutes gives you the two minutes you need."
+      },
+      {
+        "prompt": "The soup burns your mouth, so you put it down. Which sentence explains what you do?",
+        "options": [
+          "The soup is cool enough to eat.",
+          "The soup is too hot to eat.",
+          "The soup is enough hot to eat.",
+          "The soup is hot enough to serve."
+        ],
+        "answer": 1,
+        "explanation": "Too goes before hot and says the heat stops you from eating the soup."
+      },
+      {
+        "prompt": "Five adults need a place to sit and only four seats are free. Which note fits?",
+        "options": [
+          "There aren’t enough seats for the group.",
+          "There are enough seats for the group.",
+          "The seats aren’t close enough for the group.",
+          "The seats are too low for the group."
+        ],
+        "answer": 0,
+        "explanation": "Four is fewer than five, so use aren’t enough before the noun seats."
+      },
+      {
+        "prompt": "You need a better photo because this one is dark and you can’t read the sign. Which request explains the problem?",
+        "options": [
+          "Could you send another photo? This one is bright enough.",
+          "Could you send another photo? This one is dark enough.",
+          "Could you send another photo? This one is too dark.",
+          "Could you send another photo? This one is dark too to read."
+        ],
+        "answer": 2,
+        "explanation": "Too dark puts too before the adjective and explains why you need a better photo."
+      }
+    ],
+    "transfer": "A volunteer puts a sign near the hall door. From the desk, you cannot read the small letters. You have two sheets of paper and need one for a new sign. Write a note explaining the problem and what you can do. Use too, adjective + enough and enough + noun. Underline the three phrases and check their word order."
+  },
+  "vocabulary": [
+    {
+      "word": "caption",
+      "meaning": "words on a screen that show what people say or what you can hear",
+      "example": "I turned on the captions while the baby slept.",
+      "pair": "read the captions"
+    },
+    {
+      "word": "row",
+      "meaning": "a line of seats or things",
+      "example": "We sat in the second row for the school play.",
+      "pair": "front row"
+    },
+    {
+      "word": "aisle",
+      "meaning": "a space you can walk along between seats or shelves",
+      "example": "I left my basket in the aisle while I looked at the bread.",
+      "pair": "walk down the aisle"
+    },
+    {
+      "word": "clear view",
+      "meaning": "a view that lets you see something well",
+      "example": "From the kitchen window we have a clear view of the garden.",
+      "pair": "a clear view of the stage"
+    },
+    {
+      "word": "level with",
+      "meaning": "at the same height or at the same point along a space",
+      "example": "Stop when the front of the car is level with the gate.",
+      "pair": "stand level with the window"
+    },
+    {
+      "word": "at the end of",
+      "meaning": "at the last part of a line, street or other space",
+      "example": "We waited at the end of the street for the taxi.",
+      "pair": "at the end of the corridor"
+    },
+    {
+      "word": "hold",
+      "meaning": "keep something for someone for a short time",
+      "example": "Can you hold this table for us until seven?",
+      "pair": "hold a seat"
+    },
+    {
+      "word": "reserved",
+      "meaning": "kept for a person or group",
+      "example": "This parking space is reserved for hotel guests.",
+      "pair": "a reserved table"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go and get something or someone",
+      "example": "I’ll pick up my coat from the cleaner’s on the way home.",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "front desk",
+      "meaning": "the place near the entrance where staff help visitors",
+      "example": "I left my room key at the front desk.",
+      "pair": "check in at the front desk"
+    },
+    {
+      "word": "still free",
+      "meaning": "available now because nobody has taken or booked it",
+      "example": "Is the chair by the window still free?",
+      "pair": "a table that’s still free"
+    },
+    {
+      "word": "run late",
+      "meaning": "be behind the time you planned",
+      "example": "I’m running late, so I’ll meet you inside the café.",
+      "pair": "run a little late"
+    }
+  ],
+  "speaking": {
+    "audience": "Maya and Leon, two adults coming to the film-caption practice night",
+    "first": "Maya wants to sit beside an aisle. Leon wants to look straight at the screen and read the captions. Reread the seat-row card and the booking reply. Make two short notes, one for each person, with a seat and a reason. Say your suggestions in two connected turns. The front desk holds both tickets from 6:10 to 6:25. Use the main hall door to enter. The back door beside row D is for leaving after the film. End by explaining when to collect the tickets and where to go in. Try a second take if a seat or time is hard to hear.",
+    "change": "At 6:12 on Friday, a sign at the front desk says the left aisle beside row B is closed. B1 and B2 are out of use. C3 is now taken for the evening. The volunteer can move Maya’s ticket to D1, which is beside the right aisle near the back door.",
+    "second": "Give Maya a new seat and explain how the view from there is different. Keep Leon’s original seat and the pickup deadline. Say which door they should use to come in. Finish with a polite question to Maya about the new seat. Record or say the whole update again after checking the details.",
+    "checklist": [
+      "I give each person a seat and a reason in my first take.",
+      "In my update, I offer Maya D1 and keep Leon in C1.",
+      "I explain that the captions look smaller from D1.",
+      "I say to pick up the tickets by 6:25 and enter through the main hall door.",
+      "I say one or two sentences with too or enough and end with a polite question."
+    ]
+  },
+  "writing": {
+    "audience": "The front desk volunteer who will prepare the two tickets",
+    "first": "Write a 50–90-word seating note in Maya’s name so the volunteer can get the right tickets ready. Use the seat-row card and booking reply. First sort your notes into three groups: seats, reason for each seat, and pickup plan. Maya plans to collect both tickets at 6:20. Ask politely for B1 for Maya and C1 for Leon, and give one reason for each choice.",
+    "change": "At 6:12 on Friday, the desk puts up a new sign. The left aisle beside row B is closed, and B1 and B2 are out of use. C3 is taken for the evening. D1 by the right aisle is free, and the desk can move Maya’s ticket there for the same 6:20 pickup.",
+    "second": "Rewrite the note in 50–90 words. Ask for D1 in place of B1. Keep C1 for Leon, Maya’s name on the booking and the 6:20 pickup. Say why D1 fits Maya’s aisle preference, and ask the volunteer to confirm both seat numbers. Reread the note as if you were getting the tickets ready.",
+    "checklist": [
+      "The updated note has Maya’s booking name, two seat numbers and the 6:20 pickup time.",
+      "I ask for D1 for Maya and keep C1 for Leon.",
+      "I give a clear reason for each seat.",
+      "I use too or enough in a sentence about a real seating need.",
+      "I ask politely for confirmation and check that the final note is 50–90 words."
+    ]
+  },
+  "immersion": {
+    "role": "A front desk volunteer on a separate practice night, helping two walk-ins who have no booking",
+    "goal": "Use the seat-row card and both hold rules to make a short desk notice and a ticket slip for two visitors who arrive together at 6:30 and want to sit together.",
+    "constraints": [
+      "Both visitors want seats next to each other. One wants to read the captions from near the middle if possible.",
+      "Use this desk update as your starting point. At 6:30, B1 and B2 are free. C1 and C2 are waiting for two other visitors until 6:34. All other seats apart from C3 are taken.",
+      "The desk can hold B1 and B2 for these two visitors while they wait until 6:34.",
+      "Apply the two original rules. Maya’s booking hold ended at 6:25, and the request list for C3 is checked at 6:35.",
+      "Use the main hall door for entry. The film starts at 6:40."
+    ],
+    "change": "At 6:34, the other visitors collect C1 and C2. B1 and B2 are still available for the walk-in visitors. Then, at 6:35, nobody on the request list needs C3. It has a clear view from the right end, but the seat next to it is taken.",
+    "deliverables": [
+      "Make a three-line desk note for 6:30, 6:34 and 6:35. For each time, say which seats the two visitors can take together and what has changed.",
+      "Write a 50–70-word notice to read to the two visitors after the 6:35 check. Offer the pair, explain the view from the side and explain what would happen if one person took C3. Use too or enough at least once.",
+      "Make one ticket slip with both final seat numbers, the entry door and the film start time."
+    ],
+    "checklist": [
+      "My desk note puts the three checks in time order and shows when the middle pair is taken.",
+      "I offer B1 and B2 together and say where B1 is.",
+      "I offer C3 as a single seat only after the 6:35 check.",
+      "The notice gives the visitors a clear choice and explains why I suggest the pair.",
+      "The ticket slip agrees with the suggested pair and shows the main hall door and 6:40 start."
+    ]
+  }
+}

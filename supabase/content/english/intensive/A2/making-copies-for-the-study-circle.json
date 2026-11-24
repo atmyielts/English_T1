@@ -1,0 +1,400 @@
+{
+  "slug": "making-copies-for-the-study-circle",
+  "title": "Making copies for the study circle",
+  "level": "A2",
+  "summary": "The study circle has changed how it shares worksheets written by its own members. Use an email, a print job slip and a late update to work out the final copy counts. Then explain the change, revise a handover and make a print checklist that can be sorted by job stage.",
+  "documents": [
+    {
+      "title": "Email from the class coordinator",
+      "text": "Subject: Worksheet sets for Thursday\n\nHi Sam,\n\nPlease get the copies ready for our Thursday study circle. This week's set has three worksheets: Bus Times, Market Prices and My Weekly Plan. Our group wrote all three. We used to put a few sets on each table, and people shared them. Now each of our 14 learners gets one set to write on and take home. Two learners have asked for large print, so they count as two of the 14. Please make just one answer key for everyone to check in class. Keep it beside the whiteboard during the lesson. It stays in the room when learners take their sets home.\n\nThanks,\nMara"
+    },
+    {
+      "title": "Thursday print desk job slip",
+      "text": "Job name: Thursday Study Circle\n\nLearner sets: Start with 12 standard sets and 2 large-print sets. A set has one copy of each of the three worksheets. Put the worksheets in this order: Bus Times, Market Prices, My Weekly Plan. Add a blue cover to each standard set and a yellow cover to each large-print set. Clip each set at the top. Print one copy of the answer key. Leave it loose in the tray marked Class Key. Keep it out of the learner sets.\n\nCollection: Pick up the standard sets from the front counter after 3:00. Pick up the large-print sets and the key from the side shelf after 3:30. The desk closes at 4:15."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Mara's phone message about large print",
+      "text": "Hi Sam, it's Mara. I'm calling before the print desk starts on our job. Two more learners asked for large print this morning. They were already on our list, so we still have fourteen people. Please move those two from the standard list to the large-print list. Let the print desk know before they start. Keep the same three worksheets in every set, and keep the covers as planned. We still need only one answer key for the class. When you tell the print desk the new numbers, give them both numbers. They need the new total for each version so they can make fewer standard sets and more large-print sets."
+    },
+    {
+      "title": "Sam's group voice note from the print desk",
+      "text": "Quick update for the Thursday group. It's 3:20, and I've just picked up all ten standard sets from the front counter. Each set is clipped and has a blue cover. I'm taking them to the classroom now. The print desk has finished the four large-print sets, and the yellow covers are on. Those sets are still on the side shelf with the class key. I can't collect them until 3:30. I've set a reminder to go back at 3:45. If you're in the room when I arrive with the blue sets, please leave them on the front table so I can count them again before class."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Read Email from the class coordinator once for the main idea. Then reread the lines about sharing. What is Mara asking Sam to prepare?",
+      "options": [
+        "A few worksheet sets for learners to share at their tables",
+        "One set for each table and a key for each learner",
+        "One worksheet set for each learner and one class key",
+        "A set of answer keys for learners to take home"
+      ],
+      "answer": 2,
+      "explanation": "Mara says each of the 14 learners gets a set and the class uses one answer key."
+    },
+    {
+      "prompt": "In Email from the class coordinator, how many standard sets does the first plan need? Note the total and the number who asked for large print.",
+      "options": [
+        "12",
+        "2",
+        "14",
+        "16"
+      ],
+      "answer": 0,
+      "explanation": "The two large-print learners are part of the group of 14, leaving 12 who need standard sets."
+    },
+    {
+      "prompt": "According to Email from the class coordinator, where should the answer key go during the lesson?",
+      "options": [
+        "On a learner's table to take home",
+        "Inside the first large-print set",
+        "At the print desk for learners to visit",
+        "Beside the whiteboard in the classroom"
+      ],
+      "answer": 3,
+      "explanation": "Mara says to keep the key beside the whiteboard during the lesson and leave it in the room."
+    },
+    {
+      "prompt": "Reread the packing lines in Thursday print desk job slip. Which note is correct for a large-print set?",
+      "options": [
+        "Blue cover, Bus Times first, clip at the top",
+        "Yellow cover, Bus Times first, clip at the top",
+        "Yellow cover, My Weekly Plan first, clip at the top",
+        "Yellow cover, Bus Times first, leave the pages loose"
+      ],
+      "answer": 1,
+      "explanation": "The slip gives large-print sets yellow covers, puts Bus Times first and says to clip each set at the top."
+    },
+    {
+      "prompt": "In Thursday print desk job slip, what are the two collection lines for? Make a short note of the place and time on each line.",
+      "options": [
+        "They show when each group of sets will arrive in class.",
+        "They show when the desk starts printing each version.",
+        "They show where and when each part of the job can be picked up.",
+        "They show where to put the worksheets after class."
+      ],
+      "answer": 2,
+      "explanation": "The lines give pickup places and times for the standard sets, the large-print sets and the key."
+    },
+    {
+      "prompt": "You arrive at the desk at 3:10. Using Thursday print desk job slip, what can you pick up then?",
+      "options": [
+        "The standard sets from the front counter",
+        "The large-print sets from the side shelf",
+        "The class key from the tray on the side shelf",
+        "Both versions of the learner sets"
+      ],
+      "answer": 0,
+      "explanation": "Standard sets can be picked up after 3:00, and the side shelf items can be picked up after 3:30."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Mara's phone message about large print for the main point. What does she want Sam to tell the print desk?",
+      "options": [
+        "Two learners have left the group.",
+        "The print desk should add two more worksheets to every set.",
+        "The class needs a second answer key.",
+        "Two learners are changing from standard to large print."
+      ],
+      "answer": 3,
+      "explanation": "Mara says two more learners asked for large print and were already on the list."
+    },
+    {
+      "prompt": "Listen again to Mara's phone message about large print. Use the starting counts in the Thursday print desk job slip. Write the old and new counts in two columns. Which new counts should Sam give the desk?",
+      "options": [
+        "12 standard and 4 large-print",
+        "10 standard and 4 large-print",
+        "10 standard and 2 large-print",
+        "14 standard and 4 large-print"
+      ],
+      "answer": 1,
+      "explanation": "Moving two learners from the original 12 standard sets to the original two large-print sets gives 10 and four."
+    },
+    {
+      "prompt": "In Mara's phone message about large print, why does Mara ask Sam to give both numbers?",
+      "options": [
+        "The desk charges for the two versions at different times.",
+        "The group needs to choose two different pickup places.",
+        "The desk must make fewer standard sets and more large-print sets.",
+        "Sam needs to tell two groups what time class starts."
+      ],
+      "answer": 2,
+      "explanation": "Mara says the desk needs both the lower standard count and the higher large-print count."
+    },
+    {
+      "prompt": "Listen to Sam's group voice note from the print desk. At 3:20, what has Sam already collected? On a second listen, sort the items into 'collected' and 'still at the desk'.",
+      "options": [
+        "All ten standard sets",
+        "All four large-print sets",
+        "The class key",
+        "All fourteen learner sets"
+      ],
+      "answer": 0,
+      "explanation": "Sam says he has just picked up all ten standard sets from the front counter."
+    },
+    {
+      "prompt": "According to Sam's group voice note from the print desk, what is Sam's planned return time?",
+      "options": [
+        "3:00",
+        "3:20",
+        "3:30",
+        "3:45"
+      ],
+      "answer": 3,
+      "explanation": "Sam sets a reminder for 3:45, and 3:30 is when collection first becomes possible."
+    },
+    {
+      "prompt": "In Sam's group voice note from the print desk, what should someone in the classroom do with the blue sets when Sam arrives?",
+      "options": [
+        "Give them out as soon as learners arrive.",
+        "Leave them on the front table for another count.",
+        "Take them back to the front counter.",
+        "Put them beside the whiteboard with the key."
+      ],
+      "answer": 1,
+      "explanation": "Sam asks the group to leave the blue sets on the front table for a count before class."
+    }
+  ],
+  "grammar": {
+    "focus": "Used to for a past habit and the present simple for what happens now",
+    "explanation": "Use 'used to' for something that happened regularly in the past and has changed. Put the base form of the verb after 'used to'. For example, 'We used to share sets.' The verb 'share' keeps its simple form. To show the difference, add a sentence with 'now' and the present simple. 'Now each learner gets a set.' With 'I', 'you', 'we' or 'they', say 'get'. With 'each learner', say 'gets'. For a question about an old habit, use 'Did you use to ...?' For a negative, use 'didn't use to'. After 'did' or 'didn't', write 'use' without a final 'd'. Read each example and underline the words that show which part is about the past.",
+    "examples": [
+      {
+        "before": "We shared a few sets at our tables every week. Now everyone gets a set.",
+        "after": "We used to share a few sets at our tables. Now everyone gets a set.",
+        "why": "Use 'used to share' because sharing was a regular habit and the group has changed it."
+      },
+      {
+        "before": "Did you collect both kinds from the same place every week?",
+        "after": "Did you use to collect both kinds from the same place?",
+        "why": "This asks about an old routine. After 'did', use 'use to collect'."
+      },
+      {
+        "before": "In the past, we always worked with loose pages. Now we clip the pages.",
+        "after": "We didn't use to clip the pages. Now we clip them.",
+        "why": "Use 'didn't use to clip' to explain that clipping was absent from the old routine."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Choose the message that clearly presents sharing as an old habit and gives the new routine.",
+        "options": [
+          "We use to share pages. Now we take home a set each.",
+          "We used to shared pages. Now we take home a set each.",
+          "We used to share pages. Now we take home a set each.",
+          "We used to share pages. Now we takes home a set each."
+        ],
+        "answer": 2,
+        "explanation": "Use 'used to share' for the old habit and 'we take' for the present routine."
+      },
+      {
+        "prompt": "You want to ask if Mara regularly collected the copies before the group changed its routine. Which question works?",
+        "options": [
+          "Did Mara use to collect the copies?",
+          "Did Mara used to collect the copies?",
+          "Did Mara use to collected the copies?",
+          "Does Mara used to collect the copies?"
+        ],
+        "answer": 0,
+        "explanation": "Use 'did' to ask about the past, followed by 'use to collect'."
+      },
+      {
+        "prompt": "The old sets had loose pages. Now you clip the sets. Choose the sentence about the old routine.",
+        "options": [
+          "We didn't used to clip the sets.",
+          "We didn't use to clipped the sets.",
+          "We used to clip the sets.",
+          "We didn't use to clip the sets."
+        ],
+        "answer": 3,
+        "explanation": "Loose pages mean the group did not clip them. Use 'didn't use to clip'."
+      },
+      {
+        "prompt": "Which note uses 'used to' for the action that happened regularly?",
+        "options": [
+          "The desk used to close early just once last May.",
+          "The desk used to close early every Friday. Now it stays open until five.",
+          "The desk used to close early for the first time yesterday.",
+          "The desk used to close early tomorrow."
+        ],
+        "answer": 1,
+        "explanation": "'Every Friday' shows a past routine, and the second sentence gives the current closing time."
+      },
+      {
+        "prompt": "Complete the new routine. 'Learners used to write on loose paper. Now each learner ___ on a worksheet.'",
+        "options": [
+          "write",
+          "wrote",
+          "used to write",
+          "writes"
+        ],
+        "answer": 3,
+        "explanation": "'Now' gives the current routine and 'each learner' takes the singular verb 'writes'."
+      },
+      {
+        "prompt": "Before this year, you read every evening. Now you read on Sunday mornings. Which sentence fits?",
+        "options": [
+          "I used to read on Sunday mornings. Now I read every evening.",
+          "I used to reading every evening. Now I read on Sunday mornings.",
+          "I used to read every evening. Now I read on Sunday mornings.",
+          "I used to read every evening. Now I reads on Sunday mornings."
+        ],
+        "answer": 2,
+        "explanation": "Evening reading was the old habit, and 'I read' describes what happens on Sundays now."
+      },
+      {
+        "prompt": "Which answer fits 'Did you use to walk to class?' if you took the bus every week then and walk now?",
+        "options": [
+          "No, I didn't. I used to take the bus.",
+          "Yes, I did. I used to walk to class.",
+          "No, I didn't. I used to walked to class.",
+          "Yes, I do. I walk to class now."
+        ],
+        "answer": 0,
+        "explanation": "The question asks about the past, when the regular trip to class was by bus."
+      },
+      {
+        "prompt": "Lee and Ana used to talk by phone every week. These days they meet at the library every week. Which second sentence shows the new habit clearly?",
+        "options": [
+          "Now they meets at the library every week.",
+          "Now they meet at the library every week.",
+          "Now they used to meet at the library every week.",
+          "Now they met at the library last week."
+        ],
+        "answer": 1,
+        "explanation": "'Now' introduces the current habit and the present simple form with 'they' is 'meet'."
+      }
+    ],
+    "transfer": "Write a short note for a new member of another group, such as a book club. Explain how members used to get the news and how they get it now. Add one question about an old habit. Underline the verbs. Check that you use the base form after 'used to' and after 'Did ... use to'."
+  },
+  "vocabulary": [
+    {
+      "word": "worksheet",
+      "meaning": "a page with tasks or questions to work on",
+      "example": "I finished the worksheet about food prices at home.",
+      "pair": "fill in a worksheet"
+    },
+    {
+      "word": "set",
+      "meaning": "a group of things that go together",
+      "example": "I bought a set of cups for our kitchen.",
+      "pair": "a complete set"
+    },
+    {
+      "word": "large print",
+      "meaning": "writing printed in bigger letters",
+      "example": "My aunt reads books in large print.",
+      "pair": "a book in large print"
+    },
+    {
+      "word": "cover",
+      "meaning": "a page or layer over the front of something",
+      "example": "I wrote my name on the green cover.",
+      "pair": "a paper cover"
+    },
+    {
+      "word": "answer key",
+      "meaning": "a list of correct answers for a task",
+      "example": "I checked question five in the answer key.",
+      "pair": "check the answer key"
+    },
+    {
+      "word": "clip",
+      "meaning": "to hold things together with a small fastener",
+      "example": "Please clip the receipt to the form.",
+      "pair": "clip pages together"
+    },
+    {
+      "word": "loose",
+      "meaning": "free to move because it is not fixed in place",
+      "example": "A loose page fell out of my bag.",
+      "pair": "loose sheets"
+    },
+    {
+      "word": "counter",
+      "meaning": "a long flat surface where people are served",
+      "example": "I paid for my lunch at the counter.",
+      "pair": "the front counter"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go to a place and take something from there",
+      "example": "I'll pick up my coat from the repair shop today.",
+      "pair": "pick up an order"
+    },
+    {
+      "word": "keep aside",
+      "meaning": "save something for a particular person or use",
+      "example": "Can you keep aside two chairs for our guests?",
+      "pair": "keep a seat aside"
+    },
+    {
+      "word": "reminder",
+      "meaning": "something that helps you remember to do a task",
+      "example": "The reminder on my phone says to call Dad.",
+      "pair": "set a reminder"
+    },
+    {
+      "word": "take home",
+      "meaning": "bring something with you when you go home",
+      "example": "You can take home the rest of the cake.",
+      "pair": "take home leftovers"
+    }
+  ],
+  "speaking": {
+    "audience": "Alex, a study circle volunteer who will finish the collection",
+    "first": "Reread the slip. Two learners switch from standard sets to large-print sets, so there are still 14 learners. At 3:20, Sam has already picked up all the standard sets at the front counter. The large-print sets and shared key are on the side shelf, available from 3:30. Choose three cards for printed items or their parts and three for handling or collecting them. Say one short example with each card. Then make three brief voice notes for Alex. Explain the old and new ways of sharing, give both current counts, and say what has been collected and what Alex should collect at 3:45.",
+    "change": "At 3:35, the side shelf is needed for another job. The four yellow sets and the class key are moved to the front counter. Alex can still collect them at 3:45.",
+    "second": "Record a second take in two short turns. First, give the new pickup place and say what Alex must ask for, including the separate key. Then keep both counts and the update about the ten blue sets. Use 'used to' once to explain the old table-sharing habit, and say what learners get now.",
+    "checklist": [
+      "I said ten standard sets and four large-print sets.",
+      "I made it clear that the ten blue sets have already been collected.",
+      "I gave the front counter and 3:45 for the new pickup.",
+      "I named the four yellow sets and the separate class key.",
+      "I said 'used to' with a base verb and described the current routine."
+    ]
+  },
+  "writing": {
+    "audience": "Mara, the class coordinator, who needs a written record for next Thursday",
+    "first": "Write a 50–90-word plan for Mara to use for next Thursday's repeat job. Use the same three worksheets. Two of the 12 learners who requested standard sets have switched to large print. Keep the total of 14 learners and work out the new counts for each version. Make a few notes under counts, packing and pickup before you write. Include one sentence about how the group used to share and how it shares now. Use the regular pickup places and times from the job slip.",
+    "change": "For next Thursday, remove all colored covers. Clip each learner set and mark its first worksheet STANDARD or LARGE PRINT. Add one standard set of the same worksheets for the teacher. Clip it separately and mark it TEACHER.",
+    "second": "Revise your 50–90-word plan. Change the packing directions and give the teacher set its own line. For this order, the teacher set goes to the front counter after 3:00. Keep the learner counts, worksheet order, old and new sharing sentence, and original collection details for learner sets and the class key.",
+    "checklist": [
+      "My plan gives ten standard learner sets and four large-print learner sets.",
+      "I listed the three worksheets in order and used the new labels in place of covers.",
+      "The teacher set is separate, clipped and marked TEACHER, with its pickup details.",
+      "I kept one loose class key on the side shelf for pickup after 3:30.",
+      "My plan is 50–90 words and says what the group used to do and what happens now."
+    ]
+  },
+  "immersion": {
+    "role": "Study circle volunteer preparing a sortable job checklist for a Friday practice session",
+    "goal": "Use the final Thursday learner counts to plan a new Friday print job for the same group. Make a checklist that shows what must be printed, packed and collected so another volunteer could follow it in order.",
+    "constraints": [
+      "Use ten standard learner sets and four large-print learner sets.",
+      "Each set contains Bus Times, Market Prices and My Weekly Plan in that order. Clip each set.",
+      "Remove covers from the Friday order. Write the version on the first worksheet of each learner set.",
+      "Make one loose shared answer key. It goes beside the whiteboard during the practice session.",
+      "Use one row per item group. Put the same columns on every row: Stage, Item, Count, Place, Earliest pickup and Status. Number the stages 1 for print, 2 for pack and 3 for collect. Mark all rows To do."
+    ],
+    "change": "Friday's desk closes at 3:15. At the front counter, standard learner sets are ready from 2:30, and two extra standard teacher sets are ready from 2:45. Mark the teacher sets TEACHER and keep them separate. The four large-print learner sets and the key are ready from 3:00 on the side shelf. The volunteer can visit each place only once.",
+    "deliverables": [
+      "A sortable checklist with 12 rows. Include one print row, one pack row and one collect row for each of the four item groups: standard learners, large-print learners, teachers and the shared key. Use 'Print desk' for the print and pack places and a dash for their pickup times.",
+      "A count note giving the number of learner sets, the number of teacher sets and the number of loose keys. Show how many clipped worksheet sets there are in all.",
+      "A two-line pickup plan with one exact time per place. List the items to collect on each visit. Sort the checklist once by stage and once by pickup time to check your plan.",
+      "A two-sentence note for the volunteer. Say what the group used to do at the tables and what each learner gets now."
+    ],
+    "checklist": [
+      "My checklist has four rows at each stage, with a count and status on every row.",
+      "The totals show 14 learner sets, two teacher sets, 16 clipped sets in all and one loose key.",
+      "I used the first worksheet for learner labels and kept both teacher sets together as a separate group.",
+      "My front counter visit is at or after 2:45, and my side shelf visit is at or after 3:00. Both are before 3:15 and have different times.",
+      "My pack row for the key says to keep it loose and separate, and the checklist shows that it goes beside the whiteboard after pickup.",
+      "My note uses 'used to' for the old habit and the present simple for the current routine."
+    ]
+  }
+}

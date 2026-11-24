@@ -1,0 +1,394 @@
+{
+  "slug": "c2-the-absence-of-a-witness-tree",
+  "title": "The Absence of a Witness Tree",
+  "level": "C2",
+  "summary": "Evaluate a tree-planting restitution plan when accounting for a destroyed canopy and maintaining a continuous public space.\n\nReading: Annotate which written promises can be recognised by a planting ledger, a shade study or a person walking through the square. Set one auditable test for each and identify a year in which one promise could be met while another remains open.\n\nVocabulary: Group the terms by growth, temporary intervention and accountability. Write a status report in which replacement, interim use and a completed obligation stay distinct, then rephrase it for a resident who has not seen the plans.",
+  "documents": [
+    {
+      "title": "Planning panel’s draft replacement schedule",
+      "text": "The old grove on Abbott Square included seven mature elms. A storm damaged three and subsequent inspection found four that could no longer be kept where they stood. The planning panel’s draft requires thirty-five young trees as replacement. In its first version it specified a tree per space, so that a strip of five might have been planted on each side of the square and the rest elsewhere. A technical comment pointed out that closely spaced trees would later compete for limited soil. The new version therefore allows the authority to sponsor planting farther away if suitable places in the square cannot be found.\n\nThe schedule discharges a replacement duty once planted trees have survived two full growing seasons. It does not describe a duty to replace shade. One canopy study already distinguishes the surface cool enough for short outdoor rests from surface merely shaded at some point during the afternoon. Addressing both would require a different record and perhaps temporary shelter before trees grow.\n\nWe recommend keeping the numerical duty because it gives the public a clear minimum. But the panel should decide whether that obligation belongs in the same document as the authority’s promise to make the square usable through the first twelve summers."
+    },
+    {
+      "title": "Open letter from the tenants’ association",
+      "text": "Our oldest photographs show a long board beneath the elms where fruit sellers put baskets at midday. We do not propose rebuilding it. The grocer’s unloading route has since changed and the market trades for different hours. Something of the old use, however, could help us understand why the square felt open to people who were not buying things. The fruit sellers could leave part of the board free, and pedestrians used it as a seat. Its shade connected the market’s work with a place to pause without paying.\n\nOn Friday we were shown a drawing of small trees near the square’s western wall. The drawing is attractive. In it there are full shadows at the hour when the architects looked at the site. We want to know what would happen when the shadows reach the loading lane rather than the new seats. Planting elsewhere might be necessary to meet the tree count. It does not make it easier for somebody coming from the library to sit down on the way home.\n\nPlease give us one plan for growing trees and another for a usable route through the square. They can support one another without one being taken for evidence that the other has worked."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Commissioner and landscape technician",
+      "text": "Ari: If we say ‘five trees for each elm’, people will hear that as a replacement for what stood there. Is there a way to explain it without weakening the commitment?\n\nMina: Say exactly when the number has been fulfilled. Draw the future locations, and mark which one contributes to a shaded route. That may be three in the square and more in other streets.\n\nAri: How do we judge the route? The plan includes three short benches. If two are shaded at a quarter to four, can we say it is shaded?\n\nMina: Only for the person who arrives at a quarter to four and takes one of those seats. Try the route at the hours the library closes and the market packs up. Ask someone to pause in each location for five minutes while traffic is using the lane.\n\nAri: It might turn out people prefer to keep walking rather than sit.\n\nMina: Then find out which choice they were able to make. That’s different from reporting that nobody stopped. If somebody carries an unwieldy bag, a seat accessed from a kerb can be available in the plan and unavailable in the trip.\n\nAri: So we need a canopy count and a journey test, neither treated as a measure of the other."
+    },
+    {
+      "title": "Lecture extract: replacement after damage",
+      "text": "Imagine replacing a broken window overnight. We may expect the new pane to take over nearly all of the old one’s functions at once. Even in that case, someone might want the old pane preserved because of a maker’s mark scratched into one corner. For living things the two questions can separate more sharply. A sapling may be an excellent future tree without taking over the work of a large tree this year. In setting a compensation duty, one can give too much weight to the unit it is possible to buy.\n\nAn obligation to plant is helpful despite this. A council which promises future shade but never purchases trees may be hard to hold to account. We can reserve a place in the agreement for the number, and then add promises about timing and use. When an earlier promise is met, a clerk must be able to note that success while still knowing to check the next one.\n\nThe danger is that one promise becomes a substitute for the other because it is easier to record. A ledger showing no overdue planting can coexist with a dozen summers through which the square is unpleasant to cross. We should describe in advance what would count as work still to do."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "When is the numerical duty fulfilled?",
+      "options": [
+        "When all planting sites are first selected.",
+        "When the planted trees survive two full growing seasons.",
+        "When the current canopy has been recreated.",
+        "When seven new trees cover the previous area."
+      ],
+      "answer": 1,
+      "explanation": "The schedule uses survival over a specified period as its completion trigger."
+    },
+    {
+      "prompt": "Why does the draft now allow more distant planting?",
+      "options": [
+        "The market requires all four sides to be paved.",
+        "A tree count cannot include a previously damaged grove.",
+        "Close planting can overburden limited soil in the square.",
+        "The area near the square has no afternoon shade."
+      ],
+      "answer": 2,
+      "explanation": "The first layout was amended because clustering could leave too little soil per tree."
+    },
+    {
+      "prompt": "Why describe the board used by fruit sellers?",
+      "options": [
+        "To establish the date on which the grove was planted.",
+        "To argue that sellers should return to the same unloading route.",
+        "To propose a historic board in place of new seating.",
+        "To illustrate a former place to rest without entering a transaction."
+      ],
+      "answer": 3,
+      "explanation": "The letter values shared informal use and explicitly declines to rebuild it."
+    },
+    {
+      "prompt": "What is the gap in the architect's drawing?",
+      "options": [
+        "Shade shown at one hour may later fall somewhere unusable.",
+        "A mature grove is depicted where new trees will go.",
+        "The drawing excludes all five future street locations.",
+        "The drawing includes the old unloading route twice."
+      ],
+      "answer": 0,
+      "explanation": "Later movement of shadows could leave the seats exposed."
+    },
+    {
+      "prompt": "What distinction is shared by the documents?",
+      "options": [
+        "Photographs are a stronger source than testing the route.",
+        "Tree survival is an irrelevant condition for any replacement promise.",
+        "Every lost tree must be replanted in exactly its former position.",
+        "Counting replacement trees cannot by itself establish continued public use."
+      ],
+      "answer": 3,
+      "explanation": "Both retain separate plans for tree growth and usable conditions."
+    },
+    {
+      "prompt": "Which conclusion would exceed either source’s support?",
+      "options": [
+        "Planting nearby would restore rest conditions through all of the first twelve summers.",
+        "Temporary arrangements could address short-term use.",
+        "Some off-site planting may be necessary.",
+        "The panel can attach a clearer deadline to survival."
+      ],
+      "answer": 0,
+      "explanation": "New tree locations and shade over time have yet to be tested for that outcome."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why walk when the market packs up and library closes?",
+      "options": [
+        "The market’s management can confirm when soil has recovered.",
+        "The library closes every time the routes become unsuitable.",
+        "Those times matter to intended users and may change how shade and traffic interact.",
+        "Tree height can be measured accurately only near dusk."
+      ],
+      "answer": 2,
+      "explanation": "Mina chooses functional timings rather than an arbitrary observation hour."
+    },
+    {
+      "prompt": "What does the person with a bag illustrate?",
+      "options": [
+        "Counting users establishes why particular people did not stop.",
+        "A higher seat is the only sensible design.",
+        "The library should lend shoppers smaller bags.",
+        "A place to sit may be practically unreachable despite formal availability."
+      ],
+      "answer": 3,
+      "explanation": "Mina explains why route tests and occupancy totals capture different information."
+    },
+    {
+      "prompt": "What does Ari ultimately propose measuring independently?",
+      "options": [
+        "Market congestion and library borrowing",
+        "Canopy provision and the use of a full journey",
+        "Tree purchase and which contractor transports them",
+        "Two estimates of the original grove's average age"
+      ],
+      "answer": 1,
+      "explanation": "The final turn names the canopy count alongside a journey test."
+    },
+    {
+      "prompt": "Why introduce the example of a replaced window?",
+      "options": [
+        "To argue that old materials are more important than their use.",
+        "To contrast near-immediate function with a replacement whose contribution is delayed.",
+        "To advocate rebuilding a market shelter with old glass.",
+        "To say a new window and sapling cost about the same."
+      ],
+      "answer": 1,
+      "explanation": "The replacement pane can function at once, whereas a sapling matures over time."
+    },
+    {
+      "prompt": "Why keep purchase and planting in the agreement?",
+      "options": [
+        "The lecturer regards temporary shelter as irrelevant.",
+        "No other promise can be fulfilled before trees are removed.",
+        "Counting trees helps make an otherwise broad commitment accountable.",
+        "A planting count measures how comfortable the route is."
+      ],
+      "answer": 2,
+      "explanation": "The speaker wants an enforceable minimum rather than a vague promise alone."
+    },
+    {
+      "prompt": "What danger does the ledger exemplify?",
+      "options": [
+        "A completed count can conceal unfinished work on an independent promise.",
+        "Figures will not show who voted to keep the grove.",
+        "A picture may overstate the height of a new tree.",
+        "A longer ledger leaves too little time to plant."
+      ],
+      "answer": 0,
+      "explanation": "The entry can be clean while summer use of the square remains an unresolved obligation."
+    }
+  ],
+  "grammar": {
+    "focus": "Inversion with restrictions and dependencies",
+    "explanation": "Sentence-initial negative or restrictive expressions can trigger auxiliary inversion: rarely do we see; only after the inspection did we learn. With a subordinate time phrase, move the auxiliary in the main clause. An initial only followed by the subject does not trigger inversion.",
+    "examples": [
+      {
+        "before": "Only after the walk we understood the gap.",
+        "after": "Only after the walk did we understand the gap.",
+        "why": "The restrictive time phrase triggers inversion in the main clause."
+      },
+      {
+        "before": "Only the maintenance team did understand the readings.",
+        "after": "Only the maintenance team understood the readings.",
+        "why": "The original can express emphasis, but only modifies the subject and does not trigger inversion."
+      },
+      {
+        "before": "Not until had the paths reopened we could test them.",
+        "after": "Not until the paths had reopened could we test them.",
+        "why": "Invert could in the main clause; retain ordinary order in the time clause."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which formal sentence places a restriction on when testing was possible?",
+        "options": [
+          "Only after the market did close we could test the route.",
+          "Only after could we test the route the market closed.",
+          "Only after the market closed we can test the route.",
+          "Only after the market closed could we test the route."
+        ],
+        "answer": 3,
+        "explanation": "The initial time phrase triggers inversion of could in the main clause."
+      },
+      {
+        "prompt": "Which keeps normal order because only modifies the subject?",
+        "options": [
+          "Only noticed the tenants the different loading pattern.",
+          "Only did the tenants notice the different loading pattern.",
+          "Only the tenants noticed the different loading pattern.",
+          "Only the tenants did the different loading pattern notice."
+        ],
+        "answer": 2,
+        "explanation": "The exclusive subject is the tenants, not a fronted adverbial."
+      },
+      {
+        "prompt": "Which expresses a rare result with formal initial inversion?",
+        "options": [
+          "Rarely has one tree produced so much shade.",
+          "Rarely one tree has produced so much shade.",
+          "Rarely did one tree has produced so much shade.",
+          "Rarely has produced one tree so much shade."
+        ],
+        "answer": 0,
+        "explanation": "Has moves before one tree; produced remains the past participle."
+      },
+      {
+        "prompt": "Which revision emphasises that revising the plan alone cannot fulfil the promise?",
+        "options": [
+          "Under no circumstances revising a plan does discharge the planting duty.",
+          "Under no circumstances does revising a plan discharge the planting duty.",
+          "Under no circumstances does discharge revising a plan the duty.",
+          "Under no circumstances did revising a plan discharges the duty."
+        ],
+        "answer": 1,
+        "explanation": "Does precedes the complete subject; discharge remains plain."
+      },
+      {
+        "prompt": "Which moves only when to the front correctly?",
+        "options": [
+          "Only when does the shade reach the seats the bench provides the refuge.",
+          "Only when the shade reaches the seats the bench does provide the refuge.",
+          "Only when the shade reaches the seats does the bench provide the intended refuge.",
+          "Only does when the shade reach the seats provide the refuge the bench."
+        ],
+        "answer": 2,
+        "explanation": "The when clause keeps normal order and does introduces the main subject."
+      },
+      {
+        "prompt": "Which preserves the meaning that outdoor use was barely discussed, with stronger initial emphasis?",
+        "options": [
+          "Seldom did the committee discuss outdoor use.",
+          "Seldom the committee did discuss outdoor use.",
+          "Seldom the committee had discussed outdoor use.",
+          "Seldom did discuss the committee outdoor use."
+        ],
+        "answer": 0,
+        "explanation": "Seldom triggers past auxiliary did and the plain verb discuss."
+      },
+      {
+        "prompt": "Which result is correctly worded after ‘not until’?",
+        "options": [
+          "Not until were both conditions met did the panel close the file.",
+          "Not until both conditions were met did the panel close the file.",
+          "Not until did the panel close were both conditions met.",
+          "Not until both conditions were met the panel closed the file."
+        ],
+        "answer": 1,
+        "explanation": "The fronted clause has ordinary order; the main clause requires inversion."
+      },
+      {
+        "prompt": "Which use makes fulfilling one measure explicitly insufficient?",
+        "options": [
+          "Not until the quota was met could anyone use the route.",
+          "Rarely does meeting the quota fail to restore the route.",
+          "Only after we met the new quota did the route become usable.",
+          "Merely meeting the new tree quota does not prove the route is usable."
+        ],
+        "answer": 3,
+        "explanation": "The first wording limits what the evidentiary act proves rather than claiming a temporal dependency."
+      }
+    ],
+    "transfer": "Find two places for normal order and two for emphatic inversion in your meeting remarks. Have a partner identify exactly what each restrictive phrase modifies."
+  },
+  "vocabulary": [
+    {
+      "word": "discharge",
+      "meaning": "fulfil a duty",
+      "example": "The council discharged the planting duty on paper.",
+      "pair": "discharge an obligation"
+    },
+    {
+      "word": "canopy",
+      "meaning": "layer of branches and leaves overhead",
+      "example": "The broad canopy formerly covered much of the lane.",
+      "pair": "continuous canopy"
+    },
+    {
+      "word": "sapling",
+      "meaning": "young tree",
+      "example": "The worker marked a protected space for each sapling.",
+      "pair": "young sapling"
+    },
+    {
+      "word": "substitute",
+      "meaning": "thing used in place of a different thing",
+      "example": "A number is no substitute for a usable route.",
+      "pair": "substitute for evidence"
+    },
+    {
+      "word": "foreseeable",
+      "meaning": "reasonably predictable",
+      "example": "Late afternoon exposure was a foreseeable concern.",
+      "pair": "foreseeable consequence"
+    },
+    {
+      "word": "unwieldy",
+      "meaning": "difficult to handle because of size or shape",
+      "example": "An unwieldy carrier prevented her from using the little seat.",
+      "pair": "unwieldy load"
+    },
+    {
+      "word": "stewardship",
+      "meaning": "responsible ongoing care",
+      "example": "The agreement identifies who pays for stewardship.",
+      "pair": "long-term stewardship"
+    },
+    {
+      "word": "quantifiable",
+      "meaning": "able to be counted or measured",
+      "example": "The purchase creates a quantifiable target.",
+      "pair": "quantifiable outcome"
+    },
+    {
+      "word": "phased",
+      "meaning": "scheduled in stages",
+      "example": "The board approved a phased replacement.",
+      "pair": "phased programme"
+    },
+    {
+      "word": "mitigate",
+      "meaning": "reduce harmful effects",
+      "example": "A shelter can mitigate heat exposure during growth.",
+      "pair": "mitigate an impact"
+    },
+    {
+      "word": "ledger",
+      "meaning": "organised record of accounts or duties",
+      "example": "The ledger separated the two promises.",
+      "pair": "maintain a ledger"
+    },
+    {
+      "word": "interim",
+      "meaning": "applying during a temporary interval",
+      "example": "The designer presented an interim shade plan.",
+      "pair": "interim arrangement"
+    }
+  ],
+  "speaking": {
+    "audience": "A municipal panel facing tenants and maintenance staff",
+    "first": "Propose a six-minute phased plan with two distinct acts of accountability. Explain who needs a route, what a test can discover and what the replacement count demonstrates.",
+    "change": "Maintenance can tend the trees but cannot install a permanent canopy in time for summer.",
+    "second": "Speak at a public meeting. Give a temporary alternative and a statement of what it conveys about longer-term planting and summer use.",
+    "checklist": [
+      "Define a completion trigger for each duty.",
+      "Give realistic testing times.",
+      "Answer a tenant’s concern about one unusable seat.",
+      "Use emphatic inversion once to clarify a real limit."
+    ]
+  },
+  "writing": {
+    "audience": "Residents receiving the draft design by post",
+    "first": "Write a 420-word consultation brief. Give both policies, one reason to support each and a clear question about where and when people need to pause.",
+    "change": "A public notice says the square has been ‘replaced in full’ because trees were ordered.",
+    "second": "Draft a separate correction and an impact table. Preserve a true claim about the order while distinguishing it from survival and from shade.",
+    "checklist": [
+      "Identify the event actually established.",
+      "Base routes on a user's decision.",
+      "Record competing obligations without treating one as optional.",
+      "Avoid insinuating that planting happens instantly."
+    ]
+  },
+  "immersion": {
+    "role": "Public-space restitution planner",
+    "goal": "Give planting and ongoing use separate checks that remain meaningful after the press launch.",
+    "constraints": [
+      "Some purchased trees need off-site locations.",
+      "The square remains an active loading route.",
+      "A temporary intervention can be adjusted but not permanently built this season.",
+      "The agreement must include an auditable planting minimum."
+    ],
+    "change": "The library shifts its closing time by two hours while a summer market takes over the western wall.",
+    "deliverables": [
+      "Draft a two-promise agreement with separate evidence.",
+      "Provide a test route at two times and a report template for both.",
+      "Run a follow-up consultation and issue a revision dependent on what changed."
+    ],
+    "checklist": [
+      "Identify age and site constraints without inventing precise future growth.",
+      "Separate inconvenience from loss of access.",
+      "Keep measurements suited to each promise.",
+      "Make the changed timings consequential to your tests."
+    ]
+  }
+}

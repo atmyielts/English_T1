@@ -1,0 +1,394 @@
+{
+  "slug": "b2-the-warning-that-fits-the-display",
+  "title": "The Warning That Fits the Display",
+  "level": "B2",
+  "summary": "Test an English public transport message against rider misunderstandings and restricted display space.",
+  "documents": [
+    {
+      "title": "Design brief for the night stop",
+      "text": "On Friday evenings after 9:30, route 16 boards on River Street while the buses for route 61 remain on King Street. Drivers are likely to see people waiting for the 16 in the usual place because both routes start from the same side of King Street during the day. We have permission to place one message on the top line of the electronic display at that stop. It can carry 46 characters, counting spaces and punctuation. Longer instructions are allowed on a nearby printed poster. Start the display message with the route number so people know immediately whether the instruction applies to them. Use the street name shown on the temporary stop sign. Please avoid abbreviations other than the route number if possible. In our last trial, a route name written as 'R.' was interpreted as 'replacement bus' by several riders. Testing should take place where people can see the sign from the bench. Ask each reader to say where they would wait and which route the message is about without introducing either route in the question."
+    },
+    {
+      "title": "Trial notes from the station team",
+      "text": "We tested '16 Friday after 9:30: River Street' and '16 Friday from 9:30: board on River Street' with eight readers. Four of the first five readers pointed toward River Street, although two thought they could still board on King Street and the bus would turn into River Street afterward. Under the second version, all three readers correctly identified where to board. That version was shown closer to the bench after someone moved a luggage cart, so we cannot tell how much of the improvement came from the wording alone. In both versions, riders could tell that 16 was a route number. Someone waiting for the 61 was about to move until another rider drew attention to the number at the start. We recommend keeping 'board on' and retesting with both messages shown at the same distance and on the same screen. When recording answers, separate where people say they would go from what they actually point to. For example, a rider can say River Street while pointing at the street where they are sitting."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Observer briefing before the trial",
+      "text": "Ella: Show the reader the same screen either way. You can ask, 'Which stop would you use?' but don't say River Street in the question. Let them point first if they want.\n\nIvo: What if they ask which bus the message is meant for?\n\nElla: Say, 'What does the screen tell you?' Then wait. A long silence is more useful than giving them the answer. Once they've replied, help them find their bus if they need you.\n\nIvo: Last time one person waited until the rider beside her answered. Can I ask them separately?\n\nElla: Yes. Invite them one at a time. Also mark whether they read from the bench or walked closer. We cannot make everyone stay seated. If a reader stands up, write it down.\n\nIvo: What about the time? The first run was around seven, when the sun was still on the screen.\n\nElla: Both versions will start at a quarter past nine tonight. We'll take turns with the messages so they face similar light. Try to get readers from both routes."
+    },
+    {
+      "title": "A rider reads the second message",
+      "text": "Ivo: Take a look at the top line. Which stop would you use?\n\nDaniel: Well, I use this stop every week. I was here last Friday at eight, and the bus stopped right there.\n\nIvo: What does the screen tell you?\n\nDaniel: From half past nine. Oh, right, I'll use River Street if it's that late. I'm early tonight, so I'd wait here. The 61 still starts here too, does it?\n\nIvo: Which route does the top line refer to, as you read it?\n\nDaniel: Just the 16. I saw the number first, but I thought it might be the time. The wording at the end cleared it up.\n\nIvo: Did you need to get closer to the screen?\n\nDaniel: No, but I'd missed it when I was looking down at my phone. I only saw it after you asked me. Do you want me to show you River Street?\n\nIvo: Yes, that's useful. And when we finish, I can tell you where the poster is. It gives the walking direction as well as the street name."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why must the message begin with 16?",
+      "options": [
+        "It tells riders the time is in the evening.",
+        "It reduces the letter count of River Street.",
+        "It helps riders identify the relevant route before acting.",
+        "It matches the name of the route on the poster."
+      ],
+      "answer": 2,
+      "explanation": "Putting the route at the beginning helps readers decide who the warning applies to."
+    },
+    {
+      "prompt": "1. What distinction must the message preserve?",
+      "options": [
+        "Both routes move but depart at different times.",
+        "The late change is for the 16 and the 61 stays at its usual stop.",
+        "The notice moves the 61 on Fridays before dinner.",
+        "The 16 uses River Street all day Friday."
+      ],
+      "answer": 1,
+      "explanation": "Only the 16 changes stop after 9:30 on Friday."
+    },
+    {
+      "prompt": "1. Why does the team intend to avoid abbreviations?",
+      "options": [
+        "All visible signs display street names in full.",
+        "A short form has caused a different transport meaning to be inferred.",
+        "The printed poster must use fewer characters than the screen.",
+        "The screen will not accept shortened words."
+      ],
+      "answer": 1,
+      "explanation": "Earlier readers interpreted R. as a vehicle replacement code."
+    },
+    {
+      "prompt": "2. Why is it difficult to single out the effect of the phrase 'board on'?",
+      "options": [
+        "Riders were not invited to say what they would do.",
+        "The same people saw both versions at once.",
+        "The two messages were viewed from different distances.",
+        "Nobody read the first version on a screen."
+      ],
+      "answer": 2,
+      "explanation": "Moving the cart changed the viewing conditions along with wording."
+    },
+    {
+      "prompt": "2. What error remained among people who could point toward the right street?",
+      "options": [
+        "Some thought they could still board at the usual stop.",
+        "They read 16 as 61 when looking from the bench.",
+        "They thought there was no service before 9:30.",
+        "Some expected to find the cart there."
+      ],
+      "answer": 0,
+      "explanation": "Two participants recognized the street but misunderstood its function."
+    },
+    {
+      "prompt": "2. What two pieces of evidence should be captured separately?",
+      "options": [
+        "A reader's named street and pointed direction",
+        "The route number and character count",
+        "A reader's travel history and name",
+        "The sign's light level and street name"
+      ],
+      "answer": 0,
+      "explanation": "The two responses can disagree, so the observer should not merge them."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What would Ella do just after a reader's answer?",
+      "options": [
+        "Show the same person a new route without recording.",
+        "Invite the reader beside them to confirm the first answer.",
+        "Give the answer to the next reader before the trial.",
+        "Offer travel help if required."
+      ],
+      "answer": 3,
+      "explanation": "Ella separates the test response from ordinary rider assistance after it."
+    },
+    {
+      "prompt": "1. How will the team handle people who walk nearer?",
+      "options": [
+        "Exclude anyone who moves.",
+        "Bring the screen closer to the bench.",
+        "Record where they read from.",
+        "Show the other message from their new spot."
+      ],
+      "answer": 2,
+      "explanation": "The observer should log the viewing position instead of making people sit."
+    },
+    {
+      "prompt": "1. Why do observers alternate messages that night?",
+      "options": [
+        "To give them comparable lighting conditions",
+        "To explain why the route has changed",
+        "To test whether people can remember both",
+        "To ensure all readers board a bus at quarter past nine"
+      ],
+      "answer": 0,
+      "explanation": "Ella connects alternating versions with similar light during the run."
+    },
+    {
+      "prompt": "2. What does Daniel plan to do tonight given his time of arrival?",
+      "options": [
+        "Walk to River Street immediately.",
+        "Board the 61 because the 16 is unavailable.",
+        "Use his usual stop.",
+        "Wait at the bench until 9:30 before choosing."
+      ],
+      "answer": 2,
+      "explanation": "Daniel says he is early, so the late change does not yet apply."
+    },
+    {
+      "prompt": "2. How did Daniel resolve the ambiguity of the first number?",
+      "options": [
+        "He used the words later in the display message.",
+        "He recognized it from the previous Friday.",
+        "He looked at the printed poster.",
+        "He compared a second version of the display."
+      ],
+      "answer": 0,
+      "explanation": "He says the wording at the end made the meaning clear."
+    },
+    {
+      "prompt": "2. What does Daniel's remark about his phone show?",
+      "options": [
+        "The screen is readable only to people with large phones.",
+        "Reading a clear message when asked differs from noticing it unaided.",
+        "Phone use caused all earlier readers to identify the wrong street.",
+        "The earlier distance problem has been solved."
+      ],
+      "answer": 1,
+      "explanation": "He reads without moving, but he had not looked up before being asked."
+    }
+  ],
+  "grammar": {
+    "focus": "Contrast and concession",
+    "explanation": "Use although to make a dependent contrast, whereas to set parallel facts against each other, and despite before a noun phrase or -ing form. A sentence-level however can introduce a separate statement, with appropriate punctuation.",
+    "examples": [
+      {
+        "before": "Despite the screen was closer, not all readers looked up.",
+        "after": "Although the screen was closer, not all readers looked up.",
+        "why": "A full subject and verb follow although. Despite takes a noun phrase or -ing form."
+      },
+      {
+        "before": "The 16 moved, whereas the 61 stays on King Street during the same Friday trial.",
+        "after": "The 16 moves, whereas the 61 stays on King Street during the same Friday trial.",
+        "why": "Match the tense for a recurring pair of contrasting arrangements."
+      },
+      {
+        "before": "Readers recognized the street, however two stayed put.",
+        "after": "Readers recognized the street. However, two stayed put.",
+        "why": "However can introduce a separate statement. A comma alone cannot join those two independent clauses."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "___ both texts fit, the second one gave a clearer action.",
+        "options": [
+          "Despite",
+          "Although",
+          "However",
+          "In spite of"
+        ],
+        "answer": 1,
+        "explanation": "A complete clause follows the blank and introduces contrast."
+      },
+      {
+        "prompt": "Five riders saw the first version, ___ only three saw the second.",
+        "options": [
+          "whereas",
+          "despite",
+          "in order to",
+          "although of"
+        ],
+        "answer": 0,
+        "explanation": "Whereas contrasts the two numbers of readers."
+      },
+      {
+        "prompt": "___ the shorter viewing distance, Daniel did not look up unaided.",
+        "options": [
+          "Even though",
+          "Whereas",
+          "While it",
+          "Despite"
+        ],
+        "answer": 3,
+        "explanation": "The following words form a noun phrase, not a full clause."
+      },
+      {
+        "prompt": "Which sentence joins a concession correctly?",
+        "options": [
+          "Despite they knew the street, they went to the wrong stop.",
+          "Although they knew the street, they went to the wrong stop.",
+          "They knew the street, however they went to the wrong stop.",
+          "Even knowing the street, but they went to the wrong stop."
+        ],
+        "answer": 1,
+        "explanation": "Although introduces the first clause. The second stands on its own."
+      },
+      {
+        "prompt": "The message fits the display. ___, it leaves out a walking direction.",
+        "options": [
+          "Whereas",
+          "However",
+          "Although",
+          "Despite"
+        ],
+        "answer": 1,
+        "explanation": "However starts a separate sentence that contrasts with the previous one."
+      },
+      {
+        "prompt": "Which version sets two matching outcomes against each other?",
+        "options": [
+          "Despite the 16 boards on River Street, whereas the 61 boards on King Street.",
+          "The 16 on River Street, although the 61 on King Street.",
+          "The 16 boarded on River Street, whereas the 61 will board on King Street at the same time each Friday.",
+          "The 16 boards on River Street, whereas the 61 boards on King Street."
+        ],
+        "answer": 3,
+        "explanation": "The parallel clauses are complete and share a present schedule frame."
+      },
+      {
+        "prompt": "___ having the correct route number, one rider missed its significance.",
+        "options": [
+          "Because",
+          "Despite",
+          "Whereas",
+          "Even though"
+        ],
+        "answer": 1,
+        "explanation": "Despite can take the -ing phrase and connects it with a contrasting outcome."
+      },
+      {
+        "prompt": "Both phrases initially seemed clear. ___ neither prompted everybody to look up unasked.",
+        "options": [
+          "Yet",
+          "Whereas",
+          "Even though",
+          "In spite"
+        ],
+        "answer": 0,
+        "explanation": "Yet links the contrast as a coordinating conjunction at the start of the second sentence."
+      }
+    ],
+    "transfer": "Write a five-sentence evaluation of the results. Use although for an apparent success with a limitation, whereas for two rider behaviors, and despite for a contrast about the viewing conditions. Read it aloud and repair any clause that is left unfinished."
+  },
+  "vocabulary": [
+    {
+      "word": "board",
+      "meaning": "get on a bus, train or other vehicle",
+      "example": "Passengers board the shuttle behind the station.",
+      "pair": "board a bus"
+    },
+    {
+      "word": "apply to",
+      "meaning": "be relevant to or meant for",
+      "example": "The timetable change applies to weekend services.",
+      "pair": "apply to passengers"
+    },
+    {
+      "word": "display",
+      "meaning": "a screen or panel that shows information",
+      "example": "The electronic display has just one spare line.",
+      "pair": "an electronic display"
+    },
+    {
+      "word": "abbreviation",
+      "meaning": "a shortened form of a word or phrase",
+      "example": "The editor removed an unfamiliar abbreviation from the sign.",
+      "pair": "use an abbreviation"
+    },
+    {
+      "word": "interpret",
+      "meaning": "understand a message in a particular way",
+      "example": "Some passengers interpreted the arrow as a walking direction.",
+      "pair": "interpret a message"
+    },
+    {
+      "word": "refer to",
+      "meaning": "mean or identify a particular thing",
+      "example": "The notice refers to the morning bus only.",
+      "pair": "refer to a route"
+    },
+    {
+      "word": "prompt",
+      "meaning": "cause someone to do something",
+      "example": "The chime prompted the passengers to look up.",
+      "pair": "prompt a response"
+    },
+    {
+      "word": "viewing distance",
+      "meaning": "the space between the reader and what they see",
+      "example": "The display appears much smaller at a longer viewing distance.",
+      "pair": "keep the viewing distance constant"
+    },
+    {
+      "word": "retake",
+      "meaning": "do again, especially a recorded attempt",
+      "example": "I had to retake the sample recording after the door slammed.",
+      "pair": "retake a recording"
+    },
+    {
+      "word": "alternate",
+      "meaning": "take turns between two things",
+      "example": "Alternate the signs so time affects both groups equally.",
+      "pair": "alternate between two versions"
+    },
+    {
+      "word": "unaided",
+      "meaning": "without being helped or directed",
+      "example": "Most riders found the map unaided.",
+      "pair": "find a stop unaided"
+    },
+    {
+      "word": "visibility",
+      "meaning": "how easily something can be seen",
+      "example": "Direct sunlight reduced visibility from the bench.",
+      "pair": "poor visibility"
+    }
+  ],
+  "speaking": {
+    "audience": "A transport operations lead and the person who drafted the first trial message",
+    "first": "Give a 2–3 minute briefing. Recommend a display message within 46 characters. State the one result that supports your recommendation and the two reasons the trial cannot settle the issue. Then demonstrate a neutral question.",
+    "change": "The display now has room for 36 characters. No poster will be ready for the first hour.",
+    "second": "Record a second 2-minute take. Prioritize which information must stay, explain how staff could fill any gaps, and describe a check for both riders who read and riders who never look up.",
+    "checklist": [
+      "Read each proposed message aloud",
+      "Keep both routes straight",
+      "Distinguish comprehension and noticeability",
+      "Avoid a leading test question"
+    ]
+  },
+  "writing": {
+    "audience": "The station communications coordinator",
+    "first": "Write a 180–230 word trial report with a proposed 46-character message, exact scope of the trial, a limit on its conclusion, and two practical changes for the next run.",
+    "change": "The printed poster can carry one line of walking directions, but the web notice now has to warn both routes together. The web reader may be planning a trip earlier that afternoon.",
+    "second": "Convert the operative facts into a 90–130 word web service notice and a one-line printed direction. Use only the two known streets and state what timing a rider should check.",
+    "checklist": [
+      "Both route numbers and their instructions are visible",
+      "Report separates evidence from recommendation",
+      "Calendar and time scope stay accurate",
+      "The notice does not invent a turn or distance"
+    ]
+  },
+  "immersion": {
+    "role": "Public information tester",
+    "goal": "Build a display and trial kit the station can use to choose a short, testable message.",
+    "constraints": [
+      "Maximum 46 characters on the normal top line",
+      "The street and action must be understandable without a spoken explanation",
+      "A rider on the 61 should know the update does not apply"
+    ],
+    "change": "The same message will also run at a small stop where the display is read while people walk past. You cannot ask every passer-by to stop.",
+    "deliverables": [
+      "Make a card with two competing messages and manually count their characters",
+      "Write two neutral questions to test route and action",
+      "Create a tally sheet that distinguishes giving a direction, pointing and noticing unaided",
+      "Add a method for observing the walk-by screen fairly and note one limit"
+    ],
+    "checklist": [
+      "Each draft meets the character limit",
+      "The phrases communicate a boarding action and its scope",
+      "The test does not name an answer in a question",
+      "Results can distinguish reading from noticing"
+    ]
+  }
+}

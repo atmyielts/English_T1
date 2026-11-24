@@ -1,0 +1,394 @@
+{
+  "slug": "b2-before-the-festival-panel-votes",
+  "title": "Before the Festival Panel Votes",
+  "level": "B2",
+  "summary": "Separate shortlisting from funding and design a fair decision meeting when readers encounter different evidence.",
+  "documents": [
+    {
+      "title": "Instructions for the microgrant panel",
+      "text": "This spring's neighborhood festival can fund two small events. The panel first reads a one-page anonymous version of each proposal. At that stage, use the published criteria: how easy it is for residents to join, how clearly the costs are explained, and whether the event has an indoor plan if it rains. Score each criterion from one to four. The first score creates a shortlist for discussion. It does not decide the winners. Panel members then read a signed follow-up about delivery, with details of staff or materials the event needs. Each panel member must disclose personal involvement with any event after names are visible. Someone who helped prepare a proposal may answer factual questions but must not vote on that proposal. Before discussion, the chair gives people three quiet minutes to write down one reason for their provisional preference and one question. The final vote is based on the merits and the confirmed delivery plan. Keep short notes about changed judgments so an applicant can receive a reason if the decision is queried."
+    },
+    {
+      "title": "From the chair's comparison sheet",
+      "text": "The shadow-puppet workshop was the most popular choice on the anonymous score sheet. It offers sessions for two age groups in the same room and appears to have no venue fees. The signed follow-up mentions that the free room is upstairs and reached by steps. An accessible room downstairs would cost 40 extra credits and hold six fewer people at each session. The other strong proposal, a plant-printing table, includes the lower room in its budget and caps each group at eight. It also relies on three helpers who have not confirmed they can come. The score sheet does not tell us which practical uncertainty matters more. Before we vote, we should ask the puppet group if running two shorter sessions would keep enough places for all ages downstairs. We should ask the print group which jobs the unconfirmed helpers would do and whether any of those tasks could be combined. Both groups need to get the same amount of time to answer. A reply should be assessed against the relevant criterion."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "The chair opens the discussion",
+      "text": "Chair: Before we talk about the costs, I need to record a correction. Dalia, you have said you helped write the first draft for the plant-printing table. Is that right?\n\nDalia: Yes. I typed the equipment list and suggested they ask for the lower room. I wasn't involved in setting the final budget.\n\nChair: Thank you. You can tell us what the trays are used for if it helps everyone understand the budget. Please leave the vote on that proposal to the rest of us.\n\nDalia: Do you still want the score I gave it before I saw the name?\n\nChair: Yes, keep it on the first sheet to show how we came to discuss it. The final tally will show three votes instead of four for that one.\n\nPanel member: Should we read our first choices now?\n\nChair: Let's take the three quiet minutes first, with one reason and one unanswered question each. We don't need to settle someone else's concern before we write our own."
+    },
+    {
+      "title": "A call with the puppet group",
+      "text": "Chair: Your follow-up says twelve people can sit at a table downstairs. Could two shorter sessions work?\n\nOrganizer: Two could work if there is no need to reset the room between them. The puppets need to be set out for the next group, so we'd like twelve minutes to do that.\n\nChair: Is there a step-free route to the puppet materials?\n\nOrganizer: The trays are light and can come down with us before people arrive. The only thing we can't bring downstairs is the full backdrop. We could use a plain sheet low enough for younger children to see.\n\nChair: Could someone watching from the side follow the scene with that set-up?\n\nOrganizer: If we leave two spaces at the front for people who need a closer view. That would reduce the number of chairs in rows to ten. May I send you a sketch?\n\nChair: Yes, please include the time for the reset. We will keep the proposal open until the panel receives both answers."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why does the chair give members quiet writing time before discussion?",
+      "options": [
+        "They can record an individual reason and question before hearing others.",
+        "They can change every score without leaving any note.",
+        "They can count the final votes twice without the candidates.",
+        "They can reply to applicants before seeing any signed information."
+      ],
+      "answer": 0,
+      "explanation": "The independent pause gives people a chance to formulate judgments before group discussion."
+    },
+    {
+      "prompt": "1. What does a shortlist score decide?",
+      "options": [
+        "Which two events receive money automatically",
+        "Which proposals are considered further",
+        "Which applicants have to change venue",
+        "Which panel members will have to abstain"
+      ],
+      "answer": 1,
+      "explanation": "The shortlist brings events into discussion; the final decision also considers delivery."
+    },
+    {
+      "prompt": "1. When should a panel member disclose involvement?",
+      "options": [
+        "Before opening any anonymous sheets without reading them",
+        "When names can be seen during the signed stage",
+        "Only if asked after the final vote has been counted",
+        "Only when reviewing a failed event later"
+      ],
+      "answer": 1,
+      "explanation": "The rule links disclosure to the time when applicants are identified."
+    },
+    {
+      "prompt": "2. Why might the first score for the puppet workshop need reconsideration?",
+      "options": [
+        "The workshop was already held without a backstage plan.",
+        "The published criteria required identical seats at every event.",
+        "A signed report made the materials more expensive in both rooms.",
+        "The free venue is less accessible than the downstairs option."
+      ],
+      "answer": 3,
+      "explanation": "The signed follow-up reveals stairs and the extra cost and reduced seating of the accessible room."
+    },
+    {
+      "prompt": "2. What is the main unresolved question about the print table?",
+      "options": [
+        "Whether it offers any age groups at all",
+        "Whether the upstairs room can fit its materials",
+        "Whether its plan works without some of the helpers",
+        "Whether its budget includes the lower room"
+      ],
+      "answer": 2,
+      "explanation": "The unconfirmed volunteers create a possible delivery problem."
+    },
+    {
+      "prompt": "2. What kind of fair procedure does the chair propose?",
+      "options": [
+        "Require both to answer the same logistical question about venue costs.",
+        "Give each group equal time and assess replies against the relevant criterion.",
+        "Make the group with fewer anonymous points reply before the other one.",
+        "Share both responses publicly before either organizer can vote."
+      ],
+      "answer": 1,
+      "explanation": "Equal opportunity to clarify can allow different specific questions."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. How is Dalia's factual involvement relevant to the vote?",
+      "options": [
+        "She can vote only if she changes her provisional score.",
+        "She must leave all discussion, including factual questions.",
+        "She can give the other members the group's new final score.",
+        "She can answer questions about the trays but cannot vote on that proposal."
+      ],
+      "answer": 3,
+      "explanation": "The chair separates factual help from the decision on the conflicted proposal."
+    },
+    {
+      "prompt": "1. Why does the first score stay on the sheet?",
+      "options": [
+        "It automatically counts as an extra final vote.",
+        "It helps explain how the proposal reached discussion.",
+        "It justifies excluding all similar proposals.",
+        "It contains information the other three members cannot read."
+      ],
+      "answer": 1,
+      "explanation": "The chair distinguishes a historical record from final vote counting."
+    },
+    {
+      "prompt": "1. What does the chair prevent by insisting on the short pause first?",
+      "options": [
+        "The panel could forget the date when organizers arrive.",
+        "Members would have to rescore all candidates in public.",
+        "The three remaining members might close the room too early.",
+        "People may hear others' preferences before forming their own."
+      ],
+      "answer": 3,
+      "explanation": "The instruction is to write reasons and questions before hearing first choices."
+    },
+    {
+      "prompt": "2. What extra period does the organizer ask for between sessions?",
+      "options": [
+        "Ten minutes to carry full backdrops",
+        "Two minutes to set out all the chairs",
+        "Twelve minutes to reset the puppets",
+        "An hour to charge for the room"
+      ],
+      "answer": 2,
+      "explanation": "The organizer wants twelve minutes to set out materials for the next group."
+    },
+    {
+      "prompt": "2. What changes in the event if it moves downstairs?",
+      "options": [
+        "A simple low sheet replaces the full backdrop.",
+        "The group must cancel the second session.",
+        "The tables hold twenty-four chairs by default.",
+        "The staff can no longer move trays before visitors arrive."
+      ],
+      "answer": 0,
+      "explanation": "The full backdrop cannot move downstairs, so a plain sheet is suggested."
+    },
+    {
+      "prompt": "2. What information should the sketch include?",
+      "options": [
+        "How the plant group will schedule helpers",
+        "How long the room reset takes",
+        "Which panel member can give a vote",
+        "Why the earlier budget was anonymous"
+      ],
+      "answer": 1,
+      "explanation": "The chair asks the organizer to add reset time to the sketch."
+    }
+  ],
+  "grammar": {
+    "focus": "Reporting requests and reasons",
+    "explanation": "Use ask + person + to-infinitive for an action request. Use ask + whether/if with statement word order for a yes/no question. Report a reason with explain + that clause or explain + question word clause. Mention who has to act where it matters.",
+    "examples": [
+      {
+        "before": "The chair asked the organizer if could two sessions work.",
+        "after": "The chair asked the organizer whether two sessions could work.",
+        "why": "The indirect question uses a subject before the modal, unlike a direct question."
+      },
+      {
+        "before": "They asked that Dalia to leave the vote to the rest.",
+        "after": "They asked Dalia to leave the vote to the rest.",
+        "why": "Use ask + person + to-infinitive for a request to act."
+      },
+      {
+        "before": "They explained us that the first score remained on file.",
+        "after": "They explained to us that the first score remained on file.",
+        "why": "Use explain to before the recipient of the explanation."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "How should the chair report 'Send us a sketch, please'?",
+        "options": [
+          "The chair asked the organizer sending a sketch.",
+          "The chair asked that the organizer to send a sketch.",
+          "The chair asked to the organizer send a sketch.",
+          "The chair asked the organizer to send a sketch."
+        ],
+        "answer": 3,
+        "explanation": "Ask is followed by the person and a to-infinitive."
+      },
+      {
+        "prompt": "The secretary asked ___ the tray would be on the lower floor.",
+        "options": [
+          "whether",
+          "that must",
+          "what to",
+          "how would"
+        ],
+        "answer": 0,
+        "explanation": "Whether introduces an indirect yes/no question with statement word order."
+      },
+      {
+        "prompt": "What did the chair explain to the group?",
+        "options": [
+          "She explained why did the earlier score have to stay in the record.",
+          "She explained that why the earlier score stay on record.",
+          "She explained why the earlier score had to stay in the record.",
+          "She explained the group that the score staying there."
+        ],
+        "answer": 2,
+        "explanation": "The reported question phrase uses statement word order after why."
+      },
+      {
+        "prompt": "Report 'Which room will you need?' as an indirect question.",
+        "options": [
+          "She asked which room they would need.",
+          "She asked which room would they need.",
+          "She asked them to need which room.",
+          "She asked that which room they need."
+        ],
+        "answer": 0,
+        "explanation": "The subject precedes would in the reported question."
+      },
+      {
+        "prompt": "Which requests the action rather than reporting a question about willingness?",
+        "options": [
+          "The chair asked whether Dalia would describe the equipment.",
+          "The chair asked Dalia to describe the equipment.",
+          "The chair asked why Dalia described the equipment.",
+          "The chair asked if Dalia knew the equipment."
+        ],
+        "answer": 1,
+        "explanation": "The direct action is encoded with a person followed by to plus the verb."
+      },
+      {
+        "prompt": "The organizer explained ___ the original backdrop was too large for the room.",
+        "options": [
+          "that",
+          "to",
+          "with",
+          "of"
+        ],
+        "answer": 0,
+        "explanation": "A that-clause supplies the content of the explanation."
+      },
+      {
+        "prompt": "Report 'Does the new space cost 40 credits?'",
+        "options": [
+          "She asked if did the new space cost 40 credits.",
+          "She asked to the new space cost 40 credits.",
+          "She asked if the new space cost 40 credits.",
+          "She asked what the new space cost 40 credits."
+        ],
+        "answer": 2,
+        "explanation": "Use an if-clause and remove direct-question do-support."
+      },
+      {
+        "prompt": "Which reports both a request and a reason clearly?",
+        "options": [
+          "The chair asked Dalia wait and explained her that the score remained.",
+          "The chair asked that Dalia to wait and explained would the initial score remain.",
+          "The chair asked Dalia waiting and explained that would the score remain.",
+          "The chair asked Dalia to wait and explained that the initial score would remain."
+        ],
+        "answer": 3,
+        "explanation": "The first verb has an object and infinitive, and the second has a complete content clause."
+      }
+    ],
+    "transfer": "Turn a new three-turn exchange into meeting notes: one request for a detail, one question asking about a condition, and one reply that explains a timing limit. Report each as a sentence and check who is responsible for the next step."
+  },
+  "vocabulary": [
+    {
+      "word": "microgrant",
+      "meaning": "a relatively small payment for a defined project",
+      "example": "The event won a microgrant to hire a room.",
+      "pair": "award a microgrant"
+    },
+    {
+      "word": "provisional",
+      "meaning": "temporary until a decision is confirmed",
+      "example": "Each panel member noted a provisional preference.",
+      "pair": "a provisional decision"
+    },
+    {
+      "word": "shortlist",
+      "meaning": "a smaller group chosen for further consideration",
+      "example": "Three groups made the shortlist before the follow-up.",
+      "pair": "draw up a shortlist"
+    },
+    {
+      "word": "criterion",
+      "meaning": "a standard used to judge a decision or result",
+      "example": "The rain plan is one criterion, not the whole decision.",
+      "pair": "meet a criterion"
+    },
+    {
+      "word": "disclose",
+      "meaning": "make previously unknown information available",
+      "example": "Panel members are required to disclose relevant involvement.",
+      "pair": "disclose an interest"
+    },
+    {
+      "word": "venue fee",
+      "meaning": "what must be paid to use a particular place",
+      "example": "The downstairs venue fee is in the proposal.",
+      "pair": "cover the venue fee"
+    },
+    {
+      "word": "cap",
+      "meaning": "set an upper limit for a number or amount",
+      "example": "The organizer capped the workshop at eight people.",
+      "pair": "cap attendance"
+    },
+    {
+      "word": "abstain",
+      "meaning": "choose to take no vote on a decision",
+      "example": "Dalia will abstain from the final vote on that proposal.",
+      "pair": "abstain from a vote"
+    },
+    {
+      "word": "tally",
+      "meaning": "a record of numbers that have been counted",
+      "example": "The tally shows that three members voted.",
+      "pair": "record a tally"
+    },
+    {
+      "word": "reset",
+      "meaning": "restore the arrangement so it is ready to use again",
+      "example": "We need twelve minutes to reset the room.",
+      "pair": "reset the room"
+    },
+    {
+      "word": "step-free",
+      "meaning": "possible to reach and use without going up or down steps",
+      "example": "The organizer checked for a step-free route.",
+      "pair": "a step-free entrance"
+    },
+    {
+      "word": "backdrop",
+      "meaning": "a large background behind people on a stage or in a display",
+      "example": "The visual team replaced the backdrop with a plain sheet.",
+      "pair": "hang a backdrop"
+    }
+  ],
+  "speaking": {
+    "audience": "A festival panel that has just read both signed applications",
+    "first": "Give a 2–3 minute chair's opening. Separate the anonymous ratings from the final vote, state the conflict procedure, and put one specific, neutral question to each organizer.",
+    "change": "A fourth member must leave early. A written note from the plant-print group says one of three helpers can now attend.",
+    "second": "Make a new two-minute opening. State the updated evidence, address how to record participation honestly, and say what part of the decision may need to wait.",
+    "checklist": [
+      "Do not turn a shortlist score into a final result",
+      "Describe Dalia's two distinct roles",
+      "Name which uncertainties remain",
+      "Ask neutral questions that each group can answer"
+    ]
+  },
+  "writing": {
+    "audience": "Both applicants and the panel secretary",
+    "first": "Prepare two separate 100–120 word requests for follow-up, one to each applicant. State the unresolved issue, give an equal amount of response time, and explain how the information will be used.",
+    "change": "The puppet group sends a sketch with a longer reset time. The print group asks for an extra day after its contact person falls ill.",
+    "second": "Write a 140–180 word note to the secretary that proposes how to handle the timing and whether to defer a final vote. Explain what decision has already been made and record which participants can cast which vote.",
+    "checklist": [
+      "Each request names a concrete fact rather than a conclusion",
+      "Use reported speech to attribute updates",
+      "Keep the notes understandable to both applicants",
+      "Avoid promising a final result before the evidence is complete"
+    ]
+  },
+  "immersion": {
+    "role": "Festival panel secretary",
+    "goal": "Build a usable decision kit that records changes to judgments and treats both applicants consistently.",
+    "constraints": [
+      "Anonymous scores support shortlisting only",
+      "An involved panel member cannot vote on the affected proposal",
+      "Both applicants get the same time to clarify issues"
+    ],
+    "change": "The community hall closes ten minutes earlier than planned. Both proposals can respond, but one has asked whether it can send a drawing rather than join the next call.",
+    "deliverables": [
+      "Create a two-row decision table with practical uncertainties and facts needed",
+      "Draft the quiet-minute notes sheet and one equal response rule",
+      "Design a vote record that distinguishes disclosure, factual participation and recorded votes",
+      "Run a two-minute panel opening and revise the record to accommodate the written drawing"
+    ],
+    "checklist": [
+      "No proposal is eliminated solely on its first score",
+      "Questions are different where the evidence requires it",
+      "Any change to the vote is traceable without recording private speculation",
+      "The new response option can be used consistently"
+    ]
+  }
+}

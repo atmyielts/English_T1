@@ -1,0 +1,391 @@
+{
+  "slug": "b2-write-a-fair-volunteer-reference",
+  "title": "A Reference When You Saw Only Part of the Work",
+  "level": "B2",
+  "summary": "Separate firsthand observation, supporting material and unfamiliar work in a volunteer reference.",
+  "documents": [
+    {
+      "title": "Request from the volunteer network",
+      "text": "We are choosing an assistant to welcome visitors at a local advice fair. The role includes explaining where people should go, recording a short question if it cannot be answered at once, and passing it to a staff member. We do not expect applicants to know the answers to every question. We want to know what they do when they do not know something.\n\nIf you are writing a reference, please describe one situation you saw. Say what the applicant did and which requests were difficult. You may attach a document they produced, but identify who wrote it and whether you saw them use it. Do not assume that an item with their name on it represents work they did alone. If you cannot comment on a part of the role, make that explicit. The organiser can then arrange a short practice session. References that distinguish observations from impressions will be more useful than references containing a list of strengths without examples."
+    },
+    {
+      "title": "A former team leader's notes",
+      "text": "I worked with Soraya at two information evenings. On the first night I watched her direct visitors to separate rooms and check the timetable when she was unsure. On the second night I worked at another desk. She brought me a page of questions afterwards. She said a colleague had started the page, and she added the questions that needed staff to follow up. I did not see either person take all the notes.\n\nThe page has a clear place for an action and the name of the staff member who will take it. It would have helped the team on the first night, when several visitors had to explain their questions more than once. I can say the final page was useful. I cannot say how much Soraya contributed to its layout. The fair has also asked about difficult conversations. I saw her ask staff for help with a timetable, but I did not see her manage a disagreement about whether somebody could enter."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A call about what to include",
+      "text": "Network coordinator: Could you say that Soraya dealt with difficult questions independently?\n\nTeam leader: I can say she responded to one visitor whose appointment time did not appear on our timetable. She asked the visitor to wait beside the desk while she checked with the person who kept the schedule. I thought that was an appropriate choice.\n\nNetwork coordinator: Do you know whether she gave the visitor the right time in the end?\n\nTeam leader: I heard her tell the visitor that we would call after the staff member checked. I did not hear the call. We should not say she solved the appointment problem unless we find that record.\n\nNetwork coordinator: Could you attach the questions sheet as a second example?\n\nTeam leader: Yes, with a short note that explains it was shared work. It gives you an example of what the team used. If you want to see how she takes a fresh question, that would be a useful activity in the practice session."
+    },
+    {
+      "title": "Feedback on a proposed reference",
+      "text": "Reviewer: The draft says Soraya independently prepared a question sheet. The team leader said she added questions to an existing one. I would change that verb.\n\nWriter: I wanted to show that she gave the team a useful record. Would “helped prepare” do it?\n\nReviewer: Yes. Then describe what was useful about the finished page. That does not tell us which part she added, but it explains why the record mattered. Keep the first-night example. It shows her checking with someone before giving a definite time.\n\nWriter: The last paragraph currently says she would be excellent in any visitor role. Should we say which parts we can support?\n\nReviewer: Yes. The reference can support basic directions and asking a colleague to verify details. For a tense conversation, suggest a practice scenario. If you keep those separate, the reader can make a stronger decision about what to test next. They will know where your experience with her ends."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What does the network especially want to learn?",
+      "options": [
+        "Whether the applicant knows every room already",
+        "Whether the applicant wrote a reference alone",
+        "How the applicant handles a question they cannot answer immediately",
+        "How many visitor questions the fair expects"
+      ],
+      "answer": 2,
+      "explanation": "The request explicitly asks about how people respond to uncertainty."
+    },
+    {
+      "prompt": "1. What should a reference say about an attached document?",
+      "options": [
+        "Only how many pages it contains",
+        "Who wrote it and whether the writer saw the applicant use it",
+        "Which person manages the fair",
+        "Whether the organiser sent a copy"
+      ],
+      "answer": 1,
+      "explanation": "The writer should identify authorship and use as separate matters."
+    },
+    {
+      "prompt": "1. How can the organiser respond to an area the writer cannot assess?",
+      "options": [
+        "Delete the whole reference.",
+        "Give a position immediately.",
+        "Ask the applicant to rewrite the document.",
+        "Arrange a short practice session."
+      ],
+      "answer": 3,
+      "explanation": "The request presents a practice session as a next check."
+    },
+    {
+      "prompt": "2. What did the team leader observe firsthand?",
+      "options": [
+        "Soraya wrote every question on the new sheet.",
+        "She settled a disagreement about admission.",
+        "She designed every field on the final page.",
+        "Soraya checked the timetable before giving information."
+      ],
+      "answer": 3,
+      "explanation": "The first night supplies a direct observation about the timetable."
+    },
+    {
+      "prompt": "2. What can the leader say about the page?",
+      "options": [
+        "Soraya prepared the page alone on the first night.",
+        "Staff refused to use it when it was finished.",
+        "The finished page was useful, but authorship of its layout is uncertain.",
+        "A visitor wrote the staff names at the top."
+      ],
+      "answer": 2,
+      "explanation": "The notes explain both the practical value and the limits of observation."
+    },
+    {
+      "prompt": "2. Why is the example about disagreement incomplete?",
+      "options": [
+        "The question sheet left out two dates.",
+        "The advice fair has no entrance.",
+        "Soraya did not relay a timetable question.",
+        "The leader did not see her manage one."
+      ],
+      "answer": 3,
+      "explanation": "The last sentence clearly separates two types of interaction."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What did the team leader see Soraya do?",
+      "options": [
+        "Give the visitor a confirmed appointment time.",
+        "Call the visitor from the second desk.",
+        "Ask the visitor to wait while she checked the schedule.",
+        "Write a new timetable during the visit."
+      ],
+      "answer": 2,
+      "explanation": "The witnessed action was a check before giving a reply."
+    },
+    {
+      "prompt": "1. What part of the final result remains unknown?",
+      "options": [
+        "Whether the promised call gave the correct time",
+        "Whether the visitor ever approached the desk",
+        "Whether the staff member kept a schedule",
+        "Whether Soraya had already read the reference"
+      ],
+      "answer": 0,
+      "explanation": "The leader heard a promise but did not hear the call."
+    },
+    {
+      "prompt": "1. Why suggest a practice session for a fresh question?",
+      "options": [
+        "The new fair has no need for written records.",
+        "The shared sheet cannot show exactly how she takes a question herself.",
+        "The recorded sheet was not useful to staff.",
+        "The visitor spoke to the wrong person."
+      ],
+      "answer": 1,
+      "explanation": "The finished group document does not reveal an individual process."
+    },
+    {
+      "prompt": "2. Why change independently prepared to helped prepare?",
+      "options": [
+        "The evidence supports participation in shared work.",
+        "The reference needs a more complicated verb.",
+        "Nobody knows whether the page exists.",
+        "Soraya had no involvement in the page."
+      ],
+      "answer": 0,
+      "explanation": "The reviewer distinguishes adding to an existing record from creating it alone."
+    },
+    {
+      "prompt": "2. What does the first-night example demonstrate?",
+      "options": [
+        "Knowing the correct timetable without help",
+        "Checking with someone before giving a definite time",
+        "Handling a tense visitor independently",
+        "Replacing a team document after an error"
+      ],
+      "answer": 1,
+      "explanation": "The reviewer keeps the example for its narrow observable strength."
+    },
+    {
+      "prompt": "2. How should the reference handle a tense conversation?",
+      "options": [
+        "Describe it as a strength already proved.",
+        "Leave it out and imply all tasks are similar.",
+        "State that the applicant cannot do it.",
+        "Recommend a practice scenario to check it."
+      ],
+      "answer": 3,
+      "explanation": "The reviewer recommends further observation rather than inference from no evidence."
+    }
+  ],
+  "grammar": {
+    "focus": "Reported speech and careful source attribution",
+    "explanation": "Use said that and told me that for past accounts. Use according to with a person or record. Add a reporting phrase when you need to preserve who claims something. Use a plain past verb when you directly describe something you saw.",
+    "examples": [
+      {
+        "before": "Soraya told that she added questions.",
+        "after": "Soraya said that she added questions.",
+        "why": "Told needs a person as its object."
+      },
+      {
+        "before": "According to she, the page was shared.",
+        "after": "According to Soraya, the page was shared.",
+        "why": "Use a name or a suitable object form after to."
+      },
+      {
+        "before": "I saw that she had produced all the notes, because she said she added some.",
+        "after": "She told me she had added some notes.",
+        "why": "The revised sentence attributes only the limited claim to the correct speaker."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "The leader _____ me that the final page was useful.",
+        "options": [
+          "said",
+          "according to",
+          "reported to that",
+          "told"
+        ],
+        "answer": 3,
+        "explanation": "Told takes the person me before the that clause."
+      },
+      {
+        "prompt": "_____ the notes, two people used the page.",
+        "options": [
+          "Said that",
+          "According to",
+          "Told to",
+          "Reported by it"
+        ],
+        "answer": 1,
+        "explanation": "Use according to before a record."
+      },
+      {
+        "prompt": "Soraya said she _____ a few questions before handing over the page.",
+        "options": [
+          "has adding",
+          "had added",
+          "has add",
+          "had adds"
+        ],
+        "answer": 1,
+        "explanation": "The past perfect can show action before the handover."
+      },
+      {
+        "prompt": "Which line attributes the claim rather than certifying it?",
+        "options": [
+          "The applicant added all the notes.",
+          "I confirmed she wrote the sheet independently.",
+          "The reference proves she made the sheet.",
+          "The applicant said she added the last three notes."
+        ],
+        "answer": 3,
+        "explanation": "The first explicitly reports what she said."
+      },
+      {
+        "prompt": "Which gives direct observation in a plain past verb?",
+        "options": [
+          "I watched her check the schedule.",
+          "She might have written the sheet.",
+          "A colleague said she had checked.",
+          "We believe she can help anyone."
+        ],
+        "answer": 0,
+        "explanation": "Watched names what the referee directly observed."
+      },
+      {
+        "prompt": "He told _____ the note was shared.",
+        "options": [
+          "we",
+          "us",
+          "that us",
+          "ours"
+        ],
+        "answer": 1,
+        "explanation": "The reporting verb uses an object pronoun."
+      },
+      {
+        "prompt": "Which line reports a yes/no question in standard order?",
+        "options": [
+          "She asked whether had we seen the call.",
+          "She asked whether we had seen the call.",
+          "She asked had we seen the call.",
+          "She asked if saw we the call."
+        ],
+        "answer": 1,
+        "explanation": "A reported question uses whether and statement order."
+      },
+      {
+        "prompt": "Which edit limits the claim to available evidence?",
+        "options": [
+          "She independently managed all recorded enquiries.",
+          "She must have designed the whole form.",
+          "She could answer any question in the room.",
+          "She helped prepare a shared question sheet."
+        ],
+        "answer": 3,
+        "explanation": "Helped prepare describes participation without inferring sole authorship."
+      }
+    ],
+    "transfer": "Label the source of eight claims in a draft reference. Read a selection aloud, then rewrite two so another person can tell which facts were directly observed."
+  },
+  "vocabulary": [
+    {
+      "word": "reference",
+      "meaning": "an account recommending or describing a person for a role",
+      "example": "We asked her team lead for a reference.",
+      "pair": "write a reference"
+    },
+    {
+      "word": "firsthand",
+      "meaning": "based on personal observation",
+      "example": "He gave a firsthand account.",
+      "pair": "firsthand account"
+    },
+    {
+      "word": "referee",
+      "meaning": "a person who provides a reference",
+      "example": "The organiser contacted a former referee.",
+      "pair": "contact a referee"
+    },
+    {
+      "word": "verify",
+      "meaning": "check that a detail is true",
+      "example": "Ask staff to verify the time.",
+      "pair": "verify a detail"
+    },
+    {
+      "word": "attribute",
+      "meaning": "identify the source of a statement",
+      "example": "Attribute that sentence to the applicant.",
+      "pair": "attribute a claim"
+    },
+    {
+      "word": "relate",
+      "meaning": "tell a story or account",
+      "example": "She related what happened that evening.",
+      "pair": "relate an experience"
+    },
+    {
+      "word": "appropriate",
+      "meaning": "suitable for a situation",
+      "example": "Checking the date was appropriate.",
+      "pair": "appropriate response"
+    },
+    {
+      "word": "handover",
+      "meaning": "pass a task or information to somebody else",
+      "example": "Each question needed a clear handover.",
+      "pair": "handover note"
+    },
+    {
+      "word": "support",
+      "meaning": "give useful evidence for something",
+      "example": "The notes support a narrower claim.",
+      "pair": "support a claim"
+    },
+    {
+      "word": "assess",
+      "meaning": "make a judgement about ability or quality",
+      "example": "The organisers need to assess the next step.",
+      "pair": "assess a skill"
+    },
+    {
+      "word": "credibility",
+      "meaning": "the quality of seeming trustworthy",
+      "example": "A clear source gives the reference credibility.",
+      "pair": "build credibility"
+    },
+    {
+      "word": "definite",
+      "meaning": "certain or clear",
+      "example": "Do not offer a definite time yet.",
+      "pair": "definite answer"
+    }
+  ],
+  "speaking": {
+    "audience": "An organiser who has asked for a quick reference",
+    "first": "Give a three-minute verbal reference that names two things the leader knows and one they cannot assess. Model one question to ask the applicant later.",
+    "change": "A colleague remembers Soraya answering the visitor but cannot find the call record.",
+    "second": "Record a reply that includes the colleague's recollection with clear attribution, and keeps the question open.",
+    "checklist": [
+      "Uses observed and reported evidence separately",
+      "Offers a concrete next check",
+      "Does not turn a promise into a completed result"
+    ]
+  },
+  "writing": {
+    "audience": "The advice fair selection coordinator",
+    "first": "Write a 180–220 word reference and attach a two-sentence evidence note for the shared page.",
+    "change": "One paragraph must be read aloud to the whole selection panel; another practice role now includes a tense visitor.",
+    "second": "Revise to a short stand-alone reading, then design a separate practical check for the unfamiliar role.",
+    "checklist": [
+      "Neither paragraph overstates the writer's knowledge",
+      "The shared role stays attributed",
+      "The practical check matches what the reference cannot show"
+    ]
+  },
+  "immersion": {
+    "role": "Volunteer selection co-ordinator",
+    "goal": "Build a fair selection packet from incomplete but useful evidence.",
+    "constraints": [
+      "Keep the observation and the shared document distinct",
+      "The applicant is allowed one short practice scenario",
+      "Do not invent the outcome of a call"
+    ],
+    "change": "A second referee says the applicant did not use the original sheet the first evening.",
+    "deliverables": [
+      "Evidence grid with source and confidence",
+      "A 150-word reference extract",
+      "One speaking and note-taking test scenario",
+      "Private decision note giving an evidence-based recommendation"
+    ],
+    "checklist": [
+      "The disagreement changes only the relevant claim",
+      "The role test can be used with another candidate",
+      "The packet identifies what would change the final decision"
+    ]
+  }
+}

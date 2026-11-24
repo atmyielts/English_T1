@@ -1,0 +1,394 @@
+{
+  "slug": "b1-a-parade-sign-that-can-travel",
+  "title": "A Parade Sign That Can Travel",
+  "level": "B1",
+  "summary": "Adapt a neighborhood parade sign when two parts of the route impose different limits.",
+  "documents": [
+    {
+      "title": "The route note",
+      "text": "This year's Spring Parade starts in Elm Square at eleven. There is room for groups to line up from ten thirty. Please put a sign with your group's name near the front. Signs can be any shape, but they must fit between the posts at the covered entrance to Market Lane. The space between those posts is one meter and twenty centimeters. Measure the whole sign, including any handles at the sides. A volunteer will be there to help groups pass through one at a time. After Market Lane, the parade stops for ten minutes outside the community center. There is a wide entrance and a dry room where groups may leave heavy items until the end of the day. Only the items already on our storage list can go in that room. If you did not request a place when you registered, ask the volunteer at the door about the small outside rack. It has a cover, but it is not locked. The last part of the parade ends back in Elm Square."
+    },
+    {
+      "title": "Art club group message",
+      "text": "I have measured our sign without the two wooden handles, and it is exactly one meter wide. With both handles attached it is one meter and thirty centimeters wide. I know Pat said we could turn it sideways in Market Lane, but there is no space to practice doing that safely with everyone walking. A better plan is to take off one handle before we line up. Each handle adds fifteen centimeters to the width, so the sign will fit with the other one still attached. We should put the loose handle in the shared bag. I have added the name of our club in black paint, but the green drawing still needs to dry until Saturday morning. Please carry the sign with the plain back facing your jacket, so paint does not rub off on your clothes. One more thing: I marked the storage box on the registration form for our paint box only. We probably need to keep carrying the sign after the stop. Let me know if you can take the shared bag on Saturday."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "At the side door",
+      "text": "Volunteer: Art club? You are a little early, so you can try the entrance now. Please keep the painted side facing out. Oh, that last post is closer than it looks.\n\nMember: Should I take the other handle off as well?\n\nVolunteer: You have enough room. I just need you to wait while the dance group comes the other way. Once they pass, walk straight with Mei instead of looking back at me.\n\nMember: All right. And when we stop, can we put this next to our paint box in the dry room?\n\nVolunteer: I don't have room for signs inside today. I can give you a name tag for the outside rack, though. It means another group will know who it belongs to.\n\nMember: Is there somebody watching the rack?\n\nVolunteer: Not all the time. You can take turns watching your sign or keep it with the group. When the music starts again, the yellow bibs will tell you when your group should move.\n\nMember: Okay, I'll ask Mei what she thinks."
+    },
+    {
+      "title": "The ten-minute stop",
+      "text": "Mei: The paint seems dry, but the bottom edge of the sign is getting wet. Can you hold it here while I move this bench?\n\nDario: Yes, but I'll need both hands. Could you take the bag as well?\n\nMei: Wait. The bag isn't mine. I took it from Pat when we went through the post. Pat said there were two bags that looked the same.\n\nDario: Ours has a piece of red tape around the top. This one's plain.\n\nMei: In that case I should take it back to Pat. We can manage without our second handle until the end.\n\nDario: Sure. Before you go, put the bench a little farther from the wall. That way I can set the sign on it without touching the damp ground.\n\nMei: How long till we go?\n\nDario: The first group just left. We are third, so maybe another minute. Don't run after Pat along the route. Try the other end of the bench, where the other bags are. I'll call you if a volunteer waves us forward."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. What width should a group check before arriving?",
+      "options": [
+        "The width of the painted area",
+        "The width from one volunteer to another",
+        "The width of the doorway into the dry room",
+        "The width including the handles"
+      ],
+      "answer": 3,
+      "explanation": "The instructions say to measure the whole sign and count the handles."
+    },
+    {
+      "prompt": "1. What must people do to use the dry room?",
+      "options": [
+        "Write the group name on it at the entrance",
+        "Wait ten minutes after their group leaves",
+        "Put the item on the storage list when registering",
+        "Remove any loose parts first"
+      ],
+      "answer": 2,
+      "explanation": "The dry room is for listed items; the outside rack is the option for unlisted ones."
+    },
+    {
+      "prompt": "1. What can a group infer about collecting a listed heavy item?",
+      "options": [
+        "Group members must carry it to Elm Square twice.",
+        "Someone can leave it there during the final part of the parade.",
+        "It goes on the rack with all small items.",
+        "A volunteer delivers it to the end of the parade."
+      ],
+      "answer": 1,
+      "explanation": "It can stay there until the end of the day, after the return to the square."
+    },
+    {
+      "prompt": "2. Why does taking off one handle solve the problem?",
+      "options": [
+        "The painted area becomes 110 centimeters.",
+        "The width becomes 115 centimeters.",
+        "The opening grows to 130 centimeters.",
+        "The last part of the sign turns flat."
+      ],
+      "answer": 1,
+      "explanation": "130 minus 15 leaves 115, below the 120-centimeter entrance limit."
+    },
+    {
+      "prompt": "2. Why should the plain back face the carrier?",
+      "options": [
+        "It makes the club name easier for carriers to read.",
+        "It shows the volunteer which item is listed.",
+        "It can help keep paint off the carrier's clothes.",
+        "It prevents the second handle from coming loose."
+      ],
+      "answer": 2,
+      "explanation": "The writer connects the sign's orientation to avoiding paint on jackets."
+    },
+    {
+      "prompt": "2. Which item can the club leave inside?",
+      "options": [
+        "The loose handle and bag",
+        "The sign",
+        "One wooden handle only",
+        "The paint box"
+      ],
+      "answer": 3,
+      "explanation": "The group reserved a place specifically for its paint box."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. What should the sign carriers do first?",
+      "options": [
+        "Turn the sign sideways immediately.",
+        "Remove the remaining handle.",
+        "Wait for the dancers to pass.",
+        "Follow the volunteers with yellow bibs."
+      ],
+      "answer": 2,
+      "explanation": "The volunteer says the width is fine and asks them to let the dance group pass."
+    },
+    {
+      "prompt": "1. What would the tag on the outside rack do?",
+      "options": [
+        "Identify the group that owns the sign",
+        "Reserve an inside space for the sign",
+        "Ask a volunteer to watch the sign full time",
+        "Show the group its position in the parade"
+      ],
+      "answer": 0,
+      "explanation": "The volunteer says other groups can tell whose item it is."
+    },
+    {
+      "prompt": "1. What choice does the volunteer give the member?",
+      "options": [
+        "Watch the sign in turns or keep it with the group",
+        "Use the dry room now or carry the paint box later",
+        "Enter Market Lane at once or go through a different door",
+        "Wear the yellow bib or follow someone who wears it"
+      ],
+      "answer": 0,
+      "explanation": "Those are the two options the volunteer suggests for the sign."
+    },
+    {
+      "prompt": "2. Why does Mei decide to look for Pat?",
+      "options": [
+        "She thinks she picked up a different bag.",
+        "She wants Pat to move the sign.",
+        "She needs Pat's permission to remove the tape.",
+        "She wants to put the paint box in Pat's bag."
+      ],
+      "answer": 0,
+      "explanation": "Their bag would have red tape, and the one she is holding is plain."
+    },
+    {
+      "prompt": "2. What problem will the bench help solve?",
+      "options": [
+        "Paint is rubbing off on people's clothes.",
+        "There is no room on the outside rack.",
+        "Part of the sign is getting wet.",
+        "The people walking past touch the bag."
+      ],
+      "answer": 2,
+      "explanation": "Dario says the bench will keep the sign above the damp ground."
+    },
+    {
+      "prompt": "2. How will Mei know if she has to come back soon?",
+      "options": [
+        "Pat will bring the correct bag to the sign.",
+        "Dario will call if a volunteer signals.",
+        "A volunteer will tell her at the far bench.",
+        "The second group will wait for her."
+      ],
+      "answer": 1,
+      "explanation": "Dario promises to call if the volunteer waves them forward."
+    }
+  ],
+  "grammar": {
+    "focus": "Before, after and until",
+    "explanation": "Use before and after to order events. Use until for a state or action that continues up to a time or event. In a future time clause, use the present simple for the event that marks the time.",
+    "examples": [
+      {
+        "before": "We will take off a handle before we will line up.",
+        "after": "We'll take off a handle before we line up.",
+        "why": "Use the present simple after before when the clause gives the time of a future action."
+      },
+      {
+        "before": "We stayed at the rack after the music started, and then we left at the first sound.",
+        "after": "We stayed at the rack until the music started, then we left.",
+        "why": "Until gives the point when waiting ended."
+      },
+      {
+        "before": "After the dance group pass, we can move.",
+        "after": "After the dance group passes, we can move.",
+        "why": "The group is the singular subject of the time clause."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Keep the paint box in the room ___ four o'clock.",
+        "options": [
+          "until",
+          "before",
+          "afterwards than",
+          "by the time"
+        ],
+        "answer": 0,
+        "explanation": "Until tells us how long it can stay there."
+      },
+      {
+        "prompt": "Put the handle in the bag before you ___ the route.",
+        "options": [
+          "will start",
+          "started tomorrow",
+          "start",
+          "are start"
+        ],
+        "answer": 2,
+        "explanation": "The present simple start gives the future time condition here."
+      },
+      {
+        "prompt": "We should measure the sign ___ we paint it, so we can still change the size.",
+        "options": [
+          "since",
+          "until",
+          "before",
+          "once it will be"
+        ],
+        "answer": 2,
+        "explanation": "Measuring needs to happen first."
+      },
+      {
+        "prompt": "I will text you ___ Pat gets back, so you know she has the bag.",
+        "options": [
+          "when",
+          "until",
+          "since",
+          "as of"
+        ],
+        "answer": 0,
+        "explanation": "The text will be sent at the time Pat gets back."
+      },
+      {
+        "prompt": "Please stand still until the second group ___.",
+        "options": [
+          "will pass",
+          "passing",
+          "passes",
+          "pass it tomorrow"
+        ],
+        "answer": 2,
+        "explanation": "The simple present works in this future time clause."
+      },
+      {
+        "prompt": "Which means the group waited from ten thirty to eleven?",
+        "options": [
+          "We waited after eleven.",
+          "We waited before eleven only.",
+          "We waited until eleven.",
+          "We waited from eleven."
+        ],
+        "answer": 2,
+        "explanation": "Until marks the endpoint of a continuing action."
+      },
+      {
+        "prompt": "Once the yellow bib waves us forward, we ___ moving.",
+        "options": [
+          "had started yesterday",
+          "have been start",
+          "will start",
+          "will starting"
+        ],
+        "answer": 2,
+        "explanation": "The main clause uses a suitable future form."
+      },
+      {
+        "prompt": "Which gives the correct order?",
+        "options": [
+          "Until we will leave Market Lane, we stopped at the center.",
+          "After leave Market Lane, we will stop at the center.",
+          "After we will leave Market Lane, we stop at the center.",
+          "After we leave Market Lane, we'll stop at the center."
+        ],
+        "answer": 3,
+        "explanation": "The time clause uses leave, and the main clause describes the next future action."
+      }
+    ],
+    "transfer": "Write a six-step sequence for moving the sign. Include two things that must happen before entering Market Lane, one action that continues until the signal, and two steps after the first stop. Read it aloud, and check that each person could act in the right order."
+  },
+  "vocabulary": [
+    {
+      "word": "line up",
+      "meaning": "form a row while waiting",
+      "example": "The drummers line up at half past ten.",
+      "pair": "line up at the entrance"
+    },
+    {
+      "word": "handle",
+      "meaning": "a part you use to hold or carry something",
+      "example": "A wooden handle is fixed to the end of the sign.",
+      "pair": "remove a handle"
+    },
+    {
+      "word": "rack",
+      "meaning": "a frame or shelf used to hold things",
+      "example": "Pat left the umbrellas on the outside rack.",
+      "pair": "a storage rack"
+    },
+    {
+      "word": "entrance",
+      "meaning": "the place where you go in",
+      "example": "Look for the covered entrance near the market stalls.",
+      "pair": "a side entrance"
+    },
+    {
+      "word": "fit",
+      "meaning": "be the right size for a space",
+      "example": "The second sign will fit through the gap.",
+      "pair": "fit through a doorway"
+    },
+    {
+      "word": "attach",
+      "meaning": "fix one thing to another",
+      "example": "Can we attach a label to this bag?",
+      "pair": "attach a label"
+    },
+    {
+      "word": "damp",
+      "meaning": "a little wet",
+      "example": "The bottom edge felt damp after the stop.",
+      "pair": "damp ground"
+    },
+    {
+      "word": "rub off",
+      "meaning": "come off when touched or rubbed",
+      "example": "Casey's chalk rubbed off on my sleeve.",
+      "pair": "rub off on a jacket"
+    },
+    {
+      "word": "covered",
+      "meaning": "with a roof or something else above it",
+      "example": "We waited in the covered area while it rained.",
+      "pair": "a covered entrance"
+    },
+    {
+      "word": "signal",
+      "meaning": "a movement, sound or sign that tells people to act",
+      "example": "Start walking when you see the signal.",
+      "pair": "give a signal"
+    },
+    {
+      "word": "take turns",
+      "meaning": "do the same thing one person at a time",
+      "example": "We can take turns carrying the bag.",
+      "pair": "take turns carrying"
+    },
+    {
+      "word": "measure",
+      "meaning": "find the size of something",
+      "example": "Measure the gap with the small tape.",
+      "pair": "measure the width"
+    }
+  ],
+  "speaking": {
+    "audience": "Two new art club volunteers",
+    "first": "Take five minutes to check source details, then give a 2-minute briefing. Explain where to line up, which handle comes off and why, and what to do at the stop. Ask one listener to repeat the width rule back.",
+    "change": "The volunteer has closed the outside rack. The club has to keep its paint box inside as planned and move the sign with it.",
+    "second": "Give a second 90-second briefing. Assign who will carry the bag and sign from the stop, replace your earlier rack advice, and give the signal for moving again.",
+    "checklist": [
+      "Use two accurate numbers",
+      "Say which item goes inside",
+      "Assign each job to a person",
+      "Use before, after or until twice"
+    ]
+  },
+  "writing": {
+    "audience": "The art club coordinator",
+    "first": "Write a 130–160 word group update. State the adjusted width, the gathering time and the storage plan. Explain which side of the sign should face the people carrying it and why.",
+    "change": "Pat has found the correct bag but cannot arrive until the ten-minute stop. Dario has a spare bag but needs to know when to use it.",
+    "second": "Turn the update into a 90–110 word message directly to Dario. Give him the order of actions with each bag and the person he should contact.",
+    "checklist": [
+      "Use a clear subject",
+      "Give an early decision and reason",
+      "Keep the route details accurate",
+      "Make the new bag handover clear"
+    ]
+  },
+  "immersion": {
+    "role": "Art club route lead",
+    "goal": "Build a practical sign movement plan another group could follow from start to finish.",
+    "constraints": [
+      "Width limit is 120 centimeters including handles",
+      "Only the listed paint box can go indoors",
+      "The yellow-bib signal controls departure"
+    ],
+    "change": "A replacement handle brings the sign to 124 centimeters when attached. One carrier has to leave after the stop.",
+    "deliverables": [
+      "Draw a narrow-door step with the sign width and who takes off the handle",
+      "Draft a three-role assignment card and revise it with one fewer carrier",
+      "Make a bag-label note that distinguishes the two similar bags",
+      "Give a one-minute spoken handover using the plan"
+    ],
+    "checklist": [
+      "The sign is no wider than 120 centimeters in the gap",
+      "Every item has a clear person or storage place",
+      "The plan covers who sees the departure signal",
+      "The revised plan still works after one person leaves"
+    ]
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "slug": "b2-repair-parts-for-one-more-season",
+  "title": "Repair Parts for One More Season",
+  "level": "B2",
+  "summary": "Compare a small institution's replacement and repair records, then design a purchasing decision that preserves options.",
+  "documents": [
+    {
+      "title": "The desk lamp purchasing note",
+      "text": "The design school has 42 reading lamps of the same model, spread across two floors. The narrow base matters because the worktables are usually full of large sheets of paper. In the past, we have sent a replacement lamp to a desk as soon as users reported a fault. The broken lamp went to the maintenance room, where staff decided whether to order parts. Our supplier will stop selling the separate shade mount in October. It is the part most often named in fault reports, but the reports use phrases such as 'shade won't stay up' without confirming which part failed. A final order of twelve mounts can be made by Friday. The supplier is also offering a discount on an updated model if we order eight or more together. That model is easier to adjust but takes up three extra centimeters on the table. We have enough money this term for the mounts or the eight new lamps without reducing spending on other classroom equipment. Make the choice on the assumption that the existing lamps still need regular maintenance next term."
+    },
+    {
+      "title": "Inspection sheet summary",
+      "text": "Maintenance checked eleven units that were waiting for work. Six really did need a shade mount. Two had a loose clamp that can still be ordered separately, and three had a switch problem. None of the six that needed the mount showed a second fault during the inspection. The school owns three unused mounts, but each one is from an older order. The last two digits on the old part are 04 and the supplier's catalog ends in 07. I tested an 04 on one of the six affected lamps. It fitted and held, but needed more effort to adjust. This afternoon we'll confirm whether all the affected lamps accept that version. If they do, we can return three desks to service quickly. That still leaves three lamps waiting for mounts. We should not treat the eleven waiting lamps as a random sample. The most serious electrical problems are usually reported directly before a unit reaches our room. This group instead tells us something about the faults currently holding up repairs."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "An exchange beside the worktables",
+      "text": "Hannah: I've put the new lamp next to the old one. Could we leave it there while people spread out their plans?\n\nMateo: Good idea. First thing I noticed is how much easier the arm feels. But that base is on my paper when I use the full center section.\n\nHannah: What if it stays at the back edge?\n\nMateo: Fine for this side. I pull the other half of my sheet forward later on, though. The bigger base wouldn't work at the desk by the wall because there's no room behind it. You could try it in the reading corner. Those tables don't carry plans.\n\nHannah: Would moving a working lamp there free an old one for a drawing desk?\n\nMateo: Yes, if the corner project already needs a lamp. I wouldn't buy a larger one for a working desk just to make a spare.\n\nHannah: I'll note that as a layout issue, separate from ease of adjustment."
+    },
+    {
+      "title": "A call from the parts supplier",
+      "text": "Supplier: The 07 is a later part, but there are two versions of the 04 as well. If an 04 has a blue mark under the rim, it came from a short run before the arm was changed.\n\nMaintenance lead: One of ours has a blue mark. Can I order fewer than twelve this time? The early message made it sound like a pack size.\n\nSupplier: Twelve is the maximum we can release to a school this week. Any quantity from three upward is fine. The new lamp price only drops when you order eight.\n\nMaintenance lead: Can you confirm the part number on the order and whether the lamps can be bought individually next term?\n\nSupplier: The 07 is still on the current screen, so yes, I'll confirm that. Individual purchases of the new model will be possible, as long as we still carry it, but we can't promise the discount. I can email the price for six parts and the price for eight new lamps before your meeting."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "1. Why does the manager care about the base size?",
+      "options": [
+        "The shade replacement comes with a wider base.",
+        "The lamps share scarce table surface with large drawings.",
+        "The new base determines the number of repair reports.",
+        "The existing tables can carry only lamps from one supplier."
+      ],
+      "answer": 1,
+      "explanation": "The note says sheets usually fill the worktables."
+    },
+    {
+      "prompt": "1. What important limitation is attached to the purchasing decision?",
+      "options": [
+        "The supplier requires the same model for both floors.",
+        "The school has stopped paying for classroom equipment.",
+        "The school cannot arrange regular maintenance next term.",
+        "The budget covers one purchase described without reductions elsewhere."
+      ],
+      "answer": 3,
+      "explanation": "Both stated options are individually affordable, not both together within the given funds."
+    },
+    {
+      "prompt": "1. Why are the original fault reports insufficient for estimating mounts needed?",
+      "options": [
+        "They are complete only for the reading corner.",
+        "They identify all needs for switch changes but no shade problems.",
+        "They describe symptoms without diagnosing which part failed.",
+        "They describe only lamps with wide bases."
+      ],
+      "answer": 2,
+      "explanation": "A loose shade may have more than one cause, so a report alone does not name its part."
+    },
+    {
+      "prompt": "2. What would fitting three 04 mounts achieve if compatibility is confirmed?",
+      "options": [
+        "All six mounts would become unnecessary.",
+        "Three of the six mount faults could be resolved without new stock.",
+        "All eleven lamps would return immediately.",
+        "The supplier would restore the original catalog number."
+      ],
+      "answer": 1,
+      "explanation": "Three existing parts would help three desks; three mount faults would remain."
+    },
+    {
+      "prompt": "2. Why should the eleven lamps not be treated as representative?",
+      "options": [
+        "A different process handles some of the more serious faults.",
+        "The sample used only lamps on the second floor.",
+        "Maintenance included only 07 parts ordered from the new catalog.",
+        "Users tested all eleven manually at their usual desks."
+      ],
+      "answer": 0,
+      "explanation": "The summary notes a different reporting route for serious faults."
+    },
+    {
+      "prompt": "2. What can the inspection directly support?",
+      "options": [
+        "More than half of all working lamps will need a mount next term.",
+        "The new model will break less often than the old one.",
+        "There is no demand for switches at the school.",
+        "Several of the current waiting lamps need the same mount."
+      ],
+      "answer": 3,
+      "explanation": "The count applies to the waiting units; it cannot predict the whole fleet."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "1. Which benefit of the new lamp does Mateo mention?",
+      "options": [
+        "It is easier to move the arm.",
+        "It takes up less room near a wall.",
+        "It stays out of the way of the center sheet.",
+        "Its base is easier to repair than the older one."
+      ],
+      "answer": 0,
+      "explanation": "The easier adjustment is his first observation, before the space concern."
+    },
+    {
+      "prompt": "1. Why might the reading corner suit the new model?",
+      "options": [
+        "It is already closed until a lamp can be fixed.",
+        "All its lamps have the newest shade mounts.",
+        "Its tables are not used for spreading out large plans.",
+        "It has a wide shelf behind every workstation."
+      ],
+      "answer": 2,
+      "explanation": "Mateo separates the uses of the two types of tables."
+    },
+    {
+      "prompt": "1. What condition does Mateo put on buying one for the reading corner?",
+      "options": [
+        "Purchase it only if that area already needs a lamp.",
+        "Buy one only after clearing the floor by the wall.",
+        "Order a pack of eight only for that area.",
+        "Move an 04 mount there at the same time."
+      ],
+      "answer": 0,
+      "explanation": "He would not buy a new lamp purely to release a working old one."
+    },
+    {
+      "prompt": "2. What distinguishes one kind of 04 part from the other?",
+      "options": [
+        "A sticker on the power switch",
+        "A wider base on the lamp",
+        "A blue mark beneath the rim",
+        "Double digits under the desk"
+      ],
+      "answer": 2,
+      "explanation": "The supplier describes a blue mark on an older run of the 04."
+    },
+    {
+      "prompt": "2. What change in the buying options does the caller discover?",
+      "options": [
+        "The minimum discounted lamp order has been reduced to six.",
+        "An order for eight lamps includes twelve separate mounts.",
+        "The school can buy fewer than twelve mounts.",
+        "Next term's lamp prices are already fixed."
+      ],
+      "answer": 2,
+      "explanation": "Twelve is a maximum; the parts order can be as small as three."
+    },
+    {
+      "prompt": "2. What remains uncertain about future purchases?",
+      "options": [
+        "Whether the new lamps will stay in stock at the same terms",
+        "Whether the 07 mount is currently listed",
+        "Whether a six-part quote can be given before the meeting",
+        "Whether anyone can legally buy individual equipment"
+      ],
+      "answer": 0,
+      "explanation": "The supplier qualifies individual future sales by availability and does not guarantee the discount."
+    }
+  ],
+  "grammar": {
+    "focus": "Conditions with provided that, unless and as long as",
+    "explanation": "Use provided that or as long as to mark a requirement for an outcome. Unless introduces an exception roughly equivalent to if not. Use present simple in the conditional clause for most real future decisions.",
+    "examples": [
+      {
+        "before": "The school can reserve the parts provided that does it by Friday.",
+        "after": "The school can reserve the parts provided that it does so by Friday.",
+        "why": "The conditional clause needs its own subject, it, before does. Friday is the condition for reserving the stock."
+      },
+      {
+        "before": "As long as the supplier will still stock it, we can buy one next term.",
+        "after": "As long as the supplier still stocks it, we can buy one next term.",
+        "why": "Use present simple in the condition for a possible future purchase."
+      },
+      {
+        "before": "We'll place the order unless the quote does not change.",
+        "after": "We'll place the order unless the quote changes.",
+        "why": "The revised clause makes a change the exception without reversing the intended condition."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "We can test the older mounts ___ we first identify which version we have.",
+        "options": [
+          "unless",
+          "provided that",
+          "even though today",
+          "because of"
+        ],
+        "answer": 1,
+        "explanation": "The clause gives a positive requirement for the test."
+      },
+      {
+        "prompt": "___ the quote arrives by Friday, the director can sign it this term. Choose the version that makes arrival necessary.",
+        "options": [
+          "As long as",
+          "Unless",
+          "Despite",
+          "Whereas"
+        ],
+        "answer": 0,
+        "explanation": "As long as presents timely receipt as the condition for signing."
+      },
+      {
+        "prompt": "We will keep the existing bases if the new ones do not work with the large sheets. Which version keeps the meaning?",
+        "options": [
+          "Unless the new bases don't work with the large sheets, we'll keep the existing ones.",
+          "Unless the new bases work with the large sheets, we'll keep the existing ones.",
+          "We keep them, although the new bases do not work with large sheets.",
+          "Provided that the new bases work with the sheets, we'll keep the existing ones."
+        ],
+        "answer": 1,
+        "explanation": "Unless introduces work as the exception to keeping the current bases."
+      },
+      {
+        "prompt": "Provided that the existing lamp ___ the older part, we can use one from the cupboard.",
+        "options": [
+          "will accept",
+          "accepting",
+          "accepts",
+          "accepted tomorrow"
+        ],
+        "answer": 2,
+        "explanation": "Present simple is used to state a real future condition."
+      },
+      {
+        "prompt": "Which sentence makes the minimum quantity a condition for the discount?",
+        "options": [
+          "We get the discount unless we buy eight lamps or more.",
+          "We get the discount whether we buy eight lamps or more.",
+          "We get the discount despite if we buy eight lamps or more.",
+          "We get the discount only if we buy eight lamps or more."
+        ],
+        "answer": 3,
+        "explanation": "Only if makes the order size necessary for the discount."
+      },
+      {
+        "prompt": "We can decide with the two price quotes, ___ the supplier sends them before the meeting.",
+        "options": [
+          "unless not",
+          "despite",
+          "because of",
+          "provided"
+        ],
+        "answer": 3,
+        "explanation": "Provided can introduce a full condition with that left out."
+      },
+      {
+        "prompt": "Which keeps a returned lamp out of use if it fails inspection?",
+        "options": [
+          "Do not return the lamp to the table unless it passes inspection.",
+          "Return the lamp unless it passes inspection.",
+          "Do not return the lamp as long as it passes inspection.",
+          "Return the lamp even if it does not pass inspection."
+        ],
+        "answer": 0,
+        "explanation": "The exception to the prohibition is a successful inspection."
+      },
+      {
+        "prompt": "Which completes a neutral rule for when the deadline can be moved?",
+        "options": [
+          "We can move the deadline unless both teams agree.",
+          "We can move the deadline due to both teams agree.",
+          "We can move the deadline despite both teams agree.",
+          "We can move the deadline as long as both teams agree."
+        ],
+        "answer": 3,
+        "explanation": "Agreement is the stated positive condition."
+      }
+    ],
+    "transfer": "Write an if-then policy with four decisions about inspection, stock, a one-item test and use at drawing desks. Use one positive conditional with provided that, one with as long as and one unless clause. Then check whether any decision contradicts an earlier one."
+  },
+  "vocabulary": [
+    {
+      "word": "mount",
+      "meaning": "a part or support that holds another object in position",
+      "example": "The broken shade hangs from its mount.",
+      "pair": "a shade mount"
+    },
+    {
+      "word": "clamp",
+      "meaning": "a device used to hold an object tightly in place",
+      "example": "The maintenance lead first checked the desk clamp.",
+      "pair": "a loose clamp"
+    },
+    {
+      "word": "fault",
+      "meaning": "a defect or condition that stops something working correctly",
+      "example": "The loose shade was the only fault they found.",
+      "pair": "report a fault"
+    },
+    {
+      "word": "compatible",
+      "meaning": "able to work correctly with another item or system",
+      "example": "The older part may be compatible with this lamp.",
+      "pair": "compatible with an older model"
+    },
+    {
+      "word": "catalog",
+      "meaning": "an organized list of goods, often with numbers and prices",
+      "example": "The exact code is shown in the supplier's catalog.",
+      "pair": "look up a catalog number"
+    },
+    {
+      "word": "release",
+      "meaning": "make goods available from an existing supply",
+      "example": "The supplier can release six mounts to the school.",
+      "pair": "release stock"
+    },
+    {
+      "word": "quote",
+      "meaning": "a seller's statement of a price for specific work or goods",
+      "example": "We received a quote for three replacement parts.",
+      "pair": "request a quote"
+    },
+    {
+      "word": "out of service",
+      "meaning": "temporarily unavailable for normal use",
+      "example": "The center desk was still out of service on Tuesday.",
+      "pair": "take a lamp out of service"
+    },
+    {
+      "word": "representative",
+      "meaning": "showing the usual features of a wider group",
+      "example": "The repair queue isn't representative of all the lamps.",
+      "pair": "a representative sample"
+    },
+    {
+      "word": "discount",
+      "meaning": "a reduction from the normal selling price",
+      "example": "Purchasing several lamps at once may earn a discount.",
+      "pair": "qualify for a discount"
+    },
+    {
+      "word": "layout",
+      "meaning": "the planned arrangement of things in a space",
+      "example": "The wide base is a problem with this table layout.",
+      "pair": "a worktable layout"
+    },
+    {
+      "word": "carry",
+      "meaning": "keep an item available for sale",
+      "example": "The shop still carries the smaller model.",
+      "pair": "carry a replacement part"
+    }
+  ],
+  "speaking": {
+    "audience": "The design school's director and maintenance lead",
+    "first": "Give a 2–3 minute decision brief. State whether you would buy some mounts or eight new lamps now, explain why the repair evidence is limited, and ask two factual questions before a decision.",
+    "change": "The director discovers that the school will close eight drawing desks next term, but the reading corner will gain six seats.",
+    "second": "Revise your position in a two-minute meeting take. Acknowledge what genuinely changes, what remains uncertain, and what decision can be postponed.",
+    "checklist": [
+      "Use quantities from both records accurately",
+      "Do not assume a future price",
+      "Explain the difference between table uses",
+      "Use one condition that could change your decision"
+    ]
+  },
+  "writing": {
+    "audience": "The purchasing manager",
+    "first": "Write a 190–230 word recommendation with your order, a condition on compatibility, one stock or price uncertainty, and an alternative if the first plan falls through.",
+    "change": "A checked list shows only one 04 is suitable. The supplier can reserve 07 stock for you until midday Monday, but the procurement manager is away.",
+    "second": "Write a 100–130 word decision note to the acting manager with a new recommended quantity or rule, a changed deadline, and details you need before confirmation.",
+    "checklist": [
+      "Make the requested decision explicit",
+      "Do not overgeneralize the inspection",
+      "Separate the order cutoff from the original one",
+      "Keep room for current and future needs"
+    ]
+  },
+  "immersion": {
+    "role": "Purchasing assistant for design facilities",
+    "goal": "Prepare a traceable purchasing decision and a short user trial for two desk layouts.",
+    "constraints": [
+      "Budget covers either the parts route or eight new lamps as originally quoted",
+      "Some 04 parts may differ beneath the rim",
+      "Do not use a new model at a desk until the working space is checked"
+    ],
+    "change": "The supplier will offer six mounts but asks the school to collect them. A campus worker can collect them only on Tuesday morning.",
+    "deliverables": [
+      "Create a decision table for verified, open and estimated evidence",
+      "Sketch two desk layouts with a base footprint and one typical working action each",
+      "Write a short order query and a dated acceptance/fallback rule",
+      "Produce a one-minute verbal handover naming the role responsible for each step"
+    ],
+    "checklist": [
+      "Proposed quantities fit verified limits",
+      "Inspection outcome and purchasing recommendation are separate",
+      "The user trial checks the stated need at each desk",
+      "The collection plan has a named fallback"
+    ]
+  }
+}

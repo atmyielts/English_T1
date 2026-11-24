@@ -1,0 +1,422 @@
+{
+  "slug": "family-photo-table",
+  "title": "The family photo table",
+  "level": "A1",
+  "summary": "Help set up a family photo table for a small community exhibition. Read the approved card list and a signed note. Use the bags and cups in the photos to match people with cards. Ask for help with two cards, then change your plan when one photo is private. All photo details are in the texts.",
+  "documents": [
+    {
+      "title": "Approved card list",
+      "text": "Family photo table. Set up on Saturday at 10:00. The exhibition opens at 11:00. This list gives the words for three cards. Write one name and one short line on each card. The first card is for Tom. Write Tom on the top line and With his red bag below it. The second card is for Lina. Write Lina and With her blue bag. The third card is for Ben and Jo. Write Ben and Jo and With their yellow cups. The card for Ben and Jo is a spare. Keep it in the green box until you need it. The cards for Tom and Lina are ready on the table."
+    },
+    {
+      "title": "Lina’s signed note",
+      "text": "Hello, table helper. Please take my photo off the table before the exhibition opens. It is the photo with my blue bag. My sister gave me this photo. I want to keep it at home. Please put the photo and my name card in the white envelope. Leave the envelope in the drawer under the table. You can put the photo of Ben and Jo on the table in its place. Their card is in the green box. Tom’s photo can stay on the table. I can pick up my envelope from 12:00 to 12:15 on Saturday. Thank you for your help. Signed, Lina."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "A visitor points out two photos",
+      "text": "Excuse me. I know the two people in these photos. Both photos show a garden and a long bench. Look at the photo on the left. Tom is next to the bench. His red bag is on the bench. Now look at the photo on the right. That’s Lina. She is at the back of the garden, by the wall. Her blue bag is on the ground by her feet. There’s a tree in each photo, so the tree doesn’t help much. The bags are easy to see. A friend is coming at 11:10. I’d like to show him where to find the family table."
+    },
+    {
+      "title": "A volunteer’s voice message",
+      "text": "Hello, this is Eva, the table volunteer. I can bring two stands to the family table at 10:15. One stand is tall and one is short. They are both white. Please put the tall stand at the back of the table and the short one at the front. Put one photo on each stand. The name cards can lie flat in front of the stands. There is a space by the door for the green box. Please leave it there after you take out any card you need. I leave the room at 10:30. You can tell me your plan when I bring the stands."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "First read Approved card list to see what it is for. What does the list help you do?",
+      "options": [
+        "Find the room for the exhibition",
+        "Write the cards for the photos",
+        "Choose clothes for a family photo",
+        "Pick up a photo after the exhibition"
+      ],
+      "answer": 1,
+      "explanation": "The list gives a name and a short line for each card."
+    },
+    {
+      "prompt": "Read Approved card list again. Make three columns for the names, the things and the card locations. Which short line goes under Lina?",
+      "options": [
+        "With their yellow cups",
+        "With his red bag",
+        "With her yellow cup",
+        "With her blue bag"
+      ],
+      "answer": 3,
+      "explanation": "The second card has Lina’s name above the line With her blue bag."
+    },
+    {
+      "prompt": "In Approved card list, where can you get the card for Ben and Jo if you need it?",
+      "options": [
+        "In the green box",
+        "On the table beside Tom’s card",
+        "In a bag under the bench",
+        "At the door with the visitor"
+      ],
+      "answer": 0,
+      "explanation": "The list tells you to keep their spare card in the green box."
+    },
+    {
+      "prompt": "Read Lina’s signed note. What is Lina’s main request?",
+      "options": [
+        "Put her photo next to Tom’s photo",
+        "Write a new card for her sister",
+        "Take her photo off the table before opening",
+        "Move her photo to the back of the table"
+      ],
+      "answer": 2,
+      "explanation": "Lina asks the table helper to take her photo off the table before opening."
+    },
+    {
+      "prompt": "Read Lina’s signed note again. Make brief notes under Photo, Card and Envelope. Where does the envelope go?",
+      "options": [
+        "On the table with the spare card",
+        "In the drawer under the table",
+        "In the green box near the table",
+        "At home with Lina’s sister"
+      ],
+      "answer": 1,
+      "explanation": "The note says to leave the white envelope in the drawer under the table."
+    },
+    {
+      "prompt": "In Lina’s signed note, when can Lina collect her envelope? Add the pickup time to your notes.",
+      "options": [
+        "At 10:00 on Saturday",
+        "From 11:00 to 11:15 on Saturday",
+        "At 10:15 on Saturday",
+        "From 12:00 to 12:15 on Saturday"
+      ],
+      "answer": 3,
+      "explanation": "Lina gives a Saturday pickup window from 12:00 to 12:15."
+    },
+    {
+      "prompt": "Put these three events in order in your notes. Use Approved card list and Lina’s signed note. Which order is correct?",
+      "options": [
+        "Opening, setup, Lina’s pickup",
+        "Lina’s pickup, opening, setup",
+        "Setup, opening, Lina’s pickup",
+        "Opening, Lina’s pickup, setup"
+      ],
+      "answer": 2,
+      "explanation": "Setup is at 10:00, opening is at 11:00, and pickup starts at 12:00."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to A visitor points out two photos once. What does the visitor help you do?",
+      "options": [
+        "Know which garden photo shows each person",
+        "Plan a visit to the garden",
+        "Choose where to put the stands",
+        "Pack the photo table at the end"
+      ],
+      "answer": 0,
+      "explanation": "The visitor points out Tom in one garden photo and Lina in the other."
+    },
+    {
+      "prompt": "Listen to A visitor points out two photos again. Write one clue under Left and one under Right. What is on the bench in the left photo?",
+      "options": [
+        "Lina’s blue bag",
+        "A pair of yellow cups",
+        "A white envelope",
+        "Tom’s red bag"
+      ],
+      "answer": 3,
+      "explanation": "The visitor says Tom is in the left photo and his red bag is on the bench."
+    },
+    {
+      "prompt": "In A visitor points out two photos, which clue helps you find Lina in her photo?",
+      "options": [
+        "She is by the bench at the front.",
+        "She is by the wall at the back.",
+        "She is next to Tom’s red bag.",
+        "She is on the left with yellow cups."
+      ],
+      "answer": 1,
+      "explanation": "The visitor says Lina is at the back of the garden by the wall."
+    },
+    {
+      "prompt": "Listen to A volunteer’s voice message once. What should you be ready to tell Eva when she brings the stands?",
+      "options": [
+        "Where the visitor lives",
+        "When Lina took her photo",
+        "Your plan for the table",
+        "How to get to the garden"
+      ],
+      "answer": 2,
+      "explanation": "Eva says you can tell her your plan when she brings the stands."
+    },
+    {
+      "prompt": "Listen to A volunteer’s voice message again. Draw two spaces called Back and Front. Where does the short stand go?",
+      "options": [
+        "At the back of the table",
+        "By the door",
+        "Under the table",
+        "At the front of the table"
+      ],
+      "answer": 3,
+      "explanation": "Eva asks for the short stand at the front of the table."
+    },
+    {
+      "prompt": "In A volunteer’s voice message, where do the name cards go? Add two small marks to your drawing.",
+      "options": [
+        "Flat in front of the stands",
+        "Behind the photos on the stands",
+        "Under the green box",
+        "On the floor by the door"
+      ],
+      "answer": 0,
+      "explanation": "Eva says the name cards can lie flat in front of the stands."
+    },
+    {
+      "prompt": "Listen to A volunteer’s voice message one more time. Write Bring and Leave by the two times you hear. When does Eva leave the room?",
+      "options": [
+        "At 10:00",
+        "At 10:30",
+        "At 10:15",
+        "At 11:10"
+      ],
+      "answer": 1,
+      "explanation": "Eva brings the stands at 10:15 and says she leaves at 10:30."
+    }
+  ],
+  "grammar": {
+    "focus": "His, her and their before a thing word",
+    "explanation": "Use his, her or their before a word for a thing. These small words tell us who the thing belongs to. Use his for Tom, a man. Say his bag. Use her for Lina, a woman. Say her bag. Use their when the thing belongs to Ben and Jo together. Say their card for one card or their cups for two cups. Look at the people first. One person can have two bags. Two people can have one card. Read the three photo cards again. Mark his, her and their. Then say the name or names for each word.",
+    "examples": [
+      {
+        "before": "Tom has a red bag. Her bag is on the bench.",
+        "after": "Tom has a red bag. His bag is on the bench.",
+        "why": "The bag belongs to Tom, so use his before bag."
+      },
+      {
+        "before": "Lina has an envelope. His envelope is in the drawer.",
+        "after": "Lina has an envelope. Her envelope is in the drawer.",
+        "why": "The envelope is for Lina, so use her before envelope."
+      },
+      {
+        "before": "Ben and Jo share a card. Her card is in the box.",
+        "after": "Ben and Jo share a card. Their card is in the box.",
+        "why": "Both people share one card, so use their before card."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Eva has two pens for the cards. Which line tells us where Eva’s pens are?",
+        "options": [
+          "His pens are by the box.",
+          "Their pens are by the box.",
+          "Her pens are by the box.",
+          "She pens are by the box."
+        ],
+        "answer": 2,
+        "explanation": "Both pens belong to Eva, so use her before the plural word pens."
+      },
+      {
+        "prompt": "Ben has a coat. Eva hangs the coat by the door. What can Eva write about Ben?",
+        "options": [
+          "His coat is by the door.",
+          "Her coat is by the door.",
+          "He coat is by the door.",
+          "Their coat is by the door."
+        ],
+        "answer": 0,
+        "explanation": "The coat belongs to Ben, so use his even though Eva hangs it up."
+      },
+      {
+        "prompt": "Lina and Tom have one box for their family cards. Which words can you put under both names on the box?",
+        "options": [
+          "Her card box",
+          "His card box",
+          "They card box",
+          "Their card box"
+        ],
+        "answer": 3,
+        "explanation": "Lina and Tom share the box, so use their for the one box."
+      },
+      {
+        "prompt": "Tom brings a bag for Lina. The bag belongs to Lina. Finish the line about the bag. Tom puts ___ bag on a chair.",
+        "options": [
+          "their",
+          "her",
+          "his",
+          "she"
+        ],
+        "answer": 1,
+        "explanation": "Lina owns the bag, so use her even though Tom puts it down."
+      },
+      {
+        "prompt": "Ben and Jo have four photos in one folder. What can Eva say about the photos?",
+        "options": [
+          "He photos are in the folder.",
+          "Her photos are in the folder.",
+          "Their photos are in the folder.",
+          "His photos are in the folder."
+        ],
+        "answer": 2,
+        "explanation": "The photos belong to Ben and Jo together, so use their before photos."
+      },
+      {
+        "prompt": "Tom has a green pen and a black pen. Which question asks about both of Tom’s pens?",
+        "options": [
+          "Where are her pens?",
+          "Where are his pens?",
+          "Where are their pens?",
+          "Where are he pens?"
+        ],
+        "answer": 1,
+        "explanation": "Tom owns both pens, so his comes before pens in the question."
+      },
+      {
+        "prompt": "The note belongs to Eva. Choose the sentence that shows it is Eva’s note.",
+        "options": [
+          "Eva wrote their note.",
+          "Eva wrote his note.",
+          "Eva wrote she note.",
+          "Eva wrote her note."
+        ],
+        "answer": 3,
+        "explanation": "Eva writes and signs the note herself, so her note refers to Eva."
+      },
+      {
+        "prompt": "Tom and Ben share a table. Eva has a chair. Fill the two spaces in order. This is ___ table. That is ___ chair.",
+        "options": [
+          "their, her",
+          "his, her",
+          "their, his",
+          "her, their"
+        ],
+        "answer": 0,
+        "explanation": "Tom and Ben share the table, and the chair belongs to Eva."
+      }
+    ],
+    "transfer": "Make a short lost property list for Eva. Tom has a black hat. Lina has a red scarf. Ben and Jo share one blue umbrella. Write each name or set of names, then write a line about the thing with his, her or their. Cover the names, read the lines, then uncover the names and check each word."
+  },
+  "vocabulary": [
+    {
+      "word": "photo",
+      "meaning": "a picture taken with a camera",
+      "example": "I keep a photo of my dad by my bed.",
+      "pair": "take a photo"
+    },
+    {
+      "word": "name card",
+      "meaning": "a small card with a name on it",
+      "example": "My name card is beside my plate.",
+      "pair": "read a name card"
+    },
+    {
+      "word": "stand",
+      "meaning": "something that holds a thing up",
+      "example": "I put my phone on a stand.",
+      "pair": "a phone stand"
+    },
+    {
+      "word": "on the left",
+      "meaning": "on the side of your left hand",
+      "example": "Our door is on the left as you come in.",
+      "pair": "the door on the left"
+    },
+    {
+      "word": "on the right",
+      "meaning": "on the side of your right hand",
+      "example": "You can sit in the chair on the right.",
+      "pair": "the chair on the right"
+    },
+    {
+      "word": "at the back",
+      "meaning": "in the part far from the front",
+      "example": "There is a small window at the back.",
+      "pair": "sit at the back"
+    },
+    {
+      "word": "at the front",
+      "meaning": "in the part opposite the back",
+      "example": "We stand at the front for the class photo.",
+      "pair": "stand at the front"
+    },
+    {
+      "word": "spare",
+      "meaning": "extra and ready to use if needed",
+      "example": "We keep a spare key in the kitchen.",
+      "pair": "a spare key"
+    },
+    {
+      "word": "envelope",
+      "meaning": "a paper cover for a letter or card",
+      "example": "I put the birthday card in a yellow envelope.",
+      "pair": "open an envelope"
+    },
+    {
+      "word": "drawer",
+      "meaning": "a box that slides out of a table or cupboard",
+      "example": "The clean socks are in the top drawer.",
+      "pair": "close a drawer"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go somewhere and get a person or thing",
+      "example": "I pick up my son from school on Fridays.",
+      "pair": "pick up a parcel"
+    },
+    {
+      "word": "lie flat",
+      "meaning": "rest level on a surface",
+      "example": "The wet pages lie flat on the kitchen table.",
+      "pair": "lie flat on the floor"
+    }
+  ],
+  "speaking": {
+    "audience": "Eva, the volunteer who brings the stands",
+    "first": "Both photos show a garden bench. On the left, Tom’s red bag is on the bench. On the right, Lina is by the wall with her blue bag at her feet. Write one clue for the left photo and one for the right photo. Say to Eva, “Can you match these two cards?” Pause. Read Eva’s practice question aloud, “Which card goes on the left?” Answer in one or two short sentences. Then read and answer, “What about the right?”",
+    "change": "At 10:20, you find Lina’s signed note. A helper puts the photo of Ben and Jo beside the green box in a clear sleeve. Their name card is in the box.",
+    "second": "Take a second turn as yourself. First ask Eva for the card from the green box. Then answer her practice question, “Which two photos go on the stands now?” Keep Tom in your plan. Say which stand you want for each photo and where Lina’s envelope goes.",
+    "checklist": [
+      "Use the red bag and blue bag to match the first two cards.",
+      "Pause after the request and answer each practice question in a short turn.",
+      "Say his bag or her bag in the first take and their card in the second take.",
+      "Name Tom and Ben and Jo as the two photos for the stands.",
+      "Say where Eva can find the spare card and where Lina’s envelope goes."
+    ]
+  },
+  "writing": {
+    "audience": "The volunteer who checks the table before the exhibition opens",
+    "first": "Read Approved card list. Eva has a tall stand for the back and a short stand for the front. Each card lies flat in front of its photo. Copy the exact words for Tom’s and Lina’s cards. Put each name on its own line above its short line. Make a small two-line plan with Back and Front. Put Tom at the back and Lina at the front. Add a line with the opening time.",
+    "change": "At 10:20, you read Lina’s note. The helper puts the photo of Ben and Jo beside the green box. The white envelope is ready in the drawer under the table.",
+    "second": "Write a clean set of labels and a new table plan in about 25 to 45 words across several lines. Keep Tom at the back and keep the opening time. Change the front photo and card. Add a short reminder about the drawer and Lina’s pickup window.",
+    "checklist": [
+      "Give each public card a name line and the exact short line from the list.",
+      "Put Tom on the tall back stand and Ben and Jo on the short front stand.",
+      "Include 11:00 as the opening time.",
+      "Put Lina’s photo and card in the white envelope in the drawer.",
+      "Give Lina’s pickup window as 12:00 to 12:15."
+    ]
+  },
+  "immersion": {
+    "role": "Family photo table helper just before opening",
+    "goal": "Set up the table for the first visitors. Make a plan that a new helper can follow, with the right cards and a short private note for Lina’s pickup.",
+    "constraints": [
+      "The exhibition opens at 11:00 on Saturday.",
+      "The public photos are Tom and Ben and Jo. Use their approved card words.",
+      "Use the card clues to match Tom with his red bag and Ben and Jo with their yellow cups.",
+      "Lina’s photo and card go in the white envelope in the drawer. Keep her pickup details on the helper’s note.",
+      "There is space for one flat photo on the left of the table. Leave room beside it for its card."
+    ],
+    "change": "At 10:55, the tall stand breaks. You still have the short stand at the front. Tom’s photo can lie flat on the left. Ben and Jo’s photo must stand up because their clear sleeve is wet underneath. In the photo, Ben and Jo each hold a yellow cup.",
+    "deliverables": [
+      "Make one small plan with three spaces marked Back, Front and Left. Show where the two photos and their cards go. Mark the back space empty.",
+      "Write two public cards with two lines each. Then cover the approved list and match each card to a photo using its bag or cups clue.",
+      "Write one private helper note with the envelope color, its two contents, the place to find it and Lina’s full pickup window.",
+      "Read your plan aloud in two short turns. First tell the helper where the photos go. Then tell the helper where to put the two public cards."
+    ],
+    "checklist": [
+      "Show Ben and Jo on the only working stand at the front.",
+      "Show Tom flat on the left with his card beside his photo.",
+      "Put the card for Ben and Jo flat in front of the short stand.",
+      "Check that his goes with Tom and their goes with Ben and Jo.",
+      "Keep Lina’s photo and name card out of the public plan and in the white envelope.",
+      "Check that the helper’s note gives 12:00 to 12:15 for pickup."
+    ]
+  }
+}

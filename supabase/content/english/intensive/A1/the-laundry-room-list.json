@@ -1,0 +1,426 @@
+{
+  "slug": "the-laundry-room-list",
+  "title": "The laundry room list",
+  "level": "A1",
+  "summary": "You are Mina. You need one washer and a rail for your wet clothes. Read the evening list and the notice on the wall. Use two short updates to check the new times. Check who can use the room, help a visitor find the right things, and put a lost sock in the right basket.",
+  "documents": [
+    {
+      "title": "Today's printed laundry list",
+      "text": "Evening list\n6:00 to 6:30 — Mina\n6:30 to 7:00 — Leo\n7:00 to 7:30 — Eva\n\nFind your name before you start. There is one washer. There is a drying rail by the window. At the start of your time, put your clothes in the washer. Then take them out and hang them on the rail before your time ends. This list says you can wash a large blanket. It also says you can use the pegs in the cup by the window. The note at the bottom says everyone's wet things can stay on the rail until 8:00. Keep the floor clear."
+    },
+    {
+      "title": "Laundry room wall notice",
+      "text": "Please read the blue notes on this notice. They are for today. There are three changes to the printed list. First blue note. You can wash clothes and small towels. You can't wash a large blanket today. Second blue note. The cup is empty. Bring your own pegs if you need them. Third blue note. Only Eva's things can stay on the rail after her wash time. Mina and Leo, take your things off the rail at the end of your own time. Eva, take your things home by 8:00. There are two baskets by the door. The one marked LOST CLOTHES is for things you find. The basket marked PEGS is for pegs."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Leo's voice message to Mina",
+      "text": "Hi, Mina. It's Leo. I have a new time for the washer tonight. Eva and I are changing places. Eva has my old time, from six thirty to seven. I have her old time, from seven to seven thirty. Your time is still six to six thirty. I'll come to the room at seven. Please put a line through my name and Eva's name on the printed list and write our names in the new places. I have a small towel to wash. I can take it home wet at seven thirty. I'll bring two pegs from home."
+    },
+    {
+      "title": "Eva and Sam at the laundry door",
+      "text": "Sam: Hi, Eva. I'm coming to see Mina tonight. I can get here at seven fifteen. Is that a good time to pick up your bag, too?\nEva: Please come for my bag between seven forty-five and eight. It's a green bag. I'll put it on the bench by the door at seven forty-five.\nSam: OK. Do I take your clothes off the rail?\nEva: Thanks, but I'll do that. I'll take my things off the rail at seven forty-five. Then I'll go home. If you find one blue sock under the bench, please put it in LOST CLOTHES. I don't know whose sock it is.\nSam: Green bag from the bench. Blue sock into LOST CLOTHES. Got it."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Look at the names and times in Today's printed laundry list. Who is next after Mina on the printed list?",
+      "options": [
+        "Eva",
+        "Sam",
+        "Mina again",
+        "Leo"
+      ],
+      "answer": 3,
+      "explanation": "Leo is on the next line, from 6:30 to 7:00."
+    },
+    {
+      "prompt": "Read Today's printed laundry list again. Where can Mina find the drying rail?",
+      "options": [
+        "By the door",
+        "By the window",
+        "By the bench",
+        "By the baskets"
+      ],
+      "answer": 1,
+      "explanation": "The list puts the drying rail by the window."
+    },
+    {
+      "prompt": "In Today's printed laundry list, which two jobs does Mina do in this order during her time?",
+      "options": [
+        "Hang her clothes, then wash them",
+        "Wash her clothes, then put them in a basket",
+        "Wash her clothes, then hang them on the rail",
+        "Hang her clothes, then clear the floor"
+      ],
+      "answer": 2,
+      "explanation": "The list says to start with the washer and hang the clothes before the time ends."
+    },
+    {
+      "prompt": "Why does Laundry room wall notice tell you to read the blue notes?",
+      "options": [
+        "They give three changes for today.",
+        "They show how the washer works.",
+        "They give the names on tomorrow's list.",
+        "They show where to sit and wait."
+      ],
+      "answer": 0,
+      "explanation": "The notice says the blue notes give three changes to the printed list."
+    },
+    {
+      "prompt": "Read the first two blue notes in Laundry room wall notice. What can Mina bring and use today?",
+      "options": [
+        "A large blanket and her own pegs",
+        "A small towel and pegs from the cup",
+        "A large blanket and pegs from the cup",
+        "A small towel and her own pegs"
+      ],
+      "answer": 3,
+      "explanation": "The notice allows small towels and says to bring your own pegs."
+    },
+    {
+      "prompt": "Use Laundry room wall notice and Mina's 6:00 to 6:30 time in Today's printed laundry list. When must Mina take her things off the rail?",
+      "options": [
+        "At 6:00, when her time starts",
+        "At 6:30, when her time ends",
+        "At 7:30, when the last printed time ends",
+        "At 8:00, when Eva must take her things home"
+      ],
+      "answer": 1,
+      "explanation": "The notice tells Mina to clear the rail at the end of her own time, which is 6:30."
+    },
+    {
+      "prompt": "Read the last part of Laundry room wall notice. Which basket is for a sock you find?",
+      "options": [
+        "The basket marked PEGS",
+        "The washer",
+        "The basket marked LOST CLOTHES",
+        "The cup by the window"
+      ],
+      "answer": 2,
+      "explanation": "The notice says the LOST CLOTHES basket is for things you find."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Listen to Leo's voice message to Mina. Why does Leo want Mina to change the list?",
+      "options": [
+        "Mina needs a longer time.",
+        "Leo and Eva are changing places.",
+        "Leo wants to wash a blanket.",
+        "Eva is bringing a new washer."
+      ],
+      "answer": 1,
+      "explanation": "Leo says he and Eva are changing places and asks Mina to write their names in the new places."
+    },
+    {
+      "prompt": "Listen again to Leo's voice message to Mina. Where should Mina write Eva's name?",
+      "options": [
+        "From 6:00 to 6:30",
+        "From 7:00 to 7:30",
+        "From 7:30 to 8:00",
+        "From 6:30 to 7:00"
+      ],
+      "answer": 3,
+      "explanation": "Leo says Eva has his old time, from six thirty to seven."
+    },
+    {
+      "prompt": "In Leo's voice message to Mina, when does Leo say he will come to the room?",
+      "options": [
+        "At 7:00",
+        "At 6:00",
+        "At 7:30",
+        "At 6:30"
+      ],
+      "answer": 0,
+      "explanation": "Leo says he will come at seven and take his towel home at seven thirty."
+    },
+    {
+      "prompt": "In Leo's voice message to Mina, what does Leo say he will bring from home?",
+      "options": [
+        "A green bag",
+        "A large blanket",
+        "Two pegs",
+        "Two baskets"
+      ],
+      "answer": 2,
+      "explanation": "At the end of the message, Leo says he will bring two pegs from home."
+    },
+    {
+      "prompt": "In Eva and Sam at the laundry door, when can Sam get to the building to see Mina?",
+      "options": [
+        "At 7:45",
+        "At 7:15",
+        "At 8:00",
+        "At 6:30"
+      ],
+      "answer": 1,
+      "explanation": "Sam says he can get there at seven fifteen when he comes to see Mina."
+    },
+    {
+      "prompt": "Listen again to Eva and Sam at the laundry door. Which note gives the place and time for Sam to pick up the bag?",
+      "options": [
+        "By the window between 7:45 and 8:00",
+        "On the bench between 7:15 and 7:30",
+        "Under the bench between 7:30 and 7:45",
+        "On the bench between 7:45 and 8:00"
+      ],
+      "answer": 3,
+      "explanation": "Eva asks Sam to come between seven forty-five and eight and says the bag will be on the bench."
+    },
+    {
+      "prompt": "In Eva and Sam at the laundry door, what does Eva ask Sam to do if he finds the blue sock?",
+      "options": [
+        "Put it in LOST CLOTHES.",
+        "Put it in the green bag.",
+        "Leave it under the bench.",
+        "Hang it on the rail."
+      ],
+      "answer": 0,
+      "explanation": "Eva says to put the blue sock in LOST CLOTHES if Sam finds it."
+    }
+  ],
+  "grammar": {
+    "focus": "Can and can't for permission, only for a limit, and then for the next step",
+    "explanation": "Use can to say a person is free to do something. Use can't when a rule says no. Put can or can't before the action word. Say can wash or can't wash. The action word stays the same with I, you, or she. Use only to show a limit. In 'Only Eva can leave clothes on the rail,' Eva is the one person with permission. In 'You can wash only small towels,' small towels are the limit. Use then to show the next action. Read each rule and ask what is OK, who can do it, and what comes next.",
+    "examples": [
+      {
+        "before": "Mina can to use the washer at six.",
+        "after": "Mina can use the washer at six.",
+        "why": "Put use right after can."
+      },
+      {
+        "before": "You can wash a large blanket today.",
+        "after": "You can't wash a large blanket today.",
+        "why": "The blue note says no to large blankets today."
+      },
+      {
+        "before": "Eva can leave her things on the rail after her time.",
+        "after": "Only Eva can leave her things on the rail after her time.",
+        "why": "Only before Eva shows that she is the one person with permission."
+      },
+      {
+        "before": "First take your things off the rail. Then wash them.",
+        "after": "First wash your things. Then hang them on the rail.",
+        "why": "Then introduces the next job. The washer comes before the rail."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which correct sentence gives permission to wash a T-shirt?",
+        "options": [
+          "You can't wash a T-shirt here.",
+          "You can washing a T-shirt here.",
+          "You can wash a T-shirt here.",
+          "You can wash a towel here."
+        ],
+        "answer": 2,
+        "explanation": "Can wash gives permission and puts the action word after can."
+      },
+      {
+        "prompt": "A sign says 'No shoes in the washer.' Which message follows the sign?",
+        "options": [
+          "You can't wash shoes in the washer.",
+          "You can wash shoes in the washer.",
+          "Only shoes can go in the washer.",
+          "First put your shoes in the washer."
+        ],
+        "answer": 0,
+        "explanation": "Can't wash tells people that the rule says no to washing shoes."
+      },
+      {
+        "prompt": "Nora has the key. The room rule lets just Nora open the door. Which sentence says that?",
+        "options": [
+          "Nora can only open the door.",
+          "Nora can't open the door.",
+          "Nora and Dan can open the door.",
+          "Only Nora can open the door."
+        ],
+        "answer": 3,
+        "explanation": "Only before Nora shows she is the one person who can open the door."
+      },
+      {
+        "prompt": "Kim must close the washer door before she presses Start. Which note gives the steps in order?",
+        "options": [
+          "Press Start. Then close the door.",
+          "Close the door. Then press Start.",
+          "Only press Start.",
+          "You can't close the door."
+        ],
+        "answer": 1,
+        "explanation": "The note puts closing the door first and pressing Start after then."
+      },
+      {
+        "prompt": "The basket is for socks. Shirts and towels go in another basket. Which label gives the limit?",
+        "options": [
+          "Only socks go in this basket.",
+          "Socks can't go in this basket.",
+          "Socks and shirts can go in this basket.",
+          "Put towels in this basket first."
+        ],
+        "answer": 0,
+        "explanation": "Only socks sets the limit and leaves shirts and towels for the other basket."
+      },
+      {
+        "prompt": "Ben asks, 'Can I use this peg?' You need the peg for your towel. Which reply clearly says no?",
+        "options": [
+          "Yes, you can use it.",
+          "You can use it after I take it home.",
+          "No, you can't use it. I need it now.",
+          "First use it. Then give it to me."
+        ],
+        "answer": 2,
+        "explanation": "No, you can't use it answers Ben's question and says the peg is in use."
+      },
+      {
+        "prompt": "Lena can put a bag on the bench at 5:00. The bench is free for her bag until 5:15. Which note adds the pickup as the next step?",
+        "options": [
+          "Pick up the bag by 5:15. Then put it on the bench at 5:00.",
+          "Put the bag on the bench at 5:00. Then pick it up by 5:15.",
+          "Only put the bag on the bench at 5:00.",
+          "You can't put the bag on the bench at 5:00."
+        ],
+        "answer": 1,
+        "explanation": "The note puts the bag on the bench first and uses then to show when to pick it up."
+      },
+      {
+        "prompt": "Ali asks what he can use in the room. He has permission to use the rail. The washer is busy. Which reply answers both points?",
+        "options": [
+          "You can use the washer and the rail.",
+          "You can't use the rail or the washer.",
+          "First use the washer. Then use the rail.",
+          "You can use the rail. You can't use the washer now."
+        ],
+        "answer": 3,
+        "explanation": "Can gives permission for the rail, and can't says the washer is unavailable now."
+      }
+    ],
+    "transfer": "Write a three-line card for a neighbor. In this practice room, only Jo can use the rail at 5:00. A visitor can use the bench. The visitor first takes a bag off the bench and then shuts the door. Give the rule and the two steps. Underline can, only, and then. Read the card once and check who can use each place and which action comes first."
+  },
+  "vocabulary": [
+    {
+      "word": "washer",
+      "meaning": "a machine that washes clothes",
+      "example": "My jeans are in the washer.",
+      "pair": "fill the washer"
+    },
+    {
+      "word": "drying rail",
+      "meaning": "a bar where wet clothes can dry",
+      "example": "I put my wet shirt on the drying rail.",
+      "pair": "a wall-mounted drying rail"
+    },
+    {
+      "word": "peg",
+      "meaning": "a small clip that holds clothes in place",
+      "example": "I need one more peg for this sock.",
+      "pair": "a wooden peg"
+    },
+    {
+      "word": "blanket",
+      "meaning": "a thick cover that keeps you warm",
+      "example": "I put a blanket on my bed.",
+      "pair": "a warm blanket"
+    },
+    {
+      "word": "towel",
+      "meaning": "a cloth you use to dry your body or hands",
+      "example": "I dry my hands with a towel.",
+      "pair": "fold a towel"
+    },
+    {
+      "word": "notice",
+      "meaning": "a short written message for people to read",
+      "example": "There is a notice on the door.",
+      "pair": "put up a notice"
+    },
+    {
+      "word": "change places",
+      "meaning": "take each other's place",
+      "example": "Dan and I change places so he can sit by the window.",
+      "pair": "change places with a friend"
+    },
+    {
+      "word": "take off",
+      "meaning": "remove something from a place",
+      "example": "Please take your coat off the chair.",
+      "pair": "take the lid off"
+    },
+    {
+      "word": "pick up",
+      "meaning": "go and get something",
+      "example": "I pick up my keys from the front desk.",
+      "pair": "pick up a package"
+    },
+    {
+      "word": "bench",
+      "meaning": "a long seat for two or more people",
+      "example": "We sit on a bench in the park.",
+      "pair": "a park bench"
+    },
+    {
+      "word": "basket",
+      "meaning": "an open container for carrying or keeping things",
+      "example": "The clean shirts are in the basket.",
+      "pair": "a laundry basket"
+    },
+    {
+      "word": "by eight",
+      "meaning": "at eight or before eight",
+      "example": "Please call me by eight tonight.",
+      "pair": "be home by eight"
+    }
+  ],
+  "speaking": {
+    "audience": "Leo, the neighbor who is changing his washer time",
+    "first": "Read today's printed laundry list. Leo and Eva are swapping times. Eva now has 6:30 to 7:00. Leo now has 7:00 to 7:30. Mina still has 6:00 to 6:30. Make two small lists on paper, one for the printed names and times and one for the new names and times. Circle your own time in both lists. Then record a short reply in three parts. Say hello and give Leo his time. Pause and give Eva's time. Pause and tell Leo when you can use the washer. Use can once.",
+    "change": "Leo sends one more message. He can still come at 7:00, but he has a large blanket with him. He also has one small towel in his bag.",
+    "second": "Check the first blue note on the wall notice. Record your reply again in short parts. Keep Leo's time and Eva's time. Tell Leo what he can't wash and what he can wash tonight. Listen to both replies and check that the new item rule is easy to hear.",
+    "checklist": [
+      "I speak to Leo by name.",
+      "I give Leo 7:00 to 7:30 and Eva 6:30 to 7:00.",
+      "I give my own 6:00 to 6:30 time in the first reply.",
+      "I use can't for the blanket and can for the small towel in the second reply.",
+      "I pause between the short parts."
+    ]
+  },
+  "writing": {
+    "audience": "Sam, a visitor who comes to see Mina",
+    "first": "Sam arrives at 7:15. Eva leaves a green bag on the bench by the door for him to pick up between 7:45 and 8:00. If he finds a blue sock under the bench, it goes in LOST CLOTHES. On scrap paper, sort the times into arriving and picking up. Then make a picture card for Sam. Draw the door, the bench, the green bag and the LOST CLOTHES basket. Add a blue sock under the bench. Use arrows and 25 to 45 words across four or five short lines. Give the arrival time, the pickup time and place, and the sock step. Label the sock arrow with a short instruction starting “If you find the blue sock”.",
+    "change": "Sam now arrives at 7:40. Eva puts the green bag on the same bench at 7:45, but the bag pickup must finish by 7:55 tonight.",
+    "second": "Make a clean second card. Change the arrival time and the end of the bag pickup time. Keep the green bag, the bench, the 7:45 start and the sock step. Use 'then' on one line to show what Sam does after he arrives. Follow your arrows with a finger to check the order.",
+    "checklist": [
+      "I use pictures, arrows and four or five short lines with 25 to 45 words.",
+      "My second card shows arrival at 7:40 and bag pickup from 7:45 to 7:55.",
+      "My green bag is on the bench by the door.",
+      "Both cards tell Sam what to do if he finds the blue sock.",
+      "My line with then puts bag pickup after arrival."
+    ]
+  },
+  "immersion": {
+    "role": "Mina, a tenant who needs to wash a shirt and a small towel",
+    "goal": "Make a laundry plan you can follow from the door to the washer, the rail and the lost clothes basket. Leave a short note by the evening list so Leo and Eva can see the two new names.",
+    "constraints": [
+      "Use the washer once, during Mina's 6:00 to 6:30 time.",
+      "Wash one shirt and one small towel. Leave the large blanket at home.",
+      "Use your own pegs. The cup by the window is empty.",
+      "Take all your things off the rail by 6:30. Only Eva can leave her things on the rail after her time.",
+      "Leo and Eva are swapping times. Put Eva at 6:30 to 7:00 and Leo at 7:00 to 7:30 on your updated list."
+    ],
+    "change": "A new note on the rail says you can use it only from 6:20 tonight. Your wash ends at 6:15. You have a clean blue tub for wet clothes. At 6:15 you also see one blue sock that is not yours under the bench.",
+    "deliverables": [
+      "Draw a new evening list with all three names and time windows. Below it, write one short line that says whose things can stay on the rail after their wash time.",
+      "Make a four-line plan for 6:00, 6:15, 6:20 and 6:30. Show when you wash, where your wet clothes wait, when you hang them with your own pegs and when you take them home.",
+      "Draw the bench and both named baskets. Label each basket and draw one arrow to show where you put the lost blue sock."
+    ],
+    "checklist": [
+      "My list gives Mina 6:00 to 6:30, Eva 6:30 to 7:00 and Leo 7:00 to 7:30.",
+      "My note uses only to show who can keep things on the rail after their wash time.",
+      "My shirt and small towel go in the blue tub at 6:15 and onto the rail at 6:20.",
+      "My plan uses my own pegs and takes my things home at 6:30.",
+      "My sock arrow ends at LOST CLOTHES.",
+      "I read my plan in time order and use then once to say the next step."
+    ]
+  }
+}

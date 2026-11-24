@@ -1,0 +1,394 @@
+{
+  "slug": "c2-a-refund-in-two-currencies",
+  "title": "A Refund in Two Currencies",
+  "level": "C2",
+  "summary": "Negotiate a rural arts festival refund that distinguishes monetary value, transferable credit and actual opportunity to attend.\n\nReading: Trace three model customers with different prospective bookings through the cash and credit offers. Acknowledge what nobody can know about future use. Write two differently scoped claims that a treasurer could put beside the nominal increase.\n\nVocabulary: Write a refund explanation and then a fiscal memo about the same example. Retrieve the appropriate words for the face amount, actual use and a future cash risk, and point out which pairs would be awkward in the simpler notice.",
+  "documents": [
+    {
+      "title": "Festival treasurer’s proposal to ticket holders",
+      "text": "The riverside programme was abandoned on Saturday after the footbridge was inspected. The Festival Trust is able to pay cash refunds, but doing so would leave less money available for booking acts next spring. We therefore propose giving customers a choice. A person who bought a twenty-pound ticket may request twenty pounds back or accept a credit of twenty-five pounds. The credit can be split across bookings. It cannot be transferred to another customer and expires at the end of next summer.\n\nWe can make twenty-five pounds of credit available because we are not paying twenty-five pounds into a bank account. We expect some people to choose performances they would not otherwise have booked. We have not counted all credits as income or predicted that every credit will be redeemed. The provisional budget includes a range for the eventual cost.\n\nOur notification could say that the credit is worth a quarter more than the refund. That is accurate if a person can use all the credit on tickets they want. It tells somebody less if the programme they can travel to costs fifteen pounds. We ask the committee whether the notice should headline the percentage or provide an ordinary ten-pound example of part-use."
+    },
+    {
+      "title": "Column in the district arts bulletin",
+      "text": "An invitation is valuable partly because of the arrangements somebody can make around it. For a spectator with access to a car, a credit can be a chance to try a performance in a village she has never visited. For a spectator who uses the community bus, the nearest suitable performance may be an afternoon in the same hall as last year. Attaching another five pounds to the credit makes no extra bus journeys possible. An option generous to one person can be nearly useless to another.\n\nAll existing refund choices should remain open. I would first ask ticket holders whether they wished to be repaid. In a second, separate question I would ask whether they wished to donate any part of that repayment. That is a decision about the festival’s needs. It should not be hidden inside an apparent calculation of which offer has the larger number.\n\nA transfer rule might help, but it does not turn credit into cash. There are good reasons to allow a gift without creating a second-hand market. Let somebody give a named person an unused balance once. Publish how that changes the cost assumptions before you call it free."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Budget officer and front desk coordinator",
+      "text": "Almas: Automatically give a credit if we hear nothing for ten days. We can still offer repayment on request for the following month. People who want to support us need do nothing.\n\nRuth: There are people we may not reach at all. Silence would put their money into the one option with an expiry date. We will learn little about whether they wanted it.\n\nAlmas: If cash is the default, we have to reserve more before we know what next year's programme is.\n\nRuth: True, and clearer terms won't remove that uncertainty. You could ask people to choose now without promising more than the budget can support. Send a second reminder to anyone who hasn’t selected, then keep the obligation open while we deal with failed contact details.\n\nAlmas: Could I report the money reclaimed as a vote of confidence if a lot of people take credits?\n\nRuth: You can report the choice, but somebody choosing a larger credit may expect to spend it entirely. A separate donation is better evidence of support.\n\nAlmas: I’ll send both figures to the committee. I need one more scenario in the budget for what happens if credits can be given away."
+    },
+    {
+      "title": "Account from a ticket holder after a trial credit",
+      "text": "I chose the renewal voucher because my son plays there and I usually try to go twice a year. At the time there was enough credit for a workshop and part of a matinee. By the time I could make it, the last bus on the workshop route had changed. My son offered to use the credit for a concert he was not playing in. The desk said I could not give him my login or move the balance, but suggested I use my remaining credit to buy a ticket in his name. That would have been useful if he could attend the performance I wanted to book.\n\nI am not claiming the voucher never had value. For several weeks I had a perfectly good use for it. When that changed, the face value was the same and my chances of using it were much smaller. A leaflet describing my first choice as ‘taking a bigger refund’ would therefore tell half of my story.\n\nIf a future voucher could make one named transfer, I would want to know whether the new holder had the same expiry date. I might still pick cash. I would like the decision to belong to me rather than to the system that sends the first reminder."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "Why can the nominal credit exceed the cash option?",
+      "options": [
+        "Credit does not immediately create a cash payment of the listed amount.",
+        "The trust expects every balance to convert to donations.",
+        "The Trust has set an identical cost for every redeemed balance.",
+        "The footbridge inspector pays the extra amount."
+      ],
+      "answer": 0,
+      "explanation": "The proposal explicitly distinguishes issuing credit from paying the whole face value."
+    },
+    {
+      "prompt": "Which detail conditions the ‘quarter more’ claim?",
+      "options": [
+        "The holder must use credit in one booking.",
+        "The customer must be able to use the full balance on wanted bookings.",
+        "The next performance must have no other seats available.",
+        "The expiry date must fall before the next season."
+      ],
+      "answer": 1,
+      "explanation": "A numerical increase does not guarantee equivalent usable value."
+    },
+    {
+      "prompt": "What separation does the columnist want?",
+      "options": [
+        "Community buses and private cars at the same venue",
+        "Comparing full bookings and split bookings",
+        "Choosing a refund and making a gift to the festival",
+        "Choosing a print or digital credit card"
+      ],
+      "answer": 2,
+      "explanation": "Separate questions make support an explicit choice."
+    },
+    {
+      "prompt": "What problem would transfer partly address?",
+      "options": [
+        "The expense of the original bridge inspection.",
+        "The lack of a stable percentage formula.",
+        "The need to refund all parts with cash.",
+        "A different person may have usable access to desired events."
+      ],
+      "answer": 3,
+      "explanation": "Named transfer can enable use by somebody better placed to attend, but does not create cash."
+    },
+    {
+      "prompt": "What budget change should precede a transfer option?",
+      "options": [
+        "Book all replacement acts before estimating redemptions.",
+        "Treat the gift as a twenty-five-pound donation.",
+        "Recalculate likely redemption costs under the wider use.",
+        "Count every remaining credit as income."
+      ],
+      "answer": 2,
+      "explanation": "Wider transfer changes use and hence potentially the financial assumption."
+    },
+    {
+      "prompt": "Which issue is common to the texts?",
+      "options": [
+        "Every voter supports the option that helps the festival.",
+        "There is no workable distinction between gift and payment.",
+        "Changing transport will increase overall demand proportionately.",
+        "The offer’s practical value depends on opportunities facing each recipient."
+      ],
+      "answer": 3,
+      "explanation": "Both distinguish a face amount from accessible wanted attendance."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "Why does Ruth object to default credit after silence?",
+      "options": [
+        "Most recipients have explicitly refused any credit.",
+        "No credit will be available for a future programme.",
+        "The proposal goes beyond the amount paid.",
+        "Some people may not receive the request at all."
+      ],
+      "answer": 3,
+      "explanation": "A missed message is not an informed choice and would trigger terms that expire."
+    },
+    {
+      "prompt": "What does Almas worry about under a cash default?",
+      "options": [
+        "All transport operators would stop running.",
+        "Reserving cash limits forward planning while choices remain uncertain.",
+        "A credit has to be paid into a bank immediately.",
+        "Separate donations will be impossible to account for."
+      ],
+      "answer": 1,
+      "explanation": "He says the budget must retain more before programming."
+    },
+    {
+      "prompt": "What would credit uptake fail to prove?",
+      "options": [
+        "That more than one customer actively answered",
+        "That recipients chose it mainly to support the festival",
+        "That selectors may want to attend a show",
+        "That vouchers can be represented as a budget range"
+      ],
+      "answer": 1,
+      "explanation": "Ruth notes a customer may self-interestedly expect full use."
+    },
+    {
+      "prompt": "How did the transport change affect the holder?",
+      "options": [
+        "It made the voucher expire several months earlier.",
+        "It automatically reduced the balance.",
+        "It narrowed practical ways to use the same amount.",
+        "It disabled the option of any booking in another name."
+      ],
+      "answer": 2,
+      "explanation": "The face amount stayed fixed even as the feasible trips changed."
+    },
+    {
+      "prompt": "What workaround did the desk offer?",
+      "options": [
+        "Use her balance to buy a ticket under her son's name.",
+        "Extend the balance until he played again.",
+        "Move the unused balance into his account.",
+        "Share the original login with another holder."
+      ],
+      "answer": 0,
+      "explanation": "It allowed a particular booking without transferring the credit."
+    },
+    {
+      "prompt": "What fact would she check about a transfer?",
+      "options": [
+        "Whether the Trust held enough printed vouchers",
+        "Whether the footbridge would close after buses began",
+        "Whether expiry stayed the same for the recipient",
+        "Whether she could already use the credit in instalments"
+      ],
+      "answer": 2,
+      "explanation": "The final paragraph names the recipient’s expiry date as a decision factor."
+    }
+  ],
+  "grammar": {
+    "focus": "Mixed conditionals and implicit counterfactuals",
+    "explanation": "Present results may be tied to imagined past choices, and past results to enduring conditions. Choose the tense relationship by identifying where the premise and result sit on a timeline. Conditional forms can describe a case without asserting the opposite from evidence alone.",
+    "examples": [
+      {
+        "before": "If the bus had a later departure, I would have attended yesterday.",
+        "after": "If the bus ran later, I could have attended yesterday.",
+        "why": "An ongoing timetable can be the unreal present condition for a past opportunity."
+      },
+      {
+        "before": "If she had requested cash, she would have cash now.",
+        "after": "If she had requested cash, she would have the refund now.",
+        "why": "Had requested marks unreal past choice; would have is a present result here, where have is the main verb."
+      },
+      {
+        "before": "Had the credit been portable, it would still usable.",
+        "after": "Had the credit been portable, it would still be usable.",
+        "why": "Had the credit been inverts the past condition; would still be expresses its present result."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which imagines a past refund choice with a present result?",
+        "options": [
+          "If I were travelling tonight, I would request cash tomorrow.",
+          "If I had requested cash, I would have had only one opportunity last year.",
+          "If I request cash, I will have the money now.",
+          "If I had requested cash, I would have the money now."
+        ],
+        "answer": 3,
+        "explanation": "Had requested marks an earlier unreal choice; now fixes the imagined present result."
+      },
+      {
+        "prompt": "Which gives a continuing inability as the reason for a lost past chance?",
+        "options": [
+          "If she drives tomorrow, she can book next summer.",
+          "If she could drive, she might have used last summer’s voucher.",
+          "If she had driven last summer, she might drive today.",
+          "If she could drive last summer, she will have used the voucher."
+        ],
+        "answer": 1,
+        "explanation": "Could drive describes an enduring ability; might have used puts the result in the past."
+      },
+      {
+        "prompt": "Which paraphrases ‘Had everyone responded, we would know the cost today’?",
+        "options": [
+          "If everyone responds, we would have known the cost today.",
+          "Unless everyone had responded, we would know the cost today.",
+          "If everyone had responded, we would know the cost today.",
+          "If everyone would respond, we had known the cost today."
+        ],
+        "answer": 2,
+        "explanation": "The initial inverted had stands for if plus past perfect."
+      },
+      {
+        "prompt": "Which expresses only a live future condition?",
+        "options": [
+          "If the fund permits transfers, some holders may give away unused credit.",
+          "If the fund permitted transfers in those days, it would operate otherwise now.",
+          "If the fund had permitted transfers, holders might give them away now.",
+          "Had the fund permitted transfers, holders could have passed them on."
+        ],
+        "answer": 0,
+        "explanation": "The present permits and modal may refer to a live choice and possible future effect."
+      },
+      {
+        "prompt": "Which wording contrasts an option no longer available with a present ability?",
+        "options": [
+          "If the date had expired tomorrow, she would have been able to book yesterday.",
+          "If there was a booking, the credit will expire today.",
+          "Without an expiry date, she could still make a booking today.",
+          "Without an expiry date, she made a booking yesterday."
+        ],
+        "answer": 2,
+        "explanation": "Without introduces an unreal absence and still ties its consequence to the present."
+      },
+      {
+        "prompt": "They did not extend the bus, and we cannot establish who would use it. Which is cautious?",
+        "options": [
+          "Had they extended the route, every customer would have used the balance.",
+          "They extended the route, so some customers spent the balance.",
+          "If they extend the route, everyone has already used the credit.",
+          "Had they extended the route, more customers might have used their credit."
+        ],
+        "answer": 3,
+        "explanation": "Might have avoids turning an untested past scenario into certainty."
+      },
+      {
+        "prompt": "Which separates a past missed reply from a policy now under consideration?",
+        "options": [
+          "Had she replied last week, we gave no cash yesterday or today.",
+          "If she had replied last week, her credit would be in use now, but we can still offer a refund.",
+          "If she replied tomorrow, she would have used the credit yesterday.",
+          "If she replies last week, her credit would be in use now, so we offered one."
+        ],
+        "answer": 1,
+        "explanation": "The past perfect introduces the unreal earlier reply while the other clauses describe present options."
+      },
+      {
+        "prompt": "Which reply offers a realistic open choice while preserving the accurate tense?",
+        "options": [
+          "If you ask for repayment today, we will confirm whether we have your booking record.",
+          "If you ask today, we would have confirmed last month.",
+          "If you would have asked, the record arrived tomorrow.",
+          "If you had asked for repayment today, we would have had a record last year."
+        ],
+        "answer": 0,
+        "explanation": "The present conditional and future confirmation keep the action available."
+      }
+    ],
+    "transfer": "Prepare two contrasting cash-flow scenarios. Give one unreal earlier choice with a present effect, one enduring condition with a lost earlier outcome, and one open condition for a future change."
+  },
+  "vocabulary": [
+    {
+      "word": "redeem",
+      "meaning": "exchange a credit for its benefit",
+      "example": "A holder may redeem credit against two tickets.",
+      "pair": "redeem a voucher"
+    },
+    {
+      "word": "repayment",
+      "meaning": "return of money previously paid",
+      "example": "A repayment can take two weeks.",
+      "pair": "issue a repayment"
+    },
+    {
+      "word": "face value",
+      "meaning": "amount stated on an instrument",
+      "example": "The face value is twenty-five pounds.",
+      "pair": "at face value"
+    },
+    {
+      "word": "liquid",
+      "meaning": "available in money that can be used promptly",
+      "example": "The Trust needs enough liquid funds for refunds.",
+      "pair": "liquid funds"
+    },
+    {
+      "word": "default",
+      "meaning": "outcome applied when no choice is made",
+      "example": "Cash is the proposed default.",
+      "pair": "default option"
+    },
+    {
+      "word": "opt in",
+      "meaning": "actively choose to take part",
+      "example": "A holder can opt in to festival credit.",
+      "pair": "opt in to a scheme"
+    },
+    {
+      "word": "contingent",
+      "meaning": "dependent on another event",
+      "example": "A larger booking is contingent on transport.",
+      "pair": "contingent on approval"
+    },
+    {
+      "word": "redemption",
+      "meaning": "use of a voucher for its benefit",
+      "example": "The treasurer modelled the rate of redemption.",
+      "pair": "redemption rate"
+    },
+    {
+      "word": "reserve",
+      "meaning": "keep resources for an expected obligation",
+      "example": "The Trust reserves cash for unreturned requests.",
+      "pair": "reserve funds"
+    },
+    {
+      "word": "nominal",
+      "meaning": "stated or named without accounting for actual effect",
+      "example": "The nominal value rose while access fell.",
+      "pair": "nominal amount"
+    },
+    {
+      "word": "disburse",
+      "meaning": "pay out from a fund",
+      "example": "The committee will disburse repayments next month.",
+      "pair": "disburse payments"
+    },
+    {
+      "word": "transferable",
+      "meaning": "capable of being passed to another holder",
+      "example": "The new balance is transferable once.",
+      "pair": "transferable credit"
+    }
+  ],
+  "speaking": {
+    "audience": "Ticket holders with different transport options and a finance volunteer",
+    "first": "Present both choices in five minutes with a worked example of a split balance. Ask two contrasting audience members to tell you what they would do and why.",
+    "change": "One holder cannot check their email reliably and a community operator withdraws the last bus.",
+    "second": "Deliver a new phone briefing and propose a default for failed contact. Explain one effect on usability and one effect on the cash reserve.",
+    "checklist": [
+      "Separate a cash amount from a credit amount.",
+      "Explain when silence is uninformative.",
+      "Include a concrete expiry example.",
+      "Give a fair statement of the budget concern."
+    ]
+  },
+  "writing": {
+    "audience": "Committee allocating scarce next-season booking funds",
+    "first": "Write a one-page paper with a compact decision matrix and two cost scenarios. Treat acceptance, spending and donation as different actions.",
+    "change": "The committee may allow one transfer but insists it imposes no extra cost.",
+    "second": "Draft a distinct qualification and a revised confirmation notice that specifies what happens to date, balance and ownership after transfer.",
+    "checklist": [
+      "Distinguish budget risk from known payment.",
+      "Address the beneficiary’s access.",
+      "Use two accurately timed conditional clauses.",
+      "Make donor consent separate from acceptance."
+    ]
+  },
+  "immersion": {
+    "role": "Rural festival refunds chair",
+    "goal": "Offer a choice people understand before committing next season’s funds.",
+    "constraints": [
+      "Cash repayment stays available.",
+      "The larger credit expires next summer.",
+      "Travel can constrain which events people use.",
+      "The treasurer must make bookings before all credits are spent."
+    ],
+    "change": "A late artist cancellation removes the only afternoon event accessible by the community bus.",
+    "deliverables": [
+      "Prepare two versions of the notice for print and telephone.",
+      "Explain two independent definitions of success to the board.",
+      "Submit a revised rule and role-play a negotiation with a reluctant finance officer."
+    ],
+    "checklist": [
+      "Do not count unspent balances as donations.",
+      "Distinguish option, consent and measured use.",
+      "Show how the changed schedule alters available value.",
+      "Name the group that bears the cost of the chosen default."
+    ]
+  }
+}

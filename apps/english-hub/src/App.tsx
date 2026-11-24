@@ -13,6 +13,8 @@ import { LandingPage } from './pages/LandingPage';
 import { TodayPage } from './pages/TodayPage';
 import { CheckPage } from './pages/CheckPage';
 
+const IntensiveLibrary = lazy(() => import('./pages/intensive/Library').then((m) => ({ default: m.IntensiveLibrary })));
+const IntensiveWorkspace = lazy(() => import('./pages/intensive/Workspace').then((m) => ({ default: m.IntensiveWorkspace })));
 const PracticePage = lazy(() => import('./pages/PracticePage').then((m) => ({ default: m.PracticePage })));
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 const ProgressPage = lazy(() => import('./pages/ProgressPage').then((m) => ({ default: m.ProgressPage })));
@@ -132,6 +134,8 @@ const App = () => {
         <Route path="/" element={<Navigate to="/today" replace />} />
         <Route path="/today" element={<HubFrame><TodayPage /></HubFrame>} />
         <Route path="/practice" element={hub(<PracticePage />)} />
+        <Route path="/intensive" element={hub(<IntensiveLibrary />)} />
+        <Route path="/intensive/:slug/:skill" element={hub(<IntensiveWorkspace />)} />
         <Route path="/review" element={hub(<ReviewPage />)} />
         <Route path="/progress" element={hub(<ProgressPage />)} />
         <Route path="/tutor" element={hub(<TutorPage />)} />

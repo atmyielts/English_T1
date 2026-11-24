@@ -3,25 +3,22 @@ import { useParams } from 'react-router-dom';
 import { TapScope, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
 import { saveWords } from '../../lib/notebook';
-import { canSpeak } from '../../lib/speech';
+import { ApiError } from '../../lib/api';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
-import { Panel, ProgressBar, Tag, useErrorMessage } from '../../ui/kit';
+import { Panel, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { getResumePoint, saveResume } from '../../lib/glue';
-import { RepeatAfterMe } from '../RepeatAfterMe';
-import { ShadowButton } from '../../components/shadow/ShadowButton';
-import { getItem, submitItem, type DiffToken, type ListeningSubmitResponse } from './api';
-import { parseScript, sentences, speakersOf, speechChunks, type ScriptLine } from './script';
-import { usePlayer } from './usePlayer';
-import { DictationAdvice, ListenControls, RATE, SegmentReplay, useAccents, withAccent, type AccentChoice, type Speed } from './Depth';
+import { getItem, submitItem, type DictationTarget, type DiffToken, type ListeningSubmitResponse } from './api';
+import { parseScript, speakersOf, type ScriptLine } from './script';
+import { DictationAdvice, RATE } from './Depth';
 
 const letter = (index: number) => String.fromCharCode(65 + index);
 
 /**
  * The script, line by line, with speaker names for dialogues. Words can be
- * tapped for their meaning; with `shadow`, each line can be shadowed.
+ * tapped for their meaning.
  */
-const Transcript = ({ lines, title, slug, shadow = false }: { lines: ScriptLine[]; title: string | null; slug: string; shadow?: boolean }) => (
+const Transcript = ({ lines, title, slug }: { lines: ScriptLine[]; title: string | null; slug: string }) => (
   <TapScope className="en-passage" source={{ type: 'english-listening', label: title, ref: slug }}>
     {lines.map((line, index) => (
       <Fragment key={index}>
@@ -29,9 +26,6 @@ const Transcript = ({ lines, title, slug, shadow = false }: { lines: ScriptLine[
           {line.speaker ? <strong>{line.speaker}: </strong> : null}
           <TapWords text={line.text} />
         </p>
-        {shadow && line.text.split(/\s+/).length >= 3 ? (
-          <div className="sh-paragraph-action"><ShadowButton text={line.text} source="listening" /></div>
-        ) : null}
       </Fragment>
     ))}
   </TapScope>
@@ -58,12 +52,13 @@ export const ListeningActivity = () => {
   const { slug = '' } = useParams();
   const activity = useResource((signal) => getItem(slug, signal), [slug]);
   const elapsed = useElapsedSeconds();
-  const player = usePlayer();
+  const fullAudio = useRef<HTMLAudioElement>(null);
+  const clipAudio = useRef<HTMLAudioElement>(null);
+  const clipEnd = useRef(0);
+  const [activeClip, setActiveClip] = useState<string | null>(null);
+  const [clipFailed, setClipFailed] = useState(false);
 
-  const [readingMode, setReadingMode] = useState(() => !canSpeak());
-  const [speed, setSpeed] = useState<Speed>('normal');
-  const [accent, setAccent] = useState<AccentChoice>('auto');
-  const accents = useAccents();
+  const [readingMode, setReadingMode] = useState(false);
   // Gist first: one question about the whole recording after the first listen, then the details.
   const [gistMode, setGistMode] = useState(true);
   const [phase, setPhase] = useState<'gist' | 'detail'>('gist');
@@ -90,21 +85,13 @@ export const ListeningActivity = () => {
     [item],
   );
   const speakers = speakersOf(lines);
-  const chunks = useMemo(() => withAccent(speechChunks(lines), accent), [lines, accent]);
   const gistIds = useMemo(() => {
     const marked = questions.filter((question) => question.focus === 'gist').map((question) => question.id);
     return new Set(marked.length ? marked : questions.slice(0, 1).map((question) => question.id));
   }, [questions]);
-  // Sentences to replay one by one: the authored segments, or the script split into sentences.
-  const segmentRows = useMemo(() => {
-    const authored = (activity.data?.segments ?? []).filter((segment) => segment.segment_text.trim());
-    if (authored.length) return authored.map((segment, index) => ({ index, text: segment.segment_text }));
-    return lines.flatMap((line) => sentences(line.text)).map((text, index) => ({ index, text }));
-  }, [activity.data?.segments, lines]);
   const gistActive = gistMode && !readingMode && !result && questions.length >= 2 && phase === 'gist';
   const visibleQuestions = gistActive ? questions.filter((question) => gistIds.has(question.id)) : questions;
   const gistAnswered = [...gistIds].every((id) => answers[id] !== undefined);
-  const hasAudioFile = Boolean(item?.audio_url);
   const useDictation = !readingMode && targets.length > 0;
 
   useEffect(() => {
@@ -143,42 +130,42 @@ export const ListeningActivity = () => {
   const written = targets.filter((target) => (typed[target.segment_index] ?? '').trim()).length;
   const heard = readingMode || plays > 0;
   const canCheck = heard && (answered > 0 || (useDictation && written > 0));
-  const scriptPlaying = player.state.key === 'script';
-
-  const playScript = () => {
-    if (scriptPlaying) {
-      player.stop();
-      return;
-    }
-    setPlays((count) => count + 1);
-    void player.play('script', chunks, RATE[speed]);
+  const stopClip = () => {
+    clipAudio.current?.pause();
+    setActiveClip(null);
   };
 
-  const playSentence = (index: number, text: string, rate: number) => {
-    const key = `s${index}-${rate}`;
-    if (player.state.key === key) {
-      player.stop();
-      return;
+  const playSentence = async (target: DictationTarget, rate: number) => {
+    const audio = clipAudio.current;
+    const { starts_at_seconds: start, ends_at_seconds: end } = target;
+    const key = `s${target.segment_index}-${rate}`;
+    if (!audio || start == null || end == null) return;
+    stopClip();
+    if (activeClip === key) return;
+    fullAudio.current?.pause();
+    setClipFailed(false);
+    try {
+      audio.currentTime = start;
+      audio.playbackRate = rate;
+      clipEnd.current = end;
+      setActiveClip(key);
+      await audio.play();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      stopClip();
+      setClipFailed(true);
     }
-    void player.play(key, [{ text, accent: accent === 'auto' ? 'us' : accent }], rate);
-  };
-
-  const playSegment = (segment: { index: number; text: string }, slow: boolean) => {
-    const key = slow ? `seg${segment.index}-slow` : `seg${segment.index}`;
-    if (player.state.key === key) {
-      player.stop();
-      return;
-    }
-    void player.play(key, [{ text: segment.text, accent: accent === 'auto' ? 'us' : accent }], slow ? RATE.slow : RATE[speed]);
   };
 
   const switchToReading = () => {
-    player.stop();
+    stopClip();
+    fullAudio.current?.pause();
     setReadingMode(true);
   };
 
   const check = async () => {
-    player.stop();
+    stopClip();
+    fullAudio.current?.pause();
     setBusy(true);
     setError(null);
     try {
@@ -199,7 +186,8 @@ export const ListeningActivity = () => {
   };
 
   const retry = () => {
-    player.stop();
+    stopClip();
+    setClipFailed(false);
     setPhase('gist');
     setAnswers({});
     setTyped({});
@@ -253,6 +241,15 @@ export const ListeningActivity = () => {
     if (result.mode === 'listening' && result.plays === 1 && result.score >= 80) good.push(t('listening.result.onePlay'));
   }
 
+  const comingSoon = activity.error instanceof ApiError && activity.error.code === 'listening_audio_soon';
+  if (comingSoon || (item && !item.audio_url)) {
+    return (
+      <ActivityFrame skill="listening" title={item?.title ?? t('intensive.audioSoon')} level={item?.level}>
+        <Panel><p>{t('intensive.audioSoonBody')}</p></Panel>
+      </ActivityFrame>
+    );
+  }
+
   return (
     <ActivityFrame
       skill="listening"
@@ -301,14 +298,6 @@ export const ListeningActivity = () => {
 
           <DictationAdvice issues={result.dictation.feedback} />
 
-          {result.mode !== 'reading' && result.dictation.results.length ? (
-            <RepeatAfterMe
-              title={t('repeat.listening.title')}
-              lead={t('repeat.listening.lead')}
-              sentences={result.dictation.results.map((entry) => entry.text)}
-            />
-          ) : null}
-
           {result.review_words.length ? (
             <div className="en-stack" style={{ gap: '.5rem' }}>
               <h3 style={{ margin: 0, fontSize: '1rem' }}>{t('listening.result.wordsTitle')}</h3>
@@ -330,13 +319,7 @@ export const ListeningActivity = () => {
 
       {result ? (
         <Panel title={t('listening.transcript.title')}>
-          <Transcript lines={lines} title={item?.title ?? null} slug={slug} shadow />
-          {result.mode === 'listening' && canSpeak() && segmentRows.length > 1 ? (
-            <details className="ls-replay">
-              <summary>{t('depth.listen.replayBySentence')}</summary>
-              <SegmentReplay segments={segmentRows} showText playingKey={player.state.key} onPlay={playSegment} source={{ label: item?.title ?? null, ref: slug }} />
-            </details>
-          ) : null}
+          <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
         </Panel>
       ) : null}
 
@@ -345,54 +328,26 @@ export const ListeningActivity = () => {
           {readingMode ? (
             <>
               <p className="en-notice" style={{ margin: 0 }}>
-                {canSpeak() ? t('listening.reading.chosen') : t('listening.reading.noAudio')}
+                {t('listening.reading.chosen')}
               </p>
-              <Transcript lines={lines} title={item?.title ?? null} slug={slug} shadow />
+              <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
             </>
           ) : (
             <>
               <p className="hint" style={{ margin: 0 }}>{t('listening.listen.hint')}</p>
               {speakers.length ? <p style={{ margin: 0 }}>{t('listening.listen.speakers', { names: speakers.join(', ') })}</p> : null}
-              {hasAudioFile ? (
-                <audio controls preload="none" src={item?.audio_url ?? undefined} onPlay={() => setPlays((count) => count + 1)} style={{ width: '100%' }}>
-                  {t('listening.listen.noAudioElement')}
-                </audio>
-              ) : (
-                <>
-                  <ListenControls
-                    speed={speed}
-                    onSpeed={(value) => { player.stop(); setSpeed(value); }}
-                    accent={accent}
-                    onAccent={(value) => { player.stop(); setAccent(value); }}
-                    accents={accents}
-                  />
-                  {questions.length >= 2 ? (
-                    <label className="ls-gist-toggle">
-                      <input type="checkbox" checked={gistMode} disabled={answered > 0} onChange={(event) => { setGistMode(event.target.checked); setPhase('gist'); }} />
-                      <span>{t('depth.listen.gistToggle')}</span>
-                    </label>
-                  ) : null}
-                  <div className="en-actions">
-                    <button type="button" className="is-large" onClick={playScript} aria-pressed={scriptPlaying}>
-                      {scriptPlaying ? t('listening.listen.stop') : plays ? t('listening.listen.again') : t('listening.listen.play')}
-                    </button>
-                    <span className="hint" aria-live="polite">
-                      {plays ? t('listening.listen.plays', { count: plays }) : t('listening.listen.notYet')}
-                    </span>
-                  </div>
-                  {scriptPlaying && player.state.parts > 1 ? (
-                    <ProgressBar skill="listening" value={(player.state.part / player.state.parts) * 100} label={t('listening.listen.progress')} />
-                  ) : null}
-                </>
-              )}
+              <audio ref={fullAudio} controls preload="none" src={item?.audio_url ?? undefined} onPlay={() => {
+                stopClip();
+                setPlays((count) => count + 1);
+              }} style={{ width: '100%' }}>{t('listening.listen.noAudioElement')}</audio>
+              {questions.length >= 2 ? (
+                <label className="ls-gist-toggle">
+                  <input type="checkbox" checked={gistMode} disabled={answered > 0} onChange={(event) => { setGistMode(event.target.checked); setPhase('gist'); }} />
+                  <span>{t('depth.listen.gistToggle')}</span>
+                </label>
+              ) : null}
               {gistActive ? (
                 <p className="en-notice" style={{ margin: 0 }}>{t('depth.listen.gistIntro')}</p>
-              ) : null}
-              {!hasAudioFile && !gistActive && plays > 0 && segmentRows.length > 1 ? (
-                <div className="en-stack" style={{ gap: '.4rem' }}>
-                  <p className="hint" style={{ margin: 0 }}>{t('depth.listen.replayHint')}</p>
-                  <SegmentReplay segments={segmentRows} showText={false} playingKey={player.state.key} onPlay={playSegment} source={{ label: item?.title ?? null, ref: slug }} />
-                </div>
               ) : null}
               <p className="hint" style={{ margin: 0 }}>
                 <button type="button" className="is-link" onClick={switchToReading}>{t('listening.reading.switch')}</button>
@@ -460,7 +415,7 @@ export const ListeningActivity = () => {
       {gistActive ? (
         <section className="en-panel">
           <div className="en-actions">
-            <button type="button" className="is-large" disabled={!gistAnswered || !heard} onClick={() => { player.stop(); setPhase('detail'); }}>
+            <button type="button" className="is-large" disabled={!gistAnswered || !heard} onClick={() => { fullAudio.current?.pause(); setPhase('detail'); }}>
               {t('depth.listen.toDetails')}
             </button>
             {!heard ? <span className="hint">{t('listening.check.playFirst')}</span> : null}
@@ -471,6 +426,9 @@ export const ListeningActivity = () => {
       {!result && useDictation && !gistActive ? (
         <Panel title={t('listening.dictation.title')}>
           <p className="hint" style={{ margin: 0 }}>{t('listening.dictation.hint')}</p>
+          <audio ref={clipAudio} src={item?.audio_url ?? undefined} preload="metadata" hidden
+            onTimeUpdate={(event) => { if (event.currentTarget.currentTime >= clipEnd.current) stopClip(); }} onEnded={stopClip} />
+          {clipFailed ? <p role="status">{t('listening.listen.noAudioElement')}</p> : null}
           {targets.map((target, index) => {
             const normalKey = `s${target.segment_index}-${RATE.normal}`;
             const slowKey = `s${target.segment_index}-${RATE.slow}`;
@@ -479,11 +437,11 @@ export const ListeningActivity = () => {
               <div key={target.segment_index} className="en-question">
                 <label className="eyebrow" htmlFor={inputId} style={{ margin: 0 }}>{t('listening.dictation.sentence', { number: index + 1 })}</label>
                 <div className="en-row" style={{ flexWrap: 'wrap', gap: '.5rem' }}>
-                  <button type="button" className="quiet" aria-pressed={player.state.key === normalKey} onClick={() => playSentence(target.segment_index, target.segment_text, RATE.normal)}>
-                    {player.state.key === normalKey ? t('listening.listen.stop') : t('listening.dictation.play')}
+                  <button type="button" className="quiet" aria-pressed={activeClip === normalKey} onClick={() => void playSentence(target, RATE.normal)}>
+                    {activeClip === normalKey ? t('listening.listen.stop') : t('listening.dictation.play')}
                   </button>
-                  <button type="button" className="quiet" aria-pressed={player.state.key === slowKey} onClick={() => playSentence(target.segment_index, target.segment_text, RATE.slow)}>
-                    {player.state.key === slowKey ? t('listening.listen.stop') : t('listening.dictation.playSlow')}
+                  <button type="button" className="quiet" aria-pressed={activeClip === slowKey} onClick={() => void playSentence(target, RATE.slow)}>
+                    {activeClip === slowKey ? t('listening.listen.stop') : t('listening.dictation.playSlow')}
                   </button>
                 </div>
                 <textarea

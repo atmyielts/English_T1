@@ -1,0 +1,394 @@
+{
+  "slug": "c2-the-study-that-didnt-repeat",
+  "title": "The Study That Didn’t Repeat",
+  "level": "C2",
+  "summary": "Advise a journal handling an inconclusive replication of a fictional perception study and a public claim about it.\n\nReading: Record the original outcome measure, each changed condition and every public interpretation as separate entries. Construct one warranted headline and one overload of the same evidence. Mark the exact words that make the second one stronger than the results.\n\nVocabulary: Use the target terms to prepare explanations for a researcher and a teacher. Define one phrase involving uncertainty and one involving design, and show why precision about one does not resolve the other.",
+  "documents": [
+    {
+      "title": "Original research note",
+      "text": "Our participants used a two-key instrument to indicate when a line seemed to tilt left or right. The line was shown briefly, first alone, then beside two stationary bars. The task did not tell them there was a right answer. Differences became easiest to detect when the tilt was slight and the two bars were close to the line. The effect was a change in the proportion of left and right answers; participants were not asked how confident they were.\n\nThe journal abstract gave a broader description: visual context alters what people see. It was a compact account of the problem that interested us. The measured difference was narrower, however. It was an effect on a choice between two response keys under a specified set of viewing conditions. We did not establish what a participant would draw if asked to reproduce the line, or what somebody viewing it on a wall rather than a desk would report.\n\nOur lab deposited the task sequence and recorded screen dimensions. It did not supply a drawing of how each participant sat. The desk had a chin rest that held viewing distance approximately steady. That arrangement is briefly mentioned in a photograph caption but omitted from the method summary."
+    },
+    {
+      "title": "Letter accompanying a replication",
+      "text": "Our task used the original line graphics and response sequence. During planning we did not find the note about the chin rest. To make the task easier to administer outside a laboratory, we used a handheld tablet at a comfortable distance. The results show no clear shift of the average answer between the alone and adjacent-bar trials. We do not claim that our work disproves the original result. Distance, screen movement and the precise viewing arrangement changed together. Their contributions cannot be separated from this one repeat.\n\nWe now propose three uses for the results. They can constrain a reading of the original headline as a statement that the effect would show up with any viewing arrangement. They can motivate a test that changes the distance while holding the display steady. They also explain why we could not validate using a handheld tablet for a specific classroom demonstration.\n\nA revision request asks us to change the result to ‘failure to find a perceptual effect’. I would prefer ‘no clear change in the key responses from our tablet trials’. It says what happened without requiring an account of what was going on behind each person’s choice."
+    }
+  ],
+  "recordings": [
+    {
+      "title": "Discussion before the editor’s decision",
+      "text": "Nila: One reviewer says the replication is a bad copy. If we publish, could readers think it measures the same thing with equivalent equipment?\n\nJeff: Ask the authors to state the differences before the first results table. This is not a clean test of the effect under exactly the original conditions, but those conditions don’t appear in most summaries of the study.\n\nNila: I’d like to know if the uncertainty rules out an effect as large as the first one.\n\nJeff: It doesn't quite. The figures are compatible with a smaller effect and with one close to the initial estimate. There aren't as many tablet trials at the critical shallow angle. We need to distinguish no clear shift from strong evidence that there can't be a substantial shift.\n\nNila: I don't want the title to read like a new discovery nobody can investigate.\n\nJeff: Try a title that describes the testing arrangement and an open question. Ask for a diagram and the view distance range next to the estimates. Do not invent an exact viewing position for each tablet user just because we wish it had been recorded.\n\nNila: Then an independent reader can assess both the comparison and its missing parts."
+    },
+    {
+      "title": "Message from a teacher after a demonstration",
+      "text": "When the first report came out, we were given one slide with a faint sloping line and two bars. Pupils looked at it from their desks. Half the class were directly in front. The rest were at the sides, where the whiteboard looks like a narrow picture. Two pupils moved closer because they did not know which answer the question required. In our discussion, one insisted the middle line itself had changed after I added the bars. Another said she had understood the task as guessing the intended answer.\n\nI am not qualified to decide whether the laboratory effect is real. I can tell the journal which part of the press summary travelled to my class: you can change a person’s sight by changing what is around an object. Neither a small shift in a two-choice task nor my class's disagreement is enough to show that proposition for whatever setting I choose.\n\nI would still use a comparison, but I want a slide that calls it a demonstration of how we ask about a judgement. Ask pupils to record where they sat and whether they were sure. They may learn about a question that looked easier than it was."
+    }
+  ],
+  "reading": [
+    {
+      "prompt": "What did the original task directly measure?",
+      "options": [
+        "Where people put a mark on a drawing",
+        "Whether lateral bars changed shape",
+        "Which of two keys participants chose",
+        "How sure a participant felt about a choice"
+      ],
+      "answer": 2,
+      "explanation": "The first note defines the outcome as proportions of left and right responses."
+    },
+    {
+      "prompt": "Which setup detail was poorly documented in the original summary?",
+      "options": [
+        "A tablet being held at varying distances",
+        "The graphics used in the task itself",
+        "The order of the two response keys on the desk",
+        "A chin rest controlling approximate viewing distance"
+      ],
+      "answer": 3,
+      "explanation": "The physical arrangement appears only in a caption, unlike the task sequence and dimensions."
+    },
+    {
+      "prompt": "Which claim does the replication explicitly withhold?",
+      "options": [
+        "That the original effect under the original arrangement has been disproved.",
+        "That the equipment and viewing conditions differed.",
+        "That its tablet task had no clear average change.",
+        "That a viewing-distance test is worth planning."
+      ],
+      "answer": 0,
+      "explanation": "The authors acknowledge that several elements changed together."
+    },
+    {
+      "prompt": "Why does the replication team reject a broader description of its result?",
+      "options": [
+        "Its study did not include two bars.",
+        "Key choices do not uniquely identify what a person perceived.",
+        "No participants gave their answers on a handheld screen.",
+        "The original investigators asked subjects to redraw each line."
+      ],
+      "answer": 1,
+      "explanation": "The team wants the result to name what was measured without making a private perceptual claim."
+    },
+    {
+      "prompt": "Which statement would both research groups support?",
+      "options": [
+        "A description of the response task should put limits on wider claims about sight.",
+        "A classroom can match the lab merely by using the same slide.",
+        "A failure to repeat an effect is proof that every broad claim is false.",
+        "The chin rest definitely produced the earlier effect."
+      ],
+      "answer": 0,
+      "explanation": "Both documents separate the response pattern from more expansive interpretations."
+    },
+    {
+      "prompt": "What future test is proposed?",
+      "options": [
+        "Change distance and the answer instructions simultaneously.",
+        "Ask only pupils in the furthest seats.",
+        "Vary distance while keeping the display stable.",
+        "Replace every reported key response with a picture."
+      ],
+      "answer": 2,
+      "explanation": "The letter proposes isolating one factor that changed during the repeat."
+    }
+  ],
+  "listening": [
+    {
+      "prompt": "What does Jeff want placed before the results?",
+      "options": [
+        "A claim that all test seats had equal range",
+        "A proof that the initial estimate was wrong",
+        "A list of pupils who sat directly in front",
+        "An account of differences in setup"
+      ],
+      "answer": 3,
+      "explanation": "He calls for disclosure of the deviations before readers see the tables."
+    },
+    {
+      "prompt": "What would be premature based on the interval Jeff describes?",
+      "options": [
+        "Ruling out an effect close to the first estimate",
+        "Requesting a description of the uncertainty",
+        "Discussing differences in distance and screen movement",
+        "Reporting that the point estimate shows no clear shift"
+      ],
+      "answer": 0,
+      "explanation": "The figures remain compatible with a size close to the initial estimate."
+    },
+    {
+      "prompt": "What detail does he warn against reconstructing as though observed?",
+      "options": [
+        "The arrangement of the two bars",
+        "The existence of the screen",
+        "Each user’s precise tablet viewing position",
+        "The shape of a results table"
+      ],
+      "answer": 2,
+      "explanation": "He distinguishes desired observations from what was actually recorded."
+    },
+    {
+      "prompt": "Why did pupils not all work under the same conditions?",
+      "options": [
+        "Seat locations and movement changed their view.",
+        "All saw the same angle but were in different age groups.",
+        "The teacher supplied several different keypads.",
+        "They were asked to change the whiteboard themselves."
+      ],
+      "answer": 0,
+      "explanation": "The teacher describes direct and side views and pupils who moved."
+    },
+    {
+      "prompt": "Which misunderstanding did one pupil report?",
+      "options": [
+        "She mistook the journal’s diagram for a results table.",
+        "She treated the task as guessing the desired answer.",
+        "She believed the figures described a price.",
+        "She thought she had to measure her seat distance exactly."
+      ],
+      "answer": 1,
+      "explanation": "One positional answer was interpreted as responding to what the questioner wanted."
+    },
+    {
+      "prompt": "How would the teacher reposition the exercise?",
+      "options": [
+        "Use it to disprove the first study’s laboratory effect.",
+        "Use it to explore how a question elicits a judgement.",
+        "Use it to show the direction in which a line actually tilts.",
+        "Use it to establish which students see most accurately."
+      ],
+      "answer": 1,
+      "explanation": "She wants to make the task design and circumstances part of what students learn."
+    }
+  ],
+  "grammar": {
+    "focus": "Hedged claims and evidential complements",
+    "explanation": "Suggest that, be consistent with, fail to establish and rule out carry different commitments. Compatible with does not entail caused by. An absence of a clear detected change may be accompanied by wide uncertainty. Place may or could close to the proposition that is uncertain.",
+    "examples": [
+      {
+        "before": "The data prove the screen accounts for the effect.",
+        "after": "The difference is consistent with a contribution from screen movement.",
+        "why": "Consistency keeps that account open without selecting it as the cause."
+      },
+      {
+        "before": "They found no effect under any circumstances.",
+        "after": "They did not detect a clear shift in this setup.",
+        "why": "This retains the tested outcome and scope."
+      },
+      {
+        "before": "It has not proved that the original trial was inaccurate.",
+        "after": "The repeat does not establish that the original trial was inaccurate.",
+        "why": "The revision gives the actual source and one precise evidential consequence."
+      }
+    ],
+    "questions": [
+      {
+        "prompt": "Which says the explanation is possible without presenting it as unique?",
+        "options": [
+          "Viewing distance has been established as sufficient.",
+          "The result is compatible with a difference in viewing distance.",
+          "The result rules out every cause except viewing distance.",
+          "The result shows that only viewing distance can matter."
+        ],
+        "answer": 1,
+        "explanation": "Compatibility allows alternative explanations."
+      },
+      {
+        "prompt": "The study had wide intervals. Which preserves a null observation without accepting certainty?",
+        "options": [
+          "The study found a change that every individual could see.",
+          "The study showed no shift could exist in the task.",
+          "The study detected no clear shift; several sizes of effect remain plausible.",
+          "The study refused to estimate an effect."
+        ],
+        "answer": 2,
+        "explanation": "Uncertain estimates cannot alone rule out all meaningful effects."
+      },
+      {
+        "prompt": "Which marks an untested classroom prediction?",
+        "options": [
+          "A wider seating angle may change how pupils complete the task.",
+          "A wider seating angle changed all responses in the tablet test.",
+          "A wider seating angle confirms that the two lines are the same.",
+          "A wider seating angle has been proved to affect perception."
+        ],
+        "answer": 0,
+        "explanation": "May plus change presents a current conjecture rather than a completed fact."
+      },
+      {
+        "prompt": "Which rewrite assigns the right reported scope?",
+        "options": [
+          "The task established a difference in direct awareness everywhere.",
+          "The task established a difference in choices under the lab’s viewing setup.",
+          "The task established that tablets cannot reproduce any lab displays.",
+          "The task established that pupils guessed all the answers."
+        ],
+        "answer": 1,
+        "explanation": "The measurement was response-key choice in a given setup."
+      },
+      {
+        "prompt": "Which sentence says the record cannot choose between two possibilities?",
+        "options": [
+          "The log does not distinguish a lost recording from a failure to respond.",
+          "The log could only support a failure to respond.",
+          "The log proves that the responses were lost.",
+          "The log denies a lost recording but does not allow a response."
+        ],
+        "answer": 0,
+        "explanation": "Does not distinguish names two still-live explanations without choosing."
+      },
+      {
+        "prompt": "Which links uncertainty to outcome without undermining an established action?",
+        "options": [
+          "The authors reran the task, so the display could never move.",
+          "The authors cautiously claim the task must have been administered differently.",
+          "The authors might not have conducted the trials, and movement affected each result.",
+          "The authors did rerun the task, but the comparison may have been affected by display movement."
+        ],
+        "answer": 3,
+        "explanation": "Did rerun asserts the known act; may have been affected locates the uncertainty."
+      },
+      {
+        "prompt": "Which accurately labels a practical limit?",
+        "options": [
+          "The tablet study shows children respond more accurately than adults.",
+          "The tablet study shows that all classroom lines should be drawn differently.",
+          "The tablet study prohibits classroom demonstrations.",
+          "The tablet study provides no clear support for using that setup in class."
+        ],
+        "answer": 3,
+        "explanation": "The study did not validate the intended use, which differs from showing it is impossible."
+      },
+      {
+        "prompt": "Which protects an important general claim from overinterpretation?",
+        "options": [
+          "One shift establishes that any setting changes people's sight.",
+          "The condition could never lead to a result if people are asked a question.",
+          "Responses can shift in at least one setup; generalisation to other settings is open.",
+          "Reported choices do not change in all controlled trials."
+        ],
+        "answer": 2,
+        "explanation": "The statement specifies a demonstrated case and the separate open claim."
+      }
+    ],
+    "transfer": "Rewrite a popular summary with one direct finding, one case still compatible with the evidence, one claim the data cannot establish and a test that could decide between two explanations."
+  },
+  "vocabulary": [
+    {
+      "word": "replicate",
+      "meaning": "repeat a study to assess whether a result recurs",
+      "example": "The team tried to replicate the original trial.",
+      "pair": "replicate a finding"
+    },
+    {
+      "word": "generalise",
+      "meaning": "extend a conclusion beyond the tested cases",
+      "example": "Do not generalise from one viewing distance.",
+      "pair": "generalise a result"
+    },
+    {
+      "word": "attenuate",
+      "meaning": "reduce in strength",
+      "example": "Screen movement could attenuate a small effect.",
+      "pair": "attenuate an effect"
+    },
+    {
+      "word": "confound",
+      "meaning": "mix possible influences so they cannot be separated",
+      "example": "Distance and display mobility were confounded.",
+      "pair": "confound a comparison"
+    },
+    {
+      "word": "elicitation",
+      "meaning": "process of drawing out a response",
+      "example": "The instruction guided elicitation of a choice.",
+      "pair": "response elicitation"
+    },
+    {
+      "word": "estimate",
+      "meaning": "approximate value based on available measurements",
+      "example": "The wider interval surrounds the new estimate.",
+      "pair": "point estimate"
+    },
+    {
+      "word": "interval",
+      "meaning": "range between two points",
+      "example": "The interval includes estimates near zero.",
+      "pair": "uncertainty interval"
+    },
+    {
+      "word": "arbitrary",
+      "meaning": "chosen without a relevant deciding reason",
+      "example": "An arbitrary boundary would obscure the trend.",
+      "pair": "arbitrary threshold"
+    },
+    {
+      "word": "perceptual",
+      "meaning": "relating to what a person senses or notices",
+      "example": "The task may involve a perceptual difference.",
+      "pair": "perceptual response"
+    },
+    {
+      "word": "qualify",
+      "meaning": "limit or make more precise a statement",
+      "example": "The new table helps qualify an early claim.",
+      "pair": "qualify a conclusion"
+    },
+    {
+      "word": "protocol",
+      "meaning": "specified procedure for carrying out work",
+      "example": "The lab deposited a written protocol.",
+      "pair": "follow a protocol"
+    },
+    {
+      "word": "robust",
+      "meaning": "not easily changed by variations in conditions",
+      "example": "We need a measure robust to small device movements.",
+      "pair": "robust finding"
+    }
+  ],
+  "speaking": {
+    "audience": "Journal editor, a teacher and researchers from both teams",
+    "first": "Conduct a six-minute editorial hearing. Give a narrow summary, state two legitimate objections and answer one ambitious headline proposal.",
+    "change": "A newspaper proposes ‘Optical trick disproved’ as its headline and can quote only twenty words.",
+    "second": "Deliver a separate on-record statement and a brief direct explanation to the teacher of what a new classroom task can demonstrate.",
+    "checklist": [
+      "Distinguish setup, measure and interpretation.",
+      "Preserve one uncertainty about effect size.",
+      "Explain the narrow contribution of each study.",
+      "Offer a quotable sentence that survives without context."
+    ]
+  },
+  "writing": {
+    "audience": "Journal editor preparing the replication for publication",
+    "first": "Write a 420-word decision letter, a replacement abstract and a three-field methods supplement. Identify an open experimental comparison.",
+    "change": "Both groups agree to hold distance steady for the next test, but the newer team still uses a different screen model.",
+    "second": "Draft a fresh amendment. Explicitly identify the comparison the revised design supports and a question it cannot answer.",
+    "checklist": [
+      "Separate observed details from requested details.",
+      "Give a credible title that previews the methodological limit.",
+      "Avoid inferring a mental state from a keypress.",
+      "Make the proposed controls advance a precise question."
+    ]
+  },
+  "immersion": {
+    "role": "Independent reader auditing claims across research and publicity",
+    "goal": "Give researchers, editors and teachers usable statements at their own level of detail.",
+    "constraints": [
+      "One team measured only two response categories.",
+      "Original tools and classroom arrangements differ.",
+      "The replication did not establish absence of an effect.",
+      "The proposed method summary cannot invent missing observations."
+    ],
+    "change": "A research archive supplies a picture of a chin rest but no acquisition date.",
+    "deliverables": [
+      "Produce a three-column claim register tagged by evidentiary strength.",
+      "Design a small factor-controlled follow-up and two plausible outcomes.",
+      "Hold a short editorial role-play and publish three media-ready versions."
+    ],
+    "checklist": [
+      "Explain why the photograph is useful without establishing when or how it was used.",
+      "Distinguish regular effect detection from effect-size precision.",
+      "Preserve an explicit outcome measure.",
+      "Make every public claim traceable to a result or a clearly labelled proposal."
+    ]
+  }
+}
