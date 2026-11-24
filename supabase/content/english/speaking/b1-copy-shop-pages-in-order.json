@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "b1-copy-shop-pages-in-order",
+    "title": "Explain a Copy Shop Mix-Up",
+    "level": "B1",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 64,
+    "prompt_text": "You asked for 20 copies of a six-page handout. The copy shop printed all the pages, but staff stacked all the first pages together, all the second pages together, and so on. You need one complete set per person for a workshop tomorrow. Speak to the staff member, explain what needs to change, and ask when the corrected handouts will be ready.",
+    "target_grammar": "Past simple for what happened; need each copy to; could you for a request.",
+    "fluency_objective": "Give the staff member a simple example of the difference between the two orders.",
+    "pronunciation_objective": "Stress each in 'each copy' and tomorrow so the request and timing stay clear.",
+    "target_vocabulary": [
+      "handout",
+      "stack",
+      "in order",
+      "complete set",
+      "rearrange",
+      "collect"
+    ],
+    "sort_order": 265,
+    "cues": [
+      {
+        "text": "Explain what you originally ordered.",
+        "keywords": [
+          "twenty",
+          "20",
+          "six-page",
+          "six page",
+          "twenty copies"
+        ]
+      },
+      {
+        "text": "Describe how the pages are currently stacked.",
+        "keywords": [
+          "stack",
+          "all the first pages",
+          "first pages together",
+          "by page number"
+        ]
+      },
+      {
+        "text": "Explain the corrected order clearly.",
+        "keywords": [
+          "complete set",
+          "one to six",
+          "pages in order",
+          "one of each"
+        ]
+      },
+      {
+        "text": "Ask when you can pick up the handouts.",
+        "keywords": [
+          "when can i",
+          "what time",
+          "pick up",
+          "collect them",
+          "tomorrow"
+        ]
+      }
+    ],
+    "model_opening": "Hi.",
+    "model_answer": "Hi. I ordered twenty copies of a six-page handout for a workshop tomorrow. The pages are all here, but they're stacked by page number. This pile has all the first pages, this one has the second pages, and so on. I need one complete set for each person. Could you put pages one to six together, then start the next set with page one again? I don't need a new print run if you can rearrange the pages that are here. What time could I collect the handouts? I can come back this afternoon, or tomorrow morning before the workshop starts."
+  },
+  "children": []
+}

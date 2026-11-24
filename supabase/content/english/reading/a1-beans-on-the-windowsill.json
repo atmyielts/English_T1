@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a1-beans-on-the-windowsill",
+    "title": "Beans on the Windowsill",
+    "level": "A1",
+    "summary": "A simple diary follows two cups of beans over several days.",
+    "content_markdown": "**Monday.** I put a bean in Cup A and a bean in Cup B. Both cups have wet paper inside. They are on the windowsill. I put a little water in Cup A. My brother Ben puts the same amount of water in Cup B.\n\n**Thursday.** I can see a small green leaf in Cup A. Ben cannot see a leaf in Cup B. We look at the cups after breakfast. We leave both cups in the same place.\n\n**Sunday.** There is a leaf in Cup B now. Ben takes a photo of the two cups. He wants to send it to our aunt. She gave us the beans when she came to our house last week.",
+    "category": "Nature",
+    "theme": "growing beans indoors",
+    "tone": "mint",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "diary",
+      "word_count": 117
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is this diary mainly about?",
+        "options": [
+          "How to send a photo",
+          "How an aunt grows food outside",
+          "How Ben makes a drink",
+          "How two children watch their beans grow"
+        ],
+        "answer_index": 3,
+        "explanation": "The entries follow the two beans from Monday to Sunday."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Where are both cups?",
+        "options": [
+          "In a garden",
+          "Near the door",
+          "On the windowsill",
+          "On a table"
+        ],
+        "answer_index": 2,
+        "explanation": "The Monday entry says both cups are on the windowsill."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "When does the writer first see a leaf in Cup A?",
+        "options": [
+          "On Monday",
+          "On Sunday",
+          "On Saturday",
+          "On Thursday"
+        ],
+        "answer_index": 3,
+        "explanation": "The Thursday entry is the first one to mention a leaf in Cup A."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why might their aunt like the photo?",
+        "options": [
+          "She asked them to plant a tree.",
+          "She took the photo at her house.",
+          "She gave the children the beans.",
+          "She bought the cups that morning."
+        ],
+        "answer_index": 2,
+        "explanation": "The aunt gave them the beans, so the photo can show her what has grown."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The writer and Ben move the cups to a new place on Thursday.",
+        "answer": "false",
+        "explanation": "They leave both cups in the same place."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "After seeing a leaf in Cup B, Ben takes a ___.",
+        "answers": [
+          [
+            "photo"
+          ]
+        ],
+        "word_bank": [
+          "cup",
+          "leaf",
+          "photo"
+        ],
+        "explanation": "The Sunday entry says Ben takes a photo of the two cups."
+      }
+    ]
+  },
+  "children": []
+}

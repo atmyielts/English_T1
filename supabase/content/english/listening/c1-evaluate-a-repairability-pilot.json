@@ -1,0 +1,80 @@
+{
+  "item": {
+    "slug": "c1-evaluate-a-repairability-pilot",
+    "title": "Evaluate a repairability pilot",
+    "level": "C1",
+    "summary": "A briefing distinguishes product outcomes from a change in customer reporting.",
+    "transcript_text": "The dashboard shows a decline in returns after we printed repair instructions inside the packaging. That decline is real in the records, but the phone team noticed a corresponding rise in people asking about repairs. A return and a support request sit in different reporting categories, so the change might reflect rerouting rather than a reduction in defects. I would still keep the printed instructions. They seem to give customers another option. For the review, though, let's compare the total number of incidents per hundred sales, split by product batch, and follow a small representative group to see whether the repair lasted.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 43,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "workplace",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What alternative explanation does the speaker offer?",
+        "options": [
+          "The number of sales fell sharply",
+          "Customers moved from returns to repair enquiries",
+          "The instructions directly increased defects",
+          "The dashboard mistakenly included another company"
+        ],
+        "answer_index": 1,
+        "explanation": "The speaker suggests that customers used a different channel, which changes the reporting category."
+      },
+      {
+        "prompt": "What decision does the speaker recommend immediately?",
+        "options": [
+          "Keep the printed instructions",
+          "Cancel the instructions until every defect is known",
+          "Ignore customer support requests",
+          "Count only repairs from the newest batch"
+        ],
+        "answer_index": 0,
+        "explanation": "The speaker would keep the instructions because they are useful to customers while testing the effect separately."
+      },
+      {
+        "prompt": "Why follow a group over time?",
+        "options": [
+          "To check the durability of repairs",
+          "To identify which support worker spoke first",
+          "To avoid reporting by product batch",
+          "To validate sales figures without a comparison"
+        ],
+        "answer_index": 0,
+        "explanation": "The proposed follow-up observes whether the repair lasts, a fact the first counts do not establish."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "sit in different reporting categories",
+      "focus_phrase": "reporting categories",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "might reflect rerouting rather than a reduction in defects",
+      "focus_phrase": "a reduction in defects",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "see whether the repair lasted",
+      "focus_phrase": "whether the repair lasted",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

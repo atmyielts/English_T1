@@ -1,0 +1,150 @@
+{
+  "item": {
+    "title": "Question tags in team briefings",
+    "explanation_text": "Use a question tag when you think a handoff detail is correct and want a teammate to confirm it. Put the tag after a comma. A positive statement takes a negative tag, and a negative statement takes a positive tag. Use a subject pronoun that refers to the same person or thing as the statement’s subject. When the statement uses be, an auxiliary or a modal, use the corresponding verb in the tag and switch its polarity. If a present or past simple statement has no auxiliary and the main verb is not be, use do, does or did.\n\nUse a positive tag when no or never makes the clause you are checking negative. For example, ‘We stock no spare cables, do we?’ takes a positive tag. Use do because stock is a simple present main verb.\n\nAfter a positive statement with I am, use aren’t I? in ordinary conversation. After I’m not, use am I?\n\nUse shall we? after let’s to invite agreement with a suggestion. At a handoff, ‘Let’s review the open issues, shall we?’ proposes a next step.",
+    "contrast_text": "‘You sent the checklist, didn’t you?’ checks an assumption. ‘Did you send the checklist?’ asks directly whether it happened. ‘Let’s review the checklist, shall we?’ invites agreement on what to do next.",
+    "common_error_pattern": "A common error is to use a negative tag after never because the statement has no not. In ‘You’ve never tested the backup, have you?’, never makes the statement negative, so the tag is positive.",
+    "tags": [
+      "b2-question-tags-in-team-briefings",
+      "B2",
+      "question tags",
+      "project handoffs"
+    ],
+    "examples": [
+      {
+        "bad": "The handoff notes are ready, aren't it?",
+        "good": "The handoff notes are ready, aren't they?"
+      },
+      {
+        "bad": "You've never used the backup link, haven't you?",
+        "good": "You've never used the backup link, have you?"
+      },
+      {
+        "bad": "I'm leading the briefing, isn't it?",
+        "good": "I'm leading the briefing, aren't I?"
+      },
+      {
+        "bad": "Let's check the contact list, will we?",
+        "good": "Let's check the contact list, shall we?"
+      }
+    ],
+    "slug": "b2-question-tags-in-team-briefings",
+    "level": "B2",
+    "status": "published",
+    "focus_area": "question-tags",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Confirm that the files are ready",
+      "instructions": "Fill the gap with a conventional confirmation tag. Use a contraction. Write only the words that go in the gap.",
+      "prompt_text": "The source files are ready to share, ___?",
+      "accepted_answers": [
+        "aren't they"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check who can approve changes",
+      "instructions": "Fill the gap with a conventional confirmation tag. Write only the words that go in the gap.",
+      "prompt_text": "You can't approve changes to the budget, ___?",
+      "accepted_answers": [
+        "can you"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Confirm that no edits are pending",
+      "instructions": "Fill the gap with a conventional confirmation tag. Write only the words that go in the gap.",
+      "prompt_text": "We need no further edits before the handoff, ___?",
+      "accepted_answers": [
+        "do we"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check experience with the test system",
+      "instructions": "Fill the gap with a conventional confirmation tag. Write only the words that go in the gap.",
+      "prompt_text": "You've never run a test in this environment, ___?",
+      "accepted_answers": [
+        "have you"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Confirm your own assignment",
+      "instructions": "Fill the gap with a conventional confirmation tag. Use a contraction. Write only the words that go in the gap.",
+      "prompt_text": "I'm responsible for logging today's decisions, ___?",
+      "accepted_answers": [
+        "aren't I"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Match the tag to the statement",
+      "instructions": "Rewrite the whole sentence. Fix only the auxiliary in the conventional confirmation tag and keep the contraction.",
+      "prompt_text": "You saved a copy of the signed agreement, haven't you?",
+      "accepted_answers": [
+        "You saved a copy of the signed agreement, didn't you?"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Choose the pronoun for the tag",
+      "instructions": "Rewrite the whole sentence. Fix only the subject pronoun in the conventional confirmation tag.",
+      "prompt_text": "The access codes haven't expired, have it?",
+      "accepted_answers": [
+        "The access codes haven't expired, have they?"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a direct question into a confirmation check",
+      "instructions": "Rewrite the direct question as a positive statement with a conventional confirmation tag. Start with “You can” and keep “send the revised schedule by noon” unchanged. Write the whole sentence.",
+      "prompt_text": "Can you send the revised schedule by noon?",
+      "accepted_answers": [
+        "You can send the revised schedule by noon, can't you?",
+        "You can send the revised schedule by noon, can you not?"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assemble a check about a missing link",
+      "instructions": "Use every slash-delimited tile once. Keep the words inside each tile in order. Start with “The handoff packet” and add a question mark at the end.",
+      "prompt_text": "does it / include / The handoff packet / doesn't / the link to the test results,",
+      "accepted_answers": [
+        "The handoff packet doesn't include the link to the test results, does it?"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Invite agreement on the next handoff step",
+      "instructions": "Rewrite the proposal as a suggestion beginning with “Let's” and ending with its conventional question tag. Use the exact phrase “assign an owner to each unresolved issue before we end the call”. Write the whole sentence.",
+      "prompt_text": "I suggest we assign an owner to each unresolved issue before we end the call.",
+      "accepted_answers": [
+        "Let's assign an owner to each unresolved issue before we end the call, shall we?"
+      ],
+      "target_skill_key": "grammar.question-tags",
+      "status": "published"
+    }
+  ]
+}

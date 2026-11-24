@@ -1,0 +1,83 @@
+{
+  "item": {
+    "slug": "b2-respond-to-an-audience-question",
+    "title": "Respond to an audience question",
+    "level": "B2",
+    "summary": "A speaker corrects a misleading interpretation of an attendance figure.",
+    "transcript_text": "Host: You said attendance rose by twenty per cent after the museum introduced evening hours. Does that mean the late opening attracted a new audience?\nResearcher: It shows we counted more entries per week, including repeat visits. We didn't ask when each person first started visiting.\nHost: So the extra time might simply have made return visits easier?\nResearcher: Exactly. It's a possibility, not a verdict. A short exit question about first-time visits would help, as long as we asked it at both daytime and evening sessions.\nHost: That seems less dramatic than the press headline.\nResearcher: It is also a result we can actually check.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 135,
+    "duration_seconds": 48,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "community",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Host",
+        "Researcher"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What does the twenty per cent refer to?",
+        "options": [
+          "First-time visitors",
+          "Weekly entries",
+          "Evening tickets alone",
+          "People who answered the exit survey"
+        ],
+        "answer_index": 1,
+        "explanation": "An entry is a visit. The count includes repeat visits."
+      },
+      {
+        "prompt": "What is the researcher's view of the suggested explanation?",
+        "options": [
+          "It is plausible but still untested",
+          "It has been ruled out by the data",
+          "It is the only possible explanation",
+          "It must be accepted because the headline says so"
+        ],
+        "answer_index": 0,
+        "explanation": "The researcher explicitly calls it a possibility rather than a conclusion."
+      },
+      {
+        "prompt": "Why ask at both kinds of session?",
+        "options": [
+          "To avoid having to count return visits",
+          "To replace entry counts completely",
+          "To compare whether the visitor mix differs by time",
+          "To guarantee that the museum attracts a new audience"
+        ],
+        "answer_index": 2,
+        "explanation": "Collecting the same first-visit information at different times makes that comparison possible."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "including repeat visits",
+      "focus_phrase": "repeat visits",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "a possibility, not a verdict",
+      "focus_phrase": "not a verdict",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "at both daytime and evening sessions",
+      "focus_phrase": "daytime and evening",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

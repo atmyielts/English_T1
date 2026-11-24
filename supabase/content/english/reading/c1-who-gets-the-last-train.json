@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c1-who-gets-the-last-train",
+    "title": "Who Gets the Last Train?",
+    "level": "C1",
+    "summary": "A transport committee tests a proposal to move its last train later and finds an overlooked connection.",
+    "content_markdown": "The Newbridge transport committee received a petition to move the last city train twenty minutes later. People working late shifts had signed it, as had visitors to the small theatre that closed shortly before the current departure. The published proposal claimed to increase access without adding a train. It seemed a practical compromise between promising a whole new service and asking every employer or venue to change its hours.\n\nWhen staff mapped the route, they found that the train’s twenty-minute shift would look different at different stations. It would give workers in the city more time to reach the main station. At Lindal, however, the current train arrived eight minutes before the last village bus. The bus left from the station forecourt and did not wait more than five minutes after its advertised time. A later train would therefore improve one part of some passengers’ journeys while removing their only scheduled onward connection.\n\nThe designers first tried to estimate the effect using the number of tickets sold from the city to Lindal in the last hour. A passenger survey exposed a weakness in that approach. Some Lindal ticket holders continued on foot, and others used different bus routes or were collected by car. Staff started counting the people boarding the village bus after each of the final two trains. They also asked riders what they would do if they missed it. Several had no regular lift and said they would avoid the later city trip altogether.\n\nTwo changes went back to the committee. One kept the existing train time on most nights but moved it later on Fridays, when the village bus operator could also run twenty minutes later. The other left the timetable untouched and paid for a short connecting shuttle on the busiest nights. Neither alternative was shown to be the best use of money. The committee still needed to compare operating costs and check whether Friday matched the working patterns of the people who had asked for change.\n\nThe public summary made a smaller claim than the original proposal. It described which groups could reach the last train and which could finish their journey after using it. The committee had not found a timetable that served everyone. It had found a flaw in the way “access” was first described. An extra twenty minutes at one end of a route is only an improvement for somebody if those minutes have not been taken out of the rest of that person’s journey.",
+    "category": "Society",
+    "theme": "last train and onward connections",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "civic analysis",
+      "word_count": 414
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What did the review reveal about the original access claim?",
+        "options": [
+          "The petition exaggerated the number of people working late.",
+          "Staff could settle the issue with the existing ticket sales figures.",
+          "An easier departure from the city could be offset by the loss of an onward connection.",
+          "A shift of twenty minutes could never improve access without a new train."
+        ],
+        "answer_index": 2,
+        "explanation": "The revised timetable would help some people catch the train while preventing another group from completing its journey by bus."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How long after the current train arrives does the village bus normally leave?",
+        "options": [
+          "Twelve minutes",
+          "Twenty minutes",
+          "Five minutes",
+          "Eight minutes"
+        ],
+        "answer_index": 3,
+        "explanation": "The second paragraph places the bus eight minutes after the train’s existing arrival."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why were tickets to Lindal insufficient for estimating the impact?",
+        "options": [
+          "Only passengers whose trip depends on the village bus would lose that specific connection.",
+          "The rail tickets listed general arrival time but not the station.",
+          "The theatre sold a separate ticket for connecting passengers.",
+          "Every Lindal ticket included the onward bus fare."
+        ],
+        "answer_index": 0,
+        "explanation": "Lindal is the end of the rail trip for all those ticket holders, but only some take the village bus next."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “forecourt” refer to here?",
+        "options": [
+          "A ticket office inside the village",
+          "A waiting room beneath the train platform",
+          "The open area immediately outside the station",
+          "The last stop of the bus route"
+        ],
+        "answer_index": 2,
+        "explanation": "The village bus leaves from the area directly in front of the station."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The committee established that the Friday timetable would cost less than running a shuttle.",
+        "answer": "not_given",
+        "explanation": "It presents both options and says the committee still needs to compare their costs."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The bus normally waits no more than ___ minutes beyond its departure time. One option was to run a connecting ___.",
+        "answers": [
+          [
+            "five"
+          ],
+          [
+            "shuttle"
+          ]
+        ],
+        "word_bank": [
+          "train",
+          "bus",
+          "five",
+          "shuttle"
+        ],
+        "explanation": "The second paragraph gives the maximum wait and the fourth describes the alternate shuttle."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "The apparent simplicity of the proposal",
+          "Which route had the oldest trains",
+          "An important connection at risk",
+          "Two plans still to be evaluated",
+          "Finding which passengers relied on that connection"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The first four paragraphs introduce the time change, identify the lost connection, improve the evidence and present two alternatives."
+      }
+    ]
+  },
+  "children": []
+}

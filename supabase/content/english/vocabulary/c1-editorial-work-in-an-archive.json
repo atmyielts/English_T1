@@ -1,0 +1,194 @@
+{
+  "item": {
+    "id": "c1-editorial-work-in-an-archive",
+    "title": "Editorial Work in an Archive",
+    "description": "Practise choosing precise terms for representing archival documents, quotations and scans. Use context to distinguish what an editor adds, rewrites, conceals, corrects or reproduces.",
+    "slug": "c1-editorial-work-in-an-archive",
+    "level": "C1",
+    "status": "published",
+    "topic": "editing records",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "annotate",
+      "part_of_speech": "verb",
+      "definition": "To add notes to a text or image to explain or comment on specific details.",
+      "example": "The curator annotated the estate map with notes explaining the symbols beside each building.",
+      "translation_ru": "снабжать текст или изображение примечаниями",
+      "translation_uz": "matn yoki tasvirga izoh qoʻshmoq",
+      "collocations": [
+        "annotate a map",
+        "annotate a manuscript",
+        "annotate a passage"
+      ]
+    },
+    {
+      "word": "paraphrase",
+      "part_of_speech": "verb",
+      "definition": "To express the meaning of a passage in different words.",
+      "example": "For the exhibition label, the editor paraphrased the lease clause as a requirement to pay rent every three months.",
+      "translation_ru": "перефразировать",
+      "translation_uz": "boshqa soʻzlar bilan ifodalamoq",
+      "collocations": [
+        "paraphrase a passage",
+        "paraphrase an argument",
+        "paraphrase a statement"
+      ]
+    },
+    {
+      "word": "redact",
+      "part_of_speech": "verb",
+      "definition": "To remove or conceal sensitive information in a document before making it available to others.",
+      "example": "Before sharing the complaint file, the archivist redacted the witness’s home address from the public copy.",
+      "translation_ru": "удалять или скрывать закрытые сведения в документе перед его передачей или публикацией",
+      "translation_uz": "hujjatni boshqalarga taqdim etishdan oldin oshkor etilmasligi kerak boʻlgan maʼlumotlarni olib tashlamoq yoki yashirmoq",
+      "collocations": [
+        "redact personal details",
+        "redact a name",
+        "heavily redacted"
+      ]
+    },
+    {
+      "word": "transcribe",
+      "part_of_speech": "verb",
+      "definition": "To convert handwritten or printed material into typed text while preserving its wording.",
+      "example": "A volunteer transcribed the ship’s log, preserving the captain’s spelling and punctuation.",
+      "translation_ru": "набирать рукописный или печатный текст с сохранением его формулировок",
+      "translation_uz": "asl matnni oʻzgartirmay terib chiqmoq",
+      "collocations": [
+        "transcribe a diary",
+        "transcribe handwritten notes",
+        "transcribe a document"
+      ]
+    },
+    {
+      "word": "attribution",
+      "part_of_speech": "noun",
+      "definition": "The identification of the person or organisation known or believed to have created a work or made a statement.",
+      "example": "The editor marked the attribution of the unsigned poem to the printer’s daughter as tentative.",
+      "translation_ru": "указание на предполагаемого или установленного автора произведения либо высказывания",
+      "translation_uz": "asar muallifi yoki gapni kim aytganini aniqlash yoki koʻrsatish",
+      "collocations": [
+        "tentative attribution",
+        "correct attribution",
+        "attribution of authorship"
+      ]
+    },
+    {
+      "word": "erratum",
+      "part_of_speech": "noun",
+      "definition": "A published notice that identifies and corrects an error in a publication.",
+      "example": "The journal issued an erratum giving the correct date for the letter reproduced in its previous issue.",
+      "translation_ru": "опубликованное уведомление об ошибке в издании с указанием правильного варианта",
+      "translation_uz": "nashrda yoʻl qoʻyilgan xato va uning tuzatishi haqida eʼlon",
+      "collocations": [
+        "issue an erratum",
+        "publish an erratum"
+      ]
+    },
+    {
+      "word": "emend",
+      "part_of_speech": "verb",
+      "definition": "To correct a suspected error in a text when preparing an edition, typically on the basis of textual evidence.",
+      "example": "Because the same payment appears as ‘fifteen shillings’ in two surviving copies, the editor emended ‘fifty’ to ‘fifteen’ in the new edition.",
+      "translation_ru": "исправлять при подготовке издания предполагаемую ошибку в тексте, обычно с опорой на текстологические данные",
+      "translation_uz": "nashrga tayyorlashda matnning xato deb topilgan oʻrnini, odatda boshqa nusxalar yoki matndagi dalillarga tayanib, tuzatmoq",
+      "collocations": [
+        "emend a reading",
+        "emend the text"
+      ]
+    },
+    {
+      "word": "facsimile",
+      "part_of_speech": "noun",
+      "definition": "A reproduction that closely preserves the visual appearance of an original document or image.",
+      "example": "The reading room supplied a full-size facsimile of the deed showing the original layout and the impression of its seal.",
+      "translation_ru": "факсимильная копия",
+      "translation_uz": "asl koʻrinishini saqlagan nusxa",
+      "collocations": [
+        "facsimile edition",
+        "digital facsimile",
+        "full-size facsimile"
+      ]
+    },
+    {
+      "word": "provenance",
+      "part_of_speech": "noun",
+      "definition": "The history of where an item or collection came from and who owned it or kept it.",
+      "example": "A donor’s inventory helped establish the provenance of the photographs by recording their transfer from the family to the museum.",
+      "translation_ru": "история происхождения предмета или коллекции и того, кому они принадлежали или у кого хранились",
+      "translation_uz": "buyum yoki toʻplamning kelib chiqishi, kimlarga tegishli boʻlgani va kimlar qoʻlida saqlangani tarixi",
+      "collocations": [
+        "establish provenance",
+        "document provenance",
+        "uncertain provenance"
+      ]
+    },
+    {
+      "word": "illegible",
+      "part_of_speech": "adjective",
+      "definition": "Impossible to read because the letters or other marks cannot be made out.",
+      "example": "A crease in the scanned telegram made the final word illegible.",
+      "translation_ru": "неразборчивый",
+      "translation_uz": "oʻqib boʻlmaydigan",
+      "collocations": [
+        "illegible handwriting",
+        "illegible signature",
+        "render illegible"
+      ]
+    },
+    {
+      "word": "verbatim",
+      "part_of_speech": "adverb",
+      "definition": "Using exactly the same words as the original.",
+      "example": "The report quoted the clerk’s reply verbatim, including the phrase ‘by the usual route’.",
+      "translation_ru": "дословно",
+      "translation_uz": "soʻzma-soʻz",
+      "collocations": [
+        "quote verbatim",
+        "reproduce verbatim",
+        "repeat verbatim"
+      ]
+    },
+    {
+      "word": "abridge",
+      "part_of_speech": "verb",
+      "definition": "To shorten a work by removing parts while retaining its main content.",
+      "example": "To fit the memoir into a single volume, the editor abridged it by cutting several chapters on the author’s school years.",
+      "translation_ru": "сокращать произведение, сохраняя его основное содержание",
+      "translation_uz": "asarning asosiy mazmunini saqlagan holda uni qisqartirmoq",
+      "collocations": [
+        "abridge a novel",
+        "abridge a work",
+        "heavily abridged"
+      ]
+    },
+    {
+      "word": "collate",
+      "part_of_speech": "verb",
+      "definition": "To compare copies or versions of a text systematically in order to identify differences.",
+      "example": "The researcher collated three drafts of the speech and recorded which paragraphs each version omitted.",
+      "translation_ru": "сверять версии текста",
+      "translation_uz": "farqlarini aniqlash uchun matn nusxalari yoki variantlarini sinchiklab solishtirmoq",
+      "collocations": [
+        "collate manuscripts",
+        "collate variant readings",
+        "collate multiple versions"
+      ]
+    },
+    {
+      "word": "supersede",
+      "part_of_speech": "verb",
+      "definition": "To take the place of an earlier version or document as the one currently in use.",
+      "example": "The signed inventory superseded the provisional list as the official record of the deposit.",
+      "translation_ru": "вступать в силу взамен прежнего документа или редакции",
+      "translation_uz": "avvalgi hujjat yoki talqin oʻrnini egallab, amaldagi hujjatga yoki talqinga aylanmoq",
+      "collocations": [
+        "supersede an earlier version",
+        "supersede a previous edition",
+        "supersede existing guidance"
+      ]
+    }
+  ]
+}

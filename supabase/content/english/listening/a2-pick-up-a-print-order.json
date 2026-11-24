@@ -1,0 +1,80 @@
+{
+  "item": {
+    "slug": "a2-pick-up-a-print-order",
+    "title": "Pick up a print order",
+    "level": "A2",
+    "summary": "A print shop calls about an order and offers two collection options.",
+    "transcript_text": "Hi, this is Amina from Maple Print. Your posters are ready, but our front entrance is closed today. If you come before half past five, use the side door on Lake Street. After that we're closed. Tomorrow you can use the front door, but we don't open until ten. You paid online, so you don't need to bring money. Please have the order email ready on your phone and tell us the last name on it.",
+    "category": "Services",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 112,
+    "duration_seconds": 41,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "services",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "How can the customer collect the posters at five today?",
+        "options": [
+          "Wait at the main entrance",
+          "Use the side door on Lake Street",
+          "Come back after half past five",
+          "Meet Amina at the bus stop"
+        ],
+        "answer_index": 1,
+        "explanation": "The side door is used today before half past five."
+      },
+      {
+        "prompt": "What is true about collecting the posters tomorrow?",
+        "options": [
+          "The shop opens at ten",
+          "The side door is the only entrance",
+          "The customer must come before ten",
+          "The shop will be closed all day"
+        ],
+        "answer_index": 0,
+        "explanation": "The front door reopens, but the shop starts at ten."
+      },
+      {
+        "prompt": "What should the customer show?",
+        "options": [
+          "The price on the poster",
+          "A bank card",
+          "A note from Amina",
+          "The order email"
+        ],
+        "answer_index": 3,
+        "explanation": "The message asks the customer to have the order email ready."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "use the side door on Lake Street",
+      "focus_phrase": "side door",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "we don't open until ten",
+      "focus_phrase": "until ten",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "have the order email ready on your phone",
+      "focus_phrase": "order email",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

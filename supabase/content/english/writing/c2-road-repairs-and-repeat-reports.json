@@ -1,0 +1,72 @@
+{
+  "item": {
+    "slug": "c2-road-repairs-and-repeat-reports",
+    "title": "Question a Reporting-Based Repair Queue",
+    "level": "C2",
+    "genre": "policy response",
+    "audience": "a city committee considering road repair priorities",
+    "prompt_text": "A city proposes ranking small road repairs by the number of reports it receives. Supporters argue that the count is visible to the public and responds to concern quickly. A neighbourhood survey suggests several residents submit weekly reports on the same unrepaired issue, while streets used by people without reliable internet may be reported less often. Write a consultation response that distinguishes visibility from need, proposes a fairer starting method, and explains how the city could tell whether the method improves decisions.",
+    "expected_length_min": 250,
+    "expected_length_max": 330,
+    "target_grammar": "Concessive clauses; precise attribution; carefully bounded claims about measurement.",
+    "target_structure": "Fair account of the proposal → how the count can diverge from need → a workable decision rule → a public check.",
+    "target_vocabulary": [
+      "severity",
+      "duplicate",
+      "reporting bias",
+      "visibility",
+      "triage",
+      "inspection",
+      "outlier",
+      "audit"
+    ],
+    "sort_order": 271,
+    "checklist": [
+      {
+        "point": "Explain the appeal of a public count without accepting it as a complete ranking.",
+        "keywords": [
+          "public count",
+          "visible",
+          "transparent",
+          "easy to see",
+          "traceable"
+        ]
+      },
+      {
+        "point": "Show how repeat reports and uneven access affect the available evidence.",
+        "keywords": [
+          "duplicate",
+          "same defect",
+          "less likely to report",
+          "internet",
+          "access"
+        ]
+      },
+      {
+        "point": "Propose a method that keeps reports useful while introducing comparable evidence.",
+        "keywords": [
+          "deduplicate",
+          "group reports",
+          "inspection",
+          "severity",
+          "standard checklist"
+        ]
+      },
+      {
+        "point": "Explain how to check results across areas rather than just count completed jobs.",
+        "keywords": [
+          "audit",
+          "sample",
+          "waiting times",
+          "compare",
+          "untreated",
+          "priority"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    }
+  },
+  "children": []
+}

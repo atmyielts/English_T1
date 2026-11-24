@@ -1,0 +1,187 @@
+{
+  "item": {
+    "id": "b1-neighborhood-swap-day",
+    "title": "Neighborhood Swap Day",
+    "description": "Practise vocabulary for sorting and labeling items at a neighborhood swap day. Talk about what to exchange, what to save for someone, and what to donate at the end.",
+    "slug": "b1-neighborhood-swap-day",
+    "level": "B1",
+    "status": "published",
+    "topic": "sharing and swapping",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "sort",
+      "part_of_speech": "verb",
+      "definition": "To put things into groups according to their type, size, or another feature.",
+      "example": "We sorted the children's clothes by size before putting them on the tables.",
+      "translation_ru": "сортировать",
+      "translation_uz": "saralamoq",
+      "collocations": [
+        "sort clothes by size",
+        "sort items into groups"
+      ]
+    },
+    {
+      "word": "label",
+      "part_of_speech": "verb",
+      "definition": "To write information on something or attach a tag to it to show what it is or give details about it.",
+      "example": "Nina labeled each box with the age range of the toys inside.",
+      "translation_ru": "маркировать",
+      "translation_uz": "yorliq qoʻymoq",
+      "collocations": [
+        "label each box",
+        "label something clearly"
+      ]
+    },
+    {
+      "word": "swap",
+      "part_of_speech": "verb",
+      "definition": "To give someone one thing and receive another thing from them in return.",
+      "example": "I swapped my puzzle for a bag of building blocks.",
+      "translation_ru": "обменивать",
+      "translation_uz": "bir narsani boshqasiga almashtirmoq",
+      "collocations": [
+        "swap books",
+        "swap one thing for another"
+      ]
+    },
+    {
+      "word": "set aside",
+      "part_of_speech": "phrasal verb",
+      "definition": "To keep something for a particular person or purpose so it will be available later.",
+      "example": "Could you set aside that winter coat for Amir until he gets here?",
+      "translation_ru": "откладывать",
+      "translation_uz": "ajratib qoʻymoq",
+      "collocations": [
+        "set something aside for someone",
+        "set aside a few items"
+      ]
+    },
+    {
+      "word": "collection point",
+      "part_of_speech": "noun phrase",
+      "definition": "A place where people leave items to be gathered together.",
+      "example": "The volunteers set up a collection point for spare school supplies near the entrance.",
+      "translation_ru": "пункт сбора вещей",
+      "translation_uz": "buyumlar yigʻiladigan joy",
+      "collocations": [
+        "set up a collection point",
+        "designated collection point",
+        "bring items to the collection point"
+      ]
+    },
+    {
+      "word": "leftover",
+      "part_of_speech": "adjective",
+      "definition": "Still there after the rest has been used or taken.",
+      "example": "We packed the leftover books into two boxes after everyone had gone home.",
+      "translation_ru": "оставшийся",
+      "translation_uz": "ortib qolgan",
+      "collocations": [
+        "leftover books",
+        "leftover materials"
+      ]
+    },
+    {
+      "word": "lend",
+      "part_of_speech": "verb",
+      "definition": "To let someone use something for a while with the expectation that they will return it.",
+      "example": "Could you lend us a folding table for the afternoon?",
+      "translation_ru": "давать на время",
+      "translation_uz": "vaqtincha foydalanishga bermoq",
+      "collocations": [
+        "lend someone a handcart",
+        "lend something to a neighbor"
+      ]
+    },
+    {
+      "word": "condition",
+      "part_of_speech": "noun",
+      "definition": "The state of an object, especially how much it is worn or damaged.",
+      "example": "The lamp still works and is in good condition.",
+      "translation_ru": "состояние",
+      "translation_uz": "holat",
+      "collocations": [
+        "in good condition",
+        "in poor condition",
+        "check the condition of something"
+      ]
+    },
+    {
+      "word": "drop off",
+      "part_of_speech": "phrasal verb",
+      "definition": "To take something to a place and leave it there.",
+      "example": "Maya dropped off a bag of shoes at the welcome table on her way to work.",
+      "translation_ru": "приносить или привозить и оставлять в нужном месте",
+      "translation_uz": "olib borib qoldirmoq",
+      "collocations": [
+        "drop off a bag",
+        "drop something off at the entrance"
+      ]
+    },
+    {
+      "word": "pick up",
+      "part_of_speech": "phrasal verb",
+      "definition": "To go somewhere to collect something and take it with you.",
+      "example": "Leo came back with his bike trailer to pick up the chair.",
+      "translation_ru": "забирать",
+      "translation_uz": "olib ketmoq",
+      "collocations": [
+        "pick up an order",
+        "pick something up on the way home"
+      ]
+    },
+    {
+      "word": "pile",
+      "part_of_speech": "noun",
+      "definition": "A group of things placed on top of one another.",
+      "example": "I found a wool scarf at the bottom of the pile.",
+      "translation_ru": "куча",
+      "translation_uz": "uyum",
+      "collocations": [
+        "a pile of clothes",
+        "the top of the pile",
+        "make a pile"
+      ]
+    },
+    {
+      "word": "repair",
+      "part_of_speech": "verb",
+      "definition": "To fix something that is broken or damaged.",
+      "example": "Sam repaired the broken zipper before bringing the backpack to the swap.",
+      "translation_ru": "чинить",
+      "translation_uz": "taʼmirlamoq",
+      "collocations": [
+        "repair a zipper",
+        "repair a bike"
+      ]
+    },
+    {
+      "word": "owner",
+      "part_of_speech": "noun",
+      "definition": "The person something belongs to.",
+      "example": "The owner of the guitar case opened it to show me the soft lining.",
+      "translation_ru": "владелец",
+      "translation_uz": "ega",
+      "collocations": [
+        "the previous owner",
+        "the new owner",
+        "the owner of a bike"
+      ]
+    },
+    {
+      "word": "unwanted",
+      "part_of_speech": "adjective",
+      "definition": "Not wanted or needed by the person who has it.",
+      "example": "We brought some unwanted mugs that had been in our cupboard for years.",
+      "translation_ru": "ненужный",
+      "translation_uz": "keraksiz",
+      "collocations": [
+        "unwanted gifts",
+        "unwanted furniture",
+        "unwanted items"
+      ]
+    }
+  ]
+}

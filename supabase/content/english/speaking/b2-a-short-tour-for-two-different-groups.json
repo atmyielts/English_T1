@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "b2-a-short-tour-for-two-different-groups",
+    "title": "Plan a Tour for Two Kinds of Visitors",
+    "level": "B2",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 85,
+    "prompt_text": "An old waterworks now runs tours. A school group wants to see how water moved through the building. A group of local residents wants to know who worked there. The guide has time for two stops. Present a route with two stops that gives both groups something worthwhile. Explain one compromise.",
+    "target_grammar": "Relative clauses for features; comparatives; present and past contrast; would for a proposed route.",
+    "fluency_objective": "Name the two groups once at the start, then link each stop to what both can gain.",
+    "pronunciation_objective": "Use a short pause to signal the move from the first stop to the second.",
+    "target_vocabulary": [
+      "pump hall",
+      "workers",
+      "control panel",
+      "route",
+      "shift",
+      "trade-off"
+    ],
+    "sort_order": 266,
+    "cues": [
+      {
+        "text": "Give two distinct stops in a logical order.",
+        "keywords": [
+          "first stop",
+          "pump hall",
+          "second stop",
+          "workbench",
+          "break room"
+        ]
+      },
+      {
+        "text": "Explain the school group's takeaway about the water system.",
+        "keywords": [
+          "water entered",
+          "pipes",
+          "water moved",
+          "flow",
+          "pump"
+        ]
+      },
+      {
+        "text": "Explain what residents can learn about who worked there.",
+        "keywords": [
+          "workers",
+          "shift",
+          "maintenance crew",
+          "staff names",
+          "logbook"
+        ]
+      },
+      {
+        "text": "Explain a meaningful compromise.",
+        "keywords": [
+          "trade-off",
+          "compromise",
+          "give up",
+          "less time",
+          "leave out"
+        ]
+      }
+    ],
+    "model_opening": "I would start in the pump hall, where you can see the large pipes running in different directions.",
+    "model_answer": "I would start in the pump hall, where you can see the large pipes running in different directions. I would ask the pupils to follow the pipe that enters low on one wall and work out where the water goes after it passes the pump. The residents can look at the control panel and hear why one worker stayed in the hall while the others checked the pipe route. That gives them a first idea of how the jobs were divided.\n\nThe second stop would be beside the workbench, where the guide has a copy of the shift log. The residents can see which jobs people did on a particular morning. The pupils can connect one of those entries to the pump they have just seen. The trade-off is that we would leave out the upstairs storage room, even though its view is impressive. Two connected stops give visitors something they can explain afterwards."
+  },
+  "children": []
+}

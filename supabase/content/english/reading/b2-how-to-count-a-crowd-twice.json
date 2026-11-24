@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b2-how-to-count-a-crowd-twice",
+    "title": "How to Count a Crowd Twice",
+    "level": "B2",
+    "summary": "An organiser discovers why counting crossings and counting people answer different questions.",
+    "content_markdown": "For its first street festival, the North Strand events team put an electronic counter on the footbridge leading from the station. The counter registered 1,860 movements towards the festival during the afternoon. The next morning a poster described the festival as having had 1,860 visitors. That sounded reasonable until a volunteer pointed out that she had used the bridge three times, once on arrival and twice more to fetch supplies. The counter had registered her movements accurately. The poster had given the number a different meaning.\n\nThe team tried two measurements at the following festival. It kept the bridge counter because the town needed to know how busy the approach had become. At the festival entrance, volunteers also gave each arriving person a paper wristband and recorded each new band. The fitted bands could not be removed and put back on. Returning visitors showed their original band, and the team did not issue replacements. The count of new bands was lower than the bridge total. The smaller number did not show that the equipment on the bridge was unreliable. It reflected a different unit being counted.\n\nNeither measure answered every planning question. Some people arrived by a path that did not cross the bridge, so the counter was never meant to describe all ways into the festival. The wristbands gave a closer estimate of the number of different visitors, but one group entered before that desk opened, and volunteers did not record how many were in it. The team described the wristband total as a lower bound, meaning that at least that many people entered under the measurement scheme. It did not quietly add a guessed number for the early group.\n\nFor the next year, the team planned to compare bridge traffic during the same hours as before and to publish the wristband method beside the attendance figure. The bridge data would help it decide when to put another steward on the approach; the attendance estimate would help stallholders judge how much stock to bring. The trouble with the first poster was not its use of a number. It was treating a count made for one purpose as an answer to a different question.",
+    "category": "Research",
+    "theme": "festival entry counts",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "data explainer",
+      "word_count": 364
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What mistake did the first poster make?",
+        "options": [
+          "It rounded a small number to the nearest hundred.",
+          "It described arrivals as though no one had crossed the bridge more than once.",
+          "It reported a total from the wrong afternoon.",
+          "It used the wristband estimate instead of the bridge total."
+        ],
+        "answer_index": 1,
+        "explanation": "The poster labelled movements as visitors, even though one person could make several movements."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did volunteers do when someone returned with a wristband?",
+        "options": [
+          "They directed the person back to the bridge.",
+          "They counted the person only if the band had been removed.",
+          "They let the person enter without issuing another band.",
+          "They gave the person a new band."
+        ],
+        "answer_index": 2,
+        "explanation": "The second paragraph specifies that someone returning with a band was not given another one."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the team keep the bridge counter?",
+        "options": [
+          "It was the only way to measure visitors who came from the other path.",
+          "Its figures could help decide when the approach needed another steward.",
+          "It could determine how much each stall had sold.",
+          "It could check which wristband holders had gone home."
+        ],
+        "answer_index": 1,
+        "explanation": "The final paragraph gives bridge traffic as evidence for staffing the approach."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "Why is the wristband count described as a “lower bound”?",
+        "options": [
+          "The team expected the same total next year.",
+          "Some bands might have had smaller numbers printed on them.",
+          "The team believed more bands than visitors had been counted.",
+          "It shows a minimum because an early group was not counted."
+        ],
+        "answer_index": 3,
+        "explanation": "Visitors with recorded bands establish the minimum, while the uncounted group means actual attendance could be higher."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The team estimated the size of the early group and added it to its published count.",
+        "answer": "false",
+        "explanation": "The third paragraph says the team did not add a guessed number for the early group."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Each new visitor received a paper ___. The group missed before the desk opened made the total a lower ___.",
+        "answers": [
+          [
+            "wristband"
+          ],
+          [
+            "bound"
+          ]
+        ],
+        "word_bank": [
+          "bound",
+          "wristband",
+          "bridge",
+          "steward"
+        ],
+        "explanation": "The text names the device and the term for a known minimum."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "What the two methods leave out",
+          "Using each number for its intended purpose",
+          "Finding cheaper counters for the next festival",
+          "Collecting two different measures",
+          "A misleading label on an accurate count"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The four paragraphs develop the initial error, the revised measurement plan, its limits and its practical uses."
+      }
+    ]
+  },
+  "children": []
+}

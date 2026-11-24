@@ -1,0 +1,122 @@
+{
+  "item": {
+    "slug": "c2-negotiate-a-quoted-correction",
+    "title": "Negotiate a quoted correction",
+    "level": "C2",
+    "mission_type": "workplace",
+    "context_text": "An editor needs to correct a conference report. A quoted sentence was reproduced accurately, but it described a prototype and now appears next to a claim about an operational system.",
+    "objective_text": "Fix the framing without misattributing a view to the speaker.",
+    "target_vocabulary": [
+      "framing",
+      "verbatim",
+      "qualification",
+      "prototype",
+      "correction"
+    ],
+    "success_conditions": [
+      "Fix the framing without misattributing a view to the speaker."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "EDITORIAL RECORD\nOriginal interview: ‘The system handled every request.’ The preceding sentence was ‘In our scripted prototype demonstration, we sent it twelve requests.’ The article places the quote after a sentence about handling thousands of weekday enquiries. The guest asked for a correction, explaining they never made a capacity claim. A producer proposes deleting the quote altogether but leaving the preceding capacity sentence as it is.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Why is the article misleading despite the exact quotation?",
+          "options": [
+            "The sentence was mistranslated",
+            "Its position changes what a reasonable reader takes the sentence to support",
+            "The guest's prototype used fewer than twelve requests"
+          ],
+          "answer_index": 1,
+          "explanation": "The surrounding capacity claim and missing prototype condition change the implication."
+        },
+        {
+          "prompt": "Why might deleting the quote alone be insufficient?",
+          "options": [
+            "The title would become too short",
+            "The capacity claim may still remain as a claim made by the report",
+            "The demonstration would become statistically valid"
+          ],
+          "answer_index": 1,
+          "explanation": "The correction must address the unsupported sentence as well as its apparent evidence."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Draft a correction",
+      "prompt_text": "Senior editor: Write a correction that avoids blaming the speaker and states the limit of the evidence.",
+      "instructions": "Offer concise published wording and an editorial action.",
+      "goal": "Correct the misleading implication without inventing new evidence.",
+      "estimated_minutes": 5,
+      "min_words": 48,
+      "model_answer": "Correction: The quoted description referred to a scripted prototype demonstration with twelve requests. It did not establish the operational system's capacity. We have removed the surrounding claim about thousands of weekday enquiries because the demonstration did not support it. The quotation itself was accurate, but our placement gave it a broader implication.",
+      "points": [
+        {
+          "label": "Identify the scripted prototype",
+          "any": [
+            "prototype",
+            "scripted"
+          ]
+        },
+        {
+          "label": "Give the twelve-request limit",
+          "any": [
+            "twelve",
+            "12"
+          ]
+        },
+        {
+          "label": "Remove or qualify the unsupported capacity claim",
+          "any": [
+            "capacity",
+            "thousands",
+            "weekday volume"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain why the change is necessary",
+      "prompt_text": "Producer: We copied the exact words. Why change anything else?",
+      "instructions": "Distinguish verbatim accuracy from evidential framing and propose the fix.",
+      "goal": "Defend the correction diplomatically.",
+      "estimated_minutes": 3,
+      "min_words": 26,
+      "model_answer": "The exact words are accurate, but their position implies that the guest supplied evidence for the weekday capacity figure. We should restore the prototype context and remove the unsupported capacity claim.",
+      "points": [
+        {
+          "label": "Acknowledge exact words",
+          "any": [
+            "verbatim",
+            "exact",
+            "accurate"
+          ]
+        },
+        {
+          "label": "State the context changes the implication",
+          "any": [
+            "context",
+            "framing",
+            "implies",
+            "implication"
+          ]
+        },
+        {
+          "label": "Propose the full correction",
+          "any": [
+            "remove",
+            "qualify",
+            "correct"
+          ]
+        }
+      ]
+    }
+  ]
+}

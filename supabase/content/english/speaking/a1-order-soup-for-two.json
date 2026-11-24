@@ -1,0 +1,52 @@
+{
+  "item": {
+    "slug": "a1-order-soup-for-two",
+    "title": "Order Soup for Two",
+    "level": "A1",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 24,
+    "prompt_text": "You are at a café with a friend. The café has tomato soup and bean soup. Ask for one bowl of each. Say that you do not want bread with the bean soup. Ask how much the two soups cost together.",
+    "target_grammar": "I'd like; one bowl of; how much for a price question.",
+    "fluency_objective": "Give the first order, then the second. Leave a short pause before the price question.",
+    "pronunciation_objective": "Stress tomato and bean so the server can hear that you want two different soups.",
+    "target_vocabulary": [
+      "tomato soup",
+      "bean soup",
+      "bowl",
+      "without bread",
+      "together"
+    ],
+    "sort_order": 260,
+    "cues": [
+      {
+        "text": "Ask for one tomato soup and one bean soup.",
+        "keywords": [
+          "tomato soup",
+          "bowl of tomato",
+          "bean soup",
+          "bowl of bean"
+        ]
+      },
+      {
+        "text": "Say that one soup comes without bread.",
+        "keywords": [
+          "no bread",
+          "without bread",
+          "don't want bread"
+        ]
+      },
+      {
+        "text": "Ask for the total price.",
+        "keywords": [
+          "how much",
+          "price together",
+          "cost together"
+        ]
+      }
+    ],
+    "model_opening": "Hello.",
+    "model_answer": "Hello. I'd like one bowl of tomato soup and one bowl of bean soup, please. No bread with the bean soup, please. How much are the two soups together? Thanks."
+  },
+  "children": []
+}

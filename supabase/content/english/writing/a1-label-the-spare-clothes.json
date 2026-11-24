@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "a1-label-the-spare-clothes",
+    "title": "Make a Label for the Spare Clothes",
+    "level": "A1",
+    "genre": "label and instructions",
+    "audience": "children and school staff",
+    "prompt_text": "Your class has a box with clean spare T-shirts and socks. The shirts are at the top. The socks are at the bottom. Write a label for the box. Tell people to ask Ms. Kim before taking anything.",
+    "expected_length_min": 26,
+    "expected_length_max": 48,
+    "target_grammar": "There are; on top and at the bottom; simple commands.",
+    "target_structure": "Label → what is inside → where to look → who to ask.",
+    "target_vocabulary": [
+      "spare",
+      "clean",
+      "shirt",
+      "socks",
+      "bottom",
+      "ask"
+    ],
+    "sort_order": 261,
+    "checklist": [
+      {
+        "point": "Name both things in the box.",
+        "keywords": [
+          "shirts and socks",
+          "t-shirts and socks",
+          "socks and shirts"
+        ]
+      },
+      {
+        "point": "Say where the shirts and socks are.",
+        "keywords": [
+          "at the bottom",
+          "on top",
+          "under the shirts"
+        ]
+      },
+      {
+        "point": "Give the rule for taking clothes.",
+        "keywords": [
+          "ask ms kim",
+          "ask ms. kim",
+          "before you take"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    }
+  },
+  "children": []
+}

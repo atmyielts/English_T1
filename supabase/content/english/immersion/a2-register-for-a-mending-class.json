@@ -1,0 +1,102 @@
+{
+  "item": {
+    "slug": "a2-register-for-a-mending-class",
+    "title": "Register for a mending class",
+    "level": "A2",
+    "mission_type": "study",
+    "context_text": "You want to repair a jacket and a bag. You need to choose the right workshop and understand what to take.",
+    "objective_text": "Choose a workshop and explain the equipment you will bring.",
+    "target_vocabulary": [
+      "mend",
+      "seam",
+      "needle",
+      "register",
+      "materials"
+    ],
+    "success_conditions": [
+      "Choose a workshop and explain the equipment you will bring."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "SATURDAY WORKSHOPS\n10:00 Mend a Jacket: bring a jacket with a tear. Needles and matching thread are supplied. 14:00 Repair a Bag: bring a cloth bag and your own thread. The afternoon class is full. To take the morning class, email your name and item by Friday at six.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which class can you still join?",
+          "options": [
+            "Repair a Bag",
+            "Both classes",
+            "Mend a Jacket"
+          ],
+          "answer_index": 2,
+          "explanation": "The afternoon class is full, so only the morning class is open."
+        },
+        {
+          "prompt": "What must the registration email include?",
+          "options": [
+            "Your name and which item you will bring",
+            "Your home address and phone number",
+            "The colour and price of your thread"
+          ],
+          "answer_index": 0,
+          "explanation": "The notice asks for your name and the item."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send your registration",
+      "prompt_text": "Workshop organiser: Please send the booking details.",
+      "instructions": "Give your name and say which damaged item you will bring.",
+      "goal": "Ask for the correct place.",
+      "estimated_minutes": 5,
+      "min_words": 16,
+      "model_answer": "Hello, my name is Kamila Rahimova. Can I join the morning class? I'll bring my jacket with a torn pocket.",
+      "points": [
+        {
+          "label": "Request the morning class",
+          "any": [
+            "morning",
+            "10:00",
+            "ten"
+          ]
+        },
+        {
+          "label": "Specify the torn jacket",
+          "any": [
+            "jacket"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Check what's supplied",
+      "prompt_text": "Friend: Do we need to buy anything for the morning class?",
+      "instructions": "Say which materials are provided and what to take.",
+      "goal": "Summarise the instructions.",
+      "estimated_minutes": 3,
+      "min_words": 12,
+      "model_answer": "They have needles and thread for us. You just need to bring a torn jacket.",
+      "points": [
+        {
+          "label": "Name the supplied materials",
+          "any": [
+            "needle",
+            "thread"
+          ]
+        },
+        {
+          "label": "Mention the jacket",
+          "any": [
+            "jacket"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "item": {
+    "slug": "c1-pause-a-video-workshop-for-a-live-question",
+    "title": "Help a Workshop Use Its Live Time Well",
+    "level": "C1",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 110,
+    "prompt_text": "A training organiser wants to play the entire demonstration video during a live workshop. Your group has already watched it once, but people disagree about how to judge when the next step is ready. Explain which short segment should be replayed, what the group should do during the remaining time, and how you would help a participant who missed the recording.",
+    "target_grammar": "Concession; what-clauses; modal phrases for proposals and hypothetical arrangements.",
+    "fluency_objective": "Name the decision you need to practise before proposing a schedule. Keep the replay, paired test and catch-up arrangement distinct.",
+    "pronunciation_objective": "Put the main stress on the readiness test. Use a slight rise when listing the checks and a fall when proposing the plan.",
+    "target_vocabulary": [
+      "segment",
+      "readiness check",
+      "pause",
+      "compare",
+      "catch up",
+      "demonstrate"
+    ],
+    "sort_order": 269,
+    "cues": [
+      {
+        "text": "Identify a specific disagreement about when to proceed.",
+        "keywords": [
+          "next step",
+          "ready",
+          "surface",
+          "label",
+          "two signs"
+        ]
+      },
+      {
+        "text": "Describe what to replay and why that part matters.",
+        "keywords": [
+          "replay",
+          "segment",
+          "pause",
+          "close-up",
+          "short clip"
+        ]
+      },
+      {
+        "text": "Give a useful practice activity for the remaining live time.",
+        "keywords": [
+          "in pairs",
+          "compare",
+          "take turns",
+          "explain your decision"
+        ]
+      },
+      {
+        "text": "Offer a realistic arrangement for the participant who missed the video.",
+        "keywords": [
+          "missed",
+          "before the workshop",
+          "help them catch up",
+          "link",
+          "join a pair"
+        ]
+      }
+    ],
+    "model_opening": "I can see why playing the whole video feels fair.",
+    "model_answer": "I can see why playing the whole video feels fair. Everyone would hear the same instructions. The problem is that we already agree on the order of the steps. What we're unsure about is how to tell when the surface is ready for a label. Some of us look for a uniform finish, while others wait until the edges no longer feel damp.\n\nCould we replay the close-up just before the label goes on? I would pause where the trainer checks the edge and ask her to say what she is looking for. Then we could work in pairs. Give each pair two sample surfaces, ask them to choose which one is ready, and have them explain the sign they relied on. If two pairs reach different answers, the trainer can show us which differences actually matter.\n\nFor someone who missed the video, I'd send the link and a note with the time of the close-up before the workshop. If that person can't watch first, they could join a pair with someone who knows the steps. The paired check would still give them a chance to practise making the decision, and they could watch the earlier step in full afterwards."
+  },
+  "children": []
+}

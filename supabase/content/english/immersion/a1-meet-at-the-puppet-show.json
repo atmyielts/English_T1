@@ -1,0 +1,101 @@
+{
+  "item": {
+    "slug": "a1-meet-at-the-puppet-show",
+    "title": "Meet at the puppet show",
+    "level": "A1",
+    "mission_type": "social",
+    "context_text": "Your cousin is going to a puppet show with you. He has the old time and does not know where to wait.",
+    "objective_text": "Give the right time and arrange a meeting place.",
+    "target_vocabulary": [
+      "show",
+      "start",
+      "ticket",
+      "outside"
+    ],
+    "success_conditions": [
+      "Give the right time and arrange a meeting place."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "PUPPET SHOW\nNew start time: Saturday at two, not one. Doors open at half past one. Meet your group outside the shop next to the theatre. The theatre is closed on Sunday.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "When does the show now start?",
+          "options": [
+            "Saturday at one",
+            "Sunday at two",
+            "Saturday at two"
+          ],
+          "answer_index": 2,
+          "explanation": "The notice changes the start to Saturday at two."
+        },
+        {
+          "prompt": "Where should groups wait?",
+          "options": [
+            "Outside the shop",
+            "Inside the theatre",
+            "At the bus stop"
+          ],
+          "answer_index": 0,
+          "explanation": "The notice names the shop beside the theatre."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Correct the time",
+      "prompt_text": "Cousin: Is the start still at one?",
+      "instructions": "Send the new time and meeting place.",
+      "goal": "Give the corrected plan.",
+      "estimated_minutes": 5,
+      "min_words": 12,
+      "model_answer": "It starts at two on Saturday. Please meet me outside the shop by the theatre.",
+      "points": [
+        {
+          "label": "Say two",
+          "any": [
+            "two",
+            "2 pm"
+          ]
+        },
+        {
+          "label": "Name the shop",
+          "any": [
+            "shop"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask about the doors",
+      "prompt_text": "Ticket seller: Hello!",
+      "instructions": "Say you are here for the puppet show and ask when you can go in.",
+      "goal": "Ask a clear question.",
+      "estimated_minutes": 3,
+      "min_words": 8,
+      "model_answer": "Hello, I'm here for the puppet show. What time do the doors open?",
+      "points": [
+        {
+          "label": "Name the show",
+          "any": [
+            "puppet show"
+          ]
+        },
+        {
+          "label": "Ask about opening",
+          "any": [
+            "open",
+            "go in",
+            "doors"
+          ]
+        }
+      ]
+    }
+  ]
+}

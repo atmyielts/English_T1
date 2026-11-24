@@ -1,0 +1,80 @@
+{
+  "item": {
+    "slug": "a1-find-the-school-art-show",
+    "title": "Find the school art show",
+    "level": "A1",
+    "summary": "A short announcement gives the time and place for a school event.",
+    "transcript_text": "Hello, students. The art show is on Friday. It opens at three, after lessons. Come to Room Seven, next to the library. You can bring one friend. Please leave food and drinks outside the room. The show closes at five. See you there!",
+    "category": "School",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 100,
+    "duration_seconds": 26,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "school",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "When does the art show open?",
+        "options": [
+          "At two",
+          "At three",
+          "At four",
+          "At five"
+        ],
+        "answer_index": 1,
+        "explanation": "The speaker says it opens at three. Five is when it closes."
+      },
+      {
+        "prompt": "Where is the art show?",
+        "options": [
+          "In the library",
+          "In the dining room",
+          "In Room Seven",
+          "In the playground"
+        ],
+        "answer_index": 2,
+        "explanation": "Room Seven is the event location. The library is next to it."
+      },
+      {
+        "prompt": "Who can you bring?",
+        "options": [
+          "One friend",
+          "Two friends",
+          "Your whole class",
+          "A teacher only"
+        ],
+        "answer_index": 0,
+        "explanation": "The announcement gives permission to bring one friend."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "It opens at three, after lessons.",
+      "focus_phrase": "at three",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Come to Room Seven, next to the library.",
+      "focus_phrase": "next to the library",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You can bring one friend.",
+      "focus_phrase": "one friend",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

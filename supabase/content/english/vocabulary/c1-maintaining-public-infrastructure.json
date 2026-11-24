@@ -1,0 +1,191 @@
+{
+  "item": {
+    "id": "c1-maintaining-public-infrastructure",
+    "level": "C1",
+    "title": "Maintaining Public Infrastructure",
+    "description": "Practise explaining which municipal repairs take priority, how planned work affects residents, and how cities keep essential services running.",
+    "slug": "c1-maintaining-public-infrastructure",
+    "status": "published",
+    "topic": "infrastructure maintenance",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "deferred maintenance",
+      "part_of_speech": "noun phrase",
+      "definition": "Upkeep that was due earlier but was postponed and still needs to be done.",
+      "example": "The facilities team set aside part of next year's budget to tackle deferred maintenance at the public swimming pool.",
+      "translation_ru": "отложенные работы по техническому обслуживанию и ремонту",
+      "translation_uz": "keyinga qoldirilgan texnik xizmat va taʼmirlash ishlari",
+      "collocations": [
+        "tackle deferred maintenance",
+        "deferred maintenance backlog"
+      ]
+    },
+    {
+      "word": "condition assessment",
+      "part_of_speech": "noun phrase",
+      "definition": "A systematic evaluation of the physical state of an asset and the extent of any deterioration.",
+      "example": "A condition assessment of the pedestrian bridge found corrosion beneath the deck.",
+      "translation_ru": "оценка технического состояния",
+      "translation_uz": "texnik holatni baholash",
+      "collocations": [
+        "conduct a condition assessment",
+        "detailed condition assessment"
+      ]
+    },
+    {
+      "word": "triage",
+      "part_of_speech": "verb",
+      "definition": "To sort cases by urgency so that those needing immediate attention are dealt with first.",
+      "example": "After the storm, dispatchers triaged reports of blocked drains and sent the first crews to streets where water was entering homes.",
+      "translation_ru": "сортировать по срочности",
+      "translation_uz": "shoshilinchlik darajasiga qarab saralamoq",
+      "collocations": [
+        "triage incoming reports",
+        "triage repair requests"
+      ]
+    },
+    {
+      "word": "stopgap measure",
+      "part_of_speech": "noun phrase",
+      "definition": "A temporary action taken to deal with a problem until a lasting solution is available.",
+      "example": "The city installed temporary lighting at the crossing as a stopgap measure while it waited for a replacement cable.",
+      "translation_ru": "временная мера",
+      "translation_uz": "vaqtinchalik chora",
+      "collocations": [
+        "adopt a stopgap measure",
+        "serve as a stopgap measure"
+      ]
+    },
+    {
+      "word": "planned outage",
+      "part_of_speech": "noun phrase",
+      "definition": "A scheduled period when a utility supply or system will be completely unavailable to affected users.",
+      "example": "The water utility announced a planned outage from midnight to 4 a.m. to replace a valve.",
+      "translation_ru": "плановое отключение",
+      "translation_uz": "kommunal taʼminot uzilishi yoki tizim ishdan toʻxtatilishi oldindan rejalashtirilgan vaqt oraligʻi",
+      "collocations": [
+        "announce a planned outage",
+        "planned outage window"
+      ]
+    },
+    {
+      "word": "service disruption",
+      "part_of_speech": "noun phrase",
+      "definition": "An interruption to normal operations that reduces or stops what users can access.",
+      "example": "The lane closure caused a service disruption on two bus routes, with buses running every 30 minutes instead of every 10.",
+      "translation_ru": "нарушение нормального предоставления услуг",
+      "translation_uz": "xizmat odatdagidan cheklangan holda koʻrsatilishi yoki vaqtincha toʻxtashi",
+      "collocations": [
+        "minimize service disruption",
+        "widespread service disruption"
+      ]
+    },
+    {
+      "word": "phased rollout",
+      "part_of_speech": "noun phrase",
+      "definition": "The introduction of a new system or arrangement in successive stages.",
+      "example": "The phased rollout of the new parking payment system began in two municipal garages and expanded to the others the following month.",
+      "translation_ru": "поэтапное внедрение",
+      "translation_uz": "bosqichma-bosqich joriy etish",
+      "collocations": [
+        "begin a phased rollout",
+        "complete a phased rollout"
+      ]
+    },
+    {
+      "word": "commission",
+      "part_of_speech": "verb",
+      "definition": "To put newly installed equipment or a system into regular operation after checking that it works as intended.",
+      "example": "Engineers commissioned the new floodgate after checking that it could open and close under both automatic and manual control.",
+      "translation_ru": "вводить в эксплуатацию",
+      "translation_uz": "sinovdan oʻtkazib, foydalanishga kiritmoq",
+      "collocations": [
+        "commission a pumping station",
+        "commission new equipment"
+      ]
+    },
+    {
+      "word": "contingency",
+      "part_of_speech": "noun",
+      "definition": "A possible future event or situation that may require a response different from the one originally intended.",
+      "example": "Ice forming before the gritters could finish their routes was a contingency the winter operations team had prepared for.",
+      "translation_ru": "возможная ситуация, которая может потребовать изменения плана",
+      "translation_uz": "yuz berishi ehtimoli bor va rejani oʻzgartirishni talab qilishi mumkin boʻlgan holat",
+      "collocations": [
+        "plan for contingencies",
+        "prepare for a contingency",
+        "unforeseen contingency"
+      ]
+    },
+    {
+      "word": "service continuity",
+      "part_of_speech": "noun phrase",
+      "definition": "The continued availability of a public function during a disruption or change.",
+      "example": "The council maintained service continuity by moving its permit counter to a nearby library while the municipal offices were rewired.",
+      "translation_ru": "непрерывность предоставления услуг",
+      "translation_uz": "xizmat koʻrsatishning uzluksizligi",
+      "collocations": [
+        "maintain service continuity",
+        "plan for service continuity"
+      ]
+    },
+    {
+      "word": "redundancy",
+      "part_of_speech": "noun",
+      "definition": "The provision of additional components or connections so that a system can keep working if one fails.",
+      "example": "A second communications link provides redundancy for the traffic control centre if the main link fails.",
+      "translation_ru": "резервирование",
+      "translation_uz": "asosiy qism ishdan chiqsa, uning vazifasini bajara oladigan zaxira qismlar yoki ulanishlar mavjudligi",
+      "collocations": [
+        "provide redundancy",
+        "build in redundancy",
+        "network redundancy"
+      ]
+    },
+    {
+      "word": "divert",
+      "part_of_speech": "verb",
+      "definition": "To direct traffic or a flow away from its usual route and along another one.",
+      "example": "Crews diverted wastewater through a temporary pipe while they repaired a damaged section of the sewer.",
+      "translation_ru": "перенаправлять",
+      "translation_uz": "boshqa yoʻnalishga burmoq",
+      "collocations": [
+        "divert traffic",
+        "divert water",
+        "divert buses"
+      ]
+    },
+    {
+      "word": "cascading failure",
+      "part_of_speech": "noun phrase",
+      "definition": "A chain of breakdowns in which one fault causes other connected parts or systems to stop working.",
+      "example": "A faulty switch triggered a cascading failure as neighbouring circuits overloaded and shut down in turn.",
+      "translation_ru": "каскадный отказ",
+      "translation_uz": "bitta nosozlikdan boshlanadigan va oʻzaro bogʻlangan qismlarning ketma-ket ishdan chiqishi bilan davom etadigan jarayon",
+      "collocations": [
+        "trigger a cascading failure",
+        "prevent a cascading failure"
+      ]
+    },
+    {
+      "word": "design life",
+      "part_of_speech": "noun phrase",
+      "definition": "The number of years for which a structure or system is designed to remain fit for use with the planned maintenance.",
+      "example": "The engineers set a fifty-year design life for the replacement bridge deck, with routine inspections throughout that period.",
+      "translation_ru": "расчётный срок службы",
+      "translation_uz": "loyihada belgilangan xizmat muddati",
+      "collocations": [
+        "specified design life",
+        "reach the end of its design life"
+      ],
+      "word_family": [
+        {
+          "word": "resilient",
+          "part_of_speech": "adjective"
+        }
+      ]
+    }
+  ]
+}

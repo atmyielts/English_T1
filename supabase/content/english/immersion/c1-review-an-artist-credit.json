@@ -1,0 +1,120 @@
+{
+  "item": {
+    "slug": "c1-review-an-artist-credit",
+    "title": "Review an artist credit",
+    "level": "C1",
+    "mission_type": "workplace",
+    "context_text": "A programme draft assigns sole authorship of a collaborative mural to the guest artist. The artist, youth group, and designer all have different documented contributions.",
+    "objective_text": "Prepare a credit that is fair to the contributors and usable in one line.",
+    "target_vocabulary": [
+      "attribution",
+      "facilitator",
+      "design credit",
+      "collective",
+      "acknowledge"
+    ],
+    "success_conditions": [
+      "Prepare a credit that is fair to the contributors and usable in one line."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "PROJECT NOTE\nGuest artist S. Yunusova facilitated three workshops and painted the connecting borders. The youth group chose the theme and painted twelve central panels. T. Reed designed the lettering and was hired as a contractor. The launch announcement calls the mural ‘by S. Yunusova’. The commission agreement says named contributors should be credited according to what they did, and the youth group requested a collective credit.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What is the main problem with the launch announcement?",
+          "options": [
+            "It credits an individual for contributions made by several parties",
+            "It uses a surname rather than full legal name",
+            "It omits an exact date for each workshop"
+          ],
+          "answer_index": 0,
+          "explanation": "The current credit erases the youth group's central work and the lettering contribution."
+        },
+        {
+          "prompt": "Which approach best follows the commission agreement?",
+          "options": [
+            "List the exact hours each person worked",
+            "Give the artist a separate title and omit the contractor",
+            "Name the group collectively and attribute the individual contributions precisely"
+          ],
+          "answer_index": 2,
+          "explanation": "The agreement asks for contribution-specific credits, and the group wants collective attribution."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Propose a replacement credit",
+      "prompt_text": "Programme editor: We can make room for one full sentence. What should it say?",
+      "instructions": "Write a ready-to-print credit and a short explanation for the editor.",
+      "goal": "Credit each contribution precisely.",
+      "estimated_minutes": 5,
+      "min_words": 44,
+      "model_answer": "Suggested credit: The youth group chose the theme and painted the main panels, S. Yunusova facilitated the workshops and painted the connecting borders, and T. Reed designed the lettering. This gives the group the collective credit it requested and distinguishes the facilitator's work from the lettering commission.",
+      "points": [
+        {
+          "label": "Credit the youth group collectively",
+          "any": [
+            "youth group",
+            "young artists"
+          ]
+        },
+        {
+          "label": "Attribute workshops or borders to the guest artist",
+          "any": [
+            "facilitated",
+            "borders",
+            "workshops"
+          ]
+        },
+        {
+          "label": "Attribute lettering to the designer",
+          "any": [
+            "lettering"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain the edit tactfully",
+      "prompt_text": "Guest artist: Why was the existing credit changed?",
+      "instructions": "Recognise the artist's work and state why the credit is now shared.",
+      "goal": "Make a tactful case for specific attribution.",
+      "estimated_minutes": 3,
+      "min_words": 25,
+      "model_answer": "We still recognise your workshops and the borders you painted. The group also originated the theme and made the panels, so the revised line names each contribution without taking away from yours.",
+      "points": [
+        {
+          "label": "Recognise the artist's contribution",
+          "any": [
+            "facilitation",
+            "workshop",
+            "borders"
+          ]
+        },
+        {
+          "label": "Name the group's original work",
+          "any": [
+            "panels",
+            "theme"
+          ]
+        },
+        {
+          "label": "Explain shared credit positively",
+          "any": [
+            "recognise",
+            "recognize",
+            "credit",
+            "contribution"
+          ]
+        }
+      ]
+    }
+  ]
+}

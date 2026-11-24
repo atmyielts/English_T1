@@ -1,0 +1,182 @@
+{
+  "item": {
+    "id": "a2-using-a-library",
+    "level": "A2",
+    "title": "Using a library",
+    "description": "Practise asking library staff for help, finding a book, and checking when to bring it back. Learn how to ask where you can sit and read.",
+    "slug": "a2-using-a-library",
+    "status": "published",
+    "topic": "library visit",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "return slot",
+      "part_of_speech": "noun phrase",
+      "definition": "An opening where you put books to give them back to the library.",
+      "example": "I put the two books in the return slot by the door.",
+      "translation_ru": "приёмное окно для возврата книг",
+      "translation_uz": "kitoblarni qaytarish uchun moʻljallangan tirqish",
+      "collocations": [
+        "use the return slot",
+        "put a book in the return slot"
+      ]
+    },
+    {
+      "word": "borrow",
+      "part_of_speech": "verb",
+      "definition": "To take something that you can use for a short time and then give back.",
+      "example": "Can I borrow this book for a week?",
+      "translation_ru": "брать на время",
+      "translation_uz": "vaqtincha olib turmoq",
+      "collocations": [
+        "borrow a book",
+        "borrow from the library"
+      ]
+    },
+    {
+      "word": "library card",
+      "part_of_speech": "noun",
+      "definition": "A card that shows you are a member and can take books home.",
+      "example": "Do I need a library card to take this book home?",
+      "translation_ru": "читательский билет",
+      "translation_uz": "kitobxon bileti",
+      "collocations": [
+        "get a library card",
+        "show your library card"
+      ]
+    },
+    {
+      "word": "shelf",
+      "part_of_speech": "noun",
+      "definition": "A flat, narrow surface where you put things like books.",
+      "example": "The cookbooks are on the top shelf.",
+      "translation_ru": "полка",
+      "translation_uz": "tokcha",
+      "collocations": [
+        "top shelf",
+        "books on a shelf"
+      ]
+    },
+    {
+      "word": "due date",
+      "part_of_speech": "noun",
+      "definition": "The date by which you must return a library book.",
+      "example": "The due date for my book is next Friday.",
+      "translation_ru": "крайний срок возврата книги",
+      "translation_uz": "kitobni qaytarishning oxirgi kuni",
+      "collocations": [
+        "check the due date",
+        "before the due date"
+      ]
+    },
+    {
+      "word": "librarian",
+      "part_of_speech": "noun",
+      "definition": "A person who works in a library and helps people find and use books.",
+      "example": "I asked the librarian where to find books about birds.",
+      "translation_ru": "библиотекарь",
+      "translation_uz": "kutubxonachi",
+      "collocations": [
+        "ask a librarian",
+        "talk to the librarian"
+      ]
+    },
+    {
+      "word": "borrowing period",
+      "part_of_speech": "noun phrase",
+      "definition": "The length of time you can keep a library book before you have to give it back.",
+      "example": "The borrowing period for most of the library's cookbooks is three weeks.",
+      "translation_ru": "срок, на который библиотека выдаёт книгу",
+      "translation_uz": "kitob uyga beriladigan muddat",
+      "collocations": [
+        "the standard borrowing period",
+        "extend the borrowing period"
+      ]
+    },
+    {
+      "word": "renew",
+      "part_of_speech": "verb",
+      "definition": "To get permission to keep a book for longer.",
+      "example": "I haven't finished the book yet. Can I renew it?",
+      "translation_ru": "продлевать срок пользования книгой",
+      "translation_uz": "kitobdan foydalanish muddatini uzaytirmoq",
+      "collocations": [
+        "renew a book",
+        "renew a loan"
+      ]
+    },
+    {
+      "word": "catalogue",
+      "part_of_speech": "noun",
+      "definition": "A list of the books a library has, with information about each one.",
+      "example": "I searched the catalogue for a book about old trains.",
+      "translation_ru": "библиотечный каталог",
+      "translation_uz": "kutubxona katalogi",
+      "collocations": [
+        "search the catalogue",
+        "online catalogue"
+      ]
+    },
+    {
+      "word": "available",
+      "part_of_speech": "adjective",
+      "definition": "Ready for someone to use or take home now.",
+      "example": "Is this book available today?",
+      "translation_ru": "доступный для чтения в библиотеке или для выдачи на дом",
+      "translation_uz": "hozir oʻqish yoki uyga olib ketish mumkin boʻlgan",
+      "collocations": [
+        "available now",
+        "available to borrow"
+      ]
+    },
+    {
+      "word": "section",
+      "part_of_speech": "noun",
+      "definition": "A part of the library where one kind of book is kept.",
+      "example": "Which section has books for young children?",
+      "translation_ru": "отдел библиотеки",
+      "translation_uz": "kutubxona boʻlimi",
+      "collocations": [
+        "children’s section",
+        "fiction section"
+      ]
+    },
+    {
+      "word": "reading room",
+      "part_of_speech": "noun",
+      "definition": "A place in the library where people can sit with books or study.",
+      "example": "I took my notes to the reading room to study.",
+      "translation_ru": "читальный зал",
+      "translation_uz": "oʻquv zali",
+      "collocations": [
+        "library reading room",
+        "sit in the reading room"
+      ]
+    },
+    {
+      "word": "quiet",
+      "part_of_speech": "adjective",
+      "definition": "With very little noise.",
+      "example": "Is there a quiet place where I can study?",
+      "translation_ru": "тихий",
+      "translation_uz": "tinch",
+      "collocations": [
+        "quiet place",
+        "quiet area"
+      ]
+    },
+    {
+      "word": "help desk",
+      "part_of_speech": "noun",
+      "definition": "A place where staff answer questions and show you what to do.",
+      "example": "Let's go to the help desk and ask how to use the printer.",
+      "translation_ru": "справочная стойка",
+      "translation_uz": "maʼlumot va yordam olish joyi",
+      "collocations": [
+        "at the help desk",
+        "go to the help desk"
+      ]
+    }
+  ]
+}

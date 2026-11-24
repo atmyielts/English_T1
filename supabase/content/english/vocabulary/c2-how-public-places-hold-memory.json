@@ -1,0 +1,212 @@
+{
+  "item": {
+    "id": "c2-how-public-places-hold-memory",
+    "level": "C2",
+    "title": "How Public Places Hold Memory",
+    "description": "Follow a walk through a changing city and practise describing how buildings, routes and memorials preserve or reshape traces of the past.",
+    "slug": "c2-how-public-places-hold-memory",
+    "status": "published",
+    "topic": "urban form and identity",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "vernacular",
+      "part_of_speech": "adjective",
+      "definition": "Characteristic of the traditional building practices of a particular place.",
+      "example": "The deep eaves and shaded porches are typical of the district’s vernacular architecture.",
+      "translation_ru": "характерный для местной строительной традиции",
+      "translation_uz": "mahalliy qurilish anʼanalariga xos",
+      "collocations": [
+        "vernacular architecture",
+        "vernacular buildings",
+        "vernacular building traditions"
+      ]
+    },
+    {
+      "word": "porous",
+      "part_of_speech": "adjective",
+      "definition": "Allowing people to pass through easily at several points.",
+      "example": "The market’s porous boundary lets shoppers enter from any of the three surrounding streets and walk straight through to the next block.",
+      "translation_ru": "со свободным проходом в нескольких местах",
+      "translation_uz": "bir necha joyidan bemalol oʻtish mumkin boʻlgan",
+      "collocations": [
+        "porous boundary",
+        "porous edge",
+        "porous street frontage"
+      ],
+      "word_family": [
+        {
+          "word": "porosity",
+          "part_of_speech": "noun"
+        }
+      ]
+    },
+    {
+      "word": "palimpsest",
+      "part_of_speech": "noun",
+      "definition": "A place that has changed repeatedly and still bears visible traces of earlier periods.",
+      "example": "The square is a palimpsest: stone troughs from the old livestock market stand beside rails from the later tram terminus, and both are still visible during the weekly craft market.",
+      "translation_ru": "место, где сохранились следы разных эпох",
+      "translation_uz": "turli davrlarning izlari saqlanib qolgan joy",
+      "collocations": [
+        "urban palimpsest",
+        "read the city as a palimpsest"
+      ]
+    },
+    {
+      "word": "spatial severance",
+      "part_of_speech": "noun",
+      "definition": "The physical separation of places by a barrier that makes movement between them difficult.",
+      "example": "The ring road created spatial severance between the housing estate and the riverside park.",
+      "translation_ru": "разобщение территорий из-за физической преграды",
+      "translation_uz": "jismoniy toʻsiq tufayli hududlarning ajralishi va ular orasida qatnovning qiyinlashishi",
+      "collocations": [
+        "create spatial severance",
+        "reduce spatial severance",
+        "spatial severance caused by infrastructure"
+      ]
+    },
+    {
+      "word": "accretion",
+      "part_of_speech": "noun",
+      "definition": "The gradual growth of something as small additions build up over time.",
+      "example": "The courtyard took shape through the gradual accretion of sheds, lean-tos and covered walkways.",
+      "translation_ru": "постепенное нарастание за счёт небольших добавлений",
+      "translation_uz": "mayda qismlar qoʻshila borishi natijasida biror narsaning asta-sekin kattalashishi",
+      "collocations": [
+        "gradual accretion",
+        "incremental accretion",
+        "growth by accretion"
+      ]
+    },
+    {
+      "word": "counter-monument",
+      "part_of_speech": "noun",
+      "definition": "A memorial designed to challenge conventional ways of commemorating the past.",
+      "example": "The artist’s counter-monument invites visitors to write the names of displaced families in chalk and let the rain wash them away.",
+      "translation_ru": "мемориал, ставящий под сомнение привычные способы сохранения памяти о прошлом",
+      "translation_uz": "oʻtmishni yodga olishning odatiy usullarini qayta koʻrib chiqishga undash uchun yaratilgan yodgorlik",
+      "collocations": [
+        "design a counter-monument",
+        "propose a counter-monument"
+      ]
+    },
+    {
+      "word": "urban grain",
+      "part_of_speech": "noun",
+      "definition": "The pattern formed by the size and arrangement of streets, blocks and plots in a built-up area.",
+      "example": "The library respects the fine urban grain of the old quarter: its three wings follow the boundaries of the original narrow plots, and the alley between two of them remains open.",
+      "translation_ru": "структура городской ткани, определяемая размерами и расположением улиц, кварталов и участков",
+      "translation_uz": "koʻchalar, ular bilan chegaralangan kvartallar va yer uchastkalarining oʻlchami hamda joylashuvi belgilaydigan shahar tuzilishi",
+      "collocations": [
+        "fine urban grain",
+        "historic urban grain",
+        "respect the urban grain"
+      ]
+    },
+    {
+      "word": "adaptive reuse",
+      "part_of_speech": "noun",
+      "definition": "The practice of adapting an existing building to serve a different purpose.",
+      "example": "The conversion of the old baths into rehearsal rooms is an example of adaptive reuse that preserves the tiled entrance hall.",
+      "translation_ru": "приспособление существующего здания для нового назначения",
+      "translation_uz": "mavjud binoni yangi maqsadga moslashtirish",
+      "collocations": [
+        "adaptive reuse project",
+        "adaptive reuse of historic buildings",
+        "potential for adaptive reuse"
+      ]
+    },
+    {
+      "word": "desire line",
+      "part_of_speech": "noun",
+      "definition": "An informal path worn by people repeatedly taking a route of their own choosing.",
+      "example": "A desire line cuts across the lawn where commuters head straight for the station steps.",
+      "translation_ru": "тропа, протоптанная пешеходами по удобному для них маршруту",
+      "translation_uz": "piyodalar oʻzlariga qulay yoʻldan qatnab hosil qilgan soʻqmoq",
+      "collocations": [
+        "pedestrian desire line",
+        "follow a desire line",
+        "pave a desire line"
+      ]
+    },
+    {
+      "word": "vestige",
+      "part_of_speech": "noun",
+      "definition": "A small surviving trace of something that has largely disappeared.",
+      "example": "A row of iron rings set into the paving is the last vestige of the cattle market.",
+      "translation_ru": "уцелевший след",
+      "translation_uz": "saqlanib qolgan iz",
+      "collocations": [
+        "last vestige",
+        "faint vestige",
+        "vestiges of the past"
+      ]
+    },
+    {
+      "word": "efface",
+      "part_of_speech": "verb",
+      "definition": "To erase a visible mark or trace so that it can no longer be seen.",
+      "example": "Resurfacing the lane would efface the wheel ruts left by carts that once served the warehouses.",
+      "translation_ru": "стирать следы",
+      "translation_uz": "izlarini oʻchirib yubormoq",
+      "collocations": [
+        "efface all traces",
+        "efface the original lettering",
+        "efface the marks"
+      ]
+    },
+    {
+      "word": "infill",
+      "part_of_speech": "noun",
+      "definition": "Construction on vacant or underused land within an already built-up area.",
+      "example": "A row of infill housing now occupies the gap between the school and the corner shops.",
+      "translation_ru": "строительство на свободных или малоиспользуемых участках среди существующих зданий",
+      "translation_uz": "binolar qurilgan hudud ichidagi boʻsh yoki kam foydalanilayotgan yer uchastkalariga bino qurish",
+      "collocations": [
+        "infill development",
+        "infill housing",
+        "urban infill"
+      ]
+    },
+    {
+      "word": "inscribe",
+      "part_of_speech": "verb",
+      "definition": "To put words or other marks on a surface, often by cutting them into it.",
+      "example": "Volunteers asked a stonecarver to inscribe the names of former stallholders on the fountain’s rim.",
+      "translation_ru": "наносить на поверхность надпись или знак, часто вырезая их",
+      "translation_uz": "sirtga yozuv yoki belgi tushirmoq, koʻpincha uni oʻyib yozmoq yoki chizmoq",
+      "collocations": [
+        "inscribe a name",
+        "inscribe a date",
+        "inscribe in stone"
+      ],
+      "word_family": [
+        {
+          "word": "inscription",
+          "part_of_speech": "noun"
+        }
+      ]
+    },
+    {
+      "word": "displace",
+      "part_of_speech": "verb",
+      "definition": "To force people to leave the place where they live.",
+      "example": "When the flats above the arcade were converted into holiday lets, the change displaced several long-term tenants.",
+      "translation_ru": "вынуждать жителей покинуть свои дома",
+      "translation_uz": "odamlarni oʻz uylarini tark etishga majbur qilmoq",
+      "collocations": [
+        "displace residents",
+        "displace tenants",
+        "displace entire communities"
+      ],
+      "word_family": [
+        {
+          "word": "displacement",
+          "part_of_speech": "noun"
+        }
+      ]
+    }
+  ]
+}

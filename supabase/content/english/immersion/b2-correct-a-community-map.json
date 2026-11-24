@@ -1,0 +1,115 @@
+{
+  "item": {
+    "slug": "b2-correct-a-community-map",
+    "title": "Correct a community map",
+    "level": "B2",
+    "mission_type": "problem_solving",
+    "context_text": "A volunteer has marked an accessible trail based on a map. You learn that the surface and access information apply to different parts of the route.",
+    "objective_text": "Correct the route description and state the limits accurately.",
+    "target_vocabulary": [
+      "surface",
+      "gradient",
+      "diversion",
+      "unsealed",
+      "segment"
+    ],
+    "success_conditions": [
+      "Correct the route description and state the limits accurately."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "TRAIL MAP AMENDMENT\nThe first kilometre from East Gate to the fountain is paved. Past the fountain, the trail rises steeply for two hundred metres and then becomes gravel. The West Gate route to the overlook has a shallow slope, but it will be closed for resurfacing on Wednesday and Thursday. The event takes place on Thursday.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What is wrong with describing the east route as completely paved?",
+          "options": [
+            "The whole east route is gravel",
+            "Only the first kilometre is paved",
+            "It says nothing about opening times"
+          ],
+          "answer_index": 1,
+          "explanation": "The paving ends at the fountain."
+        },
+        {
+          "prompt": "Why is the west route unsuitable for the Thursday event?",
+          "options": [
+            "It is steeper than the east route",
+            "The overlook is on private land",
+            "The route will be closed for resurfacing"
+          ],
+          "answer_index": 2,
+          "explanation": "The notice expressly states that the west route is closed on Thursday."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a corrected event listing",
+      "prompt_text": "Organiser: Please rewrite the access note so guests can plan ahead.",
+      "instructions": "Mention the paved limit, the steep/gravel continuation and the closure.",
+      "goal": "Write a clear access note.",
+      "estimated_minutes": 5,
+      "min_words": 36,
+      "model_answer": "The east trail is paved only as far as the fountain. Beyond it, there is a steep uphill section and then a gravel surface. The shallower west route is closed on Thursday for resurfacing. Please use this information when deciding whether to continue past the fountain.",
+      "points": [
+        {
+          "label": "Say paving ends at the fountain",
+          "any": [
+            "fountain"
+          ]
+        },
+        {
+          "label": "Describe the continuation",
+          "any": [
+            "steep",
+            "gravel"
+          ]
+        },
+        {
+          "label": "Say the west route is closed",
+          "any": [
+            "closed",
+            "resurfacing"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Offer a shorter route",
+      "prompt_text": "Guest: I want a route that stays paved. What do you suggest?",
+      "instructions": "Give a useful turning point and explain why.",
+      "goal": "Suggest a limited route without overstating accessibility.",
+      "estimated_minutes": 3,
+      "min_words": 19,
+      "model_answer": "Start at East Gate and turn back at the fountain. That keeps you on the paved section. The trail is steep after the fountain and becomes gravel.",
+      "points": [
+        {
+          "label": "Use East Gate",
+          "any": [
+            "East Gate"
+          ]
+        },
+        {
+          "label": "Turn at the fountain",
+          "any": [
+            "fountain"
+          ]
+        },
+        {
+          "label": "Mention the change in surface",
+          "any": [
+            "gravel",
+            "unpaved",
+            "the paving ends"
+          ]
+        }
+      ]
+    }
+  ]
+}

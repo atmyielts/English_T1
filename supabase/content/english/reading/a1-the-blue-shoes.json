@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a1-the-blue-shoes",
+    "title": "The Blue Shoes",
+    "level": "A1",
+    "summary": "A customer reads a shop note and learns how to change a pair of shoes.",
+    "content_markdown": "Lola buys blue shoes for work. At home she tries them on again. They are too small. She wants the same shoes in a larger size. She reads the note on her receipt.\n\n**From the shop:** You can change clean shoes within seven days. Bring the shoes, the box and the receipt. Come to the desk by the door.\n\nOn Saturday Lola takes the shoes to the shop. The man at the desk looks for a larger blue pair. He only has black shoes in her size today. He says, “We can get blue ones on Tuesday.” Lola wants the blue shoes, so she says she will come back.",
+    "category": "Everyday",
+    "theme": "shoe exchange",
+    "tone": "sky",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "shop dialogue",
+      "word_count": 109
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does Lola go back to the shop?",
+        "options": [
+          "To buy shoes for a friend",
+          "To look for work",
+          "To get another receipt",
+          "To change her shoes for a larger pair"
+        ],
+        "answer_index": 3,
+        "explanation": "The blue shoes are too small. Lola wants the same shoes in a larger size."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What must Lola bring to change the shoes?",
+        "options": [
+          "The shoes and a card",
+          "Her work bag and the receipt",
+          "Only the shoes and the box",
+          "The shoes, the box and the receipt"
+        ],
+        "answer_index": 3,
+        "explanation": "The note tells her to bring the shoes, the box and the receipt."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What colour does the man have in Lola’s size on Saturday?",
+        "options": [
+          "Black",
+          "White",
+          "Brown",
+          "Blue"
+        ],
+        "answer_index": 0,
+        "explanation": "He only has black shoes in her size that day."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Lola plan to come back on Tuesday?",
+        "options": [
+          "She can get the larger blue shoes then.",
+          "Her black shoes will be ready then.",
+          "The shop is closed on Saturday.",
+          "She forgot the receipt."
+        ],
+        "answer_index": 0,
+        "explanation": "The man says he can get blue shoes on Tuesday. Lola wants blue ones."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The shop asks customers to come to the desk by the door.",
+        "answer": "true",
+        "explanation": "The note says, “Come to the desk by the door.”"
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "You can change clean shoes within ___ days.",
+        "answers": [
+          [
+            "seven"
+          ]
+        ],
+        "word_bank": [
+          "three",
+          "seven",
+          "ten"
+        ],
+        "explanation": "The receipt says “within seven days.”"
+      }
+    ]
+  },
+  "children": []
+}

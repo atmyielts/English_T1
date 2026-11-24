@@ -189,19 +189,22 @@ const modelAnswer = async (ctx: DepthContext, prompt: JsonRecord): Promise<Respo
     return json(409, { error: "Send your own text for feedback first, then you can see a model answer.", code: "submit_first" });
   }
   const level: Cefr = modelAnswerLevel(await learnerWritingLevel(ctx.sb, ctx.userId, ctx.languageId), prompt.level);
+  const authoredLevel = toText(asRecord(prompt.metadata).authored_model_level, 4).toUpperCase();
+  const levels = /^[ABC][12]$/.test(authoredLevel) && authoredLevel !== level ? [level, authoredLevel] : [level];
   const cached = await ctx.sb
     .from("english_writing_model_answers")
-    .select("answer_text, notes, word_count")
+    .select("level, answer_text, notes, word_count")
     .eq("prompt_id", String(prompt.id))
-    .eq("level", level)
-    .maybeSingle();
-  if (cached.data?.answer_text) {
+    .in("level", levels);
+  const cachedRows = (cached.data ?? []) as JsonRecord[];
+  const model = levels.map((candidate) => cachedRows.find((row) => row.level === candidate && row.answer_text)).find(Boolean);
+  if (model) {
     return json(200, {
       ok: true,
-      level,
-      text: String(cached.data.answer_text),
-      notes: Array.isArray(cached.data.notes) ? cached.data.notes.map(String).slice(0, 3) : [],
-      word_count: Number(cached.data.word_count ?? 0),
+      level: String(model.level),
+      text: String(model.answer_text),
+      notes: Array.isArray(model.notes) ? model.notes.map(String).slice(0, 3) : [],
+      word_count: Number(model.word_count ?? 0),
       cached: true,
     });
   }

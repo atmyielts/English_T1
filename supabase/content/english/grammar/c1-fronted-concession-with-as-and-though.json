@@ -1,0 +1,152 @@
+{
+  "item": {
+    "title": "Fronted concession with as and though",
+    "explanation_text": "In formal English, you can put an adjective first to acknowledge a fact before stating a result that might seem surprising. In ‘Fragile as the model was, it survived the journey’, the opening clause means ‘Although the model was fragile’. Put as or though immediately after the adjective, then keep the usual subject–verb order and the tense the context calls for.\n\nAn adverb can go first in the same way. ‘Carefully though we packed the glass, one panel cracked’ acknowledges how we packed it. You can also front a noun that identifies someone’s role. In ‘Novice as she was, she spotted the fault’, the role noun is bare, without the article that appears in ‘Although she was a novice’.\n\nCheck the relationship between the clauses. Concessive as introduces a fact that makes the outcome unexpected. Causal as introduces a reason for the outcome, while as … as compares two things on the same scale.",
+    "contrast_text": "‘Unstable as the prototype was, testing continued’ means testing continued despite the instability. ‘As the prototype was unstable, testing stopped’ gives the instability as the reason for stopping. ‘The prototype was as unstable as the previous version’ compares the two versions.",
+    "common_error_pattern": "In the bare-noun pattern, change “although he was an apprentice” to “apprentice as he was”. Keep the subject before the verb after as or though.",
+    "tags": [
+      "C1",
+      "c1-fronted-concession-with-as-and-though",
+      "concession",
+      "adjective fronting",
+      "adverb fronting",
+      "bare noun fronting",
+      "formal register"
+    ],
+    "examples": [
+      {
+        "bad": "Fragile as was the model, it survived the journey.",
+        "good": "Fragile as the model was, it survived the journey."
+      },
+      {
+        "bad": "Carefully though packed we the glass, one panel cracked.",
+        "good": "Carefully though we packed the glass, one panel cracked."
+      },
+      {
+        "bad": "Novice as was she, she spotted the fault.",
+        "good": "Novice as she was, she spotted the fault."
+      },
+      {
+        "bad": "Although cramped the booth was, it housed all the recording equipment.",
+        "good": "Cramped though the booth was, it housed all the recording equipment."
+      }
+    ],
+    "slug": "c1-fronted-concession-with-as-and-though",
+    "level": "C1",
+    "status": "published",
+    "focus_area": "fronted-concession",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "A noisy prototype",
+      "instructions": "Use the cue unchanged to complete the opening with a fronted adjective and as. Enter only the missing words.",
+      "prompt_text": "___ the prototype was, the sensors picked up the faint click of the relay. (noisy)",
+      "accepted_answers": [
+        "Noisy as"
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A reluctant interviewee",
+      "instructions": "Use the cue unchanged to complete the opening with a fronted adjective and though. Enter only the missing words.",
+      "prompt_text": "___ the former usher was to discuss the closure, he agreed to describe the theatre’s final evening. (reluctant)",
+      "accepted_answers": [
+        "Reluctant though"
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Unrecorded dimensions",
+      "instructions": "Use the cue unchanged to complete the opening with a fronted adverb and as. Enter only the missing words.",
+      "prompt_text": "___ we measured the gallery entrance, we overlooked the height of the door closer. (meticulously)",
+      "accepted_answers": [
+        "Meticulously as"
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A volunteer’s finding",
+      "instructions": "Use the cue unchanged to complete the opening with a fronted bare noun and though. Enter only the missing words.",
+      "prompt_text": "___ she was, the director asked her to supervise the paid team. (volunteer)",
+      "accepted_answers": [
+        "Volunteer though"
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A well-rehearsed account",
+      "instructions": "Complete the opening as a concession with as. Begin with the adjective cue and follow it with as, the subject and the verb. Enter only the missing words.",
+      "prompt_text": "___, the guide’s account contained a striking omission. (rehearsed / it / was)",
+      "accepted_answers": [
+        "Rehearsed as it was"
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "An apprentice’s observation",
+      "instructions": "Rewrite the same sentence using just as after the role noun. Keep the subject and verb in that order and leave the main clause unchanged.",
+      "prompt_text": "Apprentice though as he was, he noticed a hairline crack in the mounting bracket.",
+      "accepted_answers": [
+        "Apprentice as he was, he noticed a hairline crack in the mounting bracket."
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A portable display",
+      "instructions": "Rewrite the same sentence, fixing only the subject–verb order in the concessive clause.",
+      "prompt_text": "Portable though was the display, it still took two people to carry it upstairs.",
+      "accepted_answers": [
+        "Portable though the display was, it still took two people to carry it upstairs."
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "A gap in the recording",
+      "instructions": "Rewrite the opening as a fronted-adverb concession. Begin with “Systematically though” and keep the main clause exactly as given.",
+      "prompt_text": "Although we indexed the recordings systematically, we failed to note a six-minute gap in the final interview.",
+      "accepted_answers": [
+        "Systematically though we indexed the recordings, we failed to note a six-minute gap in the final interview."
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "An unexpected test result",
+      "instructions": "Use every slash-delimited tile once. Start with Brittle and use “the casing” as the subject of the opening clause. Keep punctuation attached to its tiles.",
+      "prompt_text": "the casing / the drop test. / Brittle / it / as / survived / was,",
+      "accepted_answers": [
+        "Brittle as the casing was, it survived the drop test."
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "A quieter demonstration",
+      "instructions": "Rewrite the opening concession in a formal testing report. Begin with “Quiet as” and keep the comparison and the main clause exactly as given.",
+      "prompt_text": "Although the revised motor was quiet, it still produced as much vibration as the original.",
+      "accepted_answers": [
+        "Quiet as the revised motor was, it still produced as much vibration as the original."
+      ],
+      "target_skill_key": "grammar.fronted-concession",
+      "status": "published"
+    }
+  ]
+}

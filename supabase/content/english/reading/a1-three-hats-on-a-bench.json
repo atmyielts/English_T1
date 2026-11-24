@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a1-three-hats-on-a-bench",
+    "title": "Three Hats on a Bench",
+    "level": "A1",
+    "summary": "A girl looks for her hat after a football game.",
+    "content_markdown": "After a game of football in the park, Rana cannot find her hat. She thinks she left it on a bench near the field. There are three hats on that bench. A man is sitting next to them. Rana asks him if the hats are his.\n\n“No,” he says. “People left them here this afternoon. Which one is yours?”\n\nOne hat is red. One is black. The third is dark blue. Rana puts her hand inside the dark blue hat and finds a small paper star. Her friend gave her the star before the game. She puts the hat on and thanks the man. The red and black hats stay on the bench.",
+    "category": "Fiction",
+    "theme": "lost hat at a park",
+    "tone": "peach",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 113
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Where does Rana go to look for her hat?",
+        "options": [
+          "Her friend’s house",
+          "A bench near the field",
+          "A shop by the park",
+          "The middle of the field"
+        ],
+        "answer_index": 1,
+        "explanation": "She thinks she left it on a bench near the football field."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What is inside Rana’s hat?",
+        "options": [
+          "A football ticket",
+          "A paper star",
+          "A coin",
+          "A name card"
+        ],
+        "answer_index": 1,
+        "explanation": "Rana finds a small paper star inside the dark blue hat."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "How does Rana know which hat is hers?",
+        "options": [
+          "The man has her name.",
+          "She finds a star her friend gave her.",
+          "Her friend is wearing the same hat.",
+          "The other hats are too small."
+        ],
+        "answer_index": 1,
+        "explanation": "She recognises the paper star her friend gave her before the game."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “yours” mean in “Which one is yours?”",
+        "options": [
+          "The one you want to buy",
+          "The one on the right",
+          "The oldest one",
+          "The one you own"
+        ],
+        "answer_index": 3,
+        "explanation": "The man wants to know which hat belongs to Rana."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The man says he owns all three hats.",
+        "answer": "false",
+        "explanation": "He answers “No” when Rana asks if the hats are his."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The red and black hats stay on the ___.",
+        "answers": [
+          [
+            "bench"
+          ]
+        ],
+        "word_bank": [
+          "field",
+          "bench",
+          "ground"
+        ],
+        "explanation": "The last sentence says both hats stay on the bench."
+      }
+    ]
+  },
+  "children": []
+}

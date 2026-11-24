@@ -1,0 +1,67 @@
+{
+  "item": {
+    "slug": "b2-agree-on-shared-file-names",
+    "title": "Agree on a Shared File-Naming Rule",
+    "level": "B2",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 84,
+    "prompt_text": "Your volunteer team keeps different versions of the same newsletter. Some people name files by date; others add names such as Final or New. People sometimes edit the wrong file. In a brief team meeting, propose a simple rule and explain how it would handle one exception, then invite the team to test it.",
+    "target_grammar": "Modals for agreement; present perfect for repeated issues; if clauses for an exception.",
+    "fluency_objective": "Begin with a specific problem, state the rule in one sentence, then give a spoken example.",
+    "pronunciation_objective": "Put contrastive stress on date, initials and version so each part of the naming example is clear.",
+    "target_vocabulary": [
+      "version",
+      "date",
+      "initials",
+      "exception",
+      "shared folder",
+      "test it"
+    ],
+    "sort_order": 267,
+    "cues": [
+      {
+        "text": "Name the problem caused by conflicting file names.",
+        "keywords": [
+          "wrong file",
+          "final",
+          "new",
+          "different version",
+          "edited the wrong"
+        ]
+      },
+      {
+        "text": "Propose a simple naming rule with one example.",
+        "keywords": [
+          "date",
+          "initials",
+          "version",
+          "rule"
+        ]
+      },
+      {
+        "text": "Explain how one exception would work.",
+        "keywords": [
+          "exception",
+          "if two people",
+          "same day",
+          "add a letter",
+          "second draft"
+        ]
+      },
+      {
+        "text": "Invite a short test and state how to judge it.",
+        "keywords": [
+          "test it",
+          "try it",
+          "next week",
+          "find the latest",
+          "check whether"
+        ]
+      }
+    ],
+    "model_opening": "We've edited the wrong newsletter twice this month because several copies were called Final.",
+    "model_answer": "We've edited the wrong newsletter twice this month because several copies were called Final. Could we put the issue date first and then add a version number? That would give us names like May twelve, version three. We could keep the same label in the document header, so it is still visible if someone sends the file by email.\n\nOne exception is when two people are working on separate drafts on the same day. I'd add their initials while the drafts are separate. The editor can give the combined file the next version number once both changes are in. That way the separate drafts are still easy to find without being mistaken for the copy we plan to publish.\n\nCould we try it on the next issue? At the end of the week, let's ask someone who was away to find the latest version. If they can identify it without sending a message first, the rule is doing its job."
+  },
+  "children": []
+}

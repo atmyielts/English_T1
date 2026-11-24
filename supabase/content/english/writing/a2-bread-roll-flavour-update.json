@@ -1,0 +1,52 @@
+{
+  "item": {
+    "slug": "a2-bread-roll-flavour-update",
+    "title": "Update a Bake Sale Sign",
+    "level": "A2",
+    "genre": "customer notice",
+    "audience": "visitors to a community bake sale",
+    "prompt_text": "Your group sells two kinds of bread rolls at a bake sale. The cheese rolls are gone, but onion rolls are still available. A new tray of cheese rolls will arrive at 12:30. Write a notice so visitors know what they can buy now and what to do if they want cheese rolls.",
+    "expected_length_min": 55,
+    "expected_length_max": 89,
+    "target_grammar": "Present simple for availability; will for a planned group action; if for a choice.",
+    "target_structure": "Headline → available choice → next delivery time → friendly instruction.",
+    "target_vocabulary": [
+      "sold out",
+      "onion rolls",
+      "tray",
+      "available",
+      "come back"
+    ],
+    "sort_order": 263,
+    "checklist": [
+      {
+        "point": "Say that cheese rolls have sold out for now.",
+        "keywords": [
+          "cheese rolls are sold out",
+          "out of cheese rolls",
+          "no cheese rolls",
+          "cheese rolls have sold out"
+        ]
+      },
+      {
+        "point": "Name the rolls visitors can buy now.",
+        "keywords": [
+          "onion rolls",
+          "onion bread"
+        ]
+      },
+      {
+        "point": "Tell cheese-roll customers when to come back.",
+        "keywords": [
+          "12:30",
+          "half past twelve",
+          "twelve thirty"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    }
+  },
+  "children": []
+}

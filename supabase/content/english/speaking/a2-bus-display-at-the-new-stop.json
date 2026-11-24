@@ -1,0 +1,55 @@
+{
+  "item": {
+    "slug": "a2-bus-display-at-the-new-stop",
+    "title": "Explain the New Bus Display",
+    "level": "A2",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 42,
+    "prompt_text": "A friend is using the new bus stop for the first time. The top line of the display shows the next bus and the minutes until it arrives. An X next to a route means that bus will not stop here. If the screen is blank, the paper timetable is on the side of the shelter. Explain the display and what your friend should do in each case.",
+    "target_grammar": "Meaning of symbols with means; if clauses; prepositions of place.",
+    "fluency_objective": "Explain the main line first. Pause before each separate situation.",
+    "pronunciation_objective": "Say X clearly and keep it separate from the route number.",
+    "target_vocabulary": [
+      "top line",
+      "next bus",
+      "minutes",
+      "blank",
+      "timetable",
+      "shelter"
+    ],
+    "sort_order": 262,
+    "cues": [
+      {
+        "text": "Explain what the top line shows.",
+        "keywords": [
+          "top line",
+          "minutes until",
+          "next bus",
+          "minutes away"
+        ]
+      },
+      {
+        "text": "Explain the X beside a route.",
+        "keywords": [
+          "an x",
+          "the x",
+          "will not stop",
+          "won't stop",
+          "doesn't stop"
+        ]
+      },
+      {
+        "text": "Say where to find the paper timetable.",
+        "keywords": [
+          "side of the shelter",
+          "paper timetable",
+          "side of the bus stop"
+        ]
+      }
+    ],
+    "model_opening": "When you get to the stop, look at the top line first.",
+    "model_answer": "When you get to the stop, look at the top line first. It shows the next bus and how many minutes you have to wait. If there is an X beside your route number, that bus will not stop here, so look for another route. If the whole screen is blank, look at the side of the shelter. There is a paper timetable there."
+  },
+  "children": []
+}

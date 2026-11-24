@@ -1,0 +1,83 @@
+{
+  "item": {
+    "slug": "c1-interpret-a-noisy-office-sample",
+    "title": "Interpret a noisy office sample",
+    "level": "C1",
+    "summary": "Two colleagues discuss selection bias in feedback on a new workplace layout.",
+    "transcript_text": "Mina: The new layout got high scores for quietness. Is that enough to recommend it to the other teams?\nOmar: The people we asked had booked focus rooms. Colleagues on the open desks, where noise matters most, were missing.\nMina: We could include open-desk users next time and walk around to take sound readings.\nOmar: Yes, and collect reports at comparable times. A quiet Friday afternoon doesn't tell us how Tuesday's customer calls will sound.\nMina: In other words, we can keep the focus rooms as a promising part of the pilot, but the larger recommendation stays provisional.\nOmar: That's the distinction we should put in the board note.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 46,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "workplace",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Mina",
+        "Omar"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What limits the original feedback?",
+        "options": [
+          "Most respondents used the open desks",
+          "There were no scores for quietness",
+          "The survey mainly reached people using focus rooms",
+          "The feedback came from customer calls"
+        ],
+        "answer_index": 2,
+        "explanation": "Omar says the surveyed people had booked focus rooms and did not include open-desk colleagues."
+      },
+      {
+        "prompt": "Why compare similar times?",
+        "options": [
+          "Noise patterns can vary during the working week",
+          "Focus rooms never open on Friday",
+          "Sound readings can only be taken on Tuesdays",
+          "Customer calls always stop in the afternoon"
+        ],
+        "answer_index": 0,
+        "explanation": "Omar contrasts a quiet Friday afternoon with periods of customer calls."
+      },
+      {
+        "prompt": "What goes in the board note?",
+        "options": [
+          "The whole layout has been proven effective",
+          "The focus rooms are promising while the wider case remains open",
+          "The survey must be thrown away in full",
+          "Noise measurements now establish a company-wide standard"
+        ],
+        "answer_index": 1,
+        "explanation": "The final exchange separates a narrow promising finding from the provisional wider recommendation."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "where noise matters most, were missing",
+      "focus_phrase": "were missing",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "collect reports at comparable times",
+      "focus_phrase": "comparable times",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "the larger recommendation stays provisional",
+      "focus_phrase": "stays provisional",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

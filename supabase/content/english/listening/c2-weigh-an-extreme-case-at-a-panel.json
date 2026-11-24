@@ -1,0 +1,83 @@
+{
+  "item": {
+    "slug": "c2-weigh-an-extreme-case-at-a-panel",
+    "title": "Weigh an extreme case at a panel",
+    "level": "C2",
+    "summary": "A moderator and analyst distinguish a memorable case from evidence about frequency.",
+    "transcript_text": "Moderator: The audience remembers the one cooperative that collapsed after expanding delivery. Doesn't that discredit the recommendation?\nAnalyst: The example matters, but not because a single failure estimates the failure rate. It reveals a mechanism the survey missed. When orders are spread over a wider area, drivers spend longer between stops, and the organisation may lose the social contact that persuaded people to place regular orders.\nModerator: So is the case an exception or a warning?\nAnalyst: It could be both. We should test the mechanism in more cooperatives, including ones that expanded successfully. Otherwise we risk explaining the visible failure after the fact and calling the explanation a policy.\nModerator: Then the recommendation would depend on the conditions we can verify.\nAnalyst: Yes. Where an organisation can preserve route density and contact with members, expansion is a different proposition.",
+    "category": "Academic",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 56,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "academic",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Moderator",
+        "Analyst"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What is the most important contribution of the failed case?",
+        "options": [
+          "It settles how often all cooperatives fail",
+          "It demonstrates that no successful expansions exist",
+          "It exposes a possible mechanism to investigate",
+          "It proves the recommendation must be abandoned"
+        ],
+        "answer_index": 2,
+        "explanation": "The analyst values the case for surfacing a plausible link between wider routes, contact and repeat orders."
+      },
+      {
+        "prompt": "Why include successful expansions in the next study?",
+        "options": [
+          "To check when the proposed mechanism does and does not apply",
+          "To replace the case with a more optimistic story",
+          "To prove that failures cannot produce useful evidence",
+          "To avoid collecting information about routes"
+        ],
+        "answer_index": 0,
+        "explanation": "Successes are needed to test whether preserving contact and route density changes the outcome."
+      },
+      {
+        "prompt": "What is the analyst's final position?",
+        "options": [
+          "Expansion should proceed whenever one cooperative succeeds",
+          "The recommendation should depend on verifiable operating conditions",
+          "All explanations after a failure are equally strong",
+          "Policy should answer the latest audience question first"
+        ],
+        "answer_index": 1,
+        "explanation": "The conclusion makes the advice conditional on demonstrated route density and contact."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "a single failure estimates the failure rate",
+      "focus_phrase": "failure rate",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "explaining the visible failure after the fact",
+      "focus_phrase": "after the fact",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "preserve route density and contact with members",
+      "focus_phrase": "route density",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

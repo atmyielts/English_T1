@@ -1,0 +1,196 @@
+{
+  "item": {
+    "id": "b2-project-handover",
+    "level": "B2",
+    "title": "Project handover",
+    "description": "Practise passing responsibility to a new team, recording what still needs attention, and confirming that the team is ready to take over.",
+    "slug": "b2-project-handover",
+    "status": "published",
+    "topic": "project handovers",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "handover",
+      "part_of_speech": "noun",
+      "definition": "The process of giving another person or team responsibility for work and the information they need to continue it.",
+      "example": "During the handover, the outgoing team showed the new coordinators how to update the installation schedule.",
+      "translation_ru": "передача дел",
+      "translation_uz": "ishlarni topshirish",
+      "collocations": [
+        "project handover",
+        "handover meeting",
+        "handover notes"
+      ]
+    },
+    {
+      "word": "ownership",
+      "part_of_speech": "noun",
+      "definition": "Responsibility for making decisions about a piece of work and ensuring that it is completed or maintained.",
+      "example": "The billing team took ownership of the monthly reconciliation after the finance system went live.",
+      "translation_ru": "ответственность за решения по работе, её выполнение или дальнейшее ведение",
+      "translation_uz": "ishga oid qarorlar, ishning bajarilishi yoki davom ettirilishi uchun javobgarlik",
+      "collocations": [
+        "take ownership of a process",
+        "transfer ownership",
+        "clarify ownership"
+      ]
+    },
+    {
+      "word": "assign",
+      "part_of_speech": "verb",
+      "definition": "To give a specific task or duty to a person or team.",
+      "example": "Before the visit ended, Mei assigned the task of checking the equipment inventory to the new coordinator.",
+      "translation_ru": "поручать",
+      "translation_uz": "topshirmoq",
+      "collocations": [
+        "assign a task",
+        "assign responsibility",
+        "assign a ticket to an engineer"
+      ]
+    },
+    {
+      "word": "pending",
+      "part_of_speech": "adjective",
+      "definition": "Waiting for a decision, response, or action before it can be completed.",
+      "example": "The supplier's request for weekend access is still pending because the security team has yet to approve it.",
+      "translation_ru": "ожидающий решения или действия",
+      "translation_uz": "hali javob berilmagan, qaror chiqmagan yoki kerakli ish bajarilmagan",
+      "collocations": [
+        "pending request",
+        "pending application",
+        "remain pending"
+      ]
+    },
+    {
+      "word": "resolved",
+      "part_of_speech": "adjective",
+      "definition": "Dealt with successfully so that the problem no longer requires action.",
+      "example": "The support lead marked the login issue as resolved after staff confirmed they could sign in again.",
+      "translation_ru": "решённый",
+      "translation_uz": "hal qilingan",
+      "collocations": [
+        "resolved issue",
+        "resolved complaint",
+        "mark an issue as resolved"
+      ]
+    },
+    {
+      "word": "escalation",
+      "part_of_speech": "noun",
+      "definition": "The act of referring an issue to someone with greater authority to decide what to do about it.",
+      "example": "The delay required escalation to the programme director because the project team could not approve extra spending.",
+      "translation_ru": "передача вопроса на более высокий уровень",
+      "translation_uz": "masalani qaror qabul qilish vakolati yuqoriroq boʻlgan shaxsga koʻrib chiqish uchun topshirish",
+      "collocations": [
+        "require escalation",
+        "escalation path",
+        "escalation procedure"
+      ]
+    },
+    {
+      "word": "interim",
+      "part_of_speech": "adjective",
+      "definition": "Intended for use during a limited period while a lasting arrangement is being prepared.",
+      "example": "As an interim measure, the warehouse team will record returns on paper until the new scanner is installed.",
+      "translation_ru": "временный",
+      "translation_uz": "vaqtinchalik",
+      "collocations": [
+        "interim measure",
+        "interim arrangement",
+        "interim solution"
+      ]
+    },
+    {
+      "word": "final",
+      "part_of_speech": "adjective",
+      "definition": "Settled or completed, with no further changes expected.",
+      "example": "Once the project sponsor accepted the revisions, Nina uploaded the final version of the training guide.",
+      "translation_ru": "окончательный",
+      "translation_uz": "yakuniy",
+      "collocations": [
+        "final version",
+        "final wording",
+        "final decision"
+      ]
+    },
+    {
+      "word": "log",
+      "part_of_speech": "verb",
+      "definition": "To make a record of an event, issue, or request in a system used to track it.",
+      "example": "Please log any keys that are missing from the cabinet before the new shift supervisor takes over.",
+      "translation_ru": "регистрировать",
+      "translation_uz": "qayd etmoq",
+      "collocations": [
+        "log an issue",
+        "log a request",
+        "log an incident"
+      ]
+    },
+    {
+      "word": "workaround",
+      "part_of_speech": "noun",
+      "definition": "A different way to complete a task despite a problem, without fixing the problem itself.",
+      "example": "The handover notes explain a workaround for the broken export button that uses the reporting menu to download the file.",
+      "translation_ru": "обходное решение",
+      "translation_uz": "muammoni chetlab oʻtish usuli",
+      "collocations": [
+        "temporary workaround",
+        "document a workaround",
+        "use a workaround"
+      ]
+    },
+    {
+      "word": "dependency",
+      "part_of_speech": "noun",
+      "definition": "A task, resource, or condition that other work relies on in order to proceed.",
+      "example": "Access to the supplier portal is a dependency for the stock count because the team needs the latest delivery records.",
+      "translation_ru": "задача, ресурс или условие, без которых другая работа не может продолжаться",
+      "translation_uz": "boshqa ishni davom ettirish uchun zarur boʻlgan vazifa, resurs yoki shart",
+      "collocations": [
+        "external dependency",
+        "key dependency",
+        "identify a dependency"
+      ]
+    },
+    {
+      "word": "readiness",
+      "part_of_speech": "noun",
+      "definition": "The state of being sufficiently prepared to begin an activity or take on a responsibility.",
+      "example": "The practice shift helped the supervisor assess the team's readiness to handle evening calls on its own.",
+      "translation_ru": "готовность",
+      "translation_uz": "tayyorlik",
+      "collocations": [
+        "assess readiness",
+        "readiness check",
+        "operational readiness"
+      ]
+    },
+    {
+      "word": "verify",
+      "part_of_speech": "verb",
+      "definition": "To establish that something is true, correct, or working as intended by checking it.",
+      "example": "Before transferring the archive, Rosa verified that the receiving team could open the encrypted files.",
+      "translation_ru": "проверять и подтверждать правильность или работоспособность",
+      "translation_uz": "tekshirib, toʻgʻri ekaniga yoki ishlashiga ishonch hosil qilmoq",
+      "collocations": [
+        "verify access",
+        "verify the results",
+        "verify that a backup works"
+      ]
+    },
+    {
+      "word": "sign-off",
+      "part_of_speech": "noun",
+      "definition": "Formal approval from an authorised person that allows work to be accepted or to move to the next stage.",
+      "example": "The lab could reopen as soon as the manager gave formal sign-off on the safety checks.",
+      "translation_ru": "официальное утверждение",
+      "translation_uz": "rasmiy tasdiq",
+      "collocations": [
+        "obtain sign-off",
+        "require sign-off",
+        "sign-off from the client"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "item": {
+    "slug": "a2-choose-a-community-garden-job",
+    "title": "Choose a community garden job",
+    "level": "A2",
+    "summary": "A volunteer finds a garden job that fits her time and experience.",
+    "transcript_text": "Leila: I'd like to volunteer on Saturday. I can stay from nine to eleven, but I've never used gardening tools.\nBen: We paint plant labels at nine. No experience is needed. The digging group starts at ten, but they work until twelve.\nLeila: I'll paint the labels. Do I bring paint?\nBen: No, we have paint and brushes. Bring a hat and some water. It gets sunny near the greenhouse.\nLeila: Great. I'll meet you by the gate.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 112,
+    "duration_seconds": 42,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "community",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Leila",
+        "Ben"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why does Leila choose to paint labels?",
+        "options": [
+          "It lets her leave by eleven and needs no experience",
+          "The digging group is full",
+          "She has her own paint",
+          "She can only arrive at ten"
+        ],
+        "answer_index": 0,
+        "explanation": "Painting starts at nine and requires no experience. Digging goes past the time she can stay."
+      },
+      {
+        "prompt": "What does the garden provide?",
+        "options": [
+          "Hats",
+          "Paint and brushes",
+          "Lunch",
+          "Drinking bottles"
+        ],
+        "answer_index": 1,
+        "explanation": "Ben says they already have paint and brushes."
+      },
+      {
+        "prompt": "Where do they plan to meet?",
+        "options": [
+          "At the greenhouse door",
+          "At Leila's home",
+          "By the gate",
+          "At the station"
+        ],
+        "answer_index": 2,
+        "explanation": "Leila says she will meet him by the gate."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "No experience is needed.",
+      "focus_phrase": "No experience",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "they work until twelve",
+      "focus_phrase": "until twelve",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Bring a hat and some water.",
+      "focus_phrase": "a hat and some water",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

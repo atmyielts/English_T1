@@ -1,0 +1,140 @@
+{
+  "item": {
+    "slug": "c2-a-right-to-be-unremarkable",
+    "title": "A Right to Be Unremarkable",
+    "level": "C2",
+    "summary": "An essay distinguishes welcoming people into a public space from asking them to represent a group when they arrive.",
+    "content_markdown": "At the first monthly film screening in the old court building, the organiser asked the audience to raise a hand if they were visiting for the first time. Several people did. She gave each a voucher and explained where the toilets were. At the third screening she asked the same question, but this time she invited the new visitors to stand up and say what had brought them there. A man in front of me, who had helped the organiser pass programmes down the row, kept both hands on his coat. I had no idea whether he was a first-time visitor. The point is how differently the second invitation might have felt even if he was.\n\nMuch public work is done in the name of making people visible. It is often necessary. A service that measures only whether its doors are open may never notice who finds them hard to reach. A photograph of an audience can expose patterns that a general assurance about welcome leaves invisible. But a person can want their needs noticed without wanting their presence to be made remarkable. The organiser can examine who is coming to the screening without asking the latest person through the door to account for everyone who may, or may not, follow.\n\nThis distinction is easily lost when people speak about representation. A new member of a book club may be asked to explain how people from his street talk about a novel, when he thought he had been invited to say what he thought of it. The most polite way to refuse may be to give the answer expected. Afterwards the other members can congratulate themselves on drawing him out, and he can wonder how many books he will have to read before he is allowed to find one merely disappointing.\n\nThe remedy is not to outlaw questions about origins or motives. Such a rule would make ordinary curiosity seem suspect, and it would deprive people of a chance to share accounts that they want to give. The question is whether a new visitor can decline the invitation and still take part on the same terms. A notice offering a private comment card gives people another way to say why they have come. A spoken request, answered by one person before forty, can make an ordinary silence sound like a refusal. A good invitation can also make clear when somebody’s example will inform a real decision. The same exchange becomes more doubtful when the only result is a line in the organisers’ report saying that new people were heard.\n\nI would like public spaces to make room for a less celebrated kind of welcome. The organisers might collect information about barriers, ask volunteers to work on them and set up a way for people to report what is still difficult. At the same time, people should be able to arrive late, choose a seat and leave having made no contribution greater than finishing the programme. That is not a lesser achievement. It may be what success looks like when a space has become ordinary enough that being in it needs no explanation.",
+    "category": "Society",
+    "theme": "ordinary participation and representation",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "opinion essay",
+      "word_count": 523
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What distinction is the essay trying to preserve?",
+        "options": [
+          "A welcome is genuine only if every visitor remains anonymous.",
+          "Talking about people’s backgrounds inevitably makes a public space less welcoming.",
+          "An organiser should collect information about access only from people who speak in public.",
+          "A visitor’s needs can matter to an institution without the visitor having to explain their presence to everyone else."
+        ],
+        "answer_index": 3,
+        "explanation": "The essay values information about barriers yet argues that personal accounts should be voluntary and ordinary participation should be possible without one."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What was different about the two requests at the screenings?",
+        "options": [
+          "The first was limited to people with vouchers and the second included the whole audience.",
+          "The second asked newcomers to speak about their reasons for coming.",
+          "The second removed the opportunity for new visitors to receive a voucher.",
+          "The first covered people from the area and the second visitors from other streets."
+        ],
+        "answer_index": 1,
+        "explanation": "In the first scene people raised hands and received practical help. The later invitation asked them to stand and explain why they had come."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the book-club example mention that a member may give “the answer expected”?",
+        "options": [
+          "Agreement may be a way of staying comfortable in the group rather than evidence that the invitation felt welcome.",
+          "The club needs him to speak on behalf of people who will never join.",
+          "His expected reply would show that all members interpreted the novel in the same way.",
+          "He can avoid reading future books if he answers a question about his street."
+        ],
+        "answer_index": 0,
+        "explanation": "The author calls a compliant answer a polite way to refuse the assigned role, showing that it can conceal discomfort."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "How is “remarkable” used in “their presence to be made remarkable”?",
+        "options": [
+          "Capable of attracting admiration for an achievement",
+          "Recalled clearly after the event is over",
+          "Singled out for attention or explanation",
+          "Useful as a measure of an organisation’s success"
+        ],
+        "answer_index": 2,
+        "explanation": "The contrast is between recognising a barrier and treating someone’s individual presence as something that needs explaining."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.inference",
+        "prompt": "The author would rule out asking people to share accounts of why they came.",
+        "answer": "false",
+        "explanation": "The essay explicitly allows voluntary accounts. It asks whether people can decline and still participate equally.",
+        "variant": "yes_no"
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "One optional means of contributing is a private comment ___. The writer also wants public spaces to collect information about ___.",
+        "answers": [
+          [
+            "card"
+          ],
+          [
+            "barriers"
+          ]
+        ],
+        "word_bank": [
+          "voucher",
+          "barriers",
+          "programme",
+          "card"
+        ],
+        "explanation": "Paragraph 4 suggests the private comment card. Paragraph 5 retains the need to learn what makes participation difficult."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Distinguishing a real invitation from pressure to answer",
+          "A casual request that assigns someone a role",
+          "Making a need visible without putting a person on display",
+          "Making all visitor records anonymous",
+          "Ordinary participation as a measure of welcome"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 4
+          }
+        ],
+        "explanation": "The middle paragraphs move from an institutional distinction to a social example and a choice about whether to speak. The final paragraph offers a quieter view of success."
+      }
+    ]
+  },
+  "children": []
+}

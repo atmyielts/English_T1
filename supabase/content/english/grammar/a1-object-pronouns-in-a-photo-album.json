@@ -1,0 +1,149 @@
+{
+  "item": {
+    "title": "Object pronouns in a photo album",
+    "explanation_text": "Use an object pronoun after a verb like help, visit, or see. Say “I help him.” I is the person who helps. Him is the person I help.\n\nUse me for yourself and you for the person or people you are speaking to. Use him for one person you call he, and her for one person you call she. Use it for one thing, such as a photo. Use us when you mean yourself and one or more other people. Use them for two or more people or things you are talking about, such as two friends or two photos. You can also use them for one person you call they.\n\nYou can also use these forms after words like to, for, and with. Imagine your group is making a photo album. If you need one file, say “Please send it to us.” It means the file, and us means you and the other people in your group.",
+    "contrast_text": "Compare “She helps us” with “We help her.” She and we are subject forms. Us and her are object forms. You and it have the same form as subjects and objects.",
+    "common_error_pattern": "A common error is using a subject form after a verb or a preposition when you need an object form, as in “Help I” or “with they.” Say “Help me” and “with them.”",
+    "tags": [
+      "a1-object-pronouns-in-a-photo-album",
+      "A1",
+      "object pronouns",
+      "photo album"
+    ],
+    "examples": [
+      {
+        "bad": "Can you help I with the album?",
+        "good": "Can you help me with the album?"
+      },
+      {
+        "bad": "We visit he on Sundays.",
+        "good": "We visit him on Sundays."
+      },
+      {
+        "bad": "I have a copy for she.",
+        "good": "I have a copy for her."
+      },
+      {
+        "bad": "The photos are ready. Can you print they?",
+        "good": "The photos are ready. Can you print them?"
+      }
+    ],
+    "slug": "a1-object-pronouns-in-a-photo-album",
+    "level": "A1",
+    "status": "published",
+    "focus_area": "object-pronouns",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "One photo",
+      "instructions": "Write only the object pronoun that replaces the words in brackets.",
+      "prompt_text": "Here is the cover photo. Can you see ___? (the cover photo)",
+      "accepted_answers": [
+        "it"
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A visit to Grandpa",
+      "instructions": "Write only the object pronoun that replaces the words in brackets.",
+      "prompt_text": "My grandfather lives near me. He has some old photos. Let's visit ___ on Saturday. (my grandfather)",
+      "accepted_answers": [
+        "him"
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Help from my sister",
+      "instructions": "Write only the object pronoun that replaces the words in brackets.",
+      "prompt_text": "My sister is here. She says, “I can help.” Let's ask ___. (my sister)",
+      "accepted_answers": [
+        "her"
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Two files",
+      "instructions": "Write only the object pronoun that replaces the words in brackets.",
+      "prompt_text": "These two files are ready. Please send ___ to my aunt. (these two files)",
+      "accepted_answers": [
+        "them"
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A copy for the group",
+      "instructions": "You are speaking for yourself and your friends. Write only the object pronoun that replaces the words in brackets.",
+      "prompt_text": "We need one more copy. Can you print a copy for ___? (my friends and me)",
+      "accepted_answers": [
+        "us"
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Help with the photos",
+      "instructions": "Rewrite the same sentence. Change only “I” to the correct object pronoun.",
+      "prompt_text": "Can you help I choose the first photo?",
+      "accepted_answers": [
+        "Can you help me choose the first photo?"
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Papers for the group",
+      "instructions": "Rewrite the same sentence. Change only “they” to the correct object pronoun.",
+      "prompt_text": "I have three sheets of paper for they.",
+      "accepted_answers": [
+        "I have three sheets of paper for them."
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Sharing with the person you speak to",
+      "instructions": "Rewrite the second sentence as if you are speaking directly to your cousin. Start with “I can share the album with” and add one object pronoun.",
+      "prompt_text": "My cousin is here. I can share the album with my cousin.",
+      "accepted_answers": [
+        "I can share the album with you."
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Sending a file to your aunt",
+      "instructions": "Rewrite only the last sentence. Start with “Please send”. Replace “the file” and “my aunt” with object pronouns. Keep “to” before the pronoun for your aunt.",
+      "prompt_text": "My aunt is making an album. She needs the file. Please send the file to my aunt.",
+      "accepted_answers": [
+        "Please send it to her."
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "A page from the album",
+      "instructions": "You are sending a message to a friend in the group. Put the tiles in order to make a sentence. Use every tile once and put the period at the end.",
+      "prompt_text": "the first page / We / you / can show / .",
+      "accepted_answers": [
+        "We can show you the first page."
+      ],
+      "target_skill_key": "grammar.object-pronouns",
+      "status": "published"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b1-a-tour-of-the-water-tower",
+    "title": "A Tour of the Water Tower",
+    "level": "B1",
+    "summary": "A guide uses an old water tower to show how a workers’ notebook can change an explanation.",
+    "content_markdown": "Visitors begin the water tower tour beside a metal pipe at ground level. The guide asks them to imagine standing in a house at the bottom of the hill and turning on a tap. She explains that the higher tank stored water above those houses. Once inside the pipes, the water could move downhill without a pump at each house. The old tank is empty now, and a newer system supplies the town.\n\nOn the landing the guide shows visitors a row of scratches on a wall. They mark where the work team used to hang heavy tools. An older visitor usually asks why the spaces are so different in size. The small spaces held keys and hand tools; the widest space was for a pole with a hook at the end. The guide asks everyone to guess what it was used for.\n\nFor years, a display said the hook had been used to lift buckets. A photograph showed a bucket standing beside the pole. Then a volunteer found the inspection notebook. One entry asks the next worker to use the hook to pull loose cloth away from the tank outlet. The bucket and hook may have had other uses as well, but the notebook shows that keeping the outlet clear was part of the job.\n\nThe sign by the scratches now quotes the notebook and shows the old photograph beside it. The guide still asks for guesses before she shows the sign. Visitors can see why a guess can sound reasonable and why there is value in checking it against a written record.",
+    "category": "Culture",
+    "theme": "industrial heritage and records",
+    "tone": "sand",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "museum tour",
+      "word_count": 264
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why was the tank built above the houses?",
+        "options": [
+          "To make the tower easier to visit",
+          "To help water move down to the houses",
+          "To stop people seeing the water",
+          "To give workers more room to hang tools"
+        ],
+        "answer_index": 1,
+        "explanation": "The guide explains that water could move through pipes downhill without a pump at each house."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the guide helping visitors learn about the hook?",
+        "options": [
+          "Why it was the most expensive tool",
+          "How to hang it in different workspaces",
+          "How a written record can support a use that a photograph alone does not show",
+          "Why the old photograph should no longer be shown"
+        ],
+        "answer_index": 2,
+        "explanation": "The photo suggested one use, and the notebook gave direct evidence of another task."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "According to the notebook, what could the hook remove?",
+        "options": [
+          "Broken buckets from the new tank",
+          "Heavy keys from the landing",
+          "A pipe below the hill",
+          "Loose cloth from the outlet"
+        ],
+        "answer_index": 3,
+        "explanation": "The notebook tells the worker to pull loose cloth away from the tank outlet."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the guide still ask visitors to guess?",
+        "options": [
+          "She wants to find the person who wrote on the wall.",
+          "She wants visitors to stop looking at photographs.",
+          "She wants them to compare a reasonable guess with stronger evidence.",
+          "She has not read the inspection notebook herself."
+        ],
+        "answer_index": 2,
+        "explanation": "The last paragraph explains that guesses can sound reasonable and can then be checked against a written record."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The notebook proves that the hook was never used with a bucket.",
+        "answer": "false",
+        "explanation": "The passage says the bucket and hook may have had other uses. The notebook records one task and does not rule out the rest."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The tour begins by a metal ___. The sign now quotes the inspection ___.",
+        "answers": [
+          [
+            "pipe"
+          ],
+          [
+            "notebook"
+          ]
+        ],
+        "word_bank": [
+          "pole",
+          "pipe",
+          "notebook",
+          "photograph"
+        ],
+        "explanation": "The opening names the pipe, and the final paragraph names the notebook."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "How the new tank is cleaned",
+          "Why the tank stood where it did",
+          "What the workers hung on the wall",
+          "How the display teaches visitors to check a guess",
+          "A new clue about one tool"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The first paragraph is about the tower’s height, the second about tools, the third about the notebook discovery, and the last about the guide’s teaching method."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,194 @@
+{
+  "item": {
+    "id": "a1-post-and-simple-messages",
+    "level": "A1",
+    "title": "Post and simple messages",
+    "description": "Practise English for sending a letter, writing an address and giving a card. Use these words to write and read short messages.",
+    "slug": "a1-post-and-simple-messages",
+    "status": "published",
+    "topic": "mail and messages",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "letter",
+      "part_of_speech": "noun",
+      "definition": "A message you write on paper and send to someone.",
+      "example": "I got a letter from my cousin today.",
+      "translation_ru": "письмо",
+      "translation_uz": "xat",
+      "collocations": [
+        "write a letter",
+        "send a letter",
+        "get a letter"
+      ]
+    },
+    {
+      "word": "stamp",
+      "part_of_speech": "noun",
+      "definition": "A small piece of paper you put on an envelope to show you paid to send it.",
+      "example": "I need a stamp for this envelope.",
+      "translation_ru": "почтовая марка",
+      "translation_uz": "pochta markasi",
+      "collocations": [
+        "buy a stamp",
+        "put a stamp on an envelope"
+      ]
+    },
+    {
+      "word": "card",
+      "part_of_speech": "noun",
+      "definition": "A piece of thick paper you give or send to someone with a short message, for example to say happy birthday or thank you.",
+      "example": "We gave our teacher a thank-you card.",
+      "translation_ru": "открытка",
+      "translation_uz": "otkritka",
+      "collocations": [
+        "birthday card",
+        "thank-you card",
+        "give someone a card"
+      ]
+    },
+    {
+      "word": "write",
+      "part_of_speech": "verb",
+      "definition": "To put words, letters or numbers on paper or on a screen.",
+      "example": "Can you write your name here?",
+      "translation_ru": "писать",
+      "translation_uz": "yozmoq",
+      "collocations": [
+        "write your name",
+        "write a note",
+        "write in pencil"
+      ]
+    },
+    {
+      "word": "send",
+      "part_of_speech": "verb",
+      "definition": "To make something go to another person or place.",
+      "example": "I want to send this card to my aunt.",
+      "translation_ru": "отправлять",
+      "translation_uz": "joʻnatmoq",
+      "collocations": [
+        "send a card",
+        "send a message",
+        "send by post"
+      ]
+    },
+    {
+      "word": "name",
+      "part_of_speech": "noun",
+      "definition": "A word or words that tell you who a person is.",
+      "example": "Her name is on the front of the envelope.",
+      "translation_ru": "имя",
+      "translation_uz": "ism",
+      "collocations": [
+        "first name",
+        "full name",
+        "spell your name"
+      ]
+    },
+    {
+      "word": "paper",
+      "part_of_speech": "noun",
+      "definition": "The thin, flat material you can write or draw on.",
+      "example": "Do you have a piece of paper for my letter?",
+      "translation_ru": "бумага",
+      "translation_uz": "qogʻoz",
+      "collocations": [
+        "a piece of paper",
+        "blank paper",
+        "write on paper"
+      ]
+    },
+    {
+      "word": "number",
+      "part_of_speech": "noun",
+      "definition": "A label such as 18 that tells you which house or room you mean.",
+      "example": "Our house number is 18.",
+      "translation_ru": "номер",
+      "translation_uz": "raqam",
+      "collocations": [
+        "house number",
+        "room number",
+        "write the house number"
+      ]
+    },
+    {
+      "word": "box",
+      "part_of_speech": "noun",
+      "definition": "A container with flat sides, often made of thick paper or wood.",
+      "example": "I keep my birthday cards in a small box.",
+      "translation_ru": "коробка",
+      "translation_uz": "quti",
+      "collocations": [
+        "a small box",
+        "a cardboard box",
+        "open a box"
+      ]
+    },
+    {
+      "word": "envelope",
+      "part_of_speech": "noun",
+      "definition": "A flat paper cover you put a letter or card inside.",
+      "example": "This card is too big for the envelope.",
+      "translation_ru": "конверт",
+      "translation_uz": "konvert",
+      "collocations": [
+        "open an envelope",
+        "seal an envelope",
+        "put a letter in an envelope"
+      ]
+    },
+    {
+      "word": "address",
+      "part_of_speech": "noun",
+      "definition": "The details that tell you where someone lives or works, such as the street and house number.",
+      "example": "What’s your new address?",
+      "translation_ru": "адрес",
+      "translation_uz": "manzil",
+      "collocations": [
+        "home address",
+        "full address",
+        "write the address"
+      ]
+    },
+    {
+      "word": "mailbox",
+      "part_of_speech": "noun",
+      "definition": "A box where letters, cards and other post are delivered.",
+      "example": "There is a letter for you in the mailbox.",
+      "translation_ru": "почтовый ящик",
+      "translation_uz": "pochta qutisi",
+      "collocations": [
+        "check the mailbox",
+        "put a letter in a mailbox"
+      ]
+    },
+    {
+      "word": "open",
+      "part_of_speech": "verb",
+      "definition": "To move, lift or break a closed part so you can see or get what is inside.",
+      "example": "Open the envelope and read the letter.",
+      "translation_ru": "открывать",
+      "translation_uz": "ochmoq",
+      "collocations": [
+        "open an envelope",
+        "open a box",
+        "open a package"
+      ]
+    },
+    {
+      "word": "message",
+      "part_of_speech": "noun",
+      "definition": "The words you say or write to give someone information, ask them something or tell them how you feel.",
+      "example": "I wrote a short message inside Dad’s card.",
+      "translation_ru": "сообщение",
+      "translation_uz": "xabar",
+      "collocations": [
+        "a short message",
+        "write a message",
+        "read a message"
+      ]
+    }
+  ]
+}

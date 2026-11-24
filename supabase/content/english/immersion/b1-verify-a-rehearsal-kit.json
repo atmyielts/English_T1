@@ -1,0 +1,114 @@
+{
+  "item": {
+    "slug": "b1-verify-a-rehearsal-kit",
+    "title": "Verify a rehearsal kit",
+    "level": "B1",
+    "mission_type": "study",
+    "context_text": "Your theatre group has reserved props for a rehearsal. The box contains less than the reservation lists, and the storeroom will close soon.",
+    "objective_text": "Explain the gap and arrange a workable handover for a substitute.",
+    "target_vocabulary": [
+      "props",
+      "label",
+      "storeroom",
+      "borrow",
+      "return"
+    ],
+    "success_conditions": [
+      "Explain the gap and arrange a workable handover for a substitute."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "PROPS RESERVATION\nBox R should contain two lamps and a blue cloth. The label says one lamp was sent for repair. A similar lamp can be borrowed from Box H if a staff member signs it out. The storeroom closes at 17:30. The substitute must be returned there by noon tomorrow. Your rehearsal starts at 18:00.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "How can the group get a second lamp?",
+          "options": [
+            "Buy a new lamp before rehearsal",
+            "Ask staff to sign a lamp out of Box H",
+            "Collect the repaired lamp at noon tomorrow"
+          ],
+          "answer_index": 1,
+          "explanation": "The substitute may be borrowed only through staff."
+        },
+        {
+          "prompt": "Which deadline is for returning the substitute?",
+          "options": [
+            "17:30 today",
+            "18:00 today",
+            "Noon tomorrow"
+          ],
+          "answer_index": 2,
+          "explanation": "The noon deadline is for the return."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Ask the prop desk for a substitute",
+      "prompt_text": "Props desk: What is missing and when do you need it?",
+      "instructions": "Identify the box and missing item, then request the suggested substitute before closing.",
+      "goal": "Make a workable request.",
+      "estimated_minutes": 5,
+      "min_words": 26,
+      "model_answer": "Hello, Box R only has one lamp. Could a staff member sign out the substitute lamp from Box H for our group? I can collect it before 17:30 and return it by noon tomorrow.",
+      "points": [
+        {
+          "label": "Name box R",
+          "any": [
+            "Box R"
+          ]
+        },
+        {
+          "label": "Ask for a lamp from H",
+          "any": [
+            "Box H",
+            "substitute lamp"
+          ]
+        },
+        {
+          "label": "Give the closing constraint",
+          "any": [
+            "17:30",
+            "5:30",
+            "half past five",
+            "before closing"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Brief the volunteer who will return it",
+      "prompt_text": "Volunteer: I've got the lamp. What do I do with it tomorrow?",
+      "instructions": "Give the return time and place, and say what to tell the desk.",
+      "goal": "Hand over the task clearly.",
+      "estimated_minutes": 3,
+      "min_words": 18,
+      "model_answer": "Please take it back to the storeroom before noon tomorrow. Tell the desk it's the substitute lamp for Box H and ask them to mark it returned.",
+      "points": [
+        {
+          "label": "Give noon tomorrow",
+          "any": [
+            "noon tomorrow",
+            "tomorrow at noon",
+            "before noon",
+            "midday"
+          ]
+        },
+        {
+          "label": "Name the storeroom",
+          "any": [
+            "storeroom",
+            "store room",
+            "prop desk"
+          ]
+        }
+      ]
+    }
+  ]
+}

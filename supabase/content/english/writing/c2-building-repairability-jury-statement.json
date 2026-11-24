@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "c2-building-repairability-jury-statement",
+    "title": "Explain a Design Jury's Trade-Off",
+    "level": "C2",
+    "genre": "jury statement",
+    "audience": "entrants and readers of a civic design competition",
+    "prompt_text": "A jury must explain why it selected a modular shade structure over a sleeker entry for a small public square. The modular entry allows individual panels to be removed for repairs. It uses standard fittings and will look less uniform as panels are replaced. The other proposal offers better initial shade coverage and a continuous silhouette. Write a public statement that makes the winning criterion explicit, acknowledges what the alternative did better, and says what would make the jury reverse its decision.",
+    "expected_length_min": 247,
+    "expected_length_max": 320,
+    "target_grammar": "Concession, counterfactuals and calibrated qualification; precise comparative language.",
+    "target_structure": "Outcome and criterion → comparison → accountable implementation condition → genuine reversal condition.",
+    "target_vocabulary": [
+      "repairability",
+      "service life",
+      "maintenance",
+      "coverage",
+      "constraint",
+      "replacement",
+      "reverse"
+    ],
+    "sort_order": 270,
+    "checklist": [
+      {
+        "point": "State the decision and the reason it matters over time.",
+        "keywords": [
+          "modular",
+          "service life",
+          "individual panels",
+          "repairability"
+        ]
+      },
+      {
+        "point": "Acknowledge the competing entry's substantive strengths.",
+        "keywords": [
+          "coverage",
+          "silhouette",
+          "initial shade",
+          "shade from"
+        ]
+      },
+      {
+        "point": "Explain the aesthetic downside and a workable way to handle it.",
+        "keywords": [
+          "less uniform",
+          "variation",
+          "colour",
+          "finish",
+          "visible seams"
+        ]
+      },
+      {
+        "point": "Give a credible fact or circumstance that would reverse the decision.",
+        "keywords": [
+          "would reverse",
+          "would favour",
+          "would reconsider",
+          "if the supplier",
+          "if testing"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    }
+  },
+  "children": []
+}

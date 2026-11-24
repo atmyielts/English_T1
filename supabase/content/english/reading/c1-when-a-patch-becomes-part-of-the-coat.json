@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c1-when-a-patch-becomes-part-of-the-coat",
+    "title": "When a Patch Becomes Part of the Coat",
+    "level": "C1",
+    "summary": "A costume curator decides how to show the alterations that changed a working coat.",
+    "content_markdown": "The wool coat entered the municipal collection with a description that would have suited a more straightforward object: “Driver’s coat, dark brown, maker unknown.” It was the warmest garment in a box of clothing donated by the family of a tram conductor. Against its heavy cloth, a patch of blue cotton at the elbow looked out of place. The first exhibition plan proposed turning the patched sleeve towards the wall, so the coat would be easy to recognise as part of a uniform.\n\nCurator Anwen Mora questioned what visitors would be recognising. Uniforms are usually displayed as evidence of a standard. A coat that has spent twenty winters outside, been let out and then taken in, and acquired pockets for items the maker never anticipated tells a story as much about use as regulation. That does not mean the original uniform is unimportant. It means that the object on the stand may no longer answer a question about its original form as neatly as a new coat would.\n\nThe family could identify some alterations but not all of them. A photograph showed an older conductor wearing the coat with the blue patch already in place. His daughter remembered sewing a loop inside one pocket so that a key would not slip out when he ran for the tram. The lining also contained a triangular piece of striped material. Nobody remembered inserting it. Rather than assign all three changes to the daughter, Mora recorded the photograph, the testimony and the unexplained fabric separately.\n\nA designer suggested displaying a replica patch on a small piece of the original cloth. This would let visitors touch the texture while keeping hands away from the coat. Mora agreed, provided the caption described which elements were newly made. The gallery was already showing an object assembled at different times; adding an unmarked replica to the account would make it harder to tell whose decisions the visitor was looking at.\n\nThe revised display turns the sleeve outwards. A nearby diagram distinguishes a standard fastening, a change documented by the family, and an alteration whose maker is unknown. Some people still recognise the conductor’s uniform immediately. Others begin with the patch and work backwards to the garment underneath. Mora did not have to decide which route was the correct one. She had to let visitors see where the two accounts met and where the evidence ran out. A repair can be an important part of a history without every stitch acquiring a known author.",
+    "category": "Culture",
+    "theme": "garment repairs as evidence",
+    "tone": "sand",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "museum essay",
+      "word_count": 416
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is Mora’s main curatorial aim?",
+        "options": [
+          "To attribute most of the alterations to the donor’s family",
+          "To reproduce damaged parts so the original coat can remain out of view",
+          "To explain a uniform only through its original construction",
+          "To display the coat’s standard form and later alterations with their different kinds of evidence"
+        ],
+        "answer_index": 3,
+        "explanation": "She shows both the standard fastening and repairs, distinguishing what is documented from what remains uncertain."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What evidence links the blue patch to the coat’s earlier use?",
+        "options": [
+          "A photograph of the conductor wearing the coat with the patch",
+          "A surviving order from the uniform maker",
+          "The designer’s modern replica",
+          "The daughter’s memory of repairing the lining"
+        ],
+        "answer_index": 0,
+        "explanation": "The photograph shows the older conductor wearing the already patched coat."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why was Mora unwilling to attribute the striped insert to the daughter?",
+        "options": [
+          "The daughter’s account identifies a pocket loop but gives no source for the striped insert.",
+          "The insert was clearly newer than the replica.",
+          "Mora believed all alterations were made by a tram company tailor.",
+          "The photograph identifies the person who made the insert."
+        ],
+        "answer_index": 0,
+        "explanation": "Specific evidence connected the daughter to a loop. No one remembered adding the striped material."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “answer a question about its original form as neatly” suggest?",
+        "options": [
+          "Give the same answer even when the object has been repaired",
+          "Appear tidier to people who already know the uniform",
+          "Provide clear evidence with few complications",
+          "Prove the alterations were limited to the coat’s fastening"
+        ],
+        "answer_index": 2,
+        "explanation": "Later changes complicate the coat as evidence of what the manufacturer originally supplied."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Mora agreed to let visitors handle the coat itself.",
+        "answer": "false",
+        "explanation": "She accepted a replica sample as a way to let people feel the texture while keeping hands off the original coat."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The daughter remembered adding a ___ to keep a key in place. The designer proposed a ___ for visitors to touch.",
+        "answers": [
+          [
+            "loop"
+          ],
+          [
+            "replica"
+          ]
+        ],
+        "word_bank": [
+          "cloth",
+          "loop",
+          "replica",
+          "fastening"
+        ],
+        "explanation": "Her memory concerns the loop; the later handling sample is a replica."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "How a handling copy should be identified",
+          "Three observations with different evidence",
+          "A display that preserves more than one reading",
+          "Recovering a lost maker’s name",
+          "Why signs of use change the story"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The middle paragraphs distinguish use from standard design, assess separate clues and state a condition for the replica. The last describes the resulting display."
+      }
+    ]
+  },
+  "children": []
+}

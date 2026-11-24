@@ -1,0 +1,59 @@
+{
+  "item": {
+    "slug": "b2-artist-caption-translation-request",
+    "title": "Ask an Artist to Review Translated Captions",
+    "level": "B2",
+    "genre": "formal email",
+    "audience": "the artist who wrote the captions",
+    "prompt_text": "Your community gallery is preparing a bilingual edition of three short captions about an artist's work. One caption uses a phrase that can mean either removing something from a public place or letting it fade naturally. Write to the artist to explain why one phrase needs clarification, propose how to handle it in the translation, and ask the artist to review the translated captions before Friday.",
+    "expected_length_min": 155,
+    "expected_length_max": 215,
+    "target_grammar": "Polite indirect questions; modal choices; referring to earlier text with this and that.",
+    "target_structure": "Purpose → example of the ambiguity → translation options → bounded review request.",
+    "target_vocabulary": [
+      "caption",
+      "phrase",
+      "interpretation",
+      "retain",
+      "translation",
+      "review",
+      "proof"
+    ],
+    "sort_order": 267,
+    "checklist": [
+      {
+        "point": "Identify the project and the caption ambiguity.",
+        "keywords": [
+          "three captions",
+          "bilingual",
+          "public place",
+          "fade",
+          "removal"
+        ]
+      },
+      {
+        "point": "Offer a practical way to represent the intended meaning.",
+        "keywords": [
+          "short phrase",
+          "note",
+          "retain",
+          "wording",
+          "option"
+        ]
+      },
+      {
+        "point": "Ask for a review before Friday and say what feedback is most useful.",
+        "keywords": [
+          "before friday",
+          "by thursday",
+          "send comments",
+          "review the captions"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    }
+  },
+  "children": []
+}

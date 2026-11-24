@@ -1,0 +1,55 @@
+{
+  "item": {
+    "slug": "a2-swap-a-library-book",
+    "title": "Ask to Swap a Library Book",
+    "level": "A2",
+    "genre": "email",
+    "audience": "the library staff",
+    "prompt_text": "You borrowed a long book for your reading group. Your group meets next Tuesday, and you have only read the first chapter. Write to the library asking to swap the book for a shorter mystery. You can visit on Saturday morning.",
+    "expected_length_min": 55,
+    "expected_length_max": 90,
+    "target_grammar": "Present perfect for progress; could I for requests; time phrases.",
+    "target_structure": "Greeting → problem → specific request → visit time → thanks.",
+    "target_vocabulary": [
+      "borrowed",
+      "chapter",
+      "shorter",
+      "mystery",
+      "swap",
+      "return"
+    ],
+    "sort_order": 262,
+    "checklist": [
+      {
+        "point": "Explain why you need a different book.",
+        "keywords": [
+          "only read",
+          "too long",
+          "won't finish",
+          "not enough time"
+        ]
+      },
+      {
+        "point": "Ask for a shorter mystery.",
+        "keywords": [
+          "shorter mystery",
+          "short mystery",
+          "easier mystery",
+          "shorter detective story"
+        ]
+      },
+      {
+        "point": "Say when you can visit.",
+        "keywords": [
+          "saturday morning",
+          "morning on saturday",
+          "saturday before lunch"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    }
+  },
+  "children": []
+}

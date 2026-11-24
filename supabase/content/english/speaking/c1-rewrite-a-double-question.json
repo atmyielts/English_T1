@@ -1,0 +1,70 @@
+{
+  "item": {
+    "slug": "c1-rewrite-a-double-question",
+    "title": "Rewrite a Survey That Asks Two Things at Once",
+    "level": "C1",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 108,
+    "prompt_text": "A community centre plans to ask visitors, “Are the longer opening hours and the quieter study area an improvement?” Managers want to learn which change matters. In a staff meeting, explain why one answer would be ambiguous, suggest better wording, and say what the revised questions would still not tell the centre.",
+    "target_grammar": "Reported questions; concession with although; conditional explanations and careful hedging.",
+    "fluency_objective": "Open with a plausible visitor response. Use that example again when you explain your two questions and the limits of their results.",
+    "pronunciation_objective": "Contrast longer hours and quieter study area with clear emphasis. Pause before giving each revised question.",
+    "target_vocabulary": [
+      "survey",
+      "double question",
+      "separately",
+      "improvement",
+      "visitor experience",
+      "interpret"
+    ],
+    "sort_order": 268,
+    "cues": [
+      {
+        "text": "Offer a plausible response showing why a single answer is ambiguous.",
+        "keywords": [
+          "yes",
+          "no",
+          "longer hours",
+          "quieter study area",
+          "could mean"
+        ]
+      },
+      {
+        "text": "Give two separate revised questions or scales.",
+        "keywords": [
+          "ask separately",
+          "first question",
+          "second question",
+          "how useful",
+          "how easy"
+        ]
+      },
+      {
+        "text": "Say what the revised answers can still miss.",
+        "keywords": [
+          "people who never visit",
+          "won't show",
+          "still not",
+          "doesn't tell",
+          "non-users"
+        ]
+      },
+      {
+        "text": "Suggest an evidence source or follow-up for that gap.",
+        "keywords": [
+          "follow-up",
+          "ask why",
+          "contact",
+          "short interviews",
+          "other visitors",
+          "nearby evening classes",
+          "ask people who do not visit"
+        ]
+      }
+    ],
+    "model_opening": "I would separate the two changes.",
+    "model_answer": "I would separate the two changes. Imagine a visitor who can finally come after work but finds the quiet area too crowded to use. A yes might reflect the longer hours alone, while a no might reflect the experience of finding a seat. We couldn't tell which change had prompted the response, even if hundreds of people answered the question.\n\nMy first question would be, 'How helpful are the longer opening hours for your visits?' The second would be, 'Compared with the previous study area, how useful is the quieter room when you need to concentrate?' I would include an option for people who have not used the study area, including people who could not find a seat. Otherwise, they may feel they have to rate a space they have never tried. I would also give visitors one optional line to explain an unexpected answer.\n\nThese questions would help us interpret the experience of people who are already coming through the door. They still wouldn't show whether the opening hours exclude people who never visit. If that matters to the decision, we could invite a few people from nearby evening classes to explain when they would actually use the centre."
+  },
+  "children": []
+}

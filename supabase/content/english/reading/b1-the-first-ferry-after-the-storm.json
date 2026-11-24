@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b1-the-first-ferry-after-the-storm",
+    "title": "The First Ferry After the Storm",
+    "level": "B1",
+    "summary": "A delayed ferry gives a teenage passenger an unexpected way to help.",
+    "content_markdown": "By the time Amir reached the island landing, the morning ferry had been cancelled. A tree had fallen across the road to the town harbour during the storm, and the crew needed to use a smaller boat from another pier. A handwritten sign said the first boat would leave the island at nine. Amir looked at the clock above the ticket window. His school orchestra was due on stage in town at half past nine.\n\nHe sat beside an older passenger who was carrying two empty shopping baskets. She asked what was in his long case. “A clarinet,” he said. He told her about the concert and complained that the orchestra would start without him. She listened, then pointed to a girl at the other end of the bench. The girl's mother was trying to answer calls while the girl looked out at the empty water.\n\nAmir took out his clarinet and asked the girl if she would like to hear three notes. She asked to hear them again. By the time the boat arrived, the two of them had made up a short tune, with Amir playing and the girl tapping the bench. The mother put her phone away and joined in with her hands.\n\nIn town Amir missed the first piece but played the last two. When his teacher asked how he had spent the delay, he smiled. He had been thinking only about the concert before he met the girl. Now he knew that the music he played on the bench mattered to somebody, even if it was only three notes.",
+    "category": "Fiction",
+    "theme": "island ferry delay",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 264
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why was the island using a smaller boat?",
+        "options": [
+          "A ticket window had been damaged.",
+          "Too few people were waiting on the island.",
+          "The school had booked the normal ferry.",
+          "The crew could not use the usual route to the harbour."
+        ],
+        "answer_index": 3,
+        "explanation": "A fallen tree blocked the road to town harbour, so the crew needed a smaller boat from another pier."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main change in Amir’s thinking?",
+        "options": [
+          "He realises he can help someone with music while he waits.",
+          "He decides that missing a performance never matters.",
+          "He decides to leave the school orchestra.",
+          "He decides storms are easier to understand if he watches the water."
+        ],
+        "answer_index": 0,
+        "explanation": "Amir first thinks only of the concert. Playing on the bench shows him that a small performance can matter too."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How does the girl take part in the tune?",
+        "options": [
+          "She claps her hands with her mother from the start.",
+          "She calls out the names of notes.",
+          "She plays her own clarinet.",
+          "She taps the bench."
+        ],
+        "answer_index": 3,
+        "explanation": "The third paragraph says Amir plays while the girl taps the bench."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What does the story suggest about the older passenger pointing to the girl?",
+        "options": [
+          "She wants Amir to complain to the girl’s mother.",
+          "She wants the girl to take a message to town.",
+          "She helps Amir notice someone else during the delay.",
+          "She is asking Amir to find someone to carry her baskets."
+        ],
+        "answer_index": 2,
+        "explanation": "After hearing Amir’s complaint, the woman points out the girl. That leads Amir to involve somebody else in the wait."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Amir missed the whole orchestra performance.",
+        "answer": "false",
+        "explanation": "He missed the first piece and played the last two."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The first boat would leave at ___. Amir plays the last ___ pieces.",
+        "answers": [
+          [
+            "nine"
+          ],
+          [
+            "two"
+          ]
+        ],
+        "word_bank": [
+          "three",
+          "two",
+          "eight",
+          "nine"
+        ],
+        "explanation": "The sign gives nine as the departure time, and the last paragraph gives the number of pieces he played."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Finding a second home for a boat",
+          "Worrying about the new timetable",
+          "Playing while waiting",
+          "Seeing another passenger",
+          "Recognising why it mattered"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 4
+          }
+        ],
+        "explanation": "The paragraphs move from the cancellation, to the people on the bench, to their tune, and finally to Amir’s reflection."
+      }
+    ]
+  },
+  "children": []
+}

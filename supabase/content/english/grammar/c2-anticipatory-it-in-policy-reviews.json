@@ -1,0 +1,152 @@
+{
+  "item": {
+    "title": "Anticipatory it in policy reviews",
+    "explanation_text": "Use anticipatory it as the subject when a policy review opens with an evaluation and gives the content of that evaluation later. In “It is regrettable that the consultation excluded tenants,” the that-clause specifies what is regrettable. A to-clause can follow the adjective in the same way: “It is prudent to publish the criteria before applications open.”\n\nAnticipatory it can also occupy the object position after verbs such as find, make and consider. Put the adjective or noun phrase immediately after it, then supply the clause: “The panel found it difficult to verify the estimates” or “The panel considered it a mistake to rely on a single estimate.” A common error is to omit it while keeping the complement and the postponed clause.\n\nCheck the role of it before rewriting. In “The panel revised the policy and published it,” it refers to the policy. In “It was the deadline that the panel revised,” the cleft singles out the deadline. Anticipatory it fills an early subject or object position, and the later clause tells you what is being evaluated. In an it-cleft, the phrase immediately after the form of be receives the focus.",
+    "contrast_text": "In “The panel found it impractical to extend the deadline,” the to-clause supplies what the panel found impractical. In “The panel reviewed the extension and found it impractical,” it refers to the extension. In “It was the deadline that the panel extended,” the it-cleft identifies the deadline as the element in focus.",
+    "common_error_pattern": "Omitting dummy it while retaining the evaluation and the postponed clause, especially after find, make or consider.",
+    "tags": [
+      "c2-anticipatory-it-in-policy-reviews",
+      "C2",
+      "anticipatory subject",
+      "anticipatory object",
+      "referential it",
+      "it-clefts",
+      "formal policy reviews"
+    ],
+    "examples": [
+      {
+        "bad": "Is regrettable that the consultation excluded tenants.",
+        "good": "It is regrettable that the consultation excluded tenants."
+      },
+      {
+        "bad": "It is inadvisable publish the draft before the review closes.",
+        "good": "It is inadvisable to publish the draft before the review closes."
+      },
+      {
+        "bad": "The revised timetable made impossible to notify every applicant before the deadline.",
+        "good": "The revised timetable made it impossible to notify every applicant before the deadline."
+      },
+      {
+        "bad": "The panel considered a mistake to base the allocation on last year's figures.",
+        "good": "The panel considered it a mistake to base the allocation on last year's figures."
+      }
+    ],
+    "slug": "c2-anticipatory-it-in-policy-reviews",
+    "level": "C2",
+    "status": "published",
+    "focus_area": "anticipatory-it",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Introduce a formal evaluation",
+      "instructions": "Supply the dummy subject. Enter only the missing word, with sentence-initial capitalization.",
+      "prompt_text": "___ is disappointing that the public summary omits the consultation's main finding.",
+      "accepted_answers": [
+        "It"
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Evaluate a proposed action",
+      "instructions": "Use the verb in brackets to complete the to-clause. Enter only the words that fill the gap.",
+      "prompt_text": "It would be premature ___ the exemption before the compliance data are available. (withdraw)",
+      "accepted_answers": [
+        "to withdraw"
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Assess the evidence",
+      "instructions": "Complete the sentence with anticipatory it followed by the adjective in brackets. Enter only the words that fill the gap.",
+      "prompt_text": "The reviewers found ___ to reconcile the figures in the annex with the published totals. (difficult)",
+      "accepted_answers": [
+        "it difficult"
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Use a noun phrase to express a judgment",
+      "instructions": "Enter only anticipatory it and the exact noun phrase in brackets, in that order.",
+      "prompt_text": "The committee considered ___ to omit the appeals process from the implementation plan. (a serious oversight)",
+      "accepted_answers": [
+        "it a serious oversight"
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Recognize referential it in a review",
+      "instructions": "Refer back to the draft using a single pronoun. Enter only that pronoun.",
+      "prompt_text": "The review team examined the draft and found ___ unsuitable for publication.",
+      "accepted_answers": [
+        "it"
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Restore the subject of an evaluation",
+      "instructions": "Rewrite the same sentence by adding the missing dummy subject. Adjust capitalization as needed and keep all other words and punctuation.",
+      "prompt_text": "Given the narrow scope of the survey, would be misleading to present the results as representative of all applicants.",
+      "accepted_answers": [
+        "Given the narrow scope of the survey, it would be misleading to present the results as representative of all applicants."
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Restore the object after make",
+      "instructions": "Rewrite the same sentence by inserting the missing anticipatory object. Keep all other words and punctuation.",
+      "prompt_text": "Inconsistent reporting periods made impossible to compare processing times across offices.",
+      "accepted_answers": [
+        "Inconsistent reporting periods made it impossible to compare processing times across offices."
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Report an unexpected finding",
+      "instructions": "Begin with “The evaluation team”. Arrange the tiles with anticipatory it as the object of found. Keep “without consultation” immediately after “had changed”. Use every tile once.",
+      "prompt_text": "unexpected / the threshold / that / The evaluation team / had changed / found / it / without consultation",
+      "accepted_answers": [
+        "The evaluation team found it unexpected that the threshold had changed without consultation."
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Separate a cleft from an evaluation",
+      "instructions": "Keep the first sentence exactly as written. Rewrite only the second sentence using anticipatory it as the subject. Begin the second sentence with “It was essential” and retain its original to-clause. Return both sentences.",
+      "prompt_text": "It was the eligibility criteria that the panel revised. To publish the revised criteria before the next funding round was essential.",
+      "accepted_answers": [
+        "It was the eligibility criteria that the panel revised. It was essential to publish the revised criteria before the next funding round."
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a review note into a formal finding",
+      "instructions": "Rewrite the note as one formal sentence with anticipatory it as the object of consider. Begin with “The review team considered”, use the exact phrase “a breach of procedure” as the object complement, and end with a to-clause using “approve the waiver without a recorded vote”.",
+      "prompt_text": "Review note: In the review team's judgment, approving the waiver without a recorded vote was a breach of procedure.",
+      "accepted_answers": [
+        "The review team considered it a breach of procedure to approve the waiver without a recorded vote."
+      ],
+      "target_skill_key": "grammar.anticipatory-it",
+      "status": "published"
+    }
+  ]
+}

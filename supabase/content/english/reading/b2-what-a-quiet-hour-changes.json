@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b2-what-a-quiet-hour-changes",
+    "title": "What a Quiet Hour Changes",
+    "level": "B2",
+    "summary": "A gallery trial shows why an access decision cannot be read from entry totals alone.",
+    "content_markdown": "When the Mereford Gallery began opening an hour early once a week, it described the trial as a quiet visit. Staff turned off the recorded introductions in the exhibition rooms, kept the lights steady and asked visitors to speak softly. The gallery had heard from people who liked its exhibitions but found ordinary opening hours tiring. The staff did not know whether starting early, or changing what happened inside the building, would make the larger difference.\n\nThe first month produced a puzzling result. Hardly any more people came through the doors on the mornings with an early hour than on comparable mornings without one. One trustee argued that the gallery was serving the same visitors at a less convenient time. A member of the front desk team noticed a different pattern. Several people who came early asked how long the quiet conditions would last, even though they had already spent time in the rooms. She suggested asking visitors why they had chosen that session and whether they would otherwise have come.\n\nThe answers did not all point in the same direction. Some visitors had transferred from the ordinary morning session because they preferred to look at pictures while it was quiet. Others said they would have visited on another day anyway. But a smaller group said they had not been to the gallery for months because they could not predict the noise. Several in that group had brought a friend or family member. A head count therefore included people changing their usual time and people returning after a long absence.\n\nThe gallery kept the early hour but changed how it advertised it. The website now says which adjustments visitors can expect and when normal sound and lighting will return. Staff also invite comments from people who cannot reach the gallery early in the morning. The trial does not establish that an early session will work for every visitor. It shows why “how many came?” and “who could come this time?” are different questions, even when the answers concern the same morning.",
+    "category": "Society",
+    "theme": "quiet gallery access trial",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "case study",
+      "word_count": 341
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Which statement best captures the article’s main point?",
+        "options": [
+          "The best way to advertise an exhibition is to open the gallery earlier.",
+          "Quiet sessions increase attendance wherever they are offered.",
+          "An unchanged total can conceal an access improvement for some visitors.",
+          "The gallery could judge the trial from visitors’ opinions alone."
+        ],
+        "answer_index": 2,
+        "explanation": "The totals barely changed, yet some people reported returning after a long absence because the quieter conditions were predictable."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did the front desk employee suggest finding out?",
+        "options": [
+          "Whether other galleries had stopped offering recorded introductions",
+          "Whether early visitors would have come without that session",
+          "Whether the gallery could charge less in the first hour",
+          "Whether trustees wanted the trial to continue"
+        ],
+        "answer_index": 1,
+        "explanation": "She suggested asking why visitors had chosen that session and whether they would otherwise have visited."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “transferred” mean in the third paragraph?",
+        "options": [
+          "Changed from their usual session to the early one",
+          "Took a friend to a different gallery",
+          "Sent comments to another member of staff",
+          "Moved from one exhibition room to another"
+        ],
+        "answer_index": 0,
+        "explanation": "These visitors normally came at the ordinary time and moved their visit to the early hour."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the gallery state when normal sound returns?",
+        "options": [
+          "It helps visitors plan around a condition that affected whether they could come.",
+          "It needs to measure how many visitors read the website.",
+          "It wants to tell early visitors they must leave before other people arrive.",
+          "It wants to prove that sound levels are lower throughout the day."
+        ],
+        "answer_index": 0,
+        "explanation": "Unpredictable noise had discouraged some visitors. Giving the time of the change helps them plan."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The trial included a separate comparison that isolated the effect of the earlier start from the effect of the quieter conditions.",
+        "answer": "not_given",
+        "explanation": "The text presents the two effects as an open question and reports attendance and interview findings. It does not report a trial varying the two features separately."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The gallery turned off the recorded ___. It now publishes when normal sound and ___ will return.",
+        "answers": [
+          [
+            "introductions"
+          ],
+          [
+            "lighting"
+          ]
+        ],
+        "word_bank": [
+          "lighting",
+          "introductions",
+          "signs",
+          "questions"
+        ],
+        "explanation": "Paragraph 1 names what was turned off. The last paragraph explains what the website now tells visitors."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "More predictable information for future visitors",
+          "Different kinds of visit hidden in the total",
+          "Improvements that required rebuilding",
+          "Why the initial figures were questioned",
+          "Inside the early session"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The passage sets up the trial, questions the first indicator, distinguishes visitor groups and closes with a practical response."
+      }
+    ]
+  },
+  "children": []
+}
