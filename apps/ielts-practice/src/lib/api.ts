@@ -332,9 +332,11 @@ export type LibraryReview = {
   model?: string; notes?: string[]; planning?: string[];
 };
 
-export const getPracticeLibrary = (token: string) => call<{ sets: LibrarySet[] }>(token, '/ielts-practice/library');
-export const getPracticeLibrarySet = (token: string, slug: string) => call<{ set: LibrarySet & { learner_content: LibraryContent } }>(token, `/ielts-practice/library/${encodeURIComponent(slug)}`);
-export const reviewPracticeLibrarySet = (token: string, slug: string, answers: LibraryAnswer[]) => call<{ review: LibraryReview }>(token, `/ielts-practice/library/${encodeURIComponent(slug)}/review`, { method: 'POST', body: { answers } });
+const libraryUrl = '/ielts-practice/library';
+const libraryFormat = '?response_format=2';
+export const getPracticeLibrary = (token: string) => call<{ sets: LibrarySet[] }>(token, libraryUrl + libraryFormat);
+export const getPracticeLibrarySet = (token: string, slug: string) => call<{ set: LibrarySet & { learner_content: LibraryContent } }>(token, `${libraryUrl}/${encodeURIComponent(slug)}${libraryFormat}`);
+export const reviewPracticeLibrarySet = (token: string, slug: string, answers: LibraryAnswer[]) => call<{ review: LibraryReview }>(token, `${libraryUrl}/${encodeURIComponent(slug)}/review${libraryFormat}`, { method: 'POST', body: { answers } });
 
 export const getAccessEffective = (accessToken: string): Promise<AccessEffectiveResponse> =>
   call<AccessEffectiveResponse>(accessToken, "/access-effective");

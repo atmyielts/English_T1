@@ -28,6 +28,9 @@ Deno.test('IELTS Library selects only learner content before submission', async 
       const query = { eq(key: string, value: unknown) {
         assertEquals(value, key === 'is_published' ? true : 'reading-demo');
         return query;
+      }, lte(key: string, value: number) {
+        assertEquals([key, value], ['response_format_version', 1]);
+        return query;
       }, maybeSingle() {
         return { data: { slug: 'reading-demo', learner_content: { questions: [{ prompt: 'What changed?' }] } }, error: null };
       } };
@@ -46,6 +49,7 @@ Deno.test('IELTS Library records a valid Reading review for the authenticated le
       const query = {
         select() { return query; },
         eq() { return query; },
+        lte(key: string, value: number) { assertEquals([key, value], ['response_format_version', 2]); return query; },
         maybeSingle() {
           return { data: {
             skill: 'reading',
@@ -59,9 +63,9 @@ Deno.test('IELTS Library records a valid Reading review for the authenticated le
     rpc(...args: unknown[]) { calls.push(args); return { error: null }; },
   };
   const path = '/library/reading-demo/review';
-  assertEquals((await practiceLibraryRequest(db, 'reader-1', 'POST', path, { answers: [0] })).status, 422);
+  assertEquals((await practiceLibraryRequest(db, 'reader-1', 'POST', path, { answers: [0] }, 2)).status, 422);
   assertEquals(calls.length, 0);
-  const result = await practiceLibraryRequest(db, 'reader-1', 'POST', path, { answers: [' noon '], user_id: 'other-user' });
+  const result = await practiceLibraryRequest(db, 'reader-1', 'POST', path, { answers: [' noon '], user_id: 'other-user' }, 2);
   assertEquals(result.status, 200);
   assertEquals(calls, [['record_ielts_practice_library_review', {
     p_user_id: 'reader-1', p_set_slug: 'reading-demo', p_correct: 1, p_total: 1,

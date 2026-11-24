@@ -30,6 +30,7 @@
   ],
   "verification": [
     "Verify that a paid IELTS learner can grade choices and typed responses, retry a set, and see the prior best score in the library.",
+    "Verify that mixed Reading sets only reach player versions with text-answer support.",
     "Verify that TOEFL focused sets can be expanded and completed sets remain available.",
     "Verify that paid learners can access the new private content, and the new Listening notices remain available without new audio."
   ],

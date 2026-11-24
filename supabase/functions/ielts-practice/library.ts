@@ -26,11 +26,12 @@ export function checkLibraryReading(questions: unknown, answers: unknown, learne
 
 const inventory = 'slug,skill,track,title,minutes';
 
-export async function practiceLibraryRequest(db: any, userId: string, method: string, route: string, body?: JsonObject) {
-  const resource = () => db.from('ielts_practice_library_sets').select(inventory).eq('is_published', true);
+export async function practiceLibraryRequest(db: any, userId: string, method: string, route: string, body?: JsonObject, responseFormatVersion = 1) {
+  const published = (fields: string) => db.from('ielts_practice_library_sets').select(fields)
+    .eq('is_published', true).lte('response_format_version', responseFormatVersion);
   if (method === 'GET' && route === '/library') {
     const [sets, progress] = await Promise.all([
-      resource().order('display_order').order('slug').limit(200),
+      published(inventory).order('display_order').order('slug').limit(200),
       db.from('ielts_practice_library_progress').select('set_slug,reviewed_at,best_correct,question_total').eq('user_id', userId),
     ]);
     if (sets.error || progress.error) throw new Error('Failed to load the IELTS practice library');
@@ -41,9 +42,8 @@ export async function practiceLibraryRequest(db: any, userId: string, method: st
   if (!match || match[1].length > 100 || (match[2] ? method !== 'POST' : method !== 'GET')) {
     return { status: 404, body: { error: 'Practice set not found' } };
   }
-  const { data, error } = await db.from('ielts_practice_library_sets')
-    .select(`${inventory},learner_content${match[2] ? ',review_content' : ''}`)
-    .eq('is_published', true).eq('slug', match[1]).maybeSingle();
+  const { data, error } = await published(`${inventory},learner_content${match[2] ? ',review_content' : ''}`)
+    .eq('slug', match[1]).maybeSingle();
   if (error) throw new Error('Failed to load the IELTS practice set');
   if (!data) return { status: 404, body: { error: 'Practice set not found' } };
   if (!match[2]) return { status: 200, body: { set: data } };

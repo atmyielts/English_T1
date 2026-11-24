@@ -1,3 +1,6 @@
+alter table public.ielts_practice_library_sets
+  add column response_format_version smallint not null default 1 check (response_format_version between 1 and 2);
+
 create table public.ielts_practice_library_progress (
   user_id uuid not null references public.users(id) on delete cascade,
   set_slug text not null references public.ielts_practice_library_sets(slug) on delete cascade,
@@ -32,3 +35,5 @@ $$;
 
 revoke all on function public.record_ielts_practice_library_review(uuid, text, smallint, smallint) from public, anon, authenticated;
 grant execute on function public.record_ielts_practice_library_review(uuid, text, smallint, smallint) to service_role;
+
+notify pgrst, 'reload schema';
