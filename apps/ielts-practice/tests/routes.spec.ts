@@ -266,17 +266,29 @@ test.describe('IELTS Practice behaviour', () => {
     const week = page.getByLabel('Choose a week');
     await expect(week.locator('option')).toHaveCount(8);
     await expect(week).toHaveValue('2');
+    await expect(page.getByText(/Up next/)).toBeVisible();
+    await week.selectOption('1');
+    const review = page.getByRole('button', { name: 'Review session · Session 1' });
+    await expect(review).toHaveAttribute('aria-expanded', 'false');
+    await review.click();
+    await expect(page.getByRole('button', { name: 'Hide session · Session 1' })).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('button', { name: 'Go to next session' }).click();
+    await expect(week).toHaveValue('2');
     await page.getByLabel('Test type').selectOption('general');
     await expect(week).toHaveValue('1');
     await week.selectOption('8');
     await expect(page.getByRole('heading', { name: 'Week 8' })).toBeVisible();
     await expect(page.getByRole('heading', { name: /^Session / })).toHaveCount(5);
     await expect(page.getByText('New Listening sets are coming soon.', { exact: false })).toBeVisible();
-    await page.getByRole('link', { name: 'general-reading-15-22' }).click();
+    const exercise = page.getByRole('link', { name: 'general-reading-15-22' });
+    await expect(exercise).toHaveCount(0);
+    await page.getByRole('button', { name: 'Open early · Session 1' }).click();
+    await exercise.click();
     await expect(page.getByRole('heading', { name: 'general-reading-15-22' })).toBeVisible();
     await page.getByRole('link', { name: 'Eight-week study plan' }).click();
     await expect(page.getByLabel('Test type')).toHaveValue('general');
     await expect(week).toHaveValue('8');
+    await expect(exercise).toBeVisible();
   });
 
   test('shell has Schood home, Account, sign-out state, language and Playbook links', async ({ page }) => {

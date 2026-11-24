@@ -263,11 +263,15 @@ test('the study plan opens week eight and launches the assigned focused set', as
   await page.getByRole('link', { name: 'Eight-week study plan' }).click();
   const week = page.getByLabel('Choose a week');
   await expect(week.locator('option')).toHaveCount(8);
+  await expect(page.getByText(/Up next/)).toBeVisible();
   await week.selectOption('8');
   await expect(page.getByRole('heading', { name: 'Week 8' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /^Session / })).toHaveCount(5);
   await expect(page.getByText('New Listening sets are coming soon.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: /Study complete_the_words 29$/ }).click();
+  const exercise = page.getByRole('button', { name: /Study complete_the_words 29$/ });
+  await expect(exercise).toHaveCount(0);
+  await page.getByRole('button', { name: 'Open early · Session 1' }).click();
+  await exercise.click();
   await expect.poll(() => calls.starts.length).toBe(1);
   expect(calls.starts[0]).toMatchObject({ experience_id: 'focused-bank', metadata: {
     mode: 'practice', allowed_section_ids: ['study-complete_the_words-29'], practice_calendar: '8-weeks',

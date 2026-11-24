@@ -1,4 +1,5 @@
 export const PRACTICE_WEEKS = 8;
+export type PracticeSessionState = 'next' | 'started' | 'later' | 'complete';
 
 /** Build a fixed sequence from ordered, disjoint pools. Each item is assigned once. */
 export function buildPracticeCalendar<Key extends string, Item>(
@@ -25,9 +26,24 @@ export function buildPracticeCalendar<Key extends string, Item>(
   return weeks;
 }
 
+export function nextPracticeSession<Item>(weeks: readonly Item[][][], done: (item: Item) => boolean) {
+  for (const [week, days] of weeks.entries()) {
+    const day = days.findIndex(activities => activities.some(item => !done(item)));
+    if (day >= 0) return { week: week + 1, day };
+  }
+  return null;
+}
+
 export function selectPracticeWeek<Item>(weeks: readonly Item[][][], value: string | null, done: (item: Item) => boolean): number {
   const selected = Number(value);
   if (Number.isInteger(selected) && selected >= 1 && selected <= weeks.length) return selected;
-  const pending = weeks.findIndex(week => week.some(day => day.some(item => !done(item))));
-  return pending < 0 ? Math.max(1, weeks.length) : pending + 1;
+  return nextPracticeSession(weeks, done)?.week ?? Math.max(1, weeks.length);
+}
+
+export function practiceSessionState<Item>(
+  items: readonly Item[], done: (item: Item) => boolean, recommended: boolean, started = done,
+): PracticeSessionState {
+  if (items.every(done)) return 'complete';
+  if (recommended) return 'next';
+  return items.some(started) ? 'started' : 'later';
 }

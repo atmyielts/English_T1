@@ -40,7 +40,7 @@ const dashboard = {
   score_impact: { status: 'insufficient_data', answered_total: 0, min_answers: 8, conservative: null, optimistic: null, domains: [] }, plan_stale: false,
 };
 
-type State = { attempts: Map<string, any>; calls: string[]; goalsError: boolean };
+type State = { attempts: Map<string, any>; calls: string[]; goalsError: boolean; plan?: typeof week };
 async function mock(page: Page, state: State) {
   const json = (route: Route, body: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
   const attempt = (attemptId: string, list: any[], filters: Record<string, unknown> = {}) => ({
@@ -59,7 +59,7 @@ async function mock(page: Page, state: State) {
     if (path === '/access-effective') return json(route, { effective_product_ids: [product] });
     if (path === '/journey-analytics' || path.startsWith('/journey')) return json(route, {});
     if (path === '/sat-practice/dashboard') return json(route, dashboard);
-    if (path === '/sat-practice/plans/week') return json(route, week);
+    if (path === '/sat-practice/plans/week') return json(route, state.plan ?? week);
     if (path === '/sat-practice/goals' && method === 'GET') return json(route, { goals: dashboard.goals, goals_set: false });
     if (path === '/sat-practice/goals' && method === 'PATCH') return state.goalsError ? json(route, { error: 'Choose a test date that has not passed yet.', code: 'past_test_date' }, 400) : json(route, { ok: true, goals: dashboard.goals, plan_updated: true });
     if (path === '/sat-practice/bank') return json(route, { questions: [questions.mcq, questions.spr, questions.rw], total: 3, offset: 0, limit: 12, facets, history: { [id(1)]: 'unseen', [id(2)]: 'missed', [id(3)]: 'correct' } });
@@ -207,6 +207,28 @@ test('weekly plan shows progress and starts a plan item on the server', async ({
   await page.getByRole('button', { name: 'Start' }).first().click();
   await expect(page).toHaveURL(/\/lab\//);
   expect(state.calls.some(c => c.startsWith(`POST /sat-practice/plans/items/${id(101)}/start`))).toBe(true);
+});
+
+test('weekly plan advances after completion and lets learners study later sessions early', async ({ page }) => {
+  const state = freshState();
+  const day = (offset: number) => new Date(Date.parse(`${today}T00:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
+  const later = { ...planItems[2], id: id(104), scheduled_for: day(1) };
+  const inProgress = { ...planItems[1], id: id(105), scheduled_for: day(2), status: 'in_progress' };
+  state.plan = { ...week, week_end: day(2), items: [planItems[0], later, inProgress], progress: { ...week.progress, completed: 0, minutes_completed: 0 } };
+  await signIn(page); await mock(page, state);
+  await page.goto('/plan');
+  await expect(page.getByText('Up next', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue', exact: true })).toBeVisible();
+  const future = page.getByRole('region').filter({ hasText: 'Math module, timed' });
+  await expect(future.getByRole('button', { name: 'Start', exact: true })).toHaveCount(0);
+  await future.getByRole('button', { name: /^Open early/ }).click();
+  await expect(future.getByRole('button', { name: 'Start', exact: true })).toBeVisible();
+
+  state.plan = { ...state.plan, items: [{ ...planItems[0], status: 'completed' }, later, inProgress], progress: { ...state.plan.progress, completed: 1, minutes_completed: planItems[0].estimated_minutes } };
+  await page.reload();
+  await expect(page.getByRole('button', { name: /^Review session/ })).toBeVisible();
+  const next = page.getByRole('region').filter({ hasText: 'Up next' });
+  await expect(next.getByText('Math module, timed')).toBeVisible();
 });
 
 test('dashboard links to onboarding, is honest without data, and onboarding shows save errors', async ({ page }) => {

@@ -3769,6 +3769,7 @@ audio.practice-audio {
 .practice-library .library-sets li span { font-size: 0.875rem; }
 .practice-library .library-study-days { display: grid; gap: 1rem; padding: 0; list-style: none; }
 .practice-library .library-study-days > li { padding: 1rem; border: 1px solid color-mix(in srgb, currentColor 16%, transparent); border-radius: 1rem; }
+.practice-library .library-study-days > li[data-session-state="next"] { border-color: color-mix(in srgb, var(--accent, #0e4955) 55%, transparent); }
 .practice-library .library-study-days h3 { margin: 0; }
 .practice-library .library-table { overflow: auto; margin-block: 1rem; }
 .practice-library td, .practice-library th { padding: 0.5rem; text-align: left; }
