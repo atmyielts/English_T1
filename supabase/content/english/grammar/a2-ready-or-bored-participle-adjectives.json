@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Bored or boring? Adjectives for feelings and causes",
+    "explanation_text": "Use the -ed adjective to say how someone feels. If a girl wants to learn more about birds, she is interested in birds. If a boy has nothing to do and wants to leave, he is bored. If he cannot wait for his first boat ride, he is excited about it. If he sees something he did not expect, he is surprised.\n\nUse the -ing adjective to describe what causes the feeling. A book about birds can be interesting, a long wait can be boring, a boat ride can be exciting, and an unexpected result can be surprising. A person can cause the feeling too. A guide who tells stories that make people want to hear more is an interesting person.\n\nThis pattern works for the four pairs here. Other adjectives have their own meanings. For example, a broken cup has a crack or is in pieces. Broken describes the cup's condition.",
+    "contrast_text": "The visitor is interested because she wants to hear more. The guide is interesting because his stories make her want to hear more.",
+    "common_error_pattern": "Learners sometimes choose the ending based on whether the subject is a person or a thing. For these pairs, choose -ed for the person who feels something and -ing for whoever or whatever causes the feeling.",
+    "tags": [
+      "A2",
+      "participle-adjectives",
+      "feelings",
+      "ed-ing-adjectives"
+    ],
+    "examples": [
+      {
+        "bad": "Context: The reader wants to learn more. The reader is interesting in the story.",
+        "good": "The reader is interested in the story."
+      },
+      {
+        "bad": "Context: The speech makes everyone lose interest. The speech is bored.",
+        "good": "The speech is boring."
+      },
+      {
+        "bad": "Context: The children cannot wait to play. The children are exciting about the game.",
+        "good": "The children are excited about the game."
+      },
+      {
+        "bad": "Context: Nobody expected the team to win. The result was surprised.",
+        "good": "The result was surprising."
+      }
+    ],
+    "slug": "a2-ready-or-bored-participle-adjectives",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 370,
+    "focus_area": "ed-ing-adjectives"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "A camera lesson",
+      "instructions": "Choose interested or interesting. Write only the missing word.",
+      "prompt_text": "Nina asks how the camera works and wants to learn more. She is ___ in photography.",
+      "accepted_answers": [
+        "interested"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A long ride",
+      "instructions": "Choose bored or boring. Write only the missing word.",
+      "prompt_text": "Tom sees the same fields for most of the bus ride and soon loses interest. The ride is ___ for him.",
+      "accepted_answers": [
+        "boring"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "The school race",
+      "instructions": "Choose excited or exciting. Write only the missing word.",
+      "prompt_text": "Ava smiles when she puts on her running shoes. She cannot wait to start, so she is ___ about the race.",
+      "accepted_answers": [
+        "excited"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A guess at the fair",
+      "instructions": "Choose surprised or surprising. Write only the missing word.",
+      "prompt_text": "Ben thinks the jar holds fifty sweets, but it holds two hundred. The real number is ___ to him.",
+      "accepted_answers": [
+        "surprising"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A guest at lunch",
+      "instructions": "Choose interested or interesting. Write only the missing word.",
+      "prompt_text": "Our guest tells us how she makes her own shoes. We want to hear more about her life. She is an ___ person.",
+      "accepted_answers": [
+        "interesting"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Waiting at the clinic",
+      "instructions": "Leo has nothing to do and keeps looking at the clock. Change only the adjective so the sentence describes his feeling.",
+      "prompt_text": "Leo feels boring while he waits.",
+      "accepted_answers": [
+        "Leo feels bored while he waits."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A surprise in the garden",
+      "instructions": "The gardeners thought the plant was dead. Change only the adjective so the sentence describes what caused their surprise.",
+      "prompt_text": "The new flowers were surprised.",
+      "accepted_answers": [
+        "The new flowers were surprising."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "From the film to the viewer",
+      "instructions": "Rewrite the idea to describe Sara's feeling. Start with “Sara was” and end with “by the film”. Use the other form of the adjective.",
+      "prompt_text": "The film was exciting for Sara.",
+      "accepted_answers": [
+        "Sara was excited by the film."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "From the student to the lesson",
+      "instructions": "Rewrite the idea to describe the lesson. Start with “The lesson was” and end with “for Dan”. Use the other form of the adjective.",
+      "prompt_text": "Dan was interested in the lesson.",
+      "accepted_answers": [
+        "The lesson was interesting for Dan."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "An unexpected visitor",
+      "instructions": "Rewrite the idea to describe Kim's feeling. Start with “Kim was” and end with “to see her uncle”. Use surprised.",
+      "prompt_text": "Kim did not expect to see her uncle at the door.",
+      "accepted_answers": [
+        "Kim was surprised to see her uncle."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Music in the square",
+      "instructions": "The music makes the crowd cheer. Use every tile once. Start with “The music is” and end with “for the crowd”.",
+      "prompt_text": "exciting / The / crowd / is / for / music / the",
+      "accepted_answers": [
+        "The music is exciting for the crowd."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "A puzzle on the kitchen table",
+      "instructions": "Maya wants to stop doing the puzzle because it no longer holds her attention. Put the tiles in order to describe her feeling. Start with “Maya” and put “already” directly after “is”. Use each tile once and add a full stop.",
+      "prompt_text": "with / already / puzzle / Maya / bored / the / is",
+      "accepted_answers": [
+        "Maya is already bored with the puzzle."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.ed-ing-adjectives"
+    }
+  ]
+}

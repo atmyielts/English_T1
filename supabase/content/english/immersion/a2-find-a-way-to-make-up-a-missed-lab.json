@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a2-find-a-way-to-make-up-a-missed-lab",
+    "title": "Find a way to make up a missed lab",
+    "level": "A2",
+    "mission_type": "study",
+    "context_text": "You missed a class experiment. Your partner cannot attend the usual catch-up slot.",
+    "objective_text": "Arrange a safe replacement session and keep your project on schedule.",
+    "target_vocabulary": [
+      "session",
+      "handout",
+      "safety",
+      "partner",
+      "report"
+    ],
+    "success_conditions": [
+      "Arrange a safe replacement session and keep your project on schedule.",
+      "Give confirmed session",
+      "Name the handout",
+      "Explain laptop availability",
+      "Give report deadline"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the lab note",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Missed experiments can be repeated on Tuesday or Thursday at four. A teacher must be present. Bring the yellow handout. Reports are due on Monday.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What must learners bring?",
+          "options": [
+            "A completed report",
+            "Their own chemicals",
+            "The yellow handout"
+          ],
+          "answer_index": 2,
+          "explanation": "The lab note specifies the yellow handout."
+        },
+        {
+          "prompt": "Can learners repeat the experiment without a teacher?",
+          "options": [
+            "Yes, on Thursday",
+            "Yes, with another learner",
+            "No"
+          ],
+          "answer_index": 2,
+          "explanation": "The note requires a teacher."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear your partner’s message",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I work on Tuesday, but I can get to the school by three fifty on Thursday. I left my handout with Mo. Ask if we need to bring our own laptop for the report.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When can your partner come?",
+          "options": [
+            "Tuesday",
+            "Monday",
+            "Thursday"
+          ],
+          "answer_index": 2,
+          "explanation": "They work on Tuesday and are available on Thursday."
+        },
+        {
+          "prompt": "Who has your partner’s handout?",
+          "options": [
+            "The science teacher",
+            "Your partner",
+            "Mo"
+          ],
+          "answer_index": 2,
+          "explanation": "They left it with Mo."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Call the teacher",
+      "prompt_text": "The teacher asks why you want the Thursday slot.",
+      "instructions": "Request the slot and confirm a teacher will be there. Ask about a laptop.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Could we use the Thursday session at four? My partner works on Tuesday. Will a teacher be there, and do we need to bring a laptop?",
+      "points": [
+        {
+          "label": "Request Thursday at four",
+          "any": [
+            "Thursday session at four",
+            "Thursday at four"
+          ]
+        },
+        {
+          "label": "Check about the laptop",
+          "any": [
+            "bring a laptop",
+            "need a laptop"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a plan to your partner",
+      "prompt_text": "The teacher has confirmed Thursday. Laptops can be borrowed at school.",
+      "instructions": "Write where your partner should go first, what to collect, and when the report is due. Remind them of the session time.",
+      "goal": "Arrange a safe replacement session and keep your project on schedule.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "Hi! Thursday at four is confirmed. Please pick up the yellow handout from Mo before you come to the lab. We can borrow a laptop at school. The report is due on Monday, so let’s leave time on Friday to write it together.",
+      "points": [
+        {
+          "label": "Give confirmed session",
+          "any": [
+            "Thursday at four",
+            "Thursday at 4"
+          ]
+        },
+        {
+          "label": "Name the handout",
+          "any": [
+            "yellow handout"
+          ]
+        },
+        {
+          "label": "Explain laptop availability",
+          "any": [
+            "borrow a laptop",
+            "school laptop"
+          ]
+        },
+        {
+          "label": "Give report deadline",
+          "any": [
+            "due on Monday",
+            "due Monday"
+          ]
+        }
+      ]
+    }
+  ]
+}

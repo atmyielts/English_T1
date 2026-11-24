@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c1-the-annotated-blueprint",
+    "title": "The Annotated Blueprint",
+    "level": "C1",
+    "summary": "A cabinet workshop changes how it records decisions so that a repeat job does not repeat earlier mistakes.",
+    "content_markdown": "The technical drawing for the Elm Ward housing project showed eight shallow cupboards along a service corridor. The first group that built them could reproduce every dimension without a question. When a replacement crew arrived, however, its members found a pencil cross beside one hinge and requested a revised drawing. The site manager sent them a clean copy of the original. It answered their question about the specified position. It did not say why somebody had crossed it out.\n\nThe earlier crew had found that a pipe projected from the wall behind the panel. The projection barely mattered when the cabinet stood open, but the hinge could catch against it as the door closed. A cabinetmaker had shifted that hinge by a small amount and written “check pipe” on her own sheet. The contractor measuring the finished work had recorded the new position in a table. The replacement crew now had two apparently conflicting measurements without a reason to prefer either one.\n\nThe manager initially proposed recording the replacement dimension as the final instruction. The cabinetmaker asked what the team would do if it found that the pipe on a later wall had been fitted differently. Moving every hinge by the same amount might simply shift the conflict. She suggested keeping the drawing as the standard and making the decision attached to it more explicit. The note would give the observation that led to the change and say which part of the closing door the crew had checked.\n\nThe revised packet places the clean drawing beside a photograph of the installed cupboard and a short note about the pipe. It describes the altered position as evidence of what worked on one wall. On the next floor, the crew confirmed that a different pipe cover left enough room for the original hinge. They were able to keep the standard position without ignoring the previous crew’s experience.\n\nThis is a small distinction, but it matters whenever a recorded exception is passed from one group to another. An exact figure tells a new worker what somebody did. It does not always tell her what questions the earlier worker had already answered. The revised packet does not make judgement unnecessary. It passes on enough of the observation to let another person make it again. The measurement and the reason can survive together, and a later builder does not have to treat one of them as an error in order to believe the other.",
+    "category": "Work",
+    "theme": "transmitting practical knowledge in a blueprint",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "workplace case study",
+      "word_count": 409
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What principle does the revised packet illustrate?",
+        "options": [
+          "Keep only one set of measurements so no crew can read them differently.",
+          "Record a local departure from a standard with the observation that made it necessary.",
+          "Treat every mark on the drawing as a change of formal instruction.",
+          "Require the manufacturer to draw a new plan for every floor."
+        ],
+        "answer_index": 1,
+        "explanation": "The packet keeps both the standard and the pipe-related reason for changing the hinge on one wall."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What had made the original hinge position difficult to use?",
+        "options": [
+          "The drawer could not open far enough.",
+          "A photograph showed an incorrectly measured wall.",
+          "The hinge could catch near a projecting pipe as the door closed.",
+          "The replacement team could not read the number on the drawing."
+        ],
+        "answer_index": 2,
+        "explanation": "The pipe interfered with the closing door at that point."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the cabinetmaker oppose making the local dimension a general instruction?",
+        "options": [
+          "She thought all original designs should remain private.",
+          "The first crew had never checked its door while it closed.",
+          "It would collapse eight dimensions into a single number.",
+          "A later wall could have a different obstacle and therefore need a different judgement."
+        ],
+        "answer_index": 3,
+        "explanation": "The author explicitly notes that a pipe fitted differently might make a universal new dimension inappropriate."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “a recorded exception” describe?",
+        "options": [
+          "A documented case in which work differs from the usual specification",
+          "An installation that no longer meets any requirements",
+          "A written record that somebody has refused to read",
+          "A method that has replaced the standard on an entire floor"
+        ],
+        "answer_index": 0,
+        "explanation": "The hinge position differs from the clean drawing at a particular spot, and the note gives the condition that caused the change."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "A record of the changed hinge position existed before the manager revised the packet.",
+        "answer": "true",
+        "explanation": "The person measuring the finished work had entered its new position in a table."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The team used the changed hinge position on the next floor as well.",
+        "answer": "false",
+        "explanation": "Checking the next pipe cover showed that the original position would fit there."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage states who first installed the pipe behind the panel.",
+        "answer": "not_given",
+        "explanation": "The text describes the projection but never identifies the installer."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "A cabinetmaker’s pencil note said to check the ___. The packet later puts the clean drawing beside a ___ of the installed cupboard.",
+        "answers": [
+          [
+            "pipe"
+          ],
+          [
+            "photograph"
+          ]
+        ],
+        "word_bank": [
+          "hinge",
+          "pipe",
+          "table",
+          "photograph"
+        ],
+        "explanation": "The earlier pencil note reads “check pipe”. The new packet adds a photograph and an explanation."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Two measurements and the hidden reason for the difference",
+          "Testing whether the old exception applies again",
+          "A request the clean drawing cannot answer",
+          "Recording the conditions behind a local change",
+          "The final dimensions of every cupboard"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The first paragraph presents the puzzle, the next accounts for it, paragraph 3 decides what to preserve, and paragraph 4 uses that record on another floor."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c1-get-a-recipe-from-a-retired-baker-by-ear",
+    "title": "Get a recipe from a retired baker by ear",
+    "level": "C1",
+    "summary": "An interviewer learns why weight, time and touch all matter.",
+    "transcript_text": "Interviewer: Would printing your recipe let someone reproduce the flatbread at home?\nBaker: The weights get them close. But we made dough beside an oven that had been hot for an hour. A home kitchen might be cooler. When I say the dough feels like a folded cloth, I mean it pulls slightly before it gives. A clock can't tell you that.\nInterviewer: Would a video help?\nBaker: It would show the stretch. You'd still need to try it. Include the time we used as a starting point and put the felt test beside it. If the dough tears, they should know that waiting a little longer can help.\nInterviewer: So the notebook records the method, and it also assumes a room and a set of hands.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 50,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "culture",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Interviewer",
+        "Baker"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why might the notebook be insufficient?",
+        "options": [
+          "It gives incorrect weights for most ingredients",
+          "It assumes conditions and tactile judgement",
+          "The baker never wrote down any timings",
+          "Methods from work kitchens cannot be adapted"
+        ],
+        "answer_index": 1,
+        "explanation": "The shop’s warmth and the feel of the dough are not fully described.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What does the folded cloth image convey?",
+        "options": [
+          "Resistance before the dough stretches",
+          "The colour of fully baked bread",
+          "A cloth that must cover the oven",
+          "The thickness of the whole batch"
+        ],
+        "answer_index": 0,
+        "explanation": "The baker describes the feel as a slight pull before it gives.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What could video add?",
+        "options": [
+          "An exact time for every kitchen",
+          "A guarantee of the correct result",
+          "Weights missing from the notebook",
+          "A visible example of the stretch"
+        ],
+        "answer_index": 3,
+        "explanation": "It could show the stretch although direct practice still matters.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why keep the original time?",
+        "options": [
+          "It removes the need to feel the dough",
+          "It is fixed by the recipe in all conditions",
+          "It provides an initial reference",
+          "It prevents all tearing"
+        ],
+        "answer_index": 2,
+        "explanation": "The baker advises using the time as a starting point.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What does the final line recognise?",
+        "options": [
+          "The baker wants people to work in the original room",
+          "Written methods can leave practical knowledge implicit",
+          "A person can learn only from film",
+          "The flatbread is impossible to reproduce"
+        ],
+        "answer_index": 1,
+        "explanation": "A written recipe can rely on conditions and tacit skill.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the weights get them close",
+      "focus_phrase": "get them close",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "it pulls slightly before it gives",
+      "focus_phrase": "before it gives",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "assumes a room and a set of hands",
+      "focus_phrase": "set of hands",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

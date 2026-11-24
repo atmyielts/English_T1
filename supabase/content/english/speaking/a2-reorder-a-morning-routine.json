@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "a2-reorder-a-morning-routine",
+    "title": "Explain a Change in Your Morning Routine",
+    "level": "A2",
+    "prompt_text": "You used to get your bag ready after breakfast. Now two people need to use the same table in the morning, so you put your things together the night before. Explain what you did before, what you changed, and one thing that is easier now.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 45,
+    "target_grammar": "Used to for the old habit and present simple for the new one. Use because for a reason.",
+    "fluency_objective": "Place a clear pause between the old and new routine. Then say the benefit in one or two sentences.",
+    "pronunciation_objective": "Stress morning and night before to signal what changed.",
+    "target_vocabulary": [
+      "breakfast",
+      "get ready",
+      "table",
+      "the night before",
+      "leave"
+    ],
+    "cues": [
+      {
+        "text": "Say what you used to do.",
+        "keywords": [
+          "used to",
+          "after breakfast",
+          "used the table"
+        ]
+      },
+      {
+        "text": "Describe the new routine.",
+        "keywords": [
+          "night before",
+          "bag by the door",
+          "get the bag ready"
+        ]
+      },
+      {
+        "text": "Give one reason or benefit.",
+        "keywords": [
+          "easier",
+          "eat together",
+          "space at the table",
+          "no longer",
+          "can leave"
+        ]
+      }
+    ],
+    "model_opening": "I used to put my books in my bag after breakfast.",
+    "model_answer": "I used to put my books in my bag after breakfast. Everything was on the table, and my brother needed the same space to eat. Now I get my bag ready the night before and leave it by the door. In the morning we can eat together because the table is clear. It is easier to leave on time, too. I can pick up the bag and go.",
+    "sort_order": 371
+  },
+  "children": []
+}

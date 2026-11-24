@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Interviewing for Oral History",
+    "description": "Interview a former textile mill worker for a fictional oral history project. Help her tell the story in her own words, keep track of what was recorded, and agree on who may hear it.",
+    "slug": "b2-interviewing-for-oral-history",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 370,
+    "topic": "oral history interviews"
+  },
+  "children": [
+    {
+      "word": "prompt",
+      "part_of_speech": "noun",
+      "definition": "A short remark or cue that helps someone begin or continue speaking.",
+      "example": "When Rosa struggled to get started, I offered a simple prompt: “Think about your first morning at the mill.”",
+      "translation_ru": "вопрос или реплика, помогающие начать или продолжить рассказ",
+      "translation_uz": "gapni boshlashga yoki davom ettirishga yordam beradigan savol yoki qisqa gap",
+      "collocations": [
+        "a brief prompt",
+        "give someone a prompt"
+      ]
+    },
+    {
+      "word": "recollection",
+      "part_of_speech": "noun",
+      "definition": "A memory of something that happened in the past.",
+      "example": "Rosa’s clearest recollection of her first day was the noise of the looms.",
+      "translation_ru": "воспоминание",
+      "translation_uz": "xotira",
+      "collocations": [
+        "a clear recollection",
+        "a vivid recollection"
+      ]
+    },
+    {
+      "word": "consent form",
+      "part_of_speech": "noun",
+      "definition": "A document on which someone formally agrees to take part in an activity or allow their contribution to be used.",
+      "example": "The consent form let Rosa agree to be recorded while deciding separately whether the project could publish her words.",
+      "translation_ru": "форма согласия",
+      "translation_uz": "rozilik blankasi",
+      "collocations": [
+        "sign a consent form",
+        "fill in a consent form"
+      ]
+    },
+    {
+      "word": "off the record",
+      "part_of_speech": "adverbial phrase",
+      "definition": "With the understanding that what someone says will be kept private and left out of anything published.",
+      "example": "When Rosa asked to speak off the record about a former supervisor, I stopped the recording before she continued.",
+      "translation_ru": "не для публикации",
+      "translation_uz": "oshkor qilmaslik sharti bilan",
+      "collocations": [
+        "speak off the record",
+        "say something off the record"
+      ]
+    },
+    {
+      "word": "pause",
+      "part_of_speech": "noun",
+      "definition": "A short period of silence before someone starts speaking again.",
+      "example": "There was a long pause before Rosa described her last visit to the mill.",
+      "translation_ru": "пауза в разговоре",
+      "translation_uz": "suhbatdagi qisqa sukut",
+      "collocations": [
+        "a brief pause",
+        "a pause in the conversation"
+      ]
+    },
+    {
+      "word": "access restriction",
+      "part_of_speech": "noun",
+      "definition": "A rule that limits who can see or hear material or when they may do so.",
+      "example": "Rosa chose an access restriction that let project staff hear the recording but kept it from the public for five years.",
+      "translation_ru": "ограничение доступа",
+      "translation_uz": "foydalanish huquqiga qoʻyilgan cheklov",
+      "collocations": [
+        "apply an access restriction",
+        "lift an access restriction"
+      ]
+    },
+    {
+      "word": "follow up",
+      "part_of_speech": "phrasal verb",
+      "definition": "To contact someone again after a conversation to ask for more information or deal with an unfinished matter.",
+      "example": "I said I would follow up with Rosa the next day to confirm which passage she wanted us to leave out.",
+      "translation_ru": "снова связаться, чтобы уточнить детали или решить оставшийся вопрос",
+      "translation_uz": "tafsilotlarga aniqlik kiritish yoki ochiq qolgan masalani hal qilish uchun yana bogʻlanmoq",
+      "collocations": [
+        "follow up by phone",
+        "follow up with a participant"
+      ]
+    },
+    {
+      "word": "narrator",
+      "part_of_speech": "noun",
+      "definition": "The person who tells the story of their own life or past events in an oral history project.",
+      "example": "Rosa was the first narrator in the mill project to describe what night work was like.",
+      "translation_ru": "рассказчик",
+      "translation_uz": "oʻz xotiralarini soʻzlab beruvchi suhbatdosh",
+      "collocations": [
+        "an oral history narrator",
+        "the project’s first narrator"
+      ]
+    },
+    {
+      "word": "topic list",
+      "part_of_speech": "noun",
+      "definition": "A written set of subjects to cover in a planned conversation.",
+      "example": "My topic list included Rosa’s training, night work, and the day the mill shut down.",
+      "translation_ru": "список тем для беседы",
+      "translation_uz": "suhbat mavzulari roʻyxati",
+      "collocations": [
+        "prepare a topic list",
+        "add something to the topic list"
+      ]
+    },
+    {
+      "word": "recording",
+      "part_of_speech": "noun",
+      "definition": "Sound that has been captured and saved so it can be played back.",
+      "example": "In the recording, you can hear Rosa laugh as she describes learning to use her first loom.",
+      "translation_ru": "аудиозапись",
+      "translation_uz": "audioyozuv",
+      "collocations": [
+        "play a recording",
+        "save a recording"
+      ]
+    },
+    {
+      "word": "withdraw permission",
+      "part_of_speech": "verb phrase",
+      "definition": "To cancel the approval you previously gave for someone to do or use something.",
+      "example": "Under our agreement, Rosa could withdraw permission to publish her story at any point before it went live.",
+      "translation_ru": "отозвать разрешение",
+      "translation_uz": "berilgan ruxsatni qaytarib olmoq",
+      "collocations": [
+        "withdraw permission to publish",
+        "withdraw permission to use a quotation"
+      ]
+    },
+    {
+      "word": "excerpt",
+      "part_of_speech": "noun",
+      "definition": "A short part taken from a longer text, speech, or piece of audio.",
+      "example": "Rosa approved a short excerpt about her first week at the mill for the exhibition.",
+      "translation_ru": "отрывок",
+      "translation_uz": "parcha",
+      "collocations": [
+        "play an excerpt",
+        "an excerpt from a recording"
+      ]
+    },
+    {
+      "word": "pseudonym",
+      "part_of_speech": "noun",
+      "definition": "A name someone uses in public in place of their real name.",
+      "example": "At the narrator's request, we used a pseudonym in the published transcript.",
+      "translation_ru": "псевдоним",
+      "translation_uz": "taxallus",
+      "collocations": [
+        "use a pseudonym",
+        "publish under a pseudonym"
+      ]
+    },
+    {
+      "word": "clarify",
+      "part_of_speech": "verb",
+      "definition": "To make the meaning of something easier to understand by explaining it more precisely.",
+      "example": "Before moving on, I asked Rosa to clarify what she meant by “the old mill,” since two mills had operated in the town.",
+      "translation_ru": "уточнять смысл",
+      "translation_uz": "aniqroq tushuntirmoq",
+      "collocations": [
+        "clarify a point",
+        "clarify what you mean"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b2-when-the-instructions-follow-the-guitar",
+    "title": "When the Instructions Follow the Guitar",
+    "level": "B2",
+    "summary": "A guitar-loan project changes where it puts its instructions after borrowers make a reasonable mistake.",
+    "content_markdown": "Kilton Music Circle ran a loan scheme with six guitars and a small box of ordinary repair supplies. Each borrower received a printed page asking them to replace a broken string before returning the instrument. It gave the names of the strings and one phone number to call if a part was missing. Two months after the launch, the circle’s equipment volunteer noticed that three cases contained a new set of strings of the wrong type.\n\nIt looked at first as though the borrowers had not read the page. Two borrowers showed her their copies. They had carefully followed the instructions, but the page had been written when all the guitars were of the same kind. A donated model had subsequently gone into an older case. When somebody took that case from the shelf, there was nothing to tell them the correct string had changed. The names of the notes printed on the page were the same for both kinds of guitar, so the mistake was easy to miss.\n\nThe volunteer tried putting a notice above the loan shelf. It told borrowers to check whether they had the donated model. The notice worked when the room was open and a volunteer could point out the guitar. It did little for people whose friends had collected instruments for them. Another person later brought a case to a session without the guitar that had first gone with it, which made the case an unreliable place to attach the identifying information.\n\nThe circle printed a short card for each guitar and tied it to the same cord as the instrument’s inventory tag. The card says which supplies belong to that particular instrument and gives the shared number as before. Borrowers still get a general information sheet about returning instruments. The smaller card deals only with details that can change when a case and a guitar get separated. After several weeks the equipment volunteer checked the cases again. She could find fewer stray strings, but she did not take that as proof the new system was complete. She asked the next group of borrowers to say how they had found the right information without being told where to look.",
+    "category": "Community",
+    "theme": "maintaining information for a guitar loan",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "reported case study",
+      "word_count": 365
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the case study show?",
+        "options": [
+          "An equipment scheme should use only one guitar model.",
+          "Only a volunteer can keep information accurate for a borrower.",
+          "Information needed for a particular object should stay with the object.",
+          "Old supplies must be thrown out whenever a new model arrives."
+        ],
+        "answer_index": 2,
+        "explanation": "The new card stays with the guitar, unlike a case or shelf notice that may later separate from it."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did the older sheet lead to a mistake?",
+        "options": [
+          "It gave the wrong names of the musical notes.",
+          "Every borrower was given a different number to call.",
+          "The newly donated guitar was too large for the earlier case.",
+          "It was written before the two guitar types were in use."
+        ],
+        "answer_index": 3,
+        "explanation": "The first version assumed all instruments used the same supplies."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the shelf notice help only some borrowers?",
+        "options": [
+          "People who did not collect a guitar in person might never see the shelf.",
+          "The print could only be read at night.",
+          "The instruments it named were eventually sold.",
+          "The volunteer posted it on a separate website."
+        ],
+        "answer_index": 0,
+        "explanation": "Borrowers whose friends collected the instrument did not see the room or benefit from the volunteer pointing out the model."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “stray strings” refer to here?",
+        "options": [
+          "Strings placed there for a public performance",
+          "Supplies that ended up in the wrong case",
+          "Strings that had fallen out onto the floor",
+          "Supplies that only the volunteer could use"
+        ],
+        "answer_index": 1,
+        "explanation": "The scheme is trying to prevent the wrong type of strings from being left with an instrument."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Two borrowers had followed the printed sheet.",
+        "answer": "true",
+        "explanation": "They show the volunteer their copies and had relied on those instructions."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The new card replaces every part of the general information sheet.",
+        "answer": "false",
+        "explanation": "The circle keeps the sheet about returns and puts changing supply details on the small card."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage lists the name of the company that donated the guitar.",
+        "answer": "not_given",
+        "explanation": "A donor gave a different model, but the passage does not identify that donor."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The volunteers first put a notice above the loan ___. Later they tie an individual ___ to each guitar’s tag.",
+        "answers": [
+          [
+            "shelf"
+          ],
+          [
+            "card"
+          ]
+        ],
+        "word_bank": [
+          "case",
+          "card",
+          "shelf",
+          "number"
+        ],
+        "explanation": "Paragraph 3 describes a shelf notice. Paragraph 4 describes the new card that travels with the instrument."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A general instruction showed up as a practical problem",
+          "Making the particular instructions travel with the instrument",
+          "What made the old sheet out of date",
+          "Why the shelf and case were unreliable places for information",
+          "Opening every guitar case before lending it"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The article outlines the mix-up, explains the cause, tests two possible locations for the information, and then distinguishes the new individual card from the common sheet."
+      }
+    ]
+  },
+  "children": []
+}

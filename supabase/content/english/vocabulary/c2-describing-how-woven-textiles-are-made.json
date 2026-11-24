@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "How Woven Textiles Are Made",
+    "description": "Describe how cloth takes shape at The Woven Surface, a fictional exhibit with touchable swatches and a working loom. Trace the threads, feel how different structures change the surface, and explain how the weaver controls those effects.",
+    "slug": "c2-describing-how-woven-textiles-are-made",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 410,
+    "topic": "woven textile terminology"
+  },
+  "children": [
+    {
+      "word": "selvedge",
+      "part_of_speech": "noun",
+      "definition": "The finished lengthwise edge formed during weaving, typically where the crosswise yarn turns back into the cloth.",
+      "example": "On the loom-room swatch, the selvedge feels firm under the thumb, while the cut end sheds threads when rubbed.",
+      "translation_ru": "кромка ткани",
+      "translation_uz": "matoning milki",
+      "collocations": [
+        "a tight selvedge",
+        "an uneven selvedge"
+      ]
+    },
+    {
+      "word": "warp",
+      "part_of_speech": "noun",
+      "definition": "The set of lengthwise threads held under tension on a loom so that crosswise yarn can be inserted among them.",
+      "example": "On the demonstration loom, the exposed linen warp is taut enough for the weaver to pluck a thread and hear it vibrate.",
+      "translation_ru": "основа ткани",
+      "translation_uz": "tanda iplari",
+      "collocations": [
+        "a linen warp",
+        "tension the warp"
+      ]
+    },
+    {
+      "word": "weft",
+      "part_of_speech": "noun",
+      "definition": "The yarn that runs across the width of woven cloth, passing over and under the lengthwise threads.",
+      "example": "At the touch rail, the soft wool weft forms raised crosswise bands that yield under a fingertip.",
+      "translation_ru": "уток",
+      "translation_uz": "arqoq ipi",
+      "collocations": [
+        "a wool weft",
+        "insert the weft"
+      ]
+    },
+    {
+      "word": "warp-faced",
+      "part_of_speech": "adjective",
+      "definition": "Having a woven surface on which the lengthwise threads predominate and largely conceal the crosswise threads.",
+      "example": "In the warp-faced ribbon at the entrance, the glossy lengthwise threads hide the grey crosswise yarn until the ribbon is bent.",
+      "translation_ru": "с преобладанием нитей основы на лицевой стороне",
+      "translation_uz": "yuzasida tanda iplari ustun boʻlgan",
+      "collocations": [
+        "warp-faced cloth",
+        "a warp-faced band"
+      ]
+    },
+    {
+      "word": "twill",
+      "part_of_speech": "noun",
+      "definition": "A weave in which points where the lengthwise and crosswise threads interlace are offset from one row to the next, forming a diagonal pattern.",
+      "example": "In the grey swatch, the twill sends a fine ridge diagonally across the cloth, which you can follow with a fingernail.",
+      "translation_ru": "саржевое переплетение",
+      "translation_uz": "sarja oʻrilishi",
+      "collocations": [
+        "a three-up, one-down twill",
+        "a broken twill"
+      ]
+    },
+    {
+      "word": "plain weave",
+      "part_of_speech": "noun",
+      "definition": "A structure in which each crosswise thread passes over and under alternate lengthwise threads, reversing that sequence on the next row.",
+      "example": "In the coarse cotton square, the plain weave feels evenly pebbled, and the magnifier shows each crosswise thread going over one lengthwise thread and under the next.",
+      "translation_ru": "полотняное переплетение",
+      "translation_uz": "polotno oʻrilishi",
+      "collocations": [
+        "a balanced plain weave",
+        "weave in plain weave"
+      ]
+    },
+    {
+      "word": "float",
+      "part_of_speech": "noun",
+      "definition": "A stretch of yarn that passes over two or more adjacent threads of the other set without interlacing with them.",
+      "example": "On the reverse of the silver swatch, you can slip a fingernail under a float that spans four crosswise threads.",
+      "translation_ru": "протяжка нити",
+      "translation_uz": "qarama-qarshi yoʻnalishdagi ikki yoki undan ortiq yonma-yon ip ustidan ular bilan oʻrilishmay oʻtgan ip qismi",
+      "collocations": [
+        "a long float",
+        "a weft float"
+      ]
+    },
+    {
+      "word": "jacquard",
+      "part_of_speech": "noun",
+      "definition": "A figured fabric made on a loom that selects individual lengthwise threads or small groups of them to form a design as the cloth is woven.",
+      "example": "On the indigo jacquard, the smooth arcs stand out against the grainier ground, and the magnifier shows how the threads interlace differently in the two areas.",
+      "translation_ru": "жаккардовая ткань",
+      "translation_uz": "jakkard mato",
+      "collocations": [
+        "a silk jacquard",
+        "a figured jacquard"
+      ]
+    },
+    {
+      "word": "interlacement",
+      "part_of_speech": "noun",
+      "definition": "The way the lengthwise and crosswise thread systems pass over and under one another to form a woven structure.",
+      "example": "The enlarged cord model lets you trace the interlacement by touch, following each blue cord where it rises over a white one and dips under the next.",
+      "translation_ru": "переплетение нитей основы и утка",
+      "translation_uz": "tanda va arqoq iplarining oʻrilishi",
+      "collocations": [
+        "thread interlacement",
+        "a diagram of interlacement"
+      ]
+    },
+    {
+      "word": "sett",
+      "part_of_speech": "noun",
+      "definition": "The density at which lengthwise threads are arranged for weaving, expressed as a count per unit of width.",
+      "example": "The two strips use the same yarn and weave, but the one woven at the higher sett of thirty warp ends per inch feels firmer when flexed.",
+      "translation_ru": "плотность нитей основы",
+      "translation_uz": "tanda iplarining zichligi",
+      "collocations": [
+        "an open sett",
+        "a sett of twenty ends per inch"
+      ]
+    },
+    {
+      "word": "reed",
+      "part_of_speech": "noun",
+      "definition": "A comb-like loom component with narrow slots that space the lengthwise threads and whose forward movement presses newly inserted crosswise yarn into place.",
+      "example": "At the working loom, the reed makes a dry click as it presses the new row against the woven cloth.",
+      "translation_ru": "бёрдо ткацкого станка",
+      "translation_uz": "toʻquv dastgohining tigʻi",
+      "collocations": [
+        "a steel reed",
+        "thread the reed"
+      ]
+    },
+    {
+      "word": "pick",
+      "part_of_speech": "noun",
+      "definition": "One length of weft laid across the warp in a single pass through the opening between the raised and lowered warp threads.",
+      "example": "The weaver inserts one pick of red wool, then stops so visitors can see the single red row against the undyed cloth.",
+      "translation_ru": "уточная нить, проложенная за одну прокидку",
+      "translation_uz": "tanda orasidan bir marta oʻtkazilgan arqoq ipi",
+      "collocations": [
+        "insert a pick",
+        "beat a pick into place"
+      ]
+    },
+    {
+      "word": "slub",
+      "part_of_speech": "noun",
+      "definition": "A short thickened section of otherwise finer yarn, produced deliberately or arising as an irregularity during spinning.",
+      "example": "The unbleached linen feels smooth until your fingertip reaches a slub that bulges from a single crosswise thread.",
+      "translation_ru": "местное утолщение пряжи",
+      "translation_uz": "yigirilgan ipning yoʻgʻonlashgan qismi",
+      "collocations": [
+        "a pronounced slub",
+        "a slub in the yarn"
+      ]
+    },
+    {
+      "word": "tapestry weave",
+      "part_of_speech": "noun",
+      "definition": "A structure in which separate crosswise yarns are worked back and forth within local areas of colour and packed densely enough to hide the lengthwise threads.",
+      "example": "In the exhibit’s small study of overlapping arcs, the tapestry weave forms a dense surface, with the ochre yarn turning back wherever it meets the blue.",
+      "translation_ru": "гобеленовое переплетение",
+      "translation_uz": "gobelen oʻrilishi",
+      "collocations": [
+        "an interlocked tapestry weave",
+        "work in tapestry weave"
+      ]
+    }
+  ]
+}

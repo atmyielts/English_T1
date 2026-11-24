@@ -1,0 +1,46 @@
+{
+  "item": {
+    "slug": "a1-hello-new-dog-walker",
+    "title": "Write a Note for a Dog Walker",
+    "level": "A1",
+    "prompt_text": "Your dog is called Pip. Kim is coming to take Pip for a short walk. Pip's lead is on the blue chair. Ask Kim to put it back in the same place. Write a note for Kim.",
+    "genre": "care note",
+    "audience": "your neighbour Kim",
+    "target_grammar": "Is for location and please plus a verb.",
+    "target_structure": "Name the dog, give the location, and explain where the lead goes after the walk.",
+    "target_vocabulary": [
+      "lead",
+      "blue chair",
+      "put",
+      "back"
+    ],
+    "expected_length_min": 26,
+    "expected_length_max": 58,
+    "checklist": [
+      {
+        "point": "Give the dog's name.",
+        "keywords": [
+          "pip"
+        ]
+      },
+      {
+        "point": "Say where the lead is.",
+        "keywords": [
+          "blue chair"
+        ]
+      },
+      {
+        "point": "Ask Kim to return it to that place.",
+        "keywords": [
+          "put it back",
+          "leave it on the same chair"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    },
+    "sort_order": 343
+  },
+  "children": []
+}

@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c1-explain-revisions-to-a-translated-welcome-sheet",
+    "title": "Coordinate Revisions to a Bilingual Welcome Sheet",
+    "level": "C1",
+    "prompt_text": "A bilingual welcome sheet uses short phrases for directions. Several volunteers want to replace them with longer explanations because the shortest phrases can sound abrupt in one language. Printing space is fixed, and three directions matter as soon as a visitor enters. Recommend a revision approach that distinguishes immediate instructions from optional reassurance and shows how to test both languages.",
+    "genre": "project brief",
+    "audience": "a community centre team revising a welcome sheet",
+    "target_grammar": "Nuanced comparison, concession and explicit conditions for keeping a phrase.",
+    "target_structure": "Name the visitor task, revise a concrete example, and use a comparable test for each language.",
+    "target_vocabulary": [
+      "welcome sheet",
+      "direction",
+      "reassurance",
+      "equivalent",
+      "wording",
+      "test"
+    ],
+    "expected_length_min": 186,
+    "expected_length_max": 269,
+    "checklist": [
+      {
+        "point": "Explain why entry-stage directions need to remain easy to act on.",
+        "keywords": [
+          "as they arrive",
+          "immediate",
+          "first direction",
+          "once inside"
+        ]
+      },
+      {
+        "point": "Give a concrete example of a short respectful alternative.",
+        "keywords": [
+          "please",
+          "reception",
+          "ask at",
+          "for example"
+        ]
+      },
+      {
+        "point": "Explain where optional explanation can go.",
+        "keywords": [
+          "below",
+          "separate",
+          "welcome line",
+          "more detail"
+        ]
+      },
+      {
+        "point": "Give a comparable check for both languages.",
+        "keywords": [
+          "both versions",
+          "each language",
+          "same task",
+          "test"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    },
+    "sort_order": 398
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Booking a Shared Sports Hall",
+    "description": "Arrange practice sessions in a shared sports hall and follow the rules for using the space and equipment.",
+    "slug": "b1-booking-a-shared-sports-hall",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 400,
+    "topic": "sports hall booking"
+  },
+  "children": [
+    {
+      "word": "reservation request",
+      "part_of_speech": "noun phrase",
+      "definition": "A form or message asking staff to hold a space for your group at a particular time.",
+      "example": "Please include the number of people in your reservation request so staff can offer you the right space.",
+      "translation_ru": "заявка на бронирование",
+      "translation_uz": "joy band qilish soʻrovi",
+      "collocations": [
+        "submit a reservation request",
+        "approve a reservation request"
+      ]
+    },
+    {
+      "word": "weekly session",
+      "part_of_speech": "noun phrase",
+      "definition": "A period of organised activity that takes place once every week.",
+      "example": "We asked for a weekly session on Tuesday evenings so everyone could come after work.",
+      "translation_ru": "еженедельное занятие",
+      "translation_uz": "haftalik mashgʻulot",
+      "collocations": [
+        "arrange a weekly session",
+        "move a weekly session to Mondays"
+      ]
+    },
+    {
+      "word": "line markings",
+      "part_of_speech": "plural noun phrase",
+      "definition": "Stripes on a sports hall floor that show the edges and other parts of an area used for play.",
+      "example": "Use the blue line markings for our practice tonight because the yellow ones are for a different game.",
+      "translation_ru": "линии разметки",
+      "translation_uz": "maydon chiziqlari",
+      "collocations": [
+        "follow the line markings",
+        "faded line markings"
+      ]
+    },
+    {
+      "word": "clean soles",
+      "part_of_speech": "plural noun phrase",
+      "definition": "The bottoms of shoes that are free of dirt or mud.",
+      "example": "Bring a pair with clean soles and put them on before you step into the hall.",
+      "translation_ru": "чистые подошвы",
+      "translation_uz": "poyabzalning toza tag qismi",
+      "collocations": [
+        "shoes with clean soles",
+        "make sure your shoes have clean soles"
+      ]
+    },
+    {
+      "word": "equipment hire",
+      "part_of_speech": "noun phrase",
+      "definition": "A service that lets you pay to use items for a short time and give them back afterwards.",
+      "example": "Ask about equipment hire when you arrange your practice if you need a net for the evening.",
+      "translation_ru": "прокат инвентаря",
+      "translation_uz": "anjomlar ijarasi",
+      "collocations": [
+        "arrange equipment hire",
+        "ask about equipment hire"
+      ]
+    },
+    {
+      "word": "divider curtain",
+      "part_of_speech": "noun phrase",
+      "definition": "A large piece of hanging material used to split a room into separate areas.",
+      "example": "Ask the supervisor to lower the divider curtain so both groups can practise at the same time.",
+      "translation_ru": "разделительная штора",
+      "translation_uz": "zalni boʻlib turuvchi parda",
+      "collocations": [
+        "lower the divider curtain",
+        "raise the divider curtain"
+      ]
+    },
+    {
+      "word": "permission",
+      "part_of_speech": "noun",
+      "definition": "Agreement from someone in charge that you can do something.",
+      "example": "You need permission from the hall supervisor before you move the benches into the corridor.",
+      "translation_ru": "разрешение",
+      "translation_uz": "ruxsat",
+      "collocations": [
+        "ask for permission",
+        "give permission"
+      ]
+    },
+    {
+      "word": "clear the hall",
+      "part_of_speech": "verb phrase",
+      "definition": "To get everyone and everything your group brought out of the space so others can use it.",
+      "example": "Please clear the hall by eight because the next group needs the full space.",
+      "translation_ru": "освободить зал",
+      "translation_uz": "zalni boʻshatmoq",
+      "collocations": [
+        "clear the hall after practice",
+        "clear the hall before the next session"
+      ]
+    },
+    {
+      "word": "run over",
+      "part_of_speech": "phrasal verb",
+      "definition": "To continue past the planned finishing time.",
+      "example": "We can start with a shorter warm-up so our practice doesn't run over into the next group's session.",
+      "translation_ru": "продолжаться дольше, чем было запланировано",
+      "translation_uz": "belgilangan vaqtdan oshib ketmoq",
+      "collocations": [
+        "run over by ten minutes",
+        "run over into the next session"
+      ]
+    },
+    {
+      "word": "cupboard",
+      "part_of_speech": "noun",
+      "definition": "A piece of furniture or a space with doors where things are kept.",
+      "example": "Put the mats in the cupboard beside the hall entrance when your group finishes.",
+      "translation_ru": "шкаф",
+      "translation_uz": "shkaf",
+      "collocations": [
+        "an equipment cupboard",
+        "put the mats in the cupboard"
+      ]
+    },
+    {
+      "word": "capacity",
+      "part_of_speech": "noun",
+      "definition": "The largest number of people a place can safely hold.",
+      "example": "With both groups practising together, we'll be close to the hall's capacity of forty people.",
+      "translation_ru": "вместимость",
+      "translation_uz": "sigʻim",
+      "collocations": [
+        "maximum capacity",
+        "reach capacity"
+      ]
+    },
+    {
+      "word": "shared use",
+      "part_of_speech": "noun phrase",
+      "definition": "An arrangement in which more than one group can use the same space.",
+      "example": "The hall is set aside for shared use on Thursday evenings, so our group will have only one side of it.",
+      "translation_ru": "совместное использование",
+      "translation_uz": "birgalikda foydalanish",
+      "collocations": [
+        "allow shared use",
+        "rules for shared use"
+      ]
+    },
+    {
+      "word": "confirm",
+      "part_of_speech": "verb",
+      "definition": "To say that an arrangement is definite and can go ahead.",
+      "example": "Could you confirm our reservation for Friday so I can tell the group where to meet?",
+      "translation_ru": "подтвердить",
+      "translation_uz": "tasdiqlamoq",
+      "collocations": [
+        "confirm a reservation",
+        "confirm the start time"
+      ]
+    },
+    {
+      "word": "give notice",
+      "part_of_speech": "verb phrase",
+      "definition": "To tell someone officially ahead of time that you plan to end or cancel an arrangement.",
+      "example": "If your group can't use the hall on Friday, please give notice by Wednesday so staff can offer the space to another group.",
+      "translation_ru": "предупредить заранее",
+      "translation_uz": "oldindan xabar bermoq",
+      "collocations": [
+        "give notice in writing",
+        "give notice at least two days before practice"
+      ]
+    }
+  ]
+}

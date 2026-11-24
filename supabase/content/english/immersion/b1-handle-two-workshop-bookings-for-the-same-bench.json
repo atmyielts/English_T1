@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "b1-handle-two-workshop-bookings-for-the-same-bench",
+    "title": "Handle two workshop bookings for the same bench",
+    "level": "B1",
+    "mission_type": "problem_solving",
+    "context_text": "A club accidentally gave two people the same equipment booking. One task can be split into short visits.",
+    "objective_text": "Find a fair plan that respects time, equipment and drying constraints.",
+    "target_vocabulary": [
+      "booking",
+      "workbench",
+      "slot",
+      "glue",
+      "hold"
+    ],
+    "success_conditions": [
+      "Find a fair plan that respects time, equipment and drying constraints.",
+      "Reserve Dev’s first half hour",
+      "Reserve the later slot for gluing",
+      "Preserve the wet-work rule"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the workshop calendar",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Bench A has a clamp. Sessions are 4:00–4:45, 4:45–5:30 and 5:30–6:15. Both Iris and Dev received a confirmation for 4:00. No wet glue may stay on a shared bench.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which times have two confirmed users?",
+          "options": [
+            "The 4:45 and 5:30 slots",
+            "All three slots",
+            "The 4:00 slot only"
+          ],
+          "answer_index": 2,
+          "explanation": "The duplicate was for the first session."
+        },
+        {
+          "prompt": "What prevents someone from leaving during a gluing job?",
+          "options": [
+            "The bench has no clamp",
+            "The club never allows breaks",
+            "Wet glue cannot stay on the shared bench"
+          ],
+          "answer_index": 2,
+          "explanation": "The rule applies to unattended wet work."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear what the users need",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Dev can only stay until five. He needs thirty minutes to fit a shelf without glue. Iris needs a dry fit for fifteen minutes and a full forty minutes with glue later. She can come back after five.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Who has the earlier finish limit?",
+          "options": [
+            "Iris",
+            "Neither",
+            "Dev"
+          ],
+          "answer_index": 2,
+          "explanation": "Dev can stay only until five."
+        },
+        {
+          "prompt": "What lets Iris use a later slot?",
+          "options": [
+            "She needs no clamp",
+            "Her project takes less than fifteen minutes",
+            "She can split fitting and gluing"
+          ],
+          "answer_index": 2,
+          "explanation": "Iris can do a short fit early and return for the longer job."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Open the conversation",
+      "prompt_text": "Both members are at the desk and are expecting the first slot.",
+      "instructions": "Acknowledge the booking mistake. Explain briefly why you propose that Dev go first. Offer Iris a specific place in the schedule.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 25,
+      "model_answer": "We sent both of you the same confirmation. Could Dev start at four, since he needs to leave by five? Iris can use the last fifteen minutes for the dry fit, then come back after five.",
+      "points": [
+        {
+          "label": "Own the error",
+          "any": [
+            "the same confirmation",
+            "double booked",
+            "booking mistake"
+          ]
+        },
+        {
+          "label": "Explain the priority",
+          "any": [
+            "leave by five",
+            "has to leave by five"
+          ]
+        },
+        {
+          "label": "Offer time to fit",
+          "any": [
+            "dry fit",
+            "last fifteen minutes"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Record the agreed allocations",
+      "prompt_text": "Both users agree, and Iris chooses the full slot starting at 5:30.",
+      "instructions": "Write one note the evening supervisor can follow. Give times, distinguish which task uses glue and say how to leave the bench at the end.",
+      "goal": "Find a fair plan that respects time, equipment and drying constraints.",
+      "estimated_minutes": 12,
+      "min_words": 45,
+      "model_answer": "Bench A is for Dev from four to four thirty for the shelf fitting. Iris will do her dry fit from four thirty to four forty-five. She will return for the full five thirty slot to glue and finish. Please check the bench is clean and no wet glue is left when she goes.",
+      "points": [
+        {
+          "label": "Reserve Dev’s first half hour",
+          "any": [
+            "four to four thirty",
+            "4:00 to 4:30"
+          ]
+        },
+        {
+          "label": "Reserve the later slot for gluing",
+          "any": [
+            "five thirty slot",
+            "5:30 slot"
+          ]
+        },
+        {
+          "label": "Preserve the wet-work rule",
+          "any": [
+            "no wet glue",
+            "clean bench"
+          ]
+        }
+      ]
+    }
+  ]
+}

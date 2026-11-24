@@ -1,0 +1,142 @@
+{
+  "item": {
+    "slug": "a1-get-a-seat-at-a-school-concert",
+    "title": "Get a seat at a school concert",
+    "level": "A1",
+    "mission_type": "study",
+    "context_text": "You have two seats at your school concert. Your guest may take the wrong entrance.",
+    "objective_text": "Guide the guest to the right door, seat and arrival time.",
+    "target_vocabulary": [
+      "ticket",
+      "row",
+      "seat",
+      "adult",
+      "door"
+    ],
+    "success_conditions": [
+      "Guide the guest to the right door, seat and arrival time.",
+      "Give an arrival time",
+      "Give the row and seats",
+      "Mention the correct door"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read both tickets",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Concert starts at seven. Seats: row B, 4 and 5. Use the door by the sports field. The office door is locked after six.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which row is on the tickets?",
+          "options": [
+            "A",
+            "D",
+            "B"
+          ],
+          "answer_index": 2,
+          "explanation": "Both seats are in row B."
+        },
+        {
+          "prompt": "Which door stays in use for the concert?",
+          "options": [
+            "The office door",
+            "The classroom door",
+            "The door by the sports field"
+          ],
+          "answer_index": 2,
+          "explanation": "The tickets direct people to the door by the sports field."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the usher’s message",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Please come fifteen minutes early. If you arrive late, wait at the door until the first song is over. The show ends at eight.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When should guests plan to come?",
+          "options": [
+            "7:15",
+            "8:00",
+            "6:45"
+          ],
+          "answer_index": 2,
+          "explanation": "Fifteen minutes before seven is 6:45."
+        },
+        {
+          "prompt": "What should late guests do?",
+          "options": [
+            "Walk in during the first song",
+            "Go home",
+            "Wait until the first song ends"
+          ],
+          "answer_index": 2,
+          "explanation": "The usher asks late guests to wait."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Call your guest",
+      "prompt_text": "Your guest asks where to wait if they arrive late.",
+      "instructions": "Name the right outside door and say when they can go inside.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Go to the door by the sports field. If you arrive late, please wait there until the first song ends. I will be inside.",
+      "points": [
+        {
+          "label": "Name the right door",
+          "any": [
+            "sports field door",
+            "door by the sports field"
+          ]
+        },
+        {
+          "label": "Give the late rule",
+          "any": [
+            "first song ends",
+            "first song is over"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a concert reminder",
+      "prompt_text": "Your guest can arrive on time. Send a message they can show the usher.",
+      "instructions": "Include the arrival time, correct door and both seat numbers. Say why the office entrance is a poor choice.",
+      "goal": "Guide the guest to the right door, seat and arrival time.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "See you at six forty-five. Please use the door by the sports field. The office door is locked by then. We are in row B, seats four and five. Show this message to the usher if you need help.",
+      "points": [
+        {
+          "label": "Give an arrival time",
+          "any": [
+            "six forty-five",
+            "6:45"
+          ]
+        },
+        {
+          "label": "Give the row and seats",
+          "any": [
+            "row b, seats four and five",
+            "row b, seats 4 and 5"
+          ]
+        },
+        {
+          "label": "Mention the correct door",
+          "any": [
+            "door by the sports field",
+            "sports field door"
+          ]
+        }
+      ]
+    }
+  ]
+}

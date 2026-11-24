@@ -1,0 +1,49 @@
+{
+  "item": {
+    "slug": "a1-return-the-yellow-key",
+    "title": "Leave a Key Return Note",
+    "level": "A1",
+    "prompt_text": "You borrowed a yellow key for Room 2. You will return it at 5 p.m. The desk closes at 4. Put the key in the small box by the door. Leave a note that explains which key it is, when you returned it, and where it is.",
+    "genre": "note",
+    "audience": "the person at the studio desk",
+    "target_grammar": "Simple present for location and past simple for the return.",
+    "target_structure": "Write the room number, then give the time and the location.",
+    "target_vocabulary": [
+      "key",
+      "yellow",
+      "return",
+      "box"
+    ],
+    "expected_length_min": 25,
+    "expected_length_max": 55,
+    "checklist": [
+      {
+        "point": "Say which key you returned.",
+        "keywords": [
+          "room 2",
+          "yellow key"
+        ]
+      },
+      {
+        "point": "Give the time.",
+        "keywords": [
+          "at five",
+          "5 p.m.",
+          "5 pm"
+        ]
+      },
+      {
+        "point": "Say where the key is.",
+        "keywords": [
+          "box by the door",
+          "small box"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    },
+    "sort_order": 341
+  },
+  "children": []
+}

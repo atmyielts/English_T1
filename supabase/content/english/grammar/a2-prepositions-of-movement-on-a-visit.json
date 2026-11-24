@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Prepositions of movement on a visit",
+    "explanation_text": "Use a preposition of movement after a verb such as walk or go to show the path someone takes. In a small park, start at the gate and walk across the lawn to the pond. Across takes you from one side to the other. From the pond, walk along the path to the café. Along means you follow the path. Walk past the café to the library steps. Past means you go by a place and keep going.\n\nAt the library, walk into the building from the steps. Into shows movement from outside to inside. Walk through the entrance hall to the reading room. Through means you move within a space on your way from one side to another. You can sit in the reading room. In tells you where you are. At the end of your visit, walk out of the library. Out of shows movement from inside to outside.",
+    "contrast_text": "In “We are in the library,” in tells you where we are. In “We walk into the library,” into shows that we start outside and end inside. Across the lawn describes movement from one side of an open area to the other. Through the hall describes movement within a space from one side to the other.",
+    "common_error_pattern": "Leaving out of when you name the place someone leaves. Use “out of the room.” When the place is already clear, you can say “We walked out.”",
+    "tags": [
+      "a2",
+      "prepositions-of-movement",
+      "routes",
+      "park",
+      "library"
+    ],
+    "examples": [
+      {
+        "bad": "They walked across of the grass to the fountain.",
+        "good": "They walked across the grass to the fountain."
+      },
+      {
+        "bad": "I walked out the study room of.",
+        "good": "I walked out of the study room."
+      },
+      {
+        "bad": "She walked past of the bike rack and stopped at the gate.",
+        "good": "She walked past the bike rack and stopped at the gate."
+      },
+      {
+        "bad": "We are sitting into the library café.",
+        "good": "We are sitting in the library café."
+      }
+    ],
+    "slug": "a2-prepositions-of-movement-on-a-visit",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 380,
+    "focus_area": "prepositions-of-movement"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Cross the play area",
+      "instructions": "Choose across or along. You start at the west edge of the play area and go straight to the east edge.",
+      "prompt_text": "We walk ___ the play area to the swings on the other side.",
+      "accepted_answers": [
+        "across"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Take the covered route",
+      "instructions": "Choose through or past. You enter the covered passage by the ticket desk and leave it at the far end.",
+      "prompt_text": "We go ___ the covered passage to the courtyard.",
+      "accepted_answers": [
+        "through"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Join the story group",
+      "instructions": "Choose in or into. Use the word that shows a change from outside the room to inside it.",
+      "prompt_text": "From the landing, the children walk ___ the story room.",
+      "accepted_answers": [
+        "into"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Leave the bookshop",
+      "instructions": "Complete the sentence with the two-word phrase that shows movement from inside to outside. Its first word is out.",
+      "prompt_text": "They step ___ the park bookshop onto the pavement.",
+      "accepted_answers": [
+        "out of"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Follow the flower bed",
+      "instructions": "Choose across or along. Start at one end of the flower bed and follow its long edge to the other end.",
+      "prompt_text": "I walk ___ the flower bed to the water tap.",
+      "accepted_answers": [
+        "along"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Give directions to the lift",
+      "instructions": "Correct the sentence by removing one word. You start at the stairs, go by the noticeboard, and stop at the lift.",
+      "prompt_text": "From the stairs, walk past of the noticeboard to the lift.",
+      "accepted_answers": [
+        "From the stairs, walk past the noticeboard to the lift."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Say where Ben is",
+      "instructions": "Ben is already inside. Choose in or into to show his location. Keep the other words in place.",
+      "prompt_text": "Ben is sitting into the quiet room.",
+      "accepted_answers": [
+        "Ben is sitting in the quiet room."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Describe entering the map room",
+      "instructions": "Rewrite the sentence. Begin with “Nina walks” and use into. End with “from the main hall.”",
+      "prompt_text": "Nina enters the map room from the main hall.",
+      "accepted_answers": [
+        "Nina walks into the map room from the main hall."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Combine the route notes",
+      "instructions": "Begin with “We walk from the park gate”. Put along directly after “the park gate” and before “the gravel path”. End with “to the duck pond”.",
+      "prompt_text": "We start at the park gate. We follow the gravel path to the duck pond.",
+      "accepted_answers": [
+        "We walk from the park gate along the gravel path to the duck pond."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Mention what you pass",
+      "instructions": "Begin with “I walk from the return desk”. Put past directly after “the return desk” and before “the printers”. End with “to the lockers”.",
+      "prompt_text": "I start at the return desk, go by the printers, and stop at the lockers.",
+      "accepted_answers": [
+        "I walk from the return desk past the printers to the lockers."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Use the side exit",
+      "instructions": "Put the tiles in order to describe leaving the library by the side door. Use every tile once. Start with “We” and end with the tile that names the door.",
+      "prompt_text": "walk / the library / We / by the side door. / out of",
+      "accepted_answers": [
+        "We walk out of the library by the side door."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Reach the picnic shelter",
+      "instructions": "Put the tiles in order. You start at the fountain and cross the open square to the picnic shelter. Use every tile once. Begin with the tile that names the starting point.",
+      "prompt_text": "the open square / we walk / to the picnic shelter. / across / From the fountain,",
+      "accepted_answers": [
+        "From the fountain, we walk across the open square to the picnic shelter."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions-of-movement"
+    }
+  ]
+}

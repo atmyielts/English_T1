@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Would like at a food counter",
+    "explanation_text": "At a food counter, start your request with “I'd like.” I'd like is the short form of I would like. Put the food or drink right after like. For example, say “I'd like a muffin, please” or “I would like some milk, please.” You can add please at the end of your request.\n\nIf you work at the counter, start an offer with “Would you like”. Put the food or drink after like and say, for example, “Would you like a cookie?” The word order changes because this is a question. Use to after like when the next word is an action, as in “I'd like to sit here.” With a food or drink, say “I'd like a salad.”\n\n“Would you like some tea?” offers tea now. “Do you like tea?” asks how someone feels about tea in general.",
+    "contrast_text": "“Would you like some tea?” means I am offering you tea now. “Do you like tea?” asks if you enjoy tea in general. Compare “I'd like a juice” for a drink and “I'd like to pay” for an action.",
+    "common_error_pattern": "Adding to before the food or drink, as in “I'd like to a sandwich.” Put the food or drink directly after like. Use to before an action verb, as in “I'd like to order.”",
+    "tags": [
+      "A1",
+      "would-like",
+      "polite-requests",
+      "offers",
+      "food-counter"
+    ],
+    "examples": [
+      {
+        "bad": "I'd like to a sandwich, please.",
+        "good": "I'd like a sandwich, please."
+      },
+      {
+        "bad": "I would likes some milk, please.",
+        "good": "I would like some milk, please."
+      },
+      {
+        "bad": "Would like you a cookie?",
+        "good": "Would you like a cookie?"
+      },
+      {
+        "bad": "I'd like pay now.",
+        "good": "I'd like to pay now."
+      }
+    ],
+    "slug": "a1-would-like-at-a-food-counter",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 400,
+    "focus_area": "would-like-and-id-like"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Order at the bakery",
+      "instructions": "Complete the order for a roll. Use the short form of I would followed by like.",
+      "prompt_text": "___ a roll, please.",
+      "accepted_answers": [
+        "I'd like"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Order an omelette",
+      "instructions": "Complete the breakfast order with the two words from the cue, in the same order. Cue (would / like).",
+      "prompt_text": "I ___ an omelette, please.",
+      "accepted_answers": [
+        "would like"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Offer hot chocolate",
+      "instructions": "You work at a drinks stall. Use would, you and like to begin an offer of hot chocolate.",
+      "prompt_text": "___ some hot chocolate?",
+      "accepted_answers": [
+        "Would you like"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask to try a sample",
+      "instructions": "Complete the request to taste a free sample. Put to before the action word try.",
+      "prompt_text": "I'd like ___ a sample, please.",
+      "accepted_answers": [
+        "to try"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask what someone usually likes",
+      "instructions": "Ask whether your friend enjoys spicy food in general. Begin the question with do, you and like.",
+      "prompt_text": "___ spicy food?",
+      "accepted_answers": [
+        "Do you like"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix an ice cream order",
+      "instructions": "Delete one word to fix the order. Keep all the other words in the same order.",
+      "prompt_text": "I'd like to a scoop of ice cream, please.",
+      "accepted_answers": [
+        "I'd like a scoop of ice cream, please."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix an offer of soup",
+      "instructions": "The server is offering soup. Replace the incorrect verb with like. Keep all the other words.",
+      "prompt_text": "Would you likes some soup?",
+      "accepted_answers": [
+        "Would you like some soup?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Make a lunch order polite",
+      "instructions": "Replace I want with I'd like. Keep the food words and add please at the end.",
+      "prompt_text": "I want a cheese sandwich.",
+      "accepted_answers": [
+        "I'd like a cheese sandwich, please."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Say the full form",
+      "instructions": "Rewrite the juice order using I would in place of I'd. Keep the rest of the sentence.",
+      "prompt_text": "I'd like a glass of orange juice, please.",
+      "accepted_answers": [
+        "I would like a glass of orange juice, please."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Offer a side of fries",
+      "instructions": "At the burger counter, turn the general question into an offer. Replace Do with Would and put some before fries.",
+      "prompt_text": "Do you like fries?",
+      "accepted_answers": [
+        "Would you like some fries?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Order rice at a food stall",
+      "instructions": "Use each tile once to make a request. Start with I'd like and put please at the end.",
+      "prompt_text": "please / a bowl / I'd / of rice / like",
+      "accepted_answers": [
+        "I'd like a bowl of rice, please."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Offer lemon with water",
+      "instructions": "Use each tile once to offer a customer lemon with their water. Start with Would you like and put with your water at the end.",
+      "prompt_text": "a slice / you / with your water / like / Would / of lemon",
+      "accepted_answers": [
+        "Would you like a slice of lemon with your water?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-like-and-id-like"
+    }
+  ]
+}

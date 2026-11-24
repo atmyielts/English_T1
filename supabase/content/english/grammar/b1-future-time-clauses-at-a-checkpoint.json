@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Future time clauses at an outdoor club checkpoint",
+    "explanation_text": "When you plan an outdoor club visit, use the present simple in a time clause that tells you when a future action will happen. Start the time clause with when, as soon as, until, once, before, or after. Use will plus the base form of the verb in the main clause: We will hand out maps when the group arrives. If the time clause comes first, put a comma after it: When the group arrives, we will hand out maps.\n\nUse before and after to show the order of two actions. As soon as means that the next action will happen immediately. Once shows that one thing must happen first. Until marks the point when an action or situation ends.\n\nWhen can also introduce an embedded question about a future time: Do you know when the ranger will arrive? Here, when the ranger will arrive is what you want to find out. In We'll start when the ranger arrives, the when clause tells you when we'll start. In this lesson, the examples mostly use will in the main clause. An instruction can also combine with a future time clause: “Call me when you arrive.”",
+    "contrast_text": "We'll call the ranger when the gate opens. The when clause tells us when we'll call. We'll ask when the gate will open. The when clause gives the question we'll ask: What time will the gate open?",
+    "common_error_pattern": "Putting will in an ordinary future time clause or using question word order in an embedded question. Write We'll wait until the fog clears and Do you know when the fog will clear?",
+    "tags": [
+      "future-time-clauses",
+      "outdoor-club",
+      "when-clauses"
+    ],
+    "examples": [
+      {
+        "bad": "We'll unlock the equipment shed when the caretaker will get here.",
+        "good": "We'll unlock the equipment shed when the caretaker gets here."
+      },
+      {
+        "bad": "As soon as the wind drop, we'll put up the shelter.",
+        "good": "As soon as the wind drops, we'll put up the shelter."
+      },
+      {
+        "bad": "We'll keep the side path closed until the ground will dry.",
+        "good": "We'll keep the side path closed until the ground dries."
+      },
+      {
+        "bad": "Do you know when will the water station open?",
+        "good": "Do you know when the water station will open?"
+      }
+    ],
+    "slug": "b1-future-time-clauses-at-a-checkpoint",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 390,
+    "focus_area": "future-time-clauses"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "The minibus arrives",
+      "instructions": "Complete the when clause with the present simple form of reach.",
+      "prompt_text": "We'll count the visitors when the minibus ___ the checkpoint.",
+      "accepted_answers": [
+        "reaches"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A signal to move",
+      "instructions": "Use the present simple form of blow. The group leader's whistle is the signal to move immediately.",
+      "prompt_text": "As soon as the group leader ___ the whistle, we'll move to the trail entrance.",
+      "accepted_answers": [
+        "blows"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A first aid kit for every team",
+      "instructions": "Complete the until clause with the present simple form of have.",
+      "prompt_text": "We'll stay at the meeting point until every team ___ a first aid kit.",
+      "accepted_answers": [
+        "has"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "The route briefing",
+      "instructions": "Complete the main clause. Use will and the base form of explain without a contraction.",
+      "prompt_text": "Once everyone is here, the guide ___ the route.",
+      "accepted_answers": [
+        "will explain"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "The gate's closing time",
+      "instructions": "Complete the embedded question about the gate's future closing time. Use will and close.",
+      "prompt_text": "Can you find out when the park gate ___?",
+      "accepted_answers": [
+        "will close"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A bridge safety check",
+      "instructions": "Correct the verb phrase in the before clause. Keep the main clause and the clause order.",
+      "prompt_text": "We'll check the bridge before the junior group will cross it.",
+      "accepted_answers": [
+        "We'll check the bridge before the junior group crosses it."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A question about the trail",
+      "instructions": "Fix the word order in the embedded question. Keep every word.",
+      "prompt_text": "Do you know when will the lower trail reopen?",
+      "accepted_answers": [
+        "Do you know when the lower trail will reopen?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "From the lake to the pond",
+      "instructions": "Join the two sentences with after. Begin with After and keep will in the clause about heading to the pond.",
+      "prompt_text": "We'll finish the lake walk. Then we'll head to the pond.",
+      "accepted_answers": [
+        "After we finish the lake walk, we'll head to the pond.",
+        "After we finish the lake walk, we will head to the pond."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Keeping the radio on",
+      "instructions": "Join the sentences. Begin with “We’ll use the radio until” and put the words “the spare battery runs out” after until.",
+      "prompt_text": "We'll use the radio. We'll stop using it when the spare battery runs out.",
+      "accepted_answers": [
+        "We'll use the radio until the spare battery runs out."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Asking about a delivery",
+      "instructions": "Turn the direct question into an embedded question beginning with Could you tell me. Keep will.",
+      "prompt_text": "When will the lunch boxes arrive?",
+      "accepted_answers": [
+        "Could you tell me when the lunch boxes will arrive?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Packing for rain",
+      "instructions": "Use every tile once. Begin with We'll.",
+      "prompt_text": "the visitor centre. / before / pack / We'll / we leave / the rain covers",
+      "accepted_answers": [
+        "We'll pack the rain covers before we leave the visitor centre."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Posting the route map",
+      "instructions": "Use every tile once. Begin with Once.",
+      "prompt_text": "the route map. / we'll / Once / approves / the plan, / post / the ranger",
+      "accepted_answers": [
+        "Once the ranger approves the plan, we'll post the route map."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.future-time-clauses"
+    }
+  ]
+}

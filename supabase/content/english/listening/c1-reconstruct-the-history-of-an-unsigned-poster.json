@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c1-reconstruct-the-history-of-an-unsigned-poster",
+    "title": "Reconstruct the history of an unsigned poster",
+    "level": "C1",
+    "summary": "A curator explains why a poster cannot yet be assigned to a famous printer.",
+    "transcript_text": "Interviewer: This poster is usually attributed to Oren Vale. Why change the label now?\nCurator: The lettering matches Vale's shop, but the apprentices used the same wooden letters. A dated poster from an apprentice puts them in the shop at the right time.\nInterviewer: Could you say the attribution is disputed?\nCurator: That sounds like a public argument. The surviving evidence supports a workshop attribution. It doesn't identify an individual. The catalogue can explain what the earlier claim rested on and which part no longer holds.\nInterviewer: Is anything lost when visitors see the new label?\nCurator: I hope they ask different questions. Instead of looking for flashes of one person's style, they can see how people learnt and shared a trade.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 48,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "culture",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Interviewer",
+        "Curator"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What motivates the revised label?",
+        "options": [
+          "The workshop link is better supported than individual authorship",
+          "The poster is now dated before the shop opened",
+          "Visitors asked to remove all printers’ names",
+          "A dated receipt identifies the designer"
+        ],
+        "answer_index": 0,
+        "explanation": "Shared lettering can identify a workshop without identifying a designer.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What does the apprentice’s dated poster help establish?",
+        "options": [
+          "Vale’s signature was copied",
+          "Both posters necessarily had the same designer",
+          "The wood was purchased elsewhere",
+          "The apprentice could have worked there at the relevant time"
+        ],
+        "answer_index": 3,
+        "explanation": "The date keeps another workshop member within the range of possibilities.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why avoid the term disputed?",
+        "options": [
+          "It gives the apprentices too much credit",
+          "It disagrees with a definitive archive entry",
+          "It suggests public disagreement rather than limited evidence",
+          "It refers to style rather than poster size"
+        ],
+        "answer_index": 2,
+        "explanation": "The curator wants to describe what the evidence supports.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What belongs in the longer catalogue entry?",
+        "options": [
+          "Only the latest artist’s name",
+          "The grounds and limits of the earlier attribution",
+          "The curator’s personal taste",
+          "A list of all poster buyers"
+        ],
+        "answer_index": 1,
+        "explanation": "The longer format can document how the claim developed.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What might visitors notice with the new label?",
+        "options": [
+          "How workshop members shared and learned a practice",
+          "What Vale did entirely alone",
+          "A definite new signature",
+          "An argument between two artists"
+        ],
+        "answer_index": 0,
+        "explanation": "The label can redirect attention to shared practice.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the apprentices used the same wooden letters",
+      "focus_phrase": "same wooden letters",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "supports a workshop attribution",
+      "focus_phrase": "a workshop attribution",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "how people learnt and shared a trade",
+      "focus_phrase": "shared a trade",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

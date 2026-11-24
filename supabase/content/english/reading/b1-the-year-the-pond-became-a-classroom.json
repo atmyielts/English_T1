@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b1-the-year-the-pond-became-a-classroom",
+    "title": "The Year the Pond Became a Classroom",
+    "level": "B1",
+    "summary": "A school gives pupils a way to record an ordinary visit to a pond, even on days when they see very little.",
+    "content_markdown": "There was a small pond at the far end of Merrit School’s football field. Until last autumn, most pupils passed it on their way to games and never stopped. Teacher Imaan decided to make it part of one science lesson each week. Every group would spend ten minutes on the same wooden platform, then add a note to a shared book when they came back to class.\n\nAt first the children wrote down only what they thought was interesting. One group reported two birds on the water. Another wrote three lines about a bright insect that landed on a sleeve. The book had no entry for the day when it rained. Imaan asked why. The children said they had seen nothing worth writing about. One pupil then remembered that the water had covered a stone that was usually dry.\n\nImaan showed them how to leave space for facts they could not check. From then on each group put the date, weather and water level at the top of its note. If the water was too dark to see beneath it, they wrote that rather than saying there were no creatures in it. The children also drew the stone in the same position on a small map, so people knew which stone a note meant.\n\nAt the end of term they read through the book again. The notes let them find several visits on which they saw the stone clearly and other visits on which it could not be seen above the water. They could not tell how much water had entered the pond between visits. But they could make a much better next question than “What did we see?”, which was where they had begun.",
+    "category": "Nature",
+    "theme": "noting what happens outside",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "school report",
+      "word_count": 285
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What change makes the pond book more useful?",
+        "options": [
+          "Every group writes the same story about an insect.",
+          "Pupils draw the whole pond after each visit.",
+          "The book uses longer descriptions only on sunny days.",
+          "Pupils record comparable details and mark what they could not observe."
+        ],
+        "answer_index": 3,
+        "explanation": "The date, weather, water level and same stone give the notes a shared structure, including when visibility was poor."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How long did each group spend on the platform?",
+        "options": [
+          "Ten minutes",
+          "A whole afternoon",
+          "Five minutes",
+          "One hour"
+        ],
+        "answer_index": 0,
+        "explanation": "The first paragraph gives ten minutes for each group."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why is it important to note that water was too dark to see into?",
+        "options": [
+          "It proves the pond was empty only on the dark days.",
+          "It separates a lack of information from seeing that something was absent.",
+          "It tells the next group that the football field is wet.",
+          "It makes the notes as short as possible on sunny days."
+        ],
+        "answer_index": 1,
+        "explanation": "The class learns that being unable to see creatures is different from knowing none were present."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “worth writing about” mean in the second paragraph?",
+        "options": [
+          "Hard to put into English",
+          "Possible to draw on a map",
+          "Important enough to include",
+          "Not allowed by the teacher"
+        ],
+        "answer_index": 2,
+        "explanation": "The pupils left an entry out because they did not think their visit had produced something interesting."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The group who went on the rainy day originally left the book without an entry.",
+        "answer": "true",
+        "explanation": "The article says no entry from that visit appeared at first."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The pupils learnt exactly how much water entered the pond between their visits.",
+        "answer": "false",
+        "explanation": "The last paragraph says their notes did not establish that amount."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The report identifies the kind of bird that was on the water.",
+        "answer": "not_given",
+        "explanation": "It reports two birds but does not name a species."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Pupils returned to class to add a note to a shared ___. They plotted a particular stone on a small ___.",
+        "answers": [
+          [
+            "book"
+          ],
+          [
+            "map"
+          ]
+        ],
+        "word_bank": [
+          "platform",
+          "map",
+          "book",
+          "field"
+        ],
+        "explanation": "The book holds the entries, while the map makes clear which stone the children mean."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Finding a detail in a visit that seemed uneventful",
+          "Planning what every group will record",
+          "Trading better notes for better questions",
+          "Making weekly visits to the pond",
+          "Using a pump to change the water level"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The sequence shows a regular visit, a missing observation, an improved note format and what the class can then ask."
+      }
+    ]
+  },
+  "children": []
+}

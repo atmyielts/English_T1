@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "a2-move-a-neighbourhood-repair-session-indoors",
+    "title": "Move a neighbourhood repair session indoors",
+    "level": "A2",
+    "mission_type": "problem_solving",
+    "context_text": "You help at a free event where neighbours bring small broken household items. The rain is starting.",
+    "objective_text": "Move the event indoors and tell booked visitors what they need to know.",
+    "target_vocabulary": [
+      "hall",
+      "entrance",
+      "tools",
+      "booking",
+      "sign"
+    ],
+    "success_conditions": [
+      "Move the event indoors and tell booked visitors what they need to know.",
+      "Explain the venue change",
+      "Name the entrance",
+      "Give visitor opening time",
+      "Address existing bookings"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the two booking offers",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Main hall: free at ten, twelve tables, entrance on Oak Street. Small room: free at nine, four tables, entrance by the car park. Eight repairers need one table each.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which room has enough tables?",
+          "options": [
+            "Small room",
+            "Main hall",
+            "Neither"
+          ],
+          "answer_index": 1,
+          "explanation": "Eight repairers can use the twelve tables in the main hall."
+        },
+        {
+          "prompt": "Where is the main hall entrance?",
+          "options": [
+            "The car park",
+            "Oak Street",
+            "The repairers’ garden"
+          ],
+          "answer_index": 1,
+          "explanation": "The booking identifies Oak Street."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear what the caretaker can do",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I can open the main hall at half past nine, but visitors must wait until ten. Please put a sign on the old outside gate. You can bring tools in through the Oak Street door.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Who can go in at half past nine?",
+          "options": [
+            "All visitors",
+            "The team setting up",
+            "Nobody"
+          ],
+          "answer_index": 1,
+          "explanation": "The caretaker distinguishes setup from the visitor opening time."
+        },
+        {
+          "prompt": "Where does a sign need to go?",
+          "options": [
+            "On each repair table",
+            "On the old outside gate",
+            "Inside the locked small room"
+          ],
+          "answer_index": 1,
+          "explanation": "A sign at the old gate helps arrivals who have not seen the update."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Brief the first repairer",
+      "prompt_text": "A repairer calls from their car with a bag of tools.",
+      "instructions": "Say when to arrive for setup and which door will be open. Ask for help with one practical job.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Please come to the Oak Street door at half past nine with your tools. Could you help me put a sign on the old outside gate?",
+      "points": [
+        {
+          "label": "Give setup time",
+          "any": [
+            "half past nine",
+            "9:30"
+          ]
+        },
+        {
+          "label": "Name the equipment entrance",
+          "any": [
+            "Oak Street"
+          ]
+        },
+        {
+          "label": "Ask them to help with the sign",
+          "any": [
+            "put a sign",
+            "help with the sign"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the visitors a change notice",
+      "prompt_text": "Write a message for people who booked a repair slot.",
+      "instructions": "Explain why the venue changed, name the entrance, and distinguish setup from public opening. Tell people whether to keep their booking.",
+      "goal": "Move the event indoors and tell booked visitors what they need to know.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "Hello! Because of the rain, tomorrow’s repair session is moving to the main hall. Please enter from Oak Street. We will open the doors to visitors at ten, so keep your booked time if it is ten or later. Look for a sign at the old outside gate.",
+      "points": [
+        {
+          "label": "Explain the venue change",
+          "any": [
+            "moving to the main hall",
+            "main hall instead"
+          ]
+        },
+        {
+          "label": "Name the entrance",
+          "any": [
+            "Oak Street"
+          ]
+        },
+        {
+          "label": "Give visitor opening time",
+          "any": [
+            "at ten",
+            "10 a.m."
+          ]
+        },
+        {
+          "label": "Address existing bookings",
+          "any": [
+            "keep your booked time",
+            "keep your booking"
+          ]
+        }
+      ]
+    }
+  ]
+}

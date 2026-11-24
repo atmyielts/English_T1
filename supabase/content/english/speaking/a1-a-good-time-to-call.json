@@ -1,0 +1,49 @@
+{
+  "item": {
+    "slug": "a1-a-good-time-to-call",
+    "title": "Tell a Friend When to Call",
+    "level": "A1",
+    "prompt_text": "Your friend wants to call at four. You are on a bus at four, but you get home at five. Ask your friend to call at five. Say which number to use. Your new number ends in 56.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 26,
+    "target_grammar": "Can't for availability, can for a request, and at for time.",
+    "fluency_objective": "Practise the two times and the last two digits before recording. Check that both times sound different.",
+    "pronunciation_objective": "Give four and five clear stress. Say five six separately at the end.",
+    "target_vocabulary": [
+      "call",
+      "at four",
+      "on the bus",
+      "at five",
+      "number"
+    ],
+    "cues": [
+      {
+        "text": "Explain why four is a bad time.",
+        "keywords": [
+          "on the bus",
+          "can't talk at four"
+        ]
+      },
+      {
+        "text": "Ask for a different time.",
+        "keywords": [
+          "call at five",
+          "call me at five"
+        ]
+      },
+      {
+        "text": "Identify the new number.",
+        "keywords": [
+          "five six",
+          "ends in 56",
+          "new number"
+        ]
+      }
+    ],
+    "model_opening": "I can't talk at four because I will be on the bus.",
+    "model_answer": "I can't talk at four because I will be on the bus. I get home at five. Can you call me at five? Use my new number. It ends in five six.",
+    "sort_order": 368
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Reading a Local Forecast Under Uncertainty",
+    "description": "Read the fictional town of Alder Vale’s bulletin on Saturday river levels. Distinguish what the model predicts, how much its results vary, and what the stated probabilities mean for a decision about the riverside route.",
+    "slug": "c1-reading-forecast-uncertainty",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 400,
+    "topic": "forecast uncertainty"
+  },
+  "children": [
+    {
+      "word": "ensemble",
+      "part_of_speech": "noun",
+      "definition": "A group of simulations with deliberately varied inputs or model settings, used together to examine possible outcomes.",
+      "example": "In Alder Vale’s Saturday bulletin, the ensemble contains 40 simulations, each showing a possible course for the river through the day.",
+      "translation_ru": "ансамбль модельных расчётов",
+      "translation_uz": "kirish maʼlumotlari yoki sozlamalari oʻzgartirib bajarilgan model sinovlari toʻplami",
+      "collocations": [
+        "run an ensemble",
+        "analyse an ensemble"
+      ]
+    },
+    {
+      "word": "model run",
+      "part_of_speech": "noun phrase",
+      "definition": "A single execution of a simulation using a particular set of inputs and settings.",
+      "example": "One model run in the Alder Vale bulletin puts the river above 3.0 metres by noon under its particular starting assumptions.",
+      "translation_ru": "отдельный запуск модели",
+      "translation_uz": "modelni bir marta ishga tushirish",
+      "collocations": [
+        "complete a model run",
+        "repeat a model run"
+      ]
+    },
+    {
+      "word": "initialization",
+      "part_of_speech": "noun",
+      "definition": "The process of setting the starting state of a simulation before it calculates what may happen next.",
+      "example": "For initialization, the Alder Vale model uses the latest river-gauge readings and estimates of how wet the soil is.",
+      "translation_ru": "задание начального состояния модели",
+      "translation_uz": "modelning boshlangʻich holatini belgilash",
+      "collocations": [
+        "model initialization",
+        "initialization procedure"
+      ]
+    },
+    {
+      "word": "observation gap",
+      "part_of_speech": "noun phrase",
+      "definition": "A period or area for which measurements that would normally inform an analysis are missing.",
+      "example": "An observation gap overnight left the Alder Vale team without upstream gauge readings for three hours.",
+      "translation_ru": "пробел в данных наблюдений",
+      "translation_uz": "kuzatuv maʼlumotlaridagi boʻshliq",
+      "collocations": [
+        "identify an observation gap",
+        "fill an observation gap"
+      ]
+    },
+    {
+      "word": "spatial resolution",
+      "part_of_speech": "noun phrase",
+      "definition": "The level of geographical detail a model can represent, often expressed as the distance between neighbouring grid points.",
+      "example": "At the model’s spatial resolution, the two bends just upstream of Alder Vale fall within the same grid cell.",
+      "translation_ru": "пространственное разрешение",
+      "translation_uz": "modelning fazoviy tafsilotlarni ajrata olish darajasi",
+      "collocations": [
+        "high spatial resolution",
+        "increase spatial resolution"
+      ]
+    },
+    {
+      "word": "prediction horizon",
+      "part_of_speech": "noun phrase",
+      "definition": "The span from the reference time of a prediction to the furthest point in the future it covers.",
+      "example": "The Friday evening bulletin has a prediction horizon of 30 hours, taking its river projections through to midnight at the end of Saturday.",
+      "translation_ru": "горизонт прогнозирования",
+      "translation_uz": "prognoz gorizonti",
+      "collocations": [
+        "extend the prediction horizon",
+        "a 30-hour prediction horizon"
+      ]
+    },
+    {
+      "word": "central estimate",
+      "part_of_speech": "noun phrase",
+      "definition": "A single value chosen to represent the middle or typical outcome among the possibilities considered.",
+      "example": "The bulletin gives 2.7 metres as the central estimate for Saturday’s highest river level, using the median of the simulated peaks.",
+      "translation_ru": "центральная оценка",
+      "translation_uz": "markaziy baho",
+      "collocations": [
+        "report a central estimate",
+        "a central estimate of 2.7 metres"
+      ]
+    },
+    {
+      "word": "spread",
+      "part_of_speech": "noun",
+      "definition": "The degree to which numerical results from different simulations differ from one another.",
+      "example": "The bulletin shows a wider spread for Saturday evening than for Saturday morning, as the simulated river levels diverge later in the day.",
+      "translation_ru": "разброс модельных значений",
+      "translation_uz": "model natijalarining tarqoqligi",
+      "collocations": [
+        "wide spread",
+        "measure the spread"
+      ]
+    },
+    {
+      "word": "percentile",
+      "part_of_speech": "noun",
+      "definition": "A value corresponding to a specified percentage position in an ordered distribution.",
+      "example": "In the bulletin's distribution of possible Saturday peaks, the 90th percentile is 3.2 metres, so the model puts 90% of the probability at or below that level.",
+      "translation_ru": "процентиль",
+      "translation_uz": "persentil",
+      "collocations": [
+        "calculate a percentile",
+        "the 90th percentile"
+      ]
+    },
+    {
+      "word": "prediction interval",
+      "part_of_speech": "noun phrase",
+      "definition": "A range intended to contain a future observed value with a stated probability under the assumptions of the statistical method.",
+      "example": "The bulletin’s 80% prediction interval for Saturday’s peak runs from 2.2 to 3.2 metres, leaving a combined 20% probability below or above those bounds under the model.",
+      "translation_ru": "прогнозный интервал",
+      "translation_uz": "prognoz oraligʻi",
+      "collocations": [
+        "an 80% prediction interval",
+        "fall outside the prediction interval"
+      ]
+    },
+    {
+      "word": "exceedance",
+      "part_of_speech": "noun",
+      "definition": "An instance of a measured or simulated quantity going above a specified level.",
+      "example": "For the riverside route, the bulletin counts a simulated peak of 3.01 metres as an exceedance of the 3.0-metre limit.",
+      "translation_ru": "превышение заданного уровня",
+      "translation_uz": "belgilangan darajadan oshish",
+      "collocations": [
+        "threshold exceedance",
+        "count each exceedance"
+      ]
+    },
+    {
+      "word": "event probability",
+      "part_of_speech": "noun phrase",
+      "definition": "A number expressing the chance that a specified event will occur.",
+      "example": "The bulletin gives an event probability of 25% for the river rising above 3.0 metres on Saturday, so the route coordinator keeps both outcomes in mind.",
+      "translation_ru": "вероятность события",
+      "translation_uz": "hodisaning yuz berish ehtimoli",
+      "collocations": [
+        "estimate the event probability",
+        "an event probability of 25%"
+      ]
+    },
+    {
+      "word": "calibration",
+      "part_of_speech": "noun",
+      "definition": "The degree of agreement between predicted probabilities and observed frequencies across many comparable cases.",
+      "example": "To check calibration, the Alder Vale team examines whether the river went above the stated level in roughly one quarter of past cases assigned a 25% chance.",
+      "translation_ru": "согласованность прогнозных вероятностей с наблюдаемыми частотами",
+      "translation_uz": "prognozda berilgan ehtimollarning hodisa amalda qanchalik tez-tez yuz berishiga moslik darajasi",
+      "collocations": [
+        "check probability calibration",
+        "good calibration"
+      ]
+    },
+    {
+      "word": "scenario",
+      "part_of_speech": "noun",
+      "definition": "A coherent account of how conditions could develop under a particular combination of assumptions.",
+      "example": "In one scenario in the Alder Vale bulletin, heavier rainfall upstream coincides with already saturated soil, and the river rises sharply after midday.",
+      "translation_ru": "сценарий развития событий",
+      "translation_uz": "voqealar rivoji ssenariysi",
+      "collocations": [
+        "consider a scenario",
+        "simulate a scenario"
+      ]
+    }
+  ]
+}

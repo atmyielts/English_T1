@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-the-sandcastle-with-two-doors",
+    "title": "The Sandcastle with Two Doors",
+    "level": "A1",
+    "summary": "Two cousins find a way to add a door without breaking their sandcastle.",
+    "content_markdown": "Jasur and his cousin Ana make a sandcastle near the sea. Jasur puts a small shell on the top. Ana puts four sticks around it. A little boy stops with his toy horse. He asks if the horse can go inside. Ana looks at the door in the sand. It is very small.\n\nJasur wants to make the door bigger, but Ana holds his hand. “This wall is thin,” she says. “Let's look at the back.” The wall at the back is wide. They make another door there. It is big enough for the horse.\n\nThe boy pushes his horse through the new door. Then he goes to get a toy man from his bag. The man can go through the first door. Jasur puts a second shell over the new door. “Now they know where to go,” Ana says.",
+    "category": "Fiction",
+    "theme": "sharing a sandcastle project",
+    "tone": "sand",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 140
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main problem in the story?",
+        "options": [
+          "There are no sticks for the wall.",
+          "The little boy cannot find his toy man.",
+          "The toy horse cannot go through the first door.",
+          "The sandcastle is too far from the sea."
+        ],
+        "answer_index": 2,
+        "explanation": "Ana sees that the first door is too small for the horse."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Who puts sticks around the castle?",
+        "options": [
+          "The little boy",
+          "Jasur",
+          "A person on the beach",
+          "Ana"
+        ],
+        "answer_index": 3,
+        "explanation": "The first paragraph says Ana puts four sticks around it."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Ana stop Jasur from making the first door bigger?",
+        "options": [
+          "That wall is thin and might break.",
+          "The boy wants the door to stay small.",
+          "She wants to put the horse in her bag.",
+          "The first door already fits the horse."
+        ],
+        "answer_index": 0,
+        "explanation": "Ana says the first wall is thin and finds a wider wall for the new door."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What can go through the first door?",
+        "options": [
+          "Both toys together",
+          "The toy man",
+          "The horse only",
+          "Neither toy"
+        ],
+        "answer_index": 1,
+        "explanation": "The last paragraph says the toy man can use the first door."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The second door is at the back of the castle.",
+        "answer": "true",
+        "explanation": "They choose the wide wall at the back."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The boy brings the toy man before he tries his horse.",
+        "answer": "false",
+        "explanation": "He pushes the horse through the new door before he goes to his bag."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The story tells us the boy’s name.",
+        "answer": "not_given",
+        "explanation": "The story calls him a little boy but never gives his name."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The wall at the back is ___. Jasur puts a second ___ above the new door.",
+        "answers": [
+          [
+            "wide"
+          ],
+          [
+            "shell"
+          ]
+        ],
+        "word_bank": [
+          "horse",
+          "shell",
+          "wide",
+          "small"
+        ],
+        "explanation": "The middle tells us about the back wall, and the end describes Jasur’s second shell."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "The horse and the man use different doors",
+          "A visitor brings a horse",
+          "The cousins make a door at the back",
+          "The castle goes into the sea"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "First a visitor brings the problem. Then the cousins make a new door and both toys use the castle."
+      }
+    ]
+  },
+  "children": []
+}

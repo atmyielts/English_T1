@@ -1,0 +1,144 @@
+{
+  "item": {
+    "slug": "a1-bring-lunch-to-a-drawing-day",
+    "title": "Bring lunch to a drawing day",
+    "level": "A1",
+    "mission_type": "social",
+    "context_text": "Your group is going to a drawing class. You are sending a message about lunch to a friend.",
+    "objective_text": "Plan a safe lunch and tell a friend what to bring.",
+    "target_vocabulary": [
+      "sandwich",
+      "fruit",
+      "bottle",
+      "peanuts",
+      "lunch"
+    ],
+    "success_conditions": [
+      "Plan a safe lunch and tell a friend what to bring.",
+      "Name a safe lunch",
+      "Mention a water bottle",
+      "Tell them where to refill"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the class note",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Drawing day is on Saturday. Bring a water bottle and your own lunch. Please do not bring peanuts. There is a tap by the classroom.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What should each person bring besides lunch?",
+          "options": [
+            "A water bottle",
+            "A cup from the tap",
+            "A new pencil case"
+          ],
+          "answer_index": 0,
+          "explanation": "The note requests a water bottle."
+        },
+        {
+          "prompt": "What should stay at home?",
+          "options": [
+            "Peanuts",
+            "Water",
+            "Lunch"
+          ],
+          "answer_index": 0,
+          "explanation": "The note asks people to leave peanuts at home."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear a friend at the shop",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I can buy cheese sandwiches or peanut sandwiches. The cheese ones are next to the fruit. I already have a bottle. Would you like an apple as well?",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which sandwiches fit the class rule?",
+          "options": [
+            "Peanut sandwiches",
+            "Cheese sandwiches",
+            "Both kinds"
+          ],
+          "answer_index": 1,
+          "explanation": "The plain cheese option meets the no-peanut instruction."
+        },
+        {
+          "prompt": "What does your friend already have?",
+          "options": [
+            "An apple",
+            "A bottle",
+            "Two sandwiches"
+          ],
+          "answer_index": 1,
+          "explanation": "The friend says they already have a bottle."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Make a short request",
+      "prompt_text": "Your friend is still at the shop. Ask for lunch and say why.",
+      "instructions": "Say what you want. Then make the peanut rule clear without blaming anyone.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Please buy two cheese sandwiches and two apples. We cannot bring peanuts to the classroom. I already have a bottle for water.",
+      "points": [
+        {
+          "label": "Ask for cheese sandwiches",
+          "any": [
+            "cheese sandwiches",
+            "cheese sandwich"
+          ]
+        },
+        {
+          "label": "Mention the peanut rule",
+          "any": [
+            "cannot bring peanuts",
+            "no peanuts",
+            "without peanuts"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a note for Saturday",
+      "prompt_text": "Your friend is sharing your message with another classmate who did not see the class note.",
+      "instructions": "List what to bring and what to leave at home. Say where to get more water. Check your note can be read quickly.",
+      "goal": "Plan a safe lunch and tell a friend what to bring.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Hi! Bring a cheese sandwich or another lunch without peanuts on Saturday. Please take your water bottle and some fruit. There is a tap by the classroom if you need more water. See you there!",
+      "points": [
+        {
+          "label": "Name a safe lunch",
+          "any": [
+            "without peanuts",
+            "no peanuts",
+            "cheese sandwich"
+          ]
+        },
+        {
+          "label": "Mention a water bottle",
+          "any": [
+            "water bottle",
+            "bottle of water"
+          ]
+        },
+        {
+          "label": "Tell them where to refill",
+          "any": [
+            "tap by the classroom",
+            "tap near the classroom"
+          ]
+        }
+      ]
+    }
+  ]
+}

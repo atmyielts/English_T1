@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c2-respond-to-a-cartoon-about-equal-doors",
+    "title": "Interpret a Cartoon About Equal Entrances",
+    "level": "C2",
+    "prompt_text": "A cartoon has two panels. In the first, a manager proudly shows three visitors identical keys. In the second, the visitors stand before doors reached by a short ramp, a long staircase and a narrow passage. Someone says the cartoon is only asking for different keys. Write an interpretation that fairly explains that reading, uses both panels, and proposes a wider question the cartoon leaves open.",
+    "genre": "short critical essay",
+    "audience": "readers of an illustrated community magazine",
+    "target_grammar": "Concession, interpretation of visual analogy, and explicit limits on an analogy.",
+    "target_structure": "Describe what makes the simple reading plausible, analyse the second panel, and name one implication the cartoon cannot decide by itself.",
+    "target_vocabulary": [
+      "identical",
+      "comparability",
+      "approach",
+      "analogy",
+      "barrier",
+      "conditions"
+    ],
+    "expected_length_min": 225,
+    "expected_length_max": 322,
+    "checklist": [
+      {
+        "point": "Explain why a viewer might focus on the keys.",
+        "keywords": [
+          "identical keys",
+          "same key",
+          "manager",
+          "first panel"
+        ]
+      },
+      {
+        "point": "Use the different routes to support another interpretation.",
+        "keywords": [
+          "ramp",
+          "staircase",
+          "narrow passage",
+          "doors"
+        ]
+      },
+      {
+        "point": "Distinguish equal provision from the ability to use it.",
+        "keywords": [
+          "equal",
+          "opportunity",
+          "reach",
+          "provision"
+        ]
+      },
+      {
+        "point": "Identify a further real question the picture leaves open.",
+        "keywords": [
+          "does not tell",
+          "open question",
+          "still need",
+          "cannot decide"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    },
+    "sort_order": 399
+  },
+  "children": []
+}

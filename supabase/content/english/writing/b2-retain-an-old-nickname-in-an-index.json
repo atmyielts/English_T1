@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b2-retain-an-old-nickname-in-an-index",
+    "title": "Explain How to Index Old Shop Names",
+    "level": "B2",
+    "prompt_text": "Your directory lists buildings by their current shop name. Older residents sometimes search for the unofficial names they heard years ago. The directory could display every old nickname or keep a hidden search list. Recommend a way to help both residents and first-time visitors and show what to do when the same nickname was used for two buildings.",
+    "genre": "guidance memo",
+    "audience": "volunteers at a neighbourhood directory",
+    "target_grammar": "Would for recommendations, when for conditions, and precise reference phrases.",
+    "target_structure": "Explain the search problem, propose a visible result, and apply your method to a conflict.",
+    "target_vocabulary": [
+      "nickname",
+      "current name",
+      "lookup",
+      "search result",
+      "building",
+      "distinguish"
+    ],
+    "expected_length_min": 147,
+    "expected_length_max": 218,
+    "checklist": [
+      {
+        "point": "Distinguish search terms from the name shown on a result.",
+        "keywords": [
+          "search",
+          "current name",
+          "show",
+          "nickname"
+        ]
+      },
+      {
+        "point": "Recommend a system that helps both kinds of user.",
+        "keywords": [
+          "display",
+          "search list",
+          "result",
+          "older residents"
+        ]
+      },
+      {
+        "point": "Explain how to resolve a nickname used for two buildings.",
+        "keywords": [
+          "two buildings",
+          "street",
+          "both results",
+          "separate"
+        ]
+      },
+      {
+        "point": "Describe one thing volunteers should verify.",
+        "keywords": [
+          "verify",
+          "source",
+          "check",
+          "older listing"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    },
+    "sort_order": 354
+  },
+  "children": []
+}

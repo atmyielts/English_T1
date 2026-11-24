@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Applying for a Project Grant",
+    "description": "Follow a residents’ group as it seeks a grant from the fictional Willow Lane Local Projects Scheme to run evening cycling skills sessions for adults. Learn to read the rules, prepare a proposal and report on the project.",
+    "slug": "b2-applying-for-a-project-grant",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 400,
+    "topic": "project grants"
+  },
+  "children": [
+    {
+      "word": "allowable cost",
+      "part_of_speech": "noun phrase",
+      "definition": "An expense that the grant rules allow the recipient to pay for with grant funds.",
+      "example": "Under the Willow Lane scheme, hiring helmets for the cycling sessions is an allowable cost.",
+      "translation_ru": "допустимый расход",
+      "translation_uz": "grant hisobidan qoplanishi mumkin boʻlgan xarajat",
+      "collocations": [
+        "claim an allowable cost",
+        "list an allowable cost"
+      ]
+    },
+    {
+      "word": "application dates",
+      "part_of_speech": "plural noun phrase",
+      "definition": "The published start and end days for sending in a request to join a programme or receive financial help.",
+      "example": "The application dates for the Willow Lane scheme are 3 to 21 June, so the cycling group plans to send in its form on 18 June.",
+      "translation_ru": "сроки подачи заявок",
+      "translation_uz": "ariza topshirish muddatlari",
+      "collocations": [
+        "check the application dates",
+        "publish the application dates"
+      ]
+    },
+    {
+      "word": "call for proposals",
+      "part_of_speech": "noun phrase",
+      "definition": "A public invitation to submit project ideas for consideration by an organisation that can pay for them.",
+      "example": "The Willow Lane scheme issued a call for proposals from local groups that want to help adults become more active.",
+      "translation_ru": "объявление о приёме проектных заявок",
+      "translation_uz": "loyiha takliflari qabuli haqida eʼlon",
+      "collocations": [
+        "issue a call for proposals",
+        "respond to a call for proposals"
+      ]
+    },
+    {
+      "word": "co-financing",
+      "part_of_speech": "uncountable noun",
+      "definition": "Money from another source that covers part of a project's costs alongside the main grant.",
+      "example": "The cycling group named a local association as a possible source of co-financing for instructor fees.",
+      "translation_ru": "софинансирование",
+      "translation_uz": "loyiha xarajatlarini qoplash uchun grantga qoʻshimcha ravishda boshqa manbadan ajratiladigan mablagʻ",
+      "collocations": [
+        "secure co-financing",
+        "require co-financing"
+      ]
+    },
+    {
+      "word": "required attachment",
+      "part_of_speech": "noun phrase",
+      "definition": "A file or document that must be sent with an application for it to be complete.",
+      "example": "For the cycling project, written permission to use the practice area is a required attachment.",
+      "translation_ru": "обязательное приложение к заявке",
+      "translation_uz": "arizaga qoʻshilishi shart boʻlgan hujjat",
+      "collocations": [
+        "include the required attachments",
+        "check for a missing attachment"
+      ]
+    },
+    {
+      "word": "project milestone",
+      "part_of_speech": "noun phrase",
+      "definition": "An important point in a piece of planned work, reached when a key task or stage is complete.",
+      "example": "The team listed completion of the first four evening sessions as a project milestone.",
+      "translation_ru": "контрольная точка проекта",
+      "translation_uz": "loyihadagi muhim vazifa yoki bosqichning yakunlanishi",
+      "collocations": [
+        "reach a project milestone",
+        "miss a project milestone"
+      ]
+    },
+    {
+      "word": "grant award",
+      "part_of_speech": "noun phrase",
+      "definition": "A sum of money that an organisation has officially approved for a particular project or purpose.",
+      "example": "The cycling group received a grant award of £1,200 to pay for instructor fees and helmet hire.",
+      "translation_ru": "выделенная сумма гранта",
+      "translation_uz": "ajratilgan grant mablagʻi",
+      "collocations": [
+        "announce a grant award",
+        "accept a grant award"
+      ]
+    },
+    {
+      "word": "grant ceiling",
+      "part_of_speech": "noun phrase",
+      "definition": "The highest amount a programme can approve for one project.",
+      "example": "The cycling group checked the grant ceiling before deciding how much to request for the evening sessions.",
+      "translation_ru": "предельная сумма гранта",
+      "translation_uz": "grantning eng yuqori miqdori",
+      "collocations": [
+        "set a grant ceiling",
+        "stay below the grant ceiling"
+      ]
+    },
+    {
+      "word": "selection criteria",
+      "part_of_speech": "plural noun phrase",
+      "definition": "The standards used to compare submissions and decide which ones to choose.",
+      "example": "One of the selection criteria was local benefit, so the cycling group explained how the sessions would help adults who lacked confidence on a bike.",
+      "translation_ru": "критерии отбора",
+      "translation_uz": "tanlov mezonlari",
+      "collocations": [
+        "publish selection criteria",
+        "meet the selection criteria"
+      ]
+    },
+    {
+      "word": "cost breakdown",
+      "part_of_speech": "noun phrase",
+      "definition": "A list showing how the total cost is divided among individual items or categories.",
+      "example": "The cycling group included a cost breakdown showing separate amounts for instructor fees, helmet hire and practice area hire.",
+      "translation_ru": "разбивка затрат по статьям",
+      "translation_uz": "xarajatlarning bandlar boʻyicha taqsimoti",
+      "collocations": [
+        "prepare a cost breakdown",
+        "request a detailed cost breakdown"
+      ]
+    },
+    {
+      "word": "eligibility requirements",
+      "part_of_speech": "plural noun phrase",
+      "definition": "The rules that determine who is allowed to submit a request for financial help or take part in a programme.",
+      "example": "Under the Willow Lane scheme's eligibility requirements, a group had to be based in the district before it could submit a proposal.",
+      "translation_ru": "требования к заявителям",
+      "translation_uz": "ariza topshirish huquqini belgilovchi talablar",
+      "collocations": [
+        "check the eligibility requirements",
+        "meet the eligibility requirements"
+      ]
+    },
+    {
+      "word": "completion report",
+      "part_of_speech": "noun phrase",
+      "definition": "A document submitted after a project ends that explains what was done, what was achieved and how the money was used.",
+      "example": "In its completion report, the cycling group would list the sessions it ran, summarise what participants learned and explain how it used the grant.",
+      "translation_ru": "итоговый отчёт по проекту",
+      "translation_uz": "loyiha boʻyicha yakuniy hisobot",
+      "collocations": [
+        "submit a completion report",
+        "review a completion report"
+      ]
+    },
+    {
+      "word": "in-kind contribution",
+      "part_of_speech": "noun phrase",
+      "definition": "A contribution to a project made by providing goods, services or time free of charge.",
+      "example": "The cycling group listed the free use of six bicycles from a local club as an in-kind contribution.",
+      "translation_ru": "неденежный вклад",
+      "translation_uz": "loyihaga buyum, xizmat yoki mehnat shaklida qoʻshilgan hissa",
+      "collocations": [
+        "offer an in-kind contribution",
+        "record an in-kind contribution"
+      ]
+    },
+    {
+      "word": "evaluation plan",
+      "part_of_speech": "noun phrase",
+      "definition": "A description of how and when a team will gather and use information to judge whether its project achieved its goals.",
+      "example": "The cycling group's evaluation plan called for riders to rate their confidence before the first session and after the last.",
+      "translation_ru": "план оценки результатов проекта",
+      "translation_uz": "loyiha natijalarini baholash rejasi",
+      "collocations": [
+        "draw up an evaluation plan",
+        "follow an evaluation plan"
+      ]
+    }
+  ]
+}

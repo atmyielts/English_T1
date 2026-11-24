@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c2-the-first-chapter-of-a-second-biography",
+    "title": "The First Chapter of a Second Biography",
+    "level": "C2",
+    "summary": "Two books open on the same engineer and offer very different accounts of when her working life became interesting.",
+    "content_markdown": "In the first biography of Ada Renn, the engineer is nineteen when the reader meets her. A night shift has almost finished and there is a fault in the machine that cuts the scored lines on a sheet of metal. She holds one end of a thin rod against a casing and holds the other end between two fingers. Somewhere inside, two rotating parts are barely touching. By the time the shift manager arrives she has found the contact point. The first biographer has obtained statements from three people who were there. She opens her book with the incident and makes the reader impatient for the girl to be discovered.\n\nA more recent biography begins without Renn. The person on the first page is a maintenance worker who brings a wooden handle to a machine shop because he says it is easier to feel an irregular vibration through wood than through the wrench everybody else uses. He has been doing this for years. Six pages later there is a description of the small repair firm where Renn worked before she moved to the factory. That firm kept metal rods near its benches. Much later the new biographer tells the same night-shift story. By then the central question has changed from whether the girl will be noticed to why a particular sort of touch was something worth learning.\n\nThere is a temptation to make too much of the second writer’s choice. Her point is not that Renn simply put a recognised method into practice. The man with the wooden handle worked on different machines. None of the three witnesses says that Renn had been taught how to diagnose this particular fault. The second biography identifies a setting in which the kind of attention she needed could develop. To find the problem still took a capacity to decide where to press the rod, which vibration mattered, and what alternative faults would have felt like.\n\nNor is the earlier book as committed to solitary genius as its opening makes it seem. Later on it lists the operations that Renn learned in the repair firm, many in considerably more detail than the newer book does. It also records something the other writer passes over quickly: two people on the night shift asked her to show them what she had done, but an official account of the incident made it sound as though nothing could be passed on. Both biographers have reasons to care how such abilities become visible. The novels these books sometimes resemble offer different routes into that question.\n\nIt matters that readers arrive at one book’s training scenes already knowing the fault that Renn will diagnose. We can read them as clues to a success we have seen. In the other, we are made to spend time in shops where people learn from each other without any certainty that the knowledge will later appear in a story about an exceptional person. Those pages have much less in the way of suspense. They show how a capacity can be interesting before it furnishes a person’s most retold anecdote. A first chapter can be good at making the reader turn the page and can still put the wrong accomplishment at the centre of a life.",
+    "category": "Books",
+    "theme": "biographical openings and the obscured acquisition of technical skill",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "comparative book review",
+      "word_count": 542
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the reviewer’s main claim about the two books?",
+        "options": [
+          "Their different openings shape which accomplishment the reader tends to value in the same career.",
+          "The first biography’s eyewitness evidence makes its account of Renn’s early work more convincing.",
+          "The second biography makes a more convincing case that Renn had been directly taught the method she uses.",
+          "The biographies differ primarily because the later author had access to more of Renn’s workplace records."
+        ],
+        "answer_index": 0,
+        "explanation": "One opening foregrounds a striking act of diagnosis, while the other first draws attention to how the kind of knowledge behind it can develop."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What does the reviewer credit the first biography with recording in greater detail?",
+        "options": [
+          "The wooden handle the maintenance worker used",
+          "The operations Renn learned at the repair firm",
+          "The mechanics of tools across both shops",
+          "The physical changes to the machine after the night shift"
+        ],
+        "answer_index": 1,
+        "explanation": "Paragraph four says that the earlier book goes into considerably more detail about the operations Renn learned at the firm."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What distinction is the reviewer drawing in the third paragraph?",
+        "options": [
+          "An earlier technique can be attributed more securely when a diagnosis has multiple eyewitnesses.",
+          "A writer who describes training must establish a direct connection between each teacher and learner.",
+          "A setting can cultivate the kind of judgement a solution needs without teaching that solution directly.",
+          "Methods of learning in a small workshop predict which workers will be noticed in a large factory."
+        ],
+        "answer_index": 2,
+        "explanation": "The newer biography identifies an environment that cultivated relevant attention without establishing a direct lesson in this fault. Application still requires individual judgement."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does ‘furnishes’ mean in the final paragraph?",
+        "options": [
+          "Decorates the setting of",
+          "Verifies a disputed detail in",
+          "Makes the structure of something more elaborate",
+          "Provides the basis for"
+        ],
+        "answer_index": 3,
+        "explanation": "A developed capacity provides the basis for a frequently retold anecdote, even though the review argues that the capacity deserves attention before that event."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The second biography omits the night-shift incident in favour of episodes from an earlier repair firm.",
+        "answer": "false",
+        "explanation": "It relates the same incident later, after it introduces the earlier shop’s habits."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The earlier biography says that two people on the night shift asked Renn to show them what she had done.",
+        "answer": "true",
+        "explanation": "Paragraph four names the requests as a detail recorded by the earlier writer."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Renn later adapted the rod technique for another machine at the factory.",
+        "answer": "not_given",
+        "explanation": "The review describes how Renn finds one fault and how others respond. It does not describe later applications at the factory."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The maintenance worker preferred a handle made of ___. Renn used a thin ___ when she checked for the vibration.",
+        "answers": [
+          [
+            "wood"
+          ],
+          [
+            "rod"
+          ]
+        ],
+        "word_bank": [
+          "wood",
+          "rod",
+          "wrench",
+          "metal"
+        ],
+        "explanation": "The second paragraph specifies the handle’s material; the opening describes the tool she holds between the casing and her fingers."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "The second writer gives priority to the environment where a skill can grow",
+          "How the later biography avoids reducing a solution to a borrowed technique",
+          "An early display of skill provides a dramatic starting point",
+          "The first book turns out to document forms of learning too",
+          "Further interviews give the second writer grounds to challenge the facts"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The first paragraph opens at the factory. The next three distinguish the second opening, the scope of its interpretation and the learning the first book describes later."
+      }
+    ]
+  },
+  "children": []
+}

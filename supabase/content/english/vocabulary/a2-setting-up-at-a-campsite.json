@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Setting Up at a Campsite",
+    "description": "Learn words for putting up a tent, getting ready to sleep outdoors, and taking the tent down in the morning.",
+    "slug": "a2-setting-up-at-a-campsite",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 410,
+    "topic": "campsite"
+  },
+  "children": [
+    {
+      "word": "tent",
+      "part_of_speech": "noun",
+      "definition": "A small shelter made of cloth that you can sleep in outdoors.",
+      "example": "Our tent has enough room for two adults and their bags.",
+      "translation_ru": "палатка",
+      "translation_uz": "chodir",
+      "collocations": [
+        "a two-person tent",
+        "sleep in a tent"
+      ]
+    },
+    {
+      "word": "sleeping bag",
+      "part_of_speech": "noun",
+      "definition": "A warm bag that you get inside to sleep outdoors.",
+      "example": "I left my sleeping bag inside the tent so it would be ready at bedtime.",
+      "translation_ru": "спальный мешок",
+      "translation_uz": "uyqu qopi",
+      "collocations": [
+        "a warm sleeping bag",
+        "get into a sleeping bag"
+      ]
+    },
+    {
+      "word": "groundsheet",
+      "part_of_speech": "noun",
+      "definition": "A waterproof sheet covering the ground inside or beneath a tent.",
+      "example": "We put the groundsheet on the grass before we put up the tent.",
+      "translation_ru": "влагонепроницаемая подстилка для палатки",
+      "translation_uz": "chodir ichiga yoki tagiga yoziladigan suv oʻtkazmaydigan toʻshama",
+      "collocations": [
+        "a waterproof groundsheet",
+        "lay down a groundsheet"
+      ]
+    },
+    {
+      "word": "peg",
+      "part_of_speech": "noun",
+      "definition": "A short piece of metal or plastic that goes into the ground to hold part of a tent in place.",
+      "example": "One peg is still in the ground at the front of the tent.",
+      "translation_ru": "колышек для палатки",
+      "translation_uz": "chodir qoziqchasi",
+      "collocations": [
+        "a metal peg",
+        "push a peg into the ground"
+      ]
+    },
+    {
+      "word": "tent pole",
+      "part_of_speech": "noun",
+      "definition": "A long, thin rod that supports a tent.",
+      "example": "The last tent pole goes across the top, just above the door.",
+      "translation_ru": "стойка или дуга каркаса палатки",
+      "translation_uz": "chodirni tik tutadigan tayoq",
+      "collocations": [
+        "fit a tent pole into place",
+        "replace a broken tent pole"
+      ]
+    },
+    {
+      "word": "torch",
+      "part_of_speech": "noun",
+      "definition": "A small electric light that you can hold in your hand.",
+      "example": "I used my torch to find my shoes outside the tent after dark.",
+      "translation_ru": "ручной фонарик",
+      "translation_uz": "qoʻl fonari",
+      "collocations": [
+        "a small torch",
+        "turn on a torch"
+      ]
+    },
+    {
+      "word": "campsite",
+      "part_of_speech": "noun",
+      "definition": "A place where people can put up tents and stay for the night.",
+      "example": "The campsite has space for six tents near the lake.",
+      "translation_ru": "место для стоянки с палатками",
+      "translation_uz": "chodir tikib tunash mumkin boʻlgan joy",
+      "collocations": [
+        "a quiet campsite",
+        "stay at a campsite"
+      ]
+    },
+    {
+      "word": "pitch",
+      "part_of_speech": "verb",
+      "definition": "To put up a tent so people can use it.",
+      "example": "We can pitch our tent beside yours before it gets dark.",
+      "translation_ru": "ставить палатку",
+      "translation_uz": "chodir tikmoq",
+      "collocations": [
+        "pitch a tent",
+        "pitch a tent on the grass"
+      ]
+    },
+    {
+      "word": "sleeping mat",
+      "part_of_speech": "noun",
+      "definition": "A thin pad you put on the ground to lie on when you sleep outdoors.",
+      "example": "I put my sleeping mat inside the tent and placed my bag by my feet.",
+      "translation_ru": "туристический коврик для сна",
+      "translation_uz": "yerga yozib, ustida uxlash uchun moʻljallangan yupqa toʻshama",
+      "collocations": [
+        "a foam sleeping mat",
+        "lie on a sleeping mat"
+      ]
+    },
+    {
+      "word": "tent flap",
+      "part_of_speech": "noun",
+      "definition": "A piece of fabric that covers an opening in a tent.",
+      "example": "I unzipped the tent flap and put our bags inside.",
+      "translation_ru": "полог палатки",
+      "translation_uz": "chodirning kirish pardasi",
+      "collocations": [
+        "unzip the tent flap",
+        "tie back the tent flap"
+      ]
+    },
+    {
+      "word": "guy rope",
+      "part_of_speech": "noun",
+      "definition": "A thin rope that goes from the side of a tent to the ground and helps hold the tent in place.",
+      "example": "I found a spare guy rope in the tent bag.",
+      "translation_ru": "палаточная оттяжка",
+      "translation_uz": "chodirni tortib turadigan arqon",
+      "collocations": [
+        "a spare guy rope",
+        "tie a guy rope to a peg"
+      ]
+    },
+    {
+      "word": "unzip",
+      "part_of_speech": "verb",
+      "definition": "To open something by pulling its zip open.",
+      "example": "Can you unzip the tent door so I can bring the mats inside?",
+      "translation_ru": "расстегнуть молнию",
+      "translation_uz": "fermuarni ochmoq",
+      "collocations": [
+        "unzip the tent door",
+        "unzip a sleeping bag"
+      ]
+    },
+    {
+      "word": "take down",
+      "part_of_speech": "phrasal verb",
+      "definition": "To remove a tent from its standing position so you can pack it away.",
+      "example": "We’ll take down the tent after breakfast on Sunday.",
+      "translation_ru": "разобрать палатку",
+      "translation_uz": "chodirni yechmoq",
+      "collocations": [
+        "take down a tent",
+        "take down the tent in the morning"
+      ]
+    },
+    {
+      "word": "spread out",
+      "part_of_speech": "phrasal verb",
+      "definition": "To make something like a sheet lie flat over an area.",
+      "example": "Let’s spread out the groundsheet beside the car before we put up the tent.",
+      "translation_ru": "расстелить",
+      "translation_uz": "yoymoq",
+      "collocations": [
+        "spread out a groundsheet",
+        "spread out a blanket"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "item": {
+    "slug": "c1-what-a-printed-recipe-omits",
+    "title": "What a Printed Recipe Omits",
+    "level": "C1",
+    "summary": "A food writer learns to give readers a way to recognise progress rather than making them copy a kitchen clock.",
+    "content_markdown": "When writer Marta Lin asked a cook to record his recipe for a festival flatbread, he gave her the quantities without hesitation. The dough needed a little more water in winter, he said, but he could write down a starting amount. She asked him how long he rested it. He looked at the sheet long enough for her to think he had not heard. “Until I can pull an edge without tearing it,” he said. Marta put twenty minutes in the first draft because that was what had passed in his kitchen.\n\nIn the test kitchen, the bread made from those instructions tore at the edges. The test cook had read the note carefully and wanted to know which fact she had missed. She had measured the water, covered the dough and waited precisely twenty minutes. The writer called the first cook, who asked what the dough did when the test cook tried it. Everyone had been checking the clock, so nobody could remember whether they had pulled an edge twice or any time at all.\n\nMarta went back to the festival kitchen. She watched the cook pull a small part of the dough before opening the tin of flour he would use on the board. On one attempt it took longer than twenty minutes to reach the state he wanted. He went away to speak to another cook and came back rather than moving on immediately. Marta had mistaken the measured length of one successful rest for the condition the cook had been checking.\n\nThe final recipe still gives a time. It says to begin checking after twenty minutes and describes the small pull in terms a reader can try. It also points out two details visible when the dough is ready, so that someone who has never cooked with the author can distinguish a slight stretch from a tear. Those details take more space than one number. They still leave readers with a decision to make, which is exactly what the earlier version had tried to avoid.\n\nMarta now adds a question to every recipe test: could a person tell if it was time to go on without looking at the number at the end of the line? Sometimes the answer is no, and a clock is the most reliable guide. In other cases a number is useful as a first point to check. Replacing it entirely would leave a beginner guessing when to start; making it the whole instruction could leave them carefully following a rule the cook never used.",
+    "category": "Food",
+    "theme": "writing instructions for different kitchens",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "feature",
+      "word_count": 423
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "How does Marta change the recipe after testing?",
+        "options": [
+          "She keeps a time estimate as a prompt to check and explains what the reader should look for.",
+          "She removes time from every recipe and trusts the reader to try at random.",
+          "She replaces all subjective checks with exact ingredient quantities.",
+          "She assumes a reliable recipe should always fit the clock."
+        ],
+        "answer_index": 0,
+        "explanation": "The final version suggests when to look but bases the next step on what the dough does."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did the first cook check before moving on?",
+        "options": [
+          "How warm the room felt before he opened the flour",
+          "Whether the dough stretched at an edge without tearing",
+          "How many cooks had started their own recipe",
+          "Whether exactly twenty minutes had passed"
+        ],
+        "answer_index": 1,
+        "explanation": "The cook answers with a test of the dough rather than a fixed duration."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What did the failed first test show about the reader’s mistake?",
+        "options": [
+          "The test cook had ignored the waiting time.",
+          "The test cook had misunderstood the amount of flour on the board.",
+          "The directions could be followed correctly without producing the expected result.",
+          "An instruction about what to see had replaced the measured quantities."
+        ],
+        "answer_index": 2,
+        "explanation": "The test cook waited the specified time. The written timing did not supply the condition checked by the first cook."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “a first point to check” mean?",
+        "options": [
+          "The first ingredient to remove from a list",
+          "A sign that little cooking experience is required",
+          "A fixed time that all readers must treat as the end of the step",
+          "An approximate moment to start examining whether the condition is met"
+        ],
+        "answer_index": 3,
+        "explanation": "The revised recipe tells readers when to start trying the pull."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "On one return visit Marta saw the desired condition take more time than the first draft allowed.",
+        "answer": "true",
+        "explanation": "The third paragraph describes an attempt taking longer than twenty minutes."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The final recipe removes the estimate and never tells readers when to start checking.",
+        "answer": "false",
+        "explanation": "It keeps twenty minutes as an initial checkpoint."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage gives the weight of flour used for one batch.",
+        "answer": "not_given",
+        "explanation": "It mentions opening a tin of flour but gives no weight."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Marta originally noted ___ minutes in her draft. In the final method readers can try making a small ___.",
+        "answers": [
+          [
+            "twenty"
+          ],
+          [
+            "pull"
+          ]
+        ],
+        "word_bank": [
+          "turn",
+          "twenty",
+          "pull",
+          "measure"
+        ],
+        "explanation": "The draft uses twenty minutes, while the revised recipe gives a small pull as the check."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "When the clock can still help",
+          "The first draft turns observation into a time",
+          "How a careful reader followed an incomplete rule",
+          "Watching the test the cook actually uses",
+          "Giving both a starting moment and a condition"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "The headings trace timing, the failed attempt, a return to the kitchen, the new check, and the writer’s qualified conclusion."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b2-follow-a-reporters-correction-about-food-waste",
+    "title": "Follow a reporter’s correction about food waste",
+    "level": "B2",
+    "summary": "A radio presenter explains why a striking number needed a narrower label.",
+    "transcript_text": "Yesterday I said the college dining hall cut its food waste by a quarter. The figure was accurate for food returned on plates, but I described it too broadly. The dining hall measured how much edible food people left after lunch. It did not include food left in serving trays or food taken away in unopened packs. The team wants to measure those separately next month. Some listeners have asked whether a smaller portion led to more trips to the snack machine. The current data don't tell us. We can report the drop in plate waste and ask whether any changes were displaced elsewhere.",
+    "category": "Media",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 132,
+    "duration_seconds": 47,
+    "audio_url": null,
+    "focus_skill": "purpose",
+    "tags": [
+      "media",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "Why is the presenter speaking now?",
+        "options": [
+          "To retract the measurement as invented",
+          "To announce that the hall is closing",
+          "To correct the way a figure was described",
+          "To tell listeners to eat smaller lunches"
+        ],
+        "answer_index": 2,
+        "explanation": "The number stands, but the label attached to it was too broad.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What did the team actually measure?",
+        "options": [
+          "Every unused ingredient in the building",
+          "Edible food left on plates after lunch",
+          "The number of unopened packs taken away",
+          "Snack sales after lunch"
+        ],
+        "answer_index": 1,
+        "explanation": "The measured category was plate waste.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What will the team consider separately later?",
+        "options": [
+          "Serving-tray leftovers and unopened takeaway packs",
+          "The price of every lunch",
+          "Kitchen wages and snack costs",
+          "Which plates were used each day"
+        ],
+        "answer_index": 0,
+        "explanation": "Neither category was included in the original measure.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How does the presenter treat the snack-machine suggestion?",
+        "options": [
+          "As an established consequence",
+          "As something the team ruled out",
+          "As the explanation for the entire drop",
+          "As possible but unanswered by the current data"
+        ],
+        "answer_index": 3,
+        "explanation": "The presenter says the current data do not answer it.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Which headline accurately describes the result?",
+        "options": [
+          "College food waste fell by a quarter",
+          "Unopened packs fell by a quarter",
+          "Plate waste at college lunch fell by a quarter",
+          "Quarter of students bought snacks instead"
+        ],
+        "answer_index": 2,
+        "explanation": "It gives the correct result without widening its scope.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "i described it too broadly",
+      "focus_phrase": "it too broadly",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "food left in serving trays",
+      "focus_phrase": "in serving trays",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "changes were displaced elsewhere",
+      "focus_phrase": "were displaced elsewhere",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

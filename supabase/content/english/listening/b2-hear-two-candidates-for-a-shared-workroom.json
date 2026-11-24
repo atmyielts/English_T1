@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b2-hear-two-candidates-for-a-shared-workroom",
+    "title": "Hear two candidates for a shared workroom",
+    "level": "B2",
+    "summary": "Two users consider which equipment to share and which needs separate booking.",
+    "transcript_text": "Mira: We can fit both the sewing machines and the photo table in the back room. Could people book them separately?\nDaniel: Only until someone needs a quiet video. The machines would show up on the recording. Maybe the back room should keep the table and the sewing machines could go near the entrance.\nMira: There is a narrow turning space there. Someone moving a large roll of fabric would have to pass the front desk.\nDaniel: Then block out quiet hours in the back room and charge both teams the same for using a larger room on event days. Let's ask what times they actually need before fixing the rule.\nMira: I'm happy to test that, but make the temporary booking rule visible to everyone.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 132,
+    "duration_seconds": 55,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "workplace",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Mira",
+        "Daniel"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What issue is the conversation chiefly about?",
+        "options": [
+          "Who owns the two types of equipment",
+          "Whether recordings should be allowed at all",
+          "Whether two activities can share a room without interfering",
+          "How to rebuild the front desk"
+        ],
+        "answer_index": 2,
+        "explanation": "The teams need to manage incompatible uses of a shared room.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What makes separate bookings insufficient at first?",
+        "options": [
+          "The table uses the machines' power socket",
+          "Sewing machine noise can enter a recording",
+          "The door needs two different keys",
+          "The room is smaller than either object"
+        ],
+        "answer_index": 1,
+        "explanation": "Both can fit, but overlapping activities create sound interference.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What is the concern with putting sewing near the entrance?",
+        "options": [
+          "People carrying large fabric rolls would have little space",
+          "The entrance cannot be locked",
+          "Photographers would have to cross the sewing table",
+          "It costs more to use the entrance"
+        ],
+        "answer_index": 0,
+        "explanation": "Mira mentions a narrow turn and the front desk.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What information does Daniel want before a permanent rule?",
+        "options": [
+          "How to sell unused fabric",
+          "The exact weight of each machine",
+          "Who designed the table",
+          "When each team needs space"
+        ],
+        "answer_index": 3,
+        "explanation": "He wants to understand the actual time demand first.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What condition does Mira place on trying the plan?",
+        "options": [
+          "Charge one team more than the other",
+          "Pause work during all event days",
+          "Make the temporary rule visible",
+          "Have both teams book only at the front desk"
+        ],
+        "answer_index": 2,
+        "explanation": "She accepts a trial on the condition that everyone can see the rule.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the machines would show up on the recording",
+      "focus_phrase": "on the recording",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "a narrow turning space",
+      "focus_phrase": "narrow turning space",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "what times they actually need",
+      "focus_phrase": "they actually need",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

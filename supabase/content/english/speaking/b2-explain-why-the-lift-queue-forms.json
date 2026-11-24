@@ -1,0 +1,56 @@
+{
+  "item": {
+    "slug": "b2-explain-why-the-lift-queue-forms",
+    "title": "Explain a Queue That Looks Longer From One Side",
+    "level": "B2",
+    "prompt_text": "A building has two lifts. From one corner, both queues appear to join because a pillar hides the end of the nearer queue. A coworker tells visitors to avoid that corner because it always looks busier. Explain how the view can mislead, suggest a better instruction for visitors, and propose a way to see whether the two lifts are equally busy.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 85,
+    "target_grammar": "Modal qualification, spatial relationships and cautious inferences.",
+    "fluency_objective": "Describe the viewpoint first. Then give directions and name one comparison you would make.",
+    "pronunciation_objective": "Stress appears and actually, then pause before the instruction for visitors.",
+    "target_vocabulary": [
+      "pillar",
+      "queue",
+      "viewpoint",
+      "line",
+      "arrival",
+      "wait"
+    ],
+    "cues": [
+      {
+        "text": "Explain why the queues appear to join.",
+        "keywords": [
+          "pillar",
+          "view",
+          "can't see",
+          "queues appear"
+        ]
+      },
+      {
+        "text": "Give a usable instruction for people arriving.",
+        "keywords": [
+          "stand where",
+          "walk past",
+          "see both",
+          "check the displays"
+        ]
+      },
+      {
+        "text": "Propose a comparison of actual wait or arrival.",
+        "keywords": [
+          "waiting time",
+          "same time",
+          "measure",
+          "compare",
+          "next lift"
+        ]
+      }
+    ],
+    "model_opening": "From that corner, the pillar hides the people standing at the end of the nearer queue.",
+    "model_answer": "From that corner, the pillar hides the people standing at the end of the nearer queue. The part we can see lines up with the other queue farther back. It looks as if everybody is waiting for one lift, even when each line is fairly short. That is a good reason to change how we direct visitors. It is weak evidence about how long either group has to wait.\n\nI would tell people to walk past the pillar to the floor marker, where they can see both lines and the lift displays. They can then work out which lift is due and whether it serves their floor. To see whether one corner is actually slower, compare the waiting time at both lifts during the same part of the morning. Have a volunteer note when a few people join each queue and when they get into a lift. The comparison should use the same time period so we are not just comparing a rush with a quiet spell.",
+    "sort_order": 407
+  },
+  "children": []
+}

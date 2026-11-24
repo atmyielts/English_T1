@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Would rather and would prefer",
+    "explanation_text": "Use would rather + the base form when you are choosing what you want to do. In “I’d rather meet on Thursday,” the person with the preference and the person who will attend the meeting are the same. You can express that choice with would prefer + to + the base form: “I’d prefer to meet on Thursday.” In both patterns, ’d is short for would.\n\nTo express a preference about what someone else does, you can use would rather + subject + past simple. For example, “I’d rather Maya sent the draft tomorrow” means that you want Maya to send it tomorrow. Sent has the grammatical form of the past simple, but tomorrow gives the action a future time. The past form presents the action as something you want rather than as a report of a past event. Some speakers, especially in American English, use the base form here: “I’d rather Maya send the draft tomorrow.” In “Maya sent the draft yesterday,” the same verb form reports an actual past action.",
+    "contrast_text": "“We’d rather check the figures today” and “We’d prefer to check the figures today” both describe what we want to do. “We’d rather the finance team checked the figures today” gives the checking to the finance team. Checked is past in form, while today gives the preferred action its time.",
+    "common_error_pattern": "For your own action, put to after would prefer and use the bare verb after would rather. To practice the past-simple pattern for another person’s action, put the subject after would rather and then use the past simple.",
+    "tags": [
+      "would-rather",
+      "would-prefer",
+      "preference",
+      "modal-remoteness"
+    ],
+    "examples": [
+      {
+        "bad": "I’d rather to chair the first session.",
+        "good": "I’d rather chair the first session."
+      },
+      {
+        "bad": "Nina would prefer record the decisions herself.",
+        "good": "Nina would prefer to record the decisions herself."
+      },
+      {
+        "bad": "We’d rather Omar will introduce the new reviewer tomorrow.",
+        "good": "We’d rather Omar introduced the new reviewer tomorrow."
+      },
+      {
+        "bad": "They would rather the panel to read the summary before lunch.",
+        "good": "They would rather the panel read the summary before lunch."
+      }
+    ],
+    "slug": "b2-would-rather-and-would-prefer",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 380,
+    "focus_area": "would-rather-and-would-prefer"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Choose a briefing format",
+      "instructions": "Complete the sentence with the correct form of hold. Write only the missing word.",
+      "prompt_text": "I’d rather ___ the morning briefing in person.",
+      "accepted_answers": [
+        "hold"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Mark changes on paper",
+      "instructions": "Complete the would prefer pattern with the verb mark. Write only the missing words.",
+      "prompt_text": "I would prefer ___ my changes on a printed copy.",
+      "accepted_answers": [
+        "to mark"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask the host to check the microphone",
+      "instructions": "Use the past-simple form of test in this preference about tomorrow. Write only the missing word.",
+      "prompt_text": "We’d rather the host ___ the microphone before tomorrow’s call.",
+      "accepted_answers": [
+        "tested"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Choose your role in the call",
+      "instructions": "Fill the gap with the contraction of I would followed by rather. Write only the missing words.",
+      "prompt_text": "___ listen during the first call and take questions during the second.",
+      "accepted_answers": [
+        "I’d rather"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Set a deadline for the notes",
+      "instructions": "Use the past-simple form of send in this preference. Write only the missing word.",
+      "prompt_text": "I would rather our coordinator ___ the notes by noon tomorrow.",
+      "accepted_answers": [
+        "sent"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Read the appendix first",
+      "instructions": "Correct the verb phrase after rather. Keep the contraction I’d and leave the rest of the sentence unchanged.",
+      "prompt_text": "I’d rather reading the appendix before we discuss the costs.",
+      "accepted_answers": [
+        "I’d rather read the appendix before we discuss the costs."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Choose who leads the debrief",
+      "instructions": "Replace will lead with the past-simple form of lead. Keep all other words in place.",
+      "prompt_text": "We would rather Priya will lead tomorrow’s debrief.",
+      "accepted_answers": [
+        "We would rather Priya led tomorrow’s debrief."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Move the planning meeting",
+      "instructions": "Rewrite the sentence using would rather. Start with the contraction We’d and keep the wording from move to the end.",
+      "prompt_text": "We would prefer to move the planning meeting to Friday.",
+      "accepted_answers": [
+        "We’d rather move the planning meeting to Friday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Review the tables separately",
+      "instructions": "Rewrite the sentence using would prefer. Start with I would in full and keep the wording from review to the end.",
+      "prompt_text": "I’d rather review the tables separately from the written summary.",
+      "accepted_answers": [
+        "I would prefer to review the tables separately from the written summary."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Raise concerns before the vote",
+      "instructions": "Begin with “I would rather the reviewers”. Use the past-simple form of flag and keep the words from “any concerns” to the end.",
+      "prompt_text": "I would prefer the reviewers to flag any concerns before the vote.",
+      "accepted_answers": [
+        "I would rather the reviewers flagged any concerns before the vote."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Open with the budget",
+      "instructions": "Use every tile once. Start with We’d and put at the next meeting last.",
+      "prompt_text": "with the budget / We’d / at the next meeting / rather / start",
+      "accepted_answers": [
+        "We’d rather start with the budget at the next meeting"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Collect feedback in one document",
+      "instructions": "Use every tile once. Start with The reviewers would and put in a shared document last.",
+      "prompt_text": "their feedback / to leave / The reviewers would / in a shared document / prefer",
+      "accepted_answers": [
+        "The reviewers would prefer to leave their feedback in a shared document"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.would-rather-and-would-prefer"
+    }
+  ]
+}

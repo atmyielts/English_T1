@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c1-the-letter-that-arrived-after-the-strike",
+    "title": "The Letter That Arrived after the Strike",
+    "level": "C1",
+    "summary": "A family learns to read an old letter according to what its writer could know when it was sent.",
+    "content_markdown": "The envelope had been slit open at one end. My father kept it in a box of receipts, with the paper still folded to its original size. When I was young he told me it was the letter in which my aunt Nella had refused to come home during the strike at the works. The other papers in the box were harder to understand, but I remembered that story. In it she was the sister who found work elsewhere and preferred to stay there.\n\nYears later I read the letter myself. It said that Nella could take the Thursday train if a promised shift were moved. “Send word by the morning post,” she wrote, and added that she would wait by the shop until noon. My father had written Tuesday’s date at the top in pencil. It was the day the letter arrived, nearly a week after the Thursday Nella named. For years he had thought of it as a reply to the message asking why she had not come.\n\nThe original stamp was faint. The clerk at the town archive could read the first two letters of the place name, but not the day. We compared it with a packet of other letters the family had kept. One carried a matching mark and a dated note saying that the mail train did not run for several days that month. That made a delay possible. It did not show that Nella had moved her shift, stood by the shop or sent any other answer. The letter did show something simpler. She had written about a journey as still available, not replied to the accusation my father later remembered.\n\nI told him this while he was sorting the receipts after dinner. For a moment he thought I was saying she definitely could have come. I read the sentence about the promised shift. He had never forgotten it, he said; he had just assumed it referred to a later Thursday. He drew a small circle around the pencilled arrival date and asked me to leave it there.\n\nWe put the envelope back with two short notes. The first said when the letter reached him. The second said what it could not prove: whether the shift was moved, whether Nella got the family’s answer, and why she stayed away. To correct the story it had been enough to allow her letter to be earlier than his disappointment. We did not need to turn it into a promise that she had kept. She was allowed, at last, to have been waiting for information too.",
+    "category": "Fiction",
+    "theme": "timing and interpretation of a family letter",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "historical short story",
+      "word_count": 430
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What changes when the family reconsiders the timing of Nella’s letter?",
+        "options": [
+          "It becomes evidence that she rejected a request she had already read.",
+          "The family discovers that she definitely boarded the Thursday train.",
+          "They can recognise an offer made before a later complaint without treating it as a promise she fulfilled.",
+          "The father has a reason to discard both the letter and his date."
+        ],
+        "answer_index": 2,
+        "explanation": "The corrected sequence shows Nella discussing a possible journey before the response the father assumed it addressed."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What does the pencilled Tuesday date establish?",
+        "options": [
+          "When the letter reached the father",
+          "When Nella wrote her request",
+          "When the missing mail train started running again",
+          "When Nella was offered another shift"
+        ],
+        "answer_index": 0,
+        "explanation": "The narrator explicitly identifies the date as the day of arrival."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What does the matching mark and dated note contribute?",
+        "options": [
+          "An exact date can now be read on Nella’s envelope.",
+          "They establish that Nella waited by the shop until noon.",
+          "They show that the same delay affected every letter in the box.",
+          "They make a delayed delivery plausible without proving all the events described."
+        ],
+        "answer_index": 3,
+        "explanation": "The other evidence supports the possibility of disruption but does not prove what Nella did or why she stayed away."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What is meant by “allow her letter to be earlier than his disappointment”?",
+        "options": [
+          "Ask the father to stop keeping letters from his sister",
+          "Reinterpret the letter as a decision she was still trying to make rather than an answer to his later grievance",
+          "Show that the father had known the correct date of its writing from the start",
+          "Locate the first time when Nella gave advice to her younger brother"
+        ],
+        "answer_index": 1,
+        "explanation": "The story restores the writer’s uncertainty at her own moment without claiming that she carried out the trip."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The archivist could not read the day on the postal mark.",
+        "answer": "true",
+        "explanation": "The clerk can make out part of the place name but not the day."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The new notes declare why Nella stayed away from home.",
+        "answer": "false",
+        "explanation": "One note explicitly names her reason as something the letter cannot establish."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The text tells us whether Nella was later offered a visit on another train.",
+        "answer": "not_given",
+        "explanation": "It discusses the Thursday proposal and possible delay without reporting a later offer."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Nella’s chance to take the train depended on moving a promised ___. The father kept the pencilled arrival ___.",
+        "answers": [
+          [
+            "shift"
+          ],
+          [
+            "date"
+          ]
+        ],
+        "word_bank": [
+          "place",
+          "shift",
+          "train",
+          "date"
+        ],
+        "explanation": "The second paragraph records the condition, and the fourth preserves his note of when the letter reached him."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "The old story attached to the envelope",
+          "Reading the letter with a different timeline",
+          "What the archive can make possible without proving",
+          "A discussion that preserves both the date and its limit",
+          "Finding a record of the aunt’s train ticket"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The first three sections set up, then correct, the family’s timeline. The fourth records the discussion with the father."
+      }
+    ]
+  },
+  "children": []
+}

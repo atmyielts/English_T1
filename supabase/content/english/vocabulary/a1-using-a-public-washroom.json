@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Using a public washroom",
+    "description": "Find a public washroom, read common signs, and learn words for the things you use there.",
+    "slug": "a1-using-a-public-washroom",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 380,
+    "topic": "public washroom"
+  },
+  "children": [
+    {
+      "word": "washroom",
+      "part_of_speech": "noun",
+      "definition": "A room in a public place where you can use the toilet and wash your hands.",
+      "example": "Excuse me, where is the washroom in this shopping centre?",
+      "translation_ru": "туалет",
+      "translation_uz": "hojatxona",
+      "collocations": [
+        "public washroom",
+        "use the washroom"
+      ]
+    },
+    {
+      "word": "soap",
+      "part_of_speech": "noun",
+      "definition": "A solid or liquid that you use with water to wash your hands.",
+      "example": "There's no soap in the washroom by the station exit.",
+      "translation_ru": "мыло",
+      "translation_uz": "sovun",
+      "collocations": [
+        "liquid soap",
+        "a bar of soap"
+      ]
+    },
+    {
+      "word": "tap",
+      "part_of_speech": "noun",
+      "definition": "Something you use to start and stop the flow of water from a pipe, for example at a sink.",
+      "example": "This tap turns on when you put your hands under it.",
+      "translation_ru": "водопроводный кран",
+      "translation_uz": "suv joʻmragi",
+      "collocations": [
+        "turn on the tap",
+        "turn off the tap"
+      ]
+    },
+    {
+      "word": "sink",
+      "part_of_speech": "noun",
+      "definition": "A large bowl with a hole for water to go down. You can wash your hands in it.",
+      "example": "You can use the sink by the door while I finish washing my hands.",
+      "translation_ru": "раковина",
+      "translation_uz": "qoʻl yuvgich",
+      "collocations": [
+        "use the sink",
+        "wash your hands at the sink"
+      ]
+    },
+    {
+      "word": "hand dryer",
+      "part_of_speech": "noun",
+      "definition": "A machine that blows air to take water off your hands.",
+      "example": "Put your hands under the hand dryer by the exit.",
+      "translation_ru": "сушилка для рук",
+      "translation_uz": "qoʻl quritgich",
+      "collocations": [
+        "use the hand dryer",
+        "an automatic hand dryer"
+      ]
+    },
+    {
+      "word": "paper towel",
+      "part_of_speech": "noun",
+      "definition": "A piece of thick paper you can use to dry your hands.",
+      "example": "The hand dryer isn't working, so take a paper towel from the box by the sink.",
+      "translation_ru": "бумажное полотенце",
+      "translation_uz": "qogʻoz sochiq",
+      "collocations": [
+        "take a paper towel",
+        "a used paper towel"
+      ]
+    },
+    {
+      "word": "toilet paper",
+      "part_of_speech": "noun",
+      "definition": "Soft paper you use to clean yourself after using the toilet.",
+      "example": "There isn't any toilet paper in the first cubicle.",
+      "translation_ru": "туалетная бумага",
+      "translation_uz": "hojatxona qogʻozi",
+      "collocations": [
+        "a roll of toilet paper",
+        "run out of toilet paper"
+      ]
+    },
+    {
+      "word": "mirror",
+      "part_of_speech": "noun",
+      "definition": "A piece of glass you can look in to see your face.",
+      "example": "I checked my hair in the washroom mirror before the interview.",
+      "translation_ru": "зеркало",
+      "translation_uz": "koʻzgu",
+      "collocations": [
+        "look in the mirror",
+        "the mirror above the sink"
+      ]
+    },
+    {
+      "word": "bin",
+      "part_of_speech": "noun",
+      "definition": "A container for things you want to throw away.",
+      "example": "Please put used paper towels in the bin by the door.",
+      "translation_ru": "мусорная урна",
+      "translation_uz": "chiqindi qutisi",
+      "collocations": [
+        "put it in the bin",
+        "empty the bin"
+      ]
+    },
+    {
+      "word": "lock",
+      "part_of_speech": "verb",
+      "definition": "To close a door with a lock so it stays shut until someone unlocks it.",
+      "example": "You can turn this to lock the cubicle door from the inside.",
+      "translation_ru": "запирать",
+      "translation_uz": "qulflamoq",
+      "collocations": [
+        "lock the door",
+        "lock the door from the inside"
+      ]
+    },
+    {
+      "word": "flush",
+      "part_of_speech": "verb",
+      "definition": "To make water go through the toilet to clean it after use.",
+      "example": "Press the round button to flush the toilet.",
+      "translation_ru": "спускать воду в унитазе",
+      "translation_uz": "unitazning suvini tushirmoq",
+      "collocations": [
+        "flush the toilet",
+        "flush after use"
+      ]
+    },
+    {
+      "word": "occupied",
+      "part_of_speech": "adjective",
+      "definition": "Being used by someone now.",
+      "example": "The small washroom is occupied, so I'll wait by the door.",
+      "translation_ru": "занято",
+      "translation_uz": "band",
+      "collocations": [
+        "the toilet is occupied",
+        "all cubicles are occupied"
+      ]
+    },
+    {
+      "word": "out of order",
+      "part_of_speech": "adjective phrase",
+      "definition": "Not working and so you cannot use it.",
+      "example": "The sign says the toilet is out of order, so let's use the one upstairs.",
+      "translation_ru": "не работает",
+      "translation_uz": "ishlamayapti",
+      "collocations": [
+        "the toilet is out of order",
+        "the hand dryer is out of order"
+      ]
+    },
+    {
+      "word": "cubicle",
+      "part_of_speech": "noun",
+      "definition": "A small space with a door and a toilet inside a public washroom.",
+      "example": "The cubicle next to the sinks has a broken lock.",
+      "translation_ru": "туалетная кабинка",
+      "translation_uz": "hojatxona kabinasi",
+      "collocations": [
+        "toilet cubicle",
+        "use a cubicle"
+      ]
+    }
+  ]
+}

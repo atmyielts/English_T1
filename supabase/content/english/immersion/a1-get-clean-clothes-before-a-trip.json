@@ -1,0 +1,143 @@
+{
+  "item": {
+    "slug": "a1-get-clean-clothes-before-a-trip",
+    "title": "Get clean clothes before a trip",
+    "level": "A1",
+    "mission_type": "service",
+    "context_text": "You need to wash and dry clothes today. You have a bank card and no coins.",
+    "objective_text": "Choose machines you can pay for and explain your plan.",
+    "target_vocabulary": [
+      "wash",
+      "dry",
+      "coins",
+      "card",
+      "basket"
+    ],
+    "success_conditions": [
+      "Choose machines you can pay for and explain your plan.",
+      "Explain the wait",
+      "Include both cycles",
+      "Mention card payment"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the signs by the machines",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Washers one to three take only coins. Washer four takes cards. Each wash takes thirty minutes. All dryers take cards. A dry takes twenty minutes.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which washer can you use?",
+          "options": [
+            "Washer three",
+            "Washer one",
+            "Washer four"
+          ],
+          "answer_index": 2,
+          "explanation": "Only washer four accepts cards."
+        },
+        {
+          "prompt": "How long does drying take?",
+          "options": [
+            "Thirty minutes",
+            "Ten minutes",
+            "Twenty minutes"
+          ],
+          "answer_index": 2,
+          "explanation": "The sign gives a twenty-minute drying time."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the attendant",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Washer four is in use. It will be free in ten minutes. The shop next door can give change, but it is closed today. You can leave your basket here while you wait.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When will washer four be free?",
+          "options": [
+            "In ten minutes",
+            "In thirty minutes",
+            "Tomorrow"
+          ],
+          "answer_index": 0,
+          "explanation": "The attendant says it will be free in ten minutes."
+        },
+        {
+          "prompt": "Can the shop give you change today?",
+          "options": [
+            "No, it is closed",
+            "Yes, in ten minutes",
+            "Yes, only with a card"
+          ],
+          "answer_index": 0,
+          "explanation": "The shop next door is closed today."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Tell the attendant your plan",
+      "prompt_text": "The attendant asks if you want to look for another shop or wait.",
+      "instructions": "Say which machine you need and ask where you can leave the basket.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "I will wait for washer four because I have a card. Can I leave my basket by this chair for ten minutes?",
+      "points": [
+        {
+          "label": "Pick the right washer",
+          "any": [
+            "washer four",
+            "washer 4"
+          ]
+        },
+        {
+          "label": "Ask about the basket",
+          "any": [
+            "leave my basket",
+            "put my basket"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Explain the wait to your friend",
+      "prompt_text": "Your friend thinks you will be ready in thirty minutes. Tell them why you need an hour.",
+      "instructions": "Include the wait, wash and dry times. Say how you will pay.",
+      "goal": "Choose machines you can pay for and explain your plan.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "I need about one hour. I have to wait ten minutes for washer four. The wash takes thirty minutes and the dryer takes twenty minutes. I will pay by card. I can meet you outside after that.",
+      "points": [
+        {
+          "label": "Explain the wait",
+          "any": [
+            "wait ten minutes",
+            "ten-minute wait"
+          ]
+        },
+        {
+          "label": "Include both cycles",
+          "any": [
+            "thirty minutes and the dryer takes twenty",
+            "thirty minutes and twenty minutes",
+            "30 minutes to wash and 20 to dry"
+          ]
+        },
+        {
+          "label": "Mention card payment",
+          "any": [
+            "pay by card",
+            "use my card"
+          ]
+        }
+      ]
+    }
+  ]
+}

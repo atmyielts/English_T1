@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "b2-explain-a-cropped-neighbourhood-photograph",
+    "title": "Explain What a Cropped Photo Can Show",
+    "level": "B2",
+    "prompt_text": "A neighbourhood group wants to use a very tight crop of an old market photo in a newsletter. The crop makes one stall look as if it stood alone. The original shows tents and people beside it but the stall sign is harder to read. Explain which version you would show and how to let a reader see both the detail and the setting.",
+    "prompt_type": "guided_response",
+    "task_type": "explain",
+    "target_duration_seconds": 87,
+    "target_grammar": "Comparison, relative clauses and modals for editorial choices.",
+    "fluency_objective": "Describe what changes between the two views before recommending a display. End with one phrase the caption should use.",
+    "pronunciation_objective": "Contrast the sign and the setting with separate stress. Pause before describing the caption.",
+    "target_vocabulary": [
+      "crop",
+      "original",
+      "stall",
+      "setting",
+      "detail",
+      "caption"
+    ],
+    "cues": [
+      {
+        "text": "Explain what the tight crop helps readers notice.",
+        "keywords": [
+          "tight crop",
+          "sign",
+          "letters",
+          "more clearly"
+        ]
+      },
+      {
+        "text": "Explain what is missing from the crop.",
+        "keywords": [
+          "tents",
+          "people",
+          "looked alone",
+          "neighbouring"
+        ]
+      },
+      {
+        "text": "Recommend a way to preserve both readings.",
+        "keywords": [
+          "both",
+          "detail",
+          "side by side",
+          "larger image"
+        ]
+      },
+      {
+        "text": "Give a clear label or caption instruction.",
+        "keywords": [
+          "caption",
+          "describe",
+          "detail from",
+          "label"
+        ]
+      }
+    ],
+    "model_opening": "The tight crop makes the letters on the stall sign easier to read, so I would keep it.",
+    "model_answer": "The tight crop makes the letters on the stall sign easier to read, so I would keep it. It also leaves out the tents and people beside the stall. Someone who sees it first might imagine the stall was on its own. That would make the crop carry a different message from the original photograph.\n\nI would lead with the original, because the newsletter is describing the market as a shared place. Put the smaller detail next to it and mark the area it comes from with a faint outline. A reader could read the name on the sign and then go back to see where the stall sits among the tents. The caption should say 'Detail from the photograph at left' so the two views cannot easily be mistaken for different dates or markets. If we have room for only one image, I'd keep the wider photograph and type the stall name in the caption.",
+    "sort_order": 380
+  },
+  "children": []
+}

@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a2-reserve-seats-for-a-subtitled-film",
+    "title": "Reserve seats for a subtitled film",
+    "level": "A2",
+    "mission_type": "social",
+    "context_text": "You are booking for four people and two need English subtitles. The only group of four seats is split across rows.",
+    "objective_text": "Find a clear booking plan and check who can sit together.",
+    "target_vocabulary": [
+      "subtitles",
+      "row",
+      "screen",
+      "refund",
+      "booking"
+    ],
+    "success_conditions": [
+      "Find a clear booking plan and check who can sit together.",
+      "Confirm subtitles",
+      "Explain arrangement",
+      "Set meeting point"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the cinema listing",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Film at 6:30 in Screen 1 with English subtitles. Four seats remain: C3, C4, D3 and D4. Film at 7:00 in Screen 2 without subtitles: four seats together in row B.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which screen works for people who need English subtitles?",
+          "options": [
+            "Screen 1",
+            "Screen 2",
+            "Both screens"
+          ],
+          "answer_index": 0,
+          "explanation": "Only the 6:30 showing has subtitles."
+        },
+        {
+          "prompt": "Which two of the remaining seats are in row C?",
+          "options": [
+            "C3 and C4",
+            "D3 and D4",
+            "B3 and D3"
+          ],
+          "answer_index": 0,
+          "explanation": "The four remaining seats are split across rows C and D."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the booking assistant",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "You can hold the seats for ten minutes while you check with your friends. After you pay, we can move your seat only if another seat is free. The café is closed, so meet next to the ticket machines instead.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "How much time do you have before the seats are released?",
+          "options": [
+            "Twenty minutes",
+            "Ten minutes",
+            "Until 6:30"
+          ],
+          "answer_index": 1,
+          "explanation": "The assistant can hold them for ten minutes."
+        },
+        {
+          "prompt": "Where is a better meeting place than the café?",
+          "options": [
+            "Outside Screen 2",
+            "By the ticket machines",
+            "At the café door"
+          ],
+          "answer_index": 1,
+          "explanation": "The café is closed and the assistant suggests the machines."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Check the hold with the assistant",
+      "prompt_text": "You want the subtitled film but need to hear from the group first.",
+      "instructions": "Name the screen and times. Ask the assistant to hold both pairs and say when you will decide.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Please hold C3 and C4, and D3 and D4 in Screen One for the six thirty film. I’ll confirm within ten minutes after I call my friends.",
+      "points": [
+        {
+          "label": "Identify the subtitled showing",
+          "any": [
+            "Screen One",
+            "Screen 1"
+          ]
+        },
+        {
+          "label": "Ask for both pairs",
+          "any": [
+            "c3 and c4, and d3 and d4",
+            "both pairs",
+            "c3 and c4 and d3 and d4"
+          ]
+        },
+        {
+          "label": "Confirm the deadline",
+          "any": [
+            "within ten minutes",
+            "in ten minutes"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a booking update",
+      "prompt_text": "The group agrees that subtitles matter more than sitting in one row.",
+      "instructions": "Tell them what you booked, that they can sit in pairs, and where and when to meet. Ask them to reply if someone needs a particular seat.",
+      "goal": "Find a clear booking plan and check who can sit together.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "I booked the six thirty film in Screen One because it has English subtitles. We have two seats in row C and two in row D. Meet by the ticket machines at six fifteen. Please reply if you need an aisle seat, so we can check before the film.",
+      "points": [
+        {
+          "label": "Confirm subtitles",
+          "any": [
+            "English subtitles",
+            "has subtitles"
+          ]
+        },
+        {
+          "label": "Explain arrangement",
+          "any": [
+            "two seats in row c and two in row d",
+            "two in row c and two in row d"
+          ]
+        },
+        {
+          "label": "Set meeting point",
+          "any": [
+            "ticket machines"
+          ]
+        }
+      ]
+    }
+  ]
+}

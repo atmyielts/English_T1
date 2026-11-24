@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b2-propose-a-small-first-aid-sign-redesign",
+    "title": "Recommend a Sign Tested From a Distance",
+    "level": "B2",
+    "prompt_text": "A sports hall sign lists the caretaker, the lost property desk and the first-aid point in lines of equal size. New visitors can see that there is a sign but cannot read the important line from the entrance. Recommend a layout, describe one trade-off, and propose a fair test from two locations. The sign must stay the same size.",
+    "genre": "design recommendation",
+    "audience": "the coordinator of a sports hall",
+    "target_grammar": "Comparison and modal recommendations; conditional test outcomes.",
+    "target_structure": "Identify the priority reader and viewing distance, describe the layout, then specify how to test it.",
+    "target_vocabulary": [
+      "layout",
+      "first-aid point",
+      "viewing distance",
+      "legible",
+      "heading",
+      "contrast"
+    ],
+    "expected_length_min": 145,
+    "expected_length_max": 215,
+    "checklist": [
+      {
+        "point": "Name the main problem from the entrance.",
+        "keywords": [
+          "from the entrance",
+          "first-aid point",
+          "cannot make out",
+          "see the sign"
+        ]
+      },
+      {
+        "point": "Recommend a layout within the existing size.",
+        "keywords": [
+          "larger",
+          "same size",
+          "heading",
+          "space below"
+        ]
+      },
+      {
+        "point": "Explain a real drawback of the design.",
+        "keywords": [
+          "trade-off",
+          "smaller",
+          "lower priority",
+          "less space"
+        ]
+      },
+      {
+        "point": "Use both positions in the proposed test.",
+        "keywords": [
+          "both locations",
+          "from the entrance",
+          "near the desk",
+          "second position"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B2"
+    },
+    "sort_order": 353
+  },
+  "children": []
+}

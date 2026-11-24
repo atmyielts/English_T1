@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Particle placement in editorial and studio work",
+    "explanation_text": "In this unit, use standard written British English and the meanings given here. In look up (find information), hand in (submit) and put off (postpone), the particle can follow the verb or a short noun phrase: look up the date or look the date up. With an unstressed object pronoun, place it between the verb and the particle: look it up.\n\nIn look into (investigate), refer to (direct readers to a source) and go over (review), keep the preposition before its object in the ordinary statements practised here. This order applies to noun phrases and pronouns alike: look into the discrepancy and look into it.\n\nWhen both particle positions are grammatical, place a long or structurally complex noun phrase after the particle in these exercises. This keeps the verb and particle together while readers process the details. In a formal submission notice, an editor may choose submit instead of hand in. That is a register choice. The placement rules still apply whenever you use hand in.",
+    "contrast_text": "Compare hand the proofs in and hand in the proofs with hand them in. With refer to, the order stays fixed in both refer to the proofs and refer to them. For a long object, prefer hand in the proofs with the final corrections from both reviewers.",
+    "common_error_pattern": "Place an unstressed object pronoun before a movable particle, as in put it off. When directing readers to a source with refer to, keep the source after to: refer to the style sheet.",
+    "tags": [
+      "particle-and-prepositional-verbs",
+      "particle-shifting",
+      "pronoun-placement",
+      "object-weight",
+      "register"
+    ],
+    "examples": [
+      {
+        "bad": "The fact-checker looked up it before the caption went to press.",
+        "good": "The fact-checker looked it up before the caption went to press."
+      },
+      {
+        "bad": "The trainee handed in them after the portfolio review.",
+        "good": "The trainee handed them in after the portfolio review."
+      },
+      {
+        "bad": "The managing editor will look the discrepancy into before approving the proofs.",
+        "good": "The managing editor will look into the discrepancy before approving the proofs."
+      },
+      {
+        "bad": "We went the revised opening over before recording the narration.",
+        "good": "We went over the revised opening before recording the narration."
+      }
+    ],
+    "slug": "c1-particle-and-prepositional-verbs",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 360,
+    "focus_area": "particle-and-prepositional-verb-order"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Check a credit",
+      "instructions": "Complete the fact-checking note using look up in the past simple and it for the spelling. Write only the missing words.",
+      "prompt_text": "I wasn't sure of the correct spelling of the contributor's surname, so I ___ in the signed release.",
+      "accepted_answers": [
+        "looked it up"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Deliver the contact sheets",
+      "instructions": "Use hand in and replace the contact sheets with them. Write only the missing words.",
+      "prompt_text": "Once the contact sheets pass the print check, you can ___ at the studio desk.",
+      "accepted_answers": [
+        "hand them in"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Reschedule the listening session",
+      "instructions": "Use put off and replace the listening session with it. Write only the missing words.",
+      "prompt_text": "The listening session clashes with the sound check, so we may ___ until Friday.",
+      "accepted_answers": [
+        "put it off"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Trace a missing attachment",
+      "instructions": "Complete the reply using look into and it for the missing attachment. Write only the missing words.",
+      "prompt_text": "Thanks for flagging the missing attachment. I'll ___ after the upload finishes.",
+      "accepted_answers": [
+        "look into it"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Cite the style sheet",
+      "instructions": "Use refer to to direct readers to the source named in the sentence. Write only the missing words.",
+      "prompt_text": "For guidance on how to credit a translation, ___ the journal's style sheet.",
+      "accepted_answers": [
+        "refer to"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Review the running order",
+      "instructions": "Rewrite the sentence to repair the position of the object in go over. Keep all the original words.",
+      "prompt_text": "We'll go the running order over before the presenter arrives.",
+      "accepted_answers": [
+        "We'll go over the running order before the presenter arrives."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Move the reshoot",
+      "instructions": "Rewrite the sentence to repair the position of it in put off. Keep all the original words.",
+      "prompt_text": "The lighting rig is still out of service, so we'll put off it until Monday.",
+      "accepted_answers": [
+        "The lighting rig is still out of service, so we'll put it off until Monday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Switch the particle position",
+      "instructions": "Rewrite the whole sentence. Move up so it immediately follows looked and keep the full noun phrase.",
+      "prompt_text": "The copy editor looked the term up before approving the glossary entry.",
+      "accepted_answers": [
+        "The copy editor looked up the term before approving the glossary entry."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Write a formal submission notice",
+      "instructions": "Rewrite the notice using submit in place of hand in. Keep the rest of the wording.",
+      "prompt_text": "Please hand in your final audio mix by noon.",
+      "accepted_answers": [
+        "Please submit your final audio mix by noon."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Keep a cross-reference concise",
+      "instructions": "Replace the licensing notes with them and rewrite the whole sentence.",
+      "prompt_text": "The production guide refers to the licensing notes in its final section.",
+      "accepted_answers": [
+        "The production guide refers to them in its final section."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Place a long submission title",
+      "instructions": "Arrange the tiles into a sentence. Start with The design team will and use the preferred order for a long object, with in immediately after hand.",
+      "prompt_text": "the complete set of annotated layouts for the spring exhibition / in / The design team will / hand",
+      "accepted_answers": [
+        "The design team will hand in the complete set of annotated layouts for the spring exhibition."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Debrief the client call",
+      "instructions": "The pronoun them refers to the client's comments. Arrange the tiles into a sentence starting with After the call, and keep that time phrase at the front.",
+      "prompt_text": "over / them / we'll / After the call, / go",
+      "accepted_answers": [
+        "After the call, we'll go over them."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.particle-and-prepositional-verb-order"
+    }
+  ]
+}

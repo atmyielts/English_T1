@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Qualifying claims with insofar as",
+    "explanation_text": "Use insofar as or to the extent that to specify how far a claim holds. In a review, the qualifying clause can identify the part of the evidence that supports a conclusion. If a review examined weekday services alone, its conclusion about reliability applies insofar as it concerns weekday services. That wording leaves weekend reliability open.\n\nUse provided that or on condition that to state a requirement that must be met for a permission or arrangement to take effect. If researchers may access records provided that they sign a confidentiality agreement, signing is the condition for access. A scope clause can instead specify which parts of the records a permission covers.\n\nUse except where to carve out an exception from a general rule. If a licence permits reuse except where a third party holds copyright, reuse is the default and those cases are excluded. When editing, ask whether the clause defines the reach of a claim, sets a prerequisite, or identifies cases excluded from a default.",
+    "contrast_text": "Insofar as and to the extent that define the reach of a claim or permission. Provided that and on condition that set a prerequisite. Except where introduces cases excluded from a general statement or rule.",
+    "common_error_pattern": "Using provided that for an established limit on what a review supports can make the conclusion sound contingent. Using insofar as for an approval requirement can make permission sound divisible when the rule grants or withholds it as a whole.",
+    "tags": [
+      "c2",
+      "scope-qualification",
+      "insofar-as",
+      "conditional-permission",
+      "exceptions"
+    ],
+    "examples": [
+      {
+        "bad": "[The review assessed delivery times alone.] The review's favourable conclusion is warranted provided that it concerns delivery times.",
+        "good": "[The review assessed delivery times alone.] The review's favourable conclusion is warranted insofar as it concerns delivery times."
+      },
+      {
+        "bad": "The comparison is valid to the extent the that both surveys used the same sampling method.",
+        "good": "The comparison is valid to the extent that both surveys used the same sampling method."
+      },
+      {
+        "bad": "[Written consent is a prerequisite for releasing the recording.] The archive may release the recording insofar as the speaker gives written consent.",
+        "good": "[Written consent is a prerequisite for releasing the recording.] The archive may release the recording on condition that the speaker gives written consent."
+      },
+      {
+        "bad": "[Public access is the default and sealed files are excluded.] The files are open to the public provided that a court has sealed them.",
+        "good": "[Public access is the default and sealed files are excluded.] The files are open to the public except where a court has sealed them."
+      }
+    ],
+    "slug": "c2-qualifying-claims-with-insofar-as",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 410,
+    "focus_area": "scope-limiters-in-claims"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Limit an endorsement to the work observed",
+      "instructions": "Complete the scope qualifier beginning with the single word insofar. The review observed scheduled maintenance and reached a conclusion about that work.",
+      "prompt_text": "The review's endorsement is justified ___ it concerns scheduled maintenance.",
+      "accepted_answers": [
+        "insofar as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Define which months support a comparison",
+      "instructions": "Complete the four-word qualifier beginning with to. The comparison is valid for the months represented in both datasets.",
+      "prompt_text": "The seasonal comparison is valid ___ it draws on months represented in both datasets.",
+      "accepted_answers": [
+        "to the extent that"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "fill",
+      "title": "State a prerequisite for site access",
+      "instructions": "Complete the permission with a two-word connector beginning with provided. Completing the safety briefing is required before volunteers may enter.",
+      "prompt_text": "Volunteers may enter the excavation area ___ they complete the safety briefing.",
+      "accepted_answers": [
+        "provided that"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Record a condition of an equipment loan",
+      "instructions": "Insert the three-word connector beginning with on and containing condition. The loan depends on the borrower naming an insured operator.",
+      "prompt_text": "The workshop will lend the press ___ the borrower names an insured operator.",
+      "accepted_answers": [
+        "on condition that"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Exclude a class of records from publication",
+      "instructions": "Complete the two-word exception marker beginning with except and ending with where. Publication is the default and the clause identifies the cases excluded from it.",
+      "prompt_text": "The panel publishes its decisions ___ a decision identifies a protected witness.",
+      "accepted_answers": [
+        "except where"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct a review's statement of scope",
+      "instructions": "The report evaluated initial response times alone. Replace provided that with a two-word scope qualifier whose first word is insofar. Keep the rest of the sentence unchanged.",
+      "prompt_text": "The report's conclusion about service quality is defensible provided that it addresses initial response times.",
+      "accepted_answers": [
+        "The report's conclusion about service quality is defensible insofar as it addresses initial response times."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair an exception in a retention policy",
+      "instructions": "Deletion is the default. A preservation order exempts the relevant records. Replace only insofar as with except where.",
+      "prompt_text": "The registry deletes expired records insofar as a preservation order applies.",
+      "accepted_answers": [
+        "The registry deletes expired records except where a preservation order applies."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Recast a finding about partial coverage",
+      "instructions": "Express the limit in one sentence starting with The review supports the estimate. Use to the extent that immediately before the estimate concerns and keep staffed branches.",
+      "prompt_text": "The review supports the estimate for staffed branches alone.",
+      "accepted_answers": [
+        "The review supports the estimate to the extent that the estimate concerns staffed branches."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a release requirement into a permission clause",
+      "instructions": "Write one sentence starting with The editor may release the appendix. Follow it immediately with on condition that and retain the wording the analyst has verified the figures.",
+      "prompt_text": "Before the editor may release the appendix, the analyst must have verified the figures.",
+      "accepted_answers": [
+        "The editor may release the appendix on condition that the analyst has verified the figures."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Convert a restriction into a default with an exception",
+      "instructions": "Write one sentence starting with The permit allows access to service roads. Follow it immediately with except where and finish with a seasonal closure is in force.",
+      "prompt_text": "The permit allows access to service roads whenever no seasonal closure is in force.",
+      "accepted_answers": [
+        "The permit allows access to service roads except where a seasonal closure is in force."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Front the limit on a review finding",
+      "instructions": "Use every tile once. Start with Insofar as and place the tile ending in a comma immediately before the main clause. The finding applies to the audited sites.",
+      "prompt_text": "the finding holds. / the audited sites, / Insofar as / the evidence covers",
+      "accepted_answers": [
+        "Insofar as the evidence covers the audited sites, the finding holds."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Place a prerequisite after an export permission",
+      "instructions": "Use every tile once. Start with Licensees may and put the provided that clause after the complete permission. The licence requires attribution on each exported chart.",
+      "prompt_text": "carries an attribution. / export the charts / Licensees may / each chart / provided that",
+      "accepted_answers": [
+        "Licensees may export the charts provided that each chart carries an attribution."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.scope-limiters-in-claims"
+    }
+  ]
+}

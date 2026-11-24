@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "c2-correct-an-overconfident-project-forecast",
+    "title": "Write a Correction to an Overconfident Forecast",
+    "level": "C2",
+    "prompt_text": "Your team told residents that a hall would probably reopen in May. The date assumed one supplier could deliver everything together. The supplier now offers two deliveries, and the team knows the earliest possible opening has moved to June, but the exact date remains uncertain. Write a correction that takes responsibility for the earlier impression, explains what the team can now say, and sets a transparent rule for the next update.",
+    "genre": "public project note",
+    "audience": "people following a community hall improvement project",
+    "target_grammar": "Calibrated certainty, acknowledgement and conditional public commitments.",
+    "target_structure": "Summarise the correction up front, explain why the forecast changed, and commit to a specific trigger for releasing new information.",
+    "target_vocabulary": [
+      "forecast",
+      "assumption",
+      "delivery",
+      "earliest",
+      "inspection",
+      "confirm"
+    ],
+    "expected_length_min": 225,
+    "expected_length_max": 323,
+    "checklist": [
+      {
+        "point": "Acknowledge the earlier impression and own its limits.",
+        "keywords": [
+          "we said",
+          "earlier estimate",
+          "our forecast",
+          "we should have"
+        ]
+      },
+      {
+        "point": "Explain what changed with the supplier.",
+        "keywords": [
+          "two deliveries",
+          "together",
+          "supplier",
+          "part of the order"
+        ]
+      },
+      {
+        "point": "Distinguish the earliest date from a confirmed one.",
+        "keywords": [
+          "earliest",
+          "cannot confirm",
+          "june",
+          "exact date"
+        ]
+      },
+      {
+        "point": "Give a clear rule for future updates.",
+        "keywords": [
+          "next update",
+          "publish",
+          "as soon as",
+          "confirm",
+          "even if"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    },
+    "sort_order": 400
+  },
+  "children": []
+}

@@ -1,0 +1,141 @@
+{
+  "item": {
+    "slug": "a1-choose-a-plant-for-a-new-flat",
+    "title": "Choose a plant for a new flat",
+    "level": "A1",
+    "mission_type": "service",
+    "context_text": "You want a plant for a shelf away from the window. Your flatmate likes flowers.",
+    "objective_text": "Choose a plant for the shelf and explain how to look after it.",
+    "target_vocabulary": [
+      "sun",
+      "shade",
+      "water",
+      "pot",
+      "leaves"
+    ],
+    "success_conditions": [
+      "Choose a plant for the shelf and explain how to look after it.",
+      "Explain the need for shade",
+      "Give the watering schedule",
+      "Keep the plate under it"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the plant labels",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Daisy: Needs sun. Water three times a week. Ivy: Grows in shade. Water once a week. Both pots cost five pounds.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which plant can grow away from the window?",
+          "options": [
+            "The daisy",
+            "Ivy",
+            "Neither"
+          ],
+          "answer_index": 1,
+          "explanation": "The ivy grows in shade."
+        },
+        {
+          "prompt": "How many times a week does the daisy need water?",
+          "options": [
+            "One",
+            "Three",
+            "Five"
+          ],
+          "answer_index": 1,
+          "explanation": "The daisy label says three times a week."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the shop assistant’s advice",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Some people put the ivy in a bigger pot. You can keep it in this small pot for one month. Put a plate under it to keep water off the shelf.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What can go under the ivy pot?",
+          "options": [
+            "A bag of soil",
+            "A plate",
+            "A second plant"
+          ],
+          "answer_index": 1,
+          "explanation": "The assistant says to use a plate."
+        },
+        {
+          "prompt": "How long can you keep the small pot?",
+          "options": [
+            "One week",
+            "One month",
+            "Five weeks"
+          ],
+          "answer_index": 1,
+          "explanation": "The assistant says the current pot is fine for a month."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask one care question",
+      "prompt_text": "You have chosen your plant but want to double-check the watering rule.",
+      "instructions": "Name the plant and where it will go. Ask the assistant how often it needs water.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "I would like the ivy for a shelf away from the window. How often should I water it? Is once a week enough?",
+      "points": [
+        {
+          "label": "Name the plant",
+          "any": [
+            "ivy"
+          ]
+        },
+        {
+          "label": "Ask how often to water",
+          "any": [
+            "how often should i water",
+            "once a week"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Leave a care note",
+      "prompt_text": "Your flatmate will be at home while you are away.",
+      "instructions": "Say why you chose the plant and how often to water it. Add how to protect the shelf.",
+      "goal": "Choose a plant for the shelf and explain how to look after it.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "I bought an ivy for the shelf. It likes shade, so it does not need to be by the window. Water it once a week. Please leave the plate under the pot to keep the shelf dry.",
+      "points": [
+        {
+          "label": "Explain the need for shade",
+          "any": [
+            "shade",
+            "away from the window"
+          ]
+        },
+        {
+          "label": "Give the watering schedule",
+          "any": [
+            "once a week",
+            "one time a week"
+          ]
+        },
+        {
+          "label": "Keep the plate under it",
+          "any": [
+            "plate under the pot",
+            "plate under it"
+          ]
+        }
+      ]
+    }
+  ]
+}

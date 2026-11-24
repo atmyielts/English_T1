@@ -1,0 +1,142 @@
+{
+  "item": {
+    "slug": "b1-organise-one-day-of-work-in-a-shared-studio",
+    "title": "Organise one day of work in a shared studio",
+    "level": "B1",
+    "mission_type": "workplace",
+    "context_text": "A print studio has a hallway delivery at noon and two members with different tasks.",
+    "objective_text": "Arrange the day without exposing wet prints to dust or blocking a shared route.",
+    "target_vocabulary": [
+      "booking",
+      "ventilation",
+      "delivery",
+      "dust",
+      "drying"
+    ],
+    "success_conditions": [
+      "Arrange the day without exposing wet prints to dust or blocking a shared route.",
+      "State the order",
+      "Name the internal route",
+      "Give the delivery window"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the room notes",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "The studio can print from 9 to 1. The cutting machine must not run while prints are drying in the same room. Cart deliveries use the main hallway from noon to 12:30. Leave the hallway clear.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What cannot run beside drying prints?",
+          "options": [
+            "The cutting machine",
+            "The delivery cart",
+            "The printer afterwards"
+          ],
+          "answer_index": 0,
+          "explanation": "The notes separate cutting from drying."
+        },
+        {
+          "prompt": "When must the main hallway remain clear for deliveries?",
+          "options": [
+            "Noon to 12:30",
+            "9 to noon",
+            "12:30 to 1"
+          ],
+          "answer_index": 0,
+          "explanation": "The cart is expected during the half-hour delivery window."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the technician’s update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The print table by the window needs extra drying time this morning. The stockroom has a clean shelf somebody can clear. We can carry prints inside the studio to the stockroom without using the delivery hallway.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Where could prints dry away from the cutter?",
+          "options": [
+            "On a clean shelf in the stockroom",
+            "In the delivery hallway",
+            "By the cutter"
+          ],
+          "answer_index": 0,
+          "explanation": "The shelf offers a separate place to dry the prints."
+        },
+        {
+          "prompt": "Why is the stockroom useful during a delivery?",
+          "options": [
+            "It can be reached without entering the main hallway",
+            "It is where the cart is stored",
+            "It shortens the delivery window"
+          ],
+          "answer_index": 0,
+          "explanation": "An internal route avoids interfering with the delivery."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Suggest the immediate task",
+      "prompt_text": "You have just finished a batch. A member wants to start cutting in five minutes.",
+      "instructions": "Tell the member what must happen first. Ask them to help clear the right shelf.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 25,
+      "model_answer": "Can you clear the clean shelf in the stockroom before starting the cutting machine? We need to move all the wet prints there first. Let's use the route inside the studio.",
+      "points": [
+        {
+          "label": "Clear the right shelf",
+          "any": [
+            "clean shelf",
+            "shelf in the stockroom"
+          ]
+        },
+        {
+          "label": "Move prints before cutting",
+          "any": [
+            "wet prints there first",
+            "move the wet prints first"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write the shared plan",
+      "prompt_text": "Leave a message for the delivery and studio teams so they know which route must be kept free.",
+      "instructions": "Give the sequence of drying and cutting, name the internal route and state the delivery window.",
+      "goal": "Arrange the day without exposing wet prints to dust or blocking a shared route.",
+      "estimated_minutes": 12,
+      "min_words": 45,
+      "model_answer": "Please move the wet prints to the clean shelf in the stockroom before anyone starts the cutting machine. Use the route inside the studio. The main hallway must stay clear from noon until twelve thirty for the delivery cart. Use the small trolley only inside the studio, and bring it back afterwards.",
+      "points": [
+        {
+          "label": "State the order",
+          "any": [
+            "before anyone starts",
+            "before cutting"
+          ]
+        },
+        {
+          "label": "Name the internal route",
+          "any": [
+            "inside the studio",
+            "internal route"
+          ]
+        },
+        {
+          "label": "Give the delivery window",
+          "any": [
+            "noon until twelve thirty",
+            "noon to 12:30"
+          ]
+        }
+      ]
+    }
+  ]
+}

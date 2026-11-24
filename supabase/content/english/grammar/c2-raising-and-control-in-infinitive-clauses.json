@@ -1,0 +1,173 @@
+{
+  "item": {
+    "title": "Raising and control in infinitive clauses",
+    "explanation_text": "With seem and appear, the subject of the infinitive can become the subject of the whole sentence. In ‘The candidate appears to understand the objection,’ the candidate is the one who understands, and appears marks that judgment as an inference. Compare ‘It appears that the candidate understands the objection,’ where it is a dummy subject. Dummy there can also occur in the infinitive pattern, as in ‘There seems to be a discrepancy.’\n\nWith persuade and tell, the object supplies the understood subject of the infinitive. With promise and agree, the main subject does so. In ‘I promised her to return,’ I undertook to return. A passive report can preserve the roles by naming the person who made the commitment: ‘The client was promised that the courier would return.’\n\nIn ‘appears to be waiting,’ waiting is the -ing participle after be and shows an ongoing action. In ‘appears to have left,’ left is the past participle after have and places the departure before the apparent state or judgment.",
+    "contrast_text": "‘The candidate appears to withdraw’ presents withdrawal as an inference. ‘The chair persuaded the candidate to withdraw’ makes the candidate the one persuaded and the person meant to withdraw. ‘The chair promised the candidate to withdraw’ makes the chair the one who undertakes to withdraw and the candidate the recipient of the promise.",
+    "common_error_pattern": "Check who performs the infinitive action before rewriting. The noun nearest to to can be the doer after persuade or tell, but a recipient after promise. Keep dummy there with existential be, and use a past participle after infinitival have.",
+    "tags": [
+      "C2",
+      "raising",
+      "subject control",
+      "object control",
+      "infinitive clauses",
+      "dummy subjects"
+    ],
+    "examples": [
+      {
+        "bad": "It appears the candidate to understand the objection.",
+        "good": "The candidate appears to understand the objection."
+      },
+      {
+        "bad": "There seems that a discrepancy exists.",
+        "good": "There seems to be a discrepancy."
+      },
+      {
+        "bad": "The coordinator persuaded to reopen the gallery.",
+        "good": "The coordinator persuaded the trustees to reopen the gallery."
+      },
+      {
+        "bad": "Context mismatch (the courier undertook to call): The client was promised that the client would call at noon.",
+        "good": "The courier promised the client to call at noon."
+      }
+    ],
+    "slug": "c2-raising-and-control-in-infinitive-clauses",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 400,
+    "focus_area": "raising-and-control"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "An apparent vacancy",
+      "instructions": "Use the present-tense form of seem and the infinitive of be. The sentence expresses an inference about the existence of a vacancy.",
+      "prompt_text": "There ___ a vacancy on the ethics panel.",
+      "accepted_answers": [
+        "seems to be"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An ongoing action on camera",
+      "instructions": "After appears, use the progressive infinitive of wait. The diver is the one still waiting.",
+      "prompt_text": "On the live feed, the diver appears ___ beside the marker buoy.",
+      "accepted_answers": [
+        "to be waiting"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A candidate's earlier decision",
+      "instructions": "After seems, use the perfect infinitive of decline. The candidate made the decision before the panel examined the correspondence.",
+      "prompt_text": "From the correspondence, the candidate seems ___ the invitation before the panel met.",
+      "accepted_answers": [
+        "to have declined"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An instruction to a technician",
+      "instructions": "Complete the tell construction with the exact noun phrase the technician and the infinitive of reset. The technician does the resetting.",
+      "prompt_text": "The shift lead told ___ the alarm after the test.",
+      "accepted_answers": [
+        "the technician to reset"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An undertaking at mediation",
+      "instructions": "Complete the agree construction with the negative infinitive of disclose. Put not before to. The mediator undertakes to keep the amount confidential.",
+      "prompt_text": "The mediator agreed ___ the settlement amount.",
+      "accepted_answers": [
+        "not to disclose"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Repair a perfect infinitive",
+      "instructions": "Correct one word. Keep appear and the perfect infinitive, with the conservator as the person who wrote the note.",
+      "prompt_text": "The conservator appears to have wrote the note before the exhibition opened.",
+      "accepted_answers": [
+        "The conservator appears to have written the note before the exhibition opened."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Restore the object of persuade",
+      "instructions": "Repair the sentence by moving the exact phrase the illustrator. Keep persuaded. The illustrator is both the person persuaded and the person who licenses the sketch.",
+      "prompt_text": "The publisher persuaded to license the illustrator the sketch.",
+      "accepted_answers": [
+        "The publisher persuaded the illustrator to license the sketch."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a finite inference into raising",
+      "instructions": "Begin with The access logs and use appear followed by a simple infinitive. Keep the original complement of contradict.",
+      "prompt_text": "It appears that the access logs contradict the witness's account.",
+      "accepted_answers": [
+        "The access logs appear to contradict the witness's account."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Preserve the promiser in a formal recast",
+      "instructions": "Recast the promise as a formal passive report beginning The registrar was promised that. Use would and name the person who will sign explicitly.",
+      "prompt_text": "The licensing officer promised the registrar to sign the certificate.",
+      "accepted_answers": [
+        "The registrar was promised that the licensing officer would sign the certificate."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Convert a direct instruction",
+      "instructions": "Begin with The stage manager told and use an object followed by a to-infinitive. The understudy does the checking. Retain both the item to check and the time phrase.",
+      "prompt_text": "The stage manager said to the understudy, ‘Check the trapdoor before rehearsal.’",
+      "accepted_answers": [
+        "The stage manager told the understudy to check the trapdoor before rehearsal."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Build an inference with dummy it",
+      "instructions": "Begin with It appears. The backup is the item currently running, and the isolated server is where it is running.",
+      "prompt_text": "that / running / appears / on the isolated server. / It / is / the backup",
+      "accepted_answers": [
+        "It appears that the backup is running on the isolated server."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Build a shared agreement",
+      "instructions": "Begin with The two negotiators agreed. The negotiators will exchange the drafts. Place privately immediately before to exchange.",
+      "prompt_text": "agreed / to exchange / The two negotiators / the draft clauses. / privately",
+      "accepted_answers": [
+        "The two negotiators agreed privately to exchange the draft clauses."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.raising-and-control"
+    }
+  ]
+}

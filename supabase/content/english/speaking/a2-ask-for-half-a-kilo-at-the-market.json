@@ -1,0 +1,51 @@
+{
+  "item": {
+    "slug": "a2-ask-for-half-a-kilo-at-the-market",
+    "title": "Ask for Half a Kilo at a Market Stall",
+    "level": "A2",
+    "prompt_text": "A fruit stall displays the price per kilo. You need half a kilo of pears for two people. You also want three plums, but only if they are ready to eat today. Ask the seller for those quantities, say why you do not want a full kilo, and ask how to tell whether the plums are ready.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 47,
+    "target_grammar": "Half a kilo and three for amounts. Use if and how for a condition and question.",
+    "fluency_objective": "Name the fruit with each amount. Then ask the ripeness question before you agree to buy plums.",
+    "pronunciation_objective": "Stress half a kilo and three. Pause before asking about the plums.",
+    "target_vocabulary": [
+      "pear",
+      "half a kilo",
+      "plum",
+      "ripe",
+      "today"
+    ],
+    "cues": [
+      {
+        "text": "Ask for the right amount of pears.",
+        "keywords": [
+          "half a kilo",
+          "five hundred grams"
+        ]
+      },
+      {
+        "text": "Explain why that amount is enough.",
+        "keywords": [
+          "two people",
+          "for both of us",
+          "don't need a full kilo"
+        ]
+      },
+      {
+        "text": "Ask for plums only if ready today and make a question.",
+        "keywords": [
+          "three plums",
+          "ready to eat",
+          "are these ripe",
+          "how can i tell"
+        ]
+      }
+    ],
+    "model_opening": "Could I have half a kilo of pears, please?",
+    "model_answer": "Could I have half a kilo of pears, please? They are for two people, so I don't need a full kilo. I would also like three plums if they are ready to eat today. How can I tell if these are ripe? I can choose just the pears if the plums need another day. Could you put the pears in this bag while I decide?",
+    "sort_order": 404
+  },
+  "children": []
+}

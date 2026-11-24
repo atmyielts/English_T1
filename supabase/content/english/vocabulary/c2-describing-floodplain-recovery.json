@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Describing floodplain recovery",
+    "description": "Describe what becomes visible when a stream can spread across its floodplain again, from seasonal waterlines and fresh layers of silt to shifting bends and new strips of riverside vegetation.",
+    "slug": "c2-describing-floodplain-recovery",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 380,
+    "topic": "floodplain recovery"
+  },
+  "children": [
+    {
+      "word": "floodplain reconnection",
+      "part_of_speech": "noun",
+      "definition": "The re-establishment of a link that lets high flows from a stream spread onto the adjoining low ground.",
+      "example": "The first visible sign of floodplain reconnection was a sheet of shallow water spreading from the stream into a meadow that had stayed dry during previous spring rises.",
+      "translation_ru": "восстановление связи русла с поймой",
+      "translation_uz": "daryo oʻzani bilan qayir oʻrtasidagi aloqani tiklash",
+      "collocations": [
+        "partial floodplain reconnection",
+        "signs of floodplain reconnection"
+      ]
+    },
+    {
+      "word": "inundation",
+      "part_of_speech": "noun",
+      "definition": "The covering of normally exposed ground by rising or spreading water.",
+      "example": "The edge of the spring inundation was still visible after the meadow dried, marked by a line of flattened grass and stranded twigs.",
+      "translation_ru": "затопление",
+      "translation_uz": "suv bosishi",
+      "collocations": [
+        "temporary inundation",
+        "extent of inundation"
+      ]
+    },
+    {
+      "word": "flood pulse",
+      "part_of_speech": "noun",
+      "definition": "A periodic rise and fall in a river's level that temporarily brings water onto the surrounding low ground and then lets it drain away.",
+      "example": "The spring flood pulse was visible in a series of photographs showing the meadow fill from the stream and drain until only the deepest hollows held water.",
+      "translation_ru": "периодический подъём и спад уровня реки с затоплением и последующим осушением поймы",
+      "translation_uz": "daryo sathi vaqti-vaqti bilan koʻtarilib, qayirni suv bosishi, soʻng sath pasaygach, suvning qayirdan chekinishi",
+      "collocations": [
+        "seasonal flood pulse",
+        "duration of the flood pulse"
+      ]
+    },
+    {
+      "word": "avulsion",
+      "part_of_speech": "noun",
+      "definition": "An abrupt switch in the course of a river when most of its flow leaves an established channel for a different route.",
+      "example": "Photographs taken before and after the spring rise showed an avulsion at the lower end of the reconnected meadow, where most of the stream now followed a previously dry swale.",
+      "translation_ru": "резкая смена русла реки",
+      "translation_uz": "daryo oqimining keskin boshqa oʻzanga oʻtishi",
+      "collocations": [
+        "evidence of avulsion",
+        "avulsion during a flood"
+      ]
+    },
+    {
+      "word": "oxbow",
+      "part_of_speech": "noun",
+      "definition": "A curved lake or pool formed when a river takes a shorter course and leaves a former bend cut off from its main channel.",
+      "example": "After the spring water receded, the oxbow stood out as a crescent of still water beyond the stream's active course.",
+      "translation_ru": "старица",
+      "translation_uz": "daryoning uzilib qolgan burilishidan hosil boʻlgan koʻl",
+      "collocations": [
+        "shallow oxbow",
+        "reed-fringed oxbow"
+      ]
+    },
+    {
+      "word": "alluvial",
+      "part_of_speech": "adjective",
+      "definition": "Formed from mineral material carried and laid down by flowing water.",
+      "example": "As the meadow dried, a pale strip of alluvial sediment marked where the spring flow had deposited fine sand and silt.",
+      "translation_ru": "аллювиальный",
+      "translation_uz": "allyuvial",
+      "collocations": [
+        "alluvial soil",
+        "alluvial deposits"
+      ]
+    },
+    {
+      "word": "scour",
+      "part_of_speech": "noun",
+      "definition": "The local removal of loose material from a channel bed or margin by a concentrated current.",
+      "example": "Evidence of scour appeared beside a fallen trunk at the meadow inlet, where the current had hollowed out a pocket and exposed coarse gravel.",
+      "translation_ru": "местный размыв",
+      "translation_uz": "oqim taʼsirida yuz beradigan mahalliy yuvilish",
+      "collocations": [
+        "local scour",
+        "scour around a fallen trunk"
+      ]
+    },
+    {
+      "word": "siltation",
+      "part_of_speech": "noun",
+      "definition": "The accumulation of fine mineral particles as they settle out of water and gradually fill a channel or depression.",
+      "example": "Siltation gradually raised the floor of a hollow in the reconnected meadow, where each spring rise left a thin layer of fine sediment.",
+      "translation_ru": "заиление",
+      "translation_uz": "loyqa choʻkib toʻplanishi",
+      "collocations": [
+        "gradual siltation",
+        "siltation of shallow pools"
+      ]
+    },
+    {
+      "word": "riparian buffer",
+      "part_of_speech": "noun",
+      "definition": "A strip of vegetation bordering a watercourse that filters runoff from adjoining land and provides habitat along the water's edge.",
+      "example": "By the third summer, sedges and young willows formed a continuous riparian buffer between the stream and the mown part of the meadow.",
+      "translation_ru": "прибрежная буферная полоса растительности",
+      "translation_uz": "suv oʻzani boʻyidagi himoya vazifasini bajaradigan oʻsimliklar tasmasi",
+      "collocations": [
+        "vegetated riparian buffer",
+        "width of the riparian buffer"
+      ]
+    },
+    {
+      "word": "meander migration",
+      "part_of_speech": "noun",
+      "definition": "The gradual sideways or downstream movement of a river bend as the current erodes one margin and lays down sediment on the other.",
+      "example": "Successive photographs showed meander migration into the reconnected meadow, with the outer edge of the bend retreating as fresh gravel accumulated on the inside.",
+      "translation_ru": "постепенное смещение речной излучины",
+      "translation_uz": "daryo burilishining asta-sekin siljishi",
+      "collocations": [
+        "rate of meander migration",
+        "downstream meander migration"
+      ]
+    },
+    {
+      "word": "channel incision",
+      "part_of_speech": "noun",
+      "definition": "The progressive deepening of a watercourse as its current erodes the bed and cuts into the underlying material.",
+      "example": "A remnant of the former streambed stood nearly a metre above the present bed, showing how far channel incision had lowered it before spring flows regained access to the meadow.",
+      "translation_ru": "врезание русла",
+      "translation_uz": "oqim oʻzan tubini yemirishi natijasida oʻzanning chuqurlashishi",
+      "collocations": [
+        "evidence of channel incision",
+        "progressive channel incision"
+      ]
+    },
+    {
+      "word": "levee",
+      "part_of_speech": "noun",
+      "definition": "A raised embankment built to limit the spread of high river flows onto land beyond it.",
+      "example": "With the new levee farther from the stream, spring water spread across the strip of meadow that the old embankment had kept dry.",
+      "translation_ru": "защитная дамба вдоль реки",
+      "translation_uz": "daryo boʻylab qurilgan himoya koʻtarmasi",
+      "collocations": [
+        "earthen levee",
+        "crest of the levee"
+      ]
+    },
+    {
+      "word": "secondary channel",
+      "part_of_speech": "noun",
+      "definition": "A smaller watercourse that carries a portion of a river's flow along a separate route from the main course.",
+      "example": "During the spring rise, the secondary channel carried water around a willow-covered island before rejoining the main stream at the foot of the meadow.",
+      "translation_ru": "второстепенный рукав реки",
+      "translation_uz": "daryoning ikkilamchi oʻzani",
+      "collocations": [
+        "flow through a secondary channel",
+        "mouth of a secondary channel"
+      ]
+    },
+    {
+      "word": "point bar",
+      "part_of_speech": "noun",
+      "definition": "A low body of sand or gravel laid down by a river on the inner side of a bend.",
+      "example": "When the stream fell after spreading into the reconnected meadow, a fresh layer of pale gravel was visible on the point bar inside the bend.",
+      "translation_ru": "прирусловая отмель на внутренней стороне излучины",
+      "translation_uz": "daryo burilishining ichki tomonida toʻplangan qum yoki shagʻal yotqizigʻi",
+      "collocations": [
+        "gravel point bar",
+        "vegetated point bar"
+      ]
+    }
+  ]
+}

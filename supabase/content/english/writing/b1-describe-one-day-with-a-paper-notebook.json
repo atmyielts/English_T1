@@ -1,0 +1,55 @@
+{
+  "item": {
+    "slug": "b1-describe-one-day-with-a-paper-notebook",
+    "title": "Write About a Day Without Phone Notes",
+    "level": "B1",
+    "prompt_text": "For one day you wrote reminders in a paper notebook. Usually you save them on your phone. Describe one time the notebook helped, one time the phone would have been easier, and whether you will use the notebook again. Give details that connect your recommendation to what happened.",
+    "genre": "reflective journal entry",
+    "audience": "readers of a class study journal",
+    "target_grammar": "Used to and past simple. Use while, but and would to show what changed.",
+    "target_structure": "Give two moments from the day and use them to support the final decision.",
+    "target_vocabulary": [
+      "reminder",
+      "notebook",
+      "notice",
+      "search",
+      "keep"
+    ],
+    "expected_length_min": 93,
+    "expected_length_max": 149,
+    "checklist": [
+      {
+        "point": "Describe a moment when paper helped.",
+        "keywords": [
+          "notebook helped",
+          "opened it",
+          "pages",
+          "marked the"
+        ]
+      },
+      {
+        "point": "Describe an inconvenience compared with the phone.",
+        "keywords": [
+          "phone",
+          "search",
+          "couldn't find",
+          "would have been"
+        ]
+      },
+      {
+        "point": "Say whether you will use paper again, with a condition or reason.",
+        "keywords": [
+          "would use",
+          "i will keep",
+          "when",
+          "for short lists"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    },
+    "sort_order": 394
+  },
+  "children": []
+}

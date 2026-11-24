@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "a2-two-chalk-drawings-in-the-rain",
+    "title": "Write About a Chalk Drawing in the Rain",
+    "level": "A2",
+    "prompt_text": "You drew a chalk picture outside a community hall. Rain began and part of the picture disappeared. A friend showed you somewhere dry to start again. Write a short diary entry naming what you drew, what the rain changed, and what you did differently the second time.",
+    "genre": "diary entry",
+    "audience": "your English class's shared activity diary",
+    "target_grammar": "Past simple and when for events. Use comparative words for the second picture.",
+    "target_structure": "State what you drew, give the change, and finish with what you did the second time.",
+    "target_vocabulary": [
+      "chalk",
+      "drew",
+      "rain",
+      "line",
+      "roof",
+      "dry"
+    ],
+    "expected_length_min": 51,
+    "expected_length_max": 94,
+    "checklist": [
+      {
+        "point": "Say what you drew at first.",
+        "keywords": [
+          "i drew",
+          "picture of"
+        ]
+      },
+      {
+        "point": "Explain what the rain changed.",
+        "keywords": [
+          "rain",
+          "faint",
+          "washed away",
+          "disappeared"
+        ]
+      },
+      {
+        "point": "Describe what you did differently the next time.",
+        "keywords": [
+          "under the roof",
+          "stayed dry",
+          "second time",
+          "started again"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    },
+    "sort_order": 346
+  },
+  "children": []
+}

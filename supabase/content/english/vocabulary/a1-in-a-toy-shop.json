@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "In a Toy Shop",
+    "description": "Name toys on a shelf, ask to see one, and describe how toys move.",
+    "slug": "a1-in-a-toy-shop",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 360,
+    "topic": "toy shop"
+  },
+  "children": [
+    {
+      "word": "teddy bear",
+      "part_of_speech": "noun",
+      "definition": "A soft toy that looks like a bear.",
+      "example": "Can I see the brown teddy bear on the top shelf?",
+      "translation_ru": "плюшевый мишка",
+      "translation_uz": "yumshoq oʻyinchoq ayiqcha",
+      "collocations": [
+        "a soft teddy bear",
+        "hug a teddy bear"
+      ]
+    },
+    {
+      "word": "doll",
+      "part_of_speech": "noun",
+      "definition": "A toy that looks like a person, often a baby.",
+      "example": "Can I see the doll in the blue dress?",
+      "translation_ru": "кукла",
+      "translation_uz": "qoʻgʻirchoq",
+      "collocations": [
+        "a baby doll",
+        "dress a doll"
+      ]
+    },
+    {
+      "word": "ball",
+      "part_of_speech": "noun",
+      "definition": "A round toy you can throw or kick.",
+      "example": "Is this ball soft enough to use indoors?",
+      "translation_ru": "мяч",
+      "translation_uz": "toʻp",
+      "collocations": [
+        "a rubber ball",
+        "throw a ball"
+      ]
+    },
+    {
+      "word": "wooden block",
+      "part_of_speech": "noun",
+      "definition": "A small piece of wood with flat sides that you can put together with other pieces to make things.",
+      "example": "Can I put this wooden block on top of the red one?",
+      "translation_ru": "деревянная деталь конструктора",
+      "translation_uz": "yogʻoch konstruktor detali",
+      "collocations": [
+        "a square wooden block",
+        "a wooden block with a letter on it"
+      ]
+    },
+    {
+      "word": "balloon",
+      "part_of_speech": "noun",
+      "definition": "A thin bag that gets bigger when you blow air into it or fill it with another gas.",
+      "example": "Can you blow up a yellow balloon for me, please?",
+      "translation_ru": "воздушный шарик",
+      "translation_uz": "puflanadigan shar",
+      "collocations": [
+        "blow up a balloon",
+        "pop a balloon"
+      ]
+    },
+    {
+      "word": "kite",
+      "part_of_speech": "noun",
+      "definition": "A light toy that goes up in the air on a windy day while you hold its string.",
+      "example": "Does this kite come with a long string?",
+      "translation_ru": "воздушный змей",
+      "translation_uz": "varrak",
+      "collocations": [
+        "fly a kite",
+        "a kite with a long tail"
+      ]
+    },
+    {
+      "word": "toy train",
+      "part_of_speech": "noun",
+      "definition": "A small train for playing, often with its own little track.",
+      "example": "Can I see the toy train go around the track?",
+      "translation_ru": "игрушечный поезд",
+      "translation_uz": "oʻyinchoq poyezd",
+      "collocations": [
+        "a toy train on tracks",
+        "a toy train with three cars"
+      ]
+    },
+    {
+      "word": "jigsaw puzzle",
+      "part_of_speech": "noun",
+      "definition": "A game where you fit small pieces together to make a picture.",
+      "example": "I'd like the jigsaw puzzle with the picture of a farm.",
+      "translation_ru": "пазл",
+      "translation_uz": "pazl",
+      "collocations": [
+        "do a jigsaw puzzle",
+        "a jigsaw puzzle with 100 pieces"
+      ]
+    },
+    {
+      "word": "yo-yo",
+      "part_of_speech": "noun",
+      "definition": "A small toy with two round sides that goes down and up on a string.",
+      "example": "Can you show me how to use this yo-yo?",
+      "translation_ru": "йо-йо",
+      "translation_uz": "yo-yo",
+      "collocations": [
+        "a wooden yo-yo",
+        "play with a yo-yo"
+      ]
+    },
+    {
+      "word": "show",
+      "part_of_speech": "verb",
+      "definition": "To let someone see something.",
+      "example": "Could you show me the toys on the top shelf, please?",
+      "translation_ru": "показывать",
+      "translation_uz": "koʻrsatmoq",
+      "collocations": [
+        "show me the red one",
+        "show a toy to a child"
+      ]
+    },
+    {
+      "word": "roll",
+      "part_of_speech": "verb",
+      "definition": "To move on a surface by turning over and over.",
+      "example": "This ball can roll across the shop floor.",
+      "translation_ru": "катиться",
+      "translation_uz": "dumalamoq",
+      "collocations": [
+        "roll across the floor",
+        "roll down a hill"
+      ]
+    },
+    {
+      "word": "bounce",
+      "part_of_speech": "verb",
+      "definition": "To move away from a surface after hitting it.",
+      "example": "Does that little ball bounce high?",
+      "translation_ru": "отскакивать",
+      "translation_uz": "sapchimoq",
+      "collocations": [
+        "bounce high",
+        "bounce off the wall"
+      ]
+    },
+    {
+      "word": "fly",
+      "part_of_speech": "verb",
+      "definition": "To move through the air.",
+      "example": "The picture on the box shows how high the kite can fly.",
+      "translation_ru": "летать",
+      "translation_uz": "uchmoq",
+      "collocations": [
+        "fly high",
+        "fly over the trees"
+      ]
+    },
+    {
+      "word": "build",
+      "part_of_speech": "verb",
+      "definition": "To make something by putting pieces together.",
+      "example": "Can I build a little house with the blocks in this set?",
+      "translation_ru": "строить",
+      "translation_uz": "qurmoq",
+      "collocations": [
+        "build a tower",
+        "build a toy house"
+      ]
+    }
+  ]
+}

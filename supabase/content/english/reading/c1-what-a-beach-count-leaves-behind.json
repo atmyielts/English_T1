@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "c1-what-a-beach-count-leaves-behind",
+    "title": "What a Beach Count Leaves Behind",
+    "level": "C1",
+    "summary": "A volunteer survey compares what lasts on an exposed beach with what disappears before the next visit.",
+    "content_markdown": "On its first summer survey, the Cresswick Shore Group laid out two lengths of rope, one beside the sea wall and one further up the sand. Volunteers counted pieces of packaging within a metre of each rope. The count beside the wall was more than twice as high. In the first draft of its newsletter, the group simply wrote that more visitors were leaving rubbish there. It had not counted the number of people in either area during those weeks.\n\nOne volunteer thought the difference might have to do with what happened between visits. Paper and thin plastic caught against the wall after a windy morning. The upper sand had no barrier to stop them moving. The group did not know whether this effect accounted for most of the gap. However, the count at week’s end gave them no way to tell whether a piece had been left where it was found or had arrived from another stretch of shore.\n\nFor the next survey, staff divided the same areas into small marked strips. At the start and end of each afternoon they described the kinds of packaging visible, without moving it. They also recorded when other volunteers cleared part of the sand. A report of new litter could then distinguish a strip that had been empty at noon from a strip that had not been checked until dusk. Another team counted how many people used the two approaches from the road. That was a different task, and it could not say where a visitor had eaten lunch or unwrapped something.\n\nThe results were less neat than the first pair of totals. On calm afternoons both strips gained similar numbers of items. After a morning of strong wind, light pieces appeared against the wall while the upper strip lost some. Records of clear-ups explained several occasions when an area appeared to contain less at dusk than at noon. There were still individual pieces whose route could not be established at all.\n\nThe group kept its earlier tally as a useful first description of what lay in each place. In the new report, it did not turn counts of things found into counts of actions by visitors. For the park manager, the change matters. A sign asking for better behaviour may work if people regularly drop packaging at a particular picnic spot. More frequent clearing might be more useful where light waste collects against a barrier. Once the group had separated the two questions, it could discuss both choices without quietly deciding the cause in the headline.",
+    "category": "Science",
+    "theme": "counting shoreline litter over time",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "analytical report",
+      "word_count": 426
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What do the authors learn to separate?",
+        "options": [
+          "The speed of different volunteers and the length of a survey",
+          "The places where packaging is found and the places where people leave it",
+          "The routes taken by visitors and the time of high tide",
+          "The weight of litter and its colour"
+        ],
+        "answer_index": 1,
+        "explanation": "The records show that waste can move or disappear between inspections, so a pile’s location does not by itself locate an action."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did the new survey record besides visible items?",
+        "options": [
+          "How much the volunteers paid for ropes",
+          "The make of each picnic container",
+          "A name for the owner of every item",
+          "Which areas had been cleared in the meantime"
+        ],
+        "answer_index": 3,
+        "explanation": "The volunteers record when other groups cleared parts of the sand."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why do visits during calm weather matter to the argument?",
+        "options": [
+          "They establish that all packaging is dropped at noon.",
+          "They show that the two areas can gain similar amounts under conditions with less movement.",
+          "They show that nobody uses the approach by the wall.",
+          "They give the group exact routes for items found later."
+        ],
+        "answer_index": 1,
+        "explanation": "Similar gains when it is calm contrast with the wall collecting light pieces after stronger wind."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “quietly deciding the cause in the headline” mean?",
+        "options": [
+          "Presenting an assumption as though the description had already established it",
+          "Writing a different headline from other newsletters",
+          "Refusing to explain where a ranger put up a new sign",
+          "Making a report too short to include both totals"
+        ],
+        "answer_index": 0,
+        "explanation": "The first headline treated the place with the higher tally as necessarily the place visitors dropped more litter."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The original newsletter draft drew a conclusion about visitors without counting them.",
+        "answer": "true",
+        "explanation": "The first paragraph states that no visitor totals had been collected before the draft drew its inference."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Every piece was tracked from where it was dropped to where it was found.",
+        "answer": "false",
+        "explanation": "The report explicitly says the route of some pieces could not be established."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The article tells us how visitors responded to an anti-litter sign.",
+        "answer": "not_given",
+        "explanation": "A sign is discussed as a possible response. The passage gives no trial or response to it."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Thin plastic can catch against the sea ___. The new survey records clear-ups as well as checks at noon and ___.",
+        "answers": [
+          [
+            "wall"
+          ],
+          [
+            "dusk"
+          ]
+        ],
+        "word_bank": [
+          "dusk",
+          "rope",
+          "wall",
+          "report"
+        ],
+        "explanation": "The second paragraph describes the wall catching litter. The new notes distinguish checks at noon from observations only at dusk."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Comparing numbers before considering their cause",
+          "An explanation the old method cannot test",
+          "A new record that makes conditions visible",
+          "Different results under different conditions",
+          "A sign that solved every case"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The first four paragraphs give the original comparison, a reason to question it, changes to the procedure and the evidence those changes produced."
+      }
+    ]
+  },
+  "children": []
+}

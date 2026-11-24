@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Apposition and identifying details in an editorial roster",
+    "explanation_text": "In a production roster, an integrated name can help readers identify the person meant. In “the copy editor Lena Park,” the role and name work together as one identifying phrase. That wording is useful when several people share the role, although it does not establish that there are several. In “Lena Park, a copy editor on the project,” the name identifies the person and the supplementary appositive adds a description. Both noun phrases refer to Lena Park, and the indefinite description leaves room for other copy editors.\n\nIf the description comes first, ask whether readers can identify the person from it alone. “Our overnight editor, Lena Park,” invites readers to treat the role as identifying one person in the relevant context. They may infer that the shift has one editor, even if the publication employs many. When the headcount matters, say “our only overnight editor.” When introducing a second person, use “another” or “the other,” depending on whether the roster establishes a pair.",
+    "contrast_text": "In “the reviewer Mina Das,” the name helps specify which reviewer is meant. In “Mina Das, a reviewer on the project,” the name identifies Mina and the appositive states her role. In “the sole reviewer, Mina Das,” the word “sole” makes the headcount explicit.",
+    "common_error_pattern": "Using a role as though it identifies one person when the intended readers know that several people share it. An integrated role and name can identify one holder. A name followed by a supplementary description beginning with “a” or “one of” can identify the person first and then give their role.",
+    "tags": [
+      "apposition",
+      "identifying-noun-phrases",
+      "supplementary-appositives",
+      "referent-inference",
+      "editorial-rosters"
+    ],
+    "examples": [
+      {
+        "bad": "The picture desk has three researchers, and no one has been singled out: Our picture researcher, Nadia Bell, will check the credits.",
+        "good": "The picture desk has three researchers: The picture researcher Nadia Bell will check the credits."
+      },
+      {
+        "bad": "Tomas Reed, one of our archive editor, found the original caption.",
+        "good": "Tomas Reed, one of our archive editors, found the original caption."
+      },
+      {
+        "bad": "The weekend desk has exactly two critics: Imran Shah filed first. Imran, the other critic, filed later.",
+        "good": "The weekend desk has exactly two critics: Imran Shah filed first. Ruth Cole, the other critic, filed later."
+      },
+      {
+        "bad": "The desk has one fact-checker in total: Lena Park, one of our fact-checkers, cleared the sidebar.",
+        "good": "The desk has one fact-checker in total: Lena Park, our sole fact-checker, cleared the sidebar."
+      }
+    ],
+    "slug": "c2-apposition-and-identifying-details",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 390,
+    "focus_area": "apposition-and-identification"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Select the assigned editor",
+      "instructions": "Complete the integrated role-and-name phrase with the assigned editor’s full name. The roster lists Anika Rao and Joel Moss as copy editors. Anika has the lead feature.",
+      "prompt_text": "The copy editor ___ will prepare the lead feature for proof.",
+      "accepted_answers": [
+        "Anika Rao"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Identify the second proofreader",
+      "instructions": "There are exactly two proofreaders, Rosa and Dev. Complete Dev’s supplementary description with the two words that distinguish him from Rosa. Use “other.”",
+      "prompt_text": "Rosa checked the headings. Dev, ___ proofreader, checked the footnotes.",
+      "accepted_answers": [
+        "the other"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Show that several people share a role",
+      "instructions": "Complete the supplementary appositive with the two-word expression beginning with “one” that presents Mei as a member of the group.",
+      "prompt_text": "Mei Lin, ___ our freelance reviewers, flagged the unsupported claim.",
+      "accepted_answers": [
+        "one of"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "fill",
+      "title": "State the overnight headcount",
+      "instructions": "The overnight shift has exactly one producer. Fill the gap with a four-letter word beginning with s that means only one.",
+      "prompt_text": "Inez Cruz, the ___ overnight producer, signed off on the homepage.",
+      "accepted_answers": [
+        "sole"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Introduce an additional researcher",
+      "instructions": "The project has four researchers. Insert the single word beginning with “an” that introduces Hana as an additional researcher.",
+      "prompt_text": "Malik checked the map. Hana, ___ researcher on the project, checked the timeline.",
+      "accepted_answers": [
+        "another"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct a misleading transcript label",
+      "instructions": "The interview team has three transcription editors. Rewrite the sentence so that the supplementary description presents Priya as one member of that group. Replace “the” with “one of the” and make any necessary change to the job title.",
+      "prompt_text": "Priya Nair, the transcription editor on the interview team, checked the quotation against the recording.",
+      "accepted_answers": [
+        "Priya Nair, one of the transcription editors on the interview team, checked the quotation against the recording."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Credit the contributing designer",
+      "instructions": "Alex Kim and Suri Patel are the two exhibition designers. Only Suri rebuilt the diagram. Use a supplementary phrase beginning with “one of” after Suri Patel’s name. Keep the action unchanged and use the plural of exhibition designer.",
+      "prompt_text": "Suri Patel, both exhibition designers, rebuilt the diagram.",
+      "accepted_answers": [
+        "Suri Patel, one of the exhibition designers, rebuilt the diagram."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Make a single appointment explicit",
+      "instructions": "Combine the two sentences into one beginning with “Ivo Marin.” Turn the role into a supplementary appositive and use the exact phrase “our only commissioning editor.” Keep the action unchanged.",
+      "prompt_text": "Ivo Marin is our commissioning editor. Ivo Marin approved the travel essay.",
+      "accepted_answers": [
+        "Ivo Marin, our only commissioning editor, approved the travel essay."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Disambiguate a shared role in a handover",
+      "instructions": "Two layout editors are on duty. Rewrite the sentence starting with “The layout editor” and place “Marta Ruiz” directly after the job title as part of the identifying phrase. Keep the action unchanged.",
+      "prompt_text": "Marta Ruiz, a layout editor, will release the corrected page.",
+      "accepted_answers": [
+        "The layout editor Marta Ruiz will release the corrected page."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a repeated name into an appositive",
+      "instructions": "The first sentence of the note already names a legal reader. Combine the two sentences below into one beginning with “Farah Ali.” Use the exact supplementary appositive “another legal reader on the project” and keep the action unchanged.",
+      "prompt_text": "Farah Ali is also a legal reader on the project. Farah Ali reviewed the interview release.",
+      "accepted_answers": [
+        "Farah Ali, another legal reader on the project, reviewed the interview release."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Identify the relevant edition",
+      "instructions": "The distribution sheet lists several editions. Start with “The edition” and place the edition name immediately after it as an integrated identifying detail. Use every tile once.",
+      "prompt_text": "sent to / The edition / on Thursday. / City Late / subscribers / will be",
+      "accepted_answers": [
+        "The edition City Late will be sent to subscribers on Thursday."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Add a role to a known contact",
+      "instructions": "The production team already knows Elias by name. Start with “Elias Novak,” and place the supplementary job description directly after his name. End with “before lunch.” Use every tile once.",
+      "prompt_text": "will verify / a production editor / before lunch. / Elias Novak, / the folios / on the special issue,",
+      "accepted_answers": [
+        "Elias Novak, a production editor on the special issue, will verify the folios before lunch."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.apposition-and-identification"
+    }
+  ]
+}

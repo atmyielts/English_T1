@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Writing an Incident Report",
+    "description": "Describe how a spill interrupted a library event, document what people observed and did, and explain what staff changed afterward.",
+    "slug": "b2-writing-an-incident-report",
+    "level": "B2",
+    "status": "published",
+    "sort_order": 380,
+    "topic": "incident reporting"
+  },
+  "children": [
+    {
+      "word": "spill",
+      "part_of_speech": "noun",
+      "definition": "An accidental release of liquid, or the liquid left where it was released.",
+      "example": "A spill beside the refreshments station interrupted the library's evening talk.",
+      "translation_ru": "случайный разлив жидкости; пролитая жидкость",
+      "translation_uz": "suyuqlikning tasodifan toʻkilishi; toʻkilgan suyuqlik",
+      "collocations": [
+        "report a spill",
+        "clean up a spill"
+      ]
+    },
+    {
+      "word": "trip hazard",
+      "part_of_speech": "noun phrase",
+      "definition": "An object or uneven part of a surface that someone could trip over.",
+      "example": "The report identified the curled edge of the mat as a trip hazard on the way to the side exit.",
+      "translation_ru": "предмет или неровность, из-за которых можно споткнуться",
+      "translation_uz": "odam qoqilib ketishi mumkin boʻlgan buyum yoki notekis joy",
+      "collocations": [
+        "identify a trip hazard",
+        "remove a trip hazard"
+      ]
+    },
+    {
+      "word": "interruption",
+      "part_of_speech": "noun",
+      "definition": "A temporary stop in an activity that has already begun.",
+      "example": "The interruption began halfway through the library talk, when the host asked the speaker to stop.",
+      "translation_ru": "временная приостановка",
+      "translation_uz": "faoliyatning vaqtincha toʻxtashi",
+      "collocations": [
+        "a brief interruption",
+        "an unexpected interruption"
+      ]
+    },
+    {
+      "word": "immediate response",
+      "part_of_speech": "noun phrase",
+      "definition": "What people do in the first moments after something happens to deal with the situation.",
+      "example": "As part of the immediate response, the host asked visitors to stay seated while an usher kept people away from the wet area.",
+      "translation_ru": "меры, принятые сразу после происшествия",
+      "translation_uz": "zudlik bilan koʻrilgan choralar",
+      "collocations": [
+        "describe the immediate response",
+        "coordinate the immediate response"
+      ]
+    },
+    {
+      "word": "incident register",
+      "part_of_speech": "noun phrase",
+      "definition": "An official list where an organisation keeps basic details of unexpected events that have been reported.",
+      "example": "The supervisor added an entry to the incident register with the date, location and reference for the full report.",
+      "translation_ru": "журнал регистрации происшествий",
+      "translation_uz": "hodisalarni qayd etish jurnali",
+      "collocations": [
+        "maintain an incident register",
+        "check the incident register"
+      ]
+    },
+    {
+      "word": "contributing factor",
+      "part_of_speech": "noun phrase",
+      "definition": "A detail or circumstance that helped bring about an event but may have been only one of its causes.",
+      "example": "The supervisor identified the position of the drinks tray near the edge of the refreshments table as a contributing factor.",
+      "translation_ru": "фактор, способствовавший происшествию",
+      "translation_uz": "hodisaga qisman sabab boʻlgan omil",
+      "collocations": [
+        "identify a contributing factor",
+        "note a contributing factor"
+      ]
+    },
+    {
+      "word": "sequence of events",
+      "part_of_speech": "noun phrase",
+      "definition": "The order in which things happened, from the first to the last.",
+      "example": "The sequence of events showed that the jug tipped over before the host stopped the talk.",
+      "translation_ru": "последовательность событий",
+      "translation_uz": "voqealar ketma-ketligi",
+      "collocations": [
+        "outline the sequence of events",
+        "reconstruct the sequence of events"
+      ]
+    },
+    {
+      "word": "corrective action",
+      "part_of_speech": "noun phrase",
+      "definition": "A step taken after a problem to deal with what caused it and make it less likely to happen again.",
+      "example": "As a corrective action, the events coordinator moved the drinks station into an alcove before the next talk.",
+      "translation_ru": "мера по устранению причины проблемы",
+      "translation_uz": "muammo sababini bartaraf etish chorasi",
+      "collocations": [
+        "take corrective action",
+        "propose a corrective action"
+      ]
+    },
+    {
+      "word": "reporting threshold",
+      "part_of_speech": "noun phrase",
+      "definition": "The level of seriousness or impact at which an organisation requires staff to report an event formally.",
+      "example": "The spill met the library's reporting threshold because it forced staff to stop a public event.",
+      "translation_ru": "порог, при достижении которого о происшествии нужно официально сообщить",
+      "translation_uz": "hodisa haqida rasmiy xabar berish majburiy boʻladigan daraja",
+      "collocations": [
+        "meet the reporting threshold",
+        "define the reporting threshold"
+      ]
+    },
+    {
+      "word": "firsthand observation",
+      "part_of_speech": "noun phrase",
+      "definition": "A detail that someone noticed personally while present.",
+      "example": "The usher's firsthand observation was that liquid was already spreading across the aisle when she entered the room.",
+      "translation_ru": "наблюдение очевидца",
+      "translation_uz": "bevosita kuzatuv",
+      "collocations": [
+        "record a firsthand observation",
+        "rely on firsthand observation"
+      ]
+    },
+    {
+      "word": "duty supervisor",
+      "part_of_speech": "noun phrase",
+      "definition": "The person responsible for overseeing staff and operations during a particular period of work.",
+      "example": "The host notified the duty supervisor, who asked the usher to describe what she had seen.",
+      "translation_ru": "дежурный руководитель",
+      "translation_uz": "navbatchi rahbar",
+      "collocations": [
+        "notify the duty supervisor",
+        "contact the duty supervisor"
+      ]
+    },
+    {
+      "word": "time of occurrence",
+      "part_of_speech": "noun phrase",
+      "definition": "The specific point at which something happened, usually given as a clock reading.",
+      "example": "The host estimated the time of occurrence as 18:12, the time he saw on the clock just after the jug tipped over.",
+      "translation_ru": "время происшествия",
+      "translation_uz": "hodisa sodir boʻlgan vaqt",
+      "collocations": [
+        "record the time of occurrence",
+        "estimate the time of occurrence"
+      ]
+    },
+    {
+      "word": "duration",
+      "part_of_speech": "noun",
+      "definition": "The length of time that an event or activity lasts.",
+      "example": "The host entered eight minutes as the duration of the interruption, from the moment the speaker stopped until the talk resumed.",
+      "translation_ru": "продолжительность",
+      "translation_uz": "davomiylik",
+      "collocations": [
+        "record the duration",
+        "estimate the duration"
+      ]
+    },
+    {
+      "word": "safety inspection",
+      "part_of_speech": "noun phrase",
+      "definition": "An examination of a place or equipment to identify anything that could cause harm.",
+      "example": "During the safety inspection before the next talk, the supervisor checked that the relocated drinks station left enough room for people to walk past.",
+      "translation_ru": "проверка безопасности",
+      "translation_uz": "xavfsizlik tekshiruvi",
+      "collocations": [
+        "carry out a safety inspection",
+        "schedule a safety inspection"
+      ]
+    }
+  ]
+}

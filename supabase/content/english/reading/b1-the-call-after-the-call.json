@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b1-the-call-after-the-call",
+    "title": "The Call after the Call",
+    "level": "B1",
+    "summary": "A volunteer group learns to treat sending a message and confirming that it arrived as two different jobs.",
+    "content_markdown": "The Alder Hall drawing group expected to meet on Sunday morning. On Saturday afternoon the cleaner found water under a sink and asked the organiser to keep the hall closed until someone checked it. A smaller room across the square was available at the same time, so the organiser arranged to move the session. There was no group chat that included all the members.\n\nThey had a telephone list instead. The first person was supposed to call the next name, and so on, until the last person knew. Jo, third on the list, got no answer from Lee, who came after her. She left a message and called the person below Lee as well. That kept the change moving along the list. It did not tell her whether Lee had heard it.\n\nOn Sunday two members still went to the old hall. Lee was one of them. He could see that the lights were off and had put his phone away in his bag. The other member had received a quick message without the name of the replacement room. They found the group after reading a note the cleaner had taped beside the door. By then the drawing session had already begun.\n\nFor later changes, the organiser asked the people making calls to write “answered” or “left a message” beside each name. The last caller would send the list of unconfirmed names back to the organiser. There would also be a note at the old room before the change, giving the full address of the new one. The first system had been good at passing news on. The revised system was meant to show exactly which part of that news still needed checking.",
+    "category": "Community",
+    "theme": "sharing a last-minute timetable change",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "local report",
+      "word_count": 283
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What weakness in the first telephone list does the story show?",
+        "options": [
+          "Callers reached the last names too early.",
+          "The list gave members the name of the cleaner instead of the organiser.",
+          "The group could pass the news on without knowing whether every person had received enough information.",
+          "People could only call a number if they were already in the hall."
+        ],
+        "answer_index": 2,
+        "explanation": "The change reached many people, yet Lee missed it and another member lacked the name of the new room."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did Jo call the person below Lee?",
+        "options": [
+          "She did not want the message to stop when Lee did not answer.",
+          "She had heard that Lee was at the replacement room.",
+          "The person below Lee had prepared the sign at the door.",
+          "She wanted somebody else to cancel the session."
+        ],
+        "answer_index": 0,
+        "explanation": "By moving on to the next name after leaving a message, Jo keeps the chain of calls going."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "How will the new record help the organiser?",
+        "options": [
+          "It shows which members no longer attend drawing sessions.",
+          "It makes it easier to work out which people still need a confirmation.",
+          "It means the organiser can stop writing the address in a note.",
+          "It finds out who brought the first message to the cleaner."
+        ],
+        "answer_index": 1,
+        "explanation": "The organiser receives the names for which an answer has not been confirmed, so those contacts can be followed up."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “unconfirmed” mean here?",
+        "options": [
+          "Known to have received the wrong address",
+          "Originally absent from the telephone list",
+          "Unable to send a message to the organiser",
+          "Still lacking proof that the information reached them"
+        ],
+        "answer_index": 3,
+        "explanation": "A name is unconfirmed if a caller could leave news but could not check that the person heard it."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The replacement room was free at the original meeting time.",
+        "answer": "true",
+        "explanation": "The opening says a room across the square was available at the same time."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Jo spoke directly to Lee on Saturday.",
+        "answer": "false",
+        "explanation": "She got no answer and left a message instead."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage gives the replacement room’s full street address.",
+        "answer": "not_given",
+        "explanation": "Its location is described as across the square, but a street address is never supplied."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The group’s list was a ___ list. The new note will give the full ___ of the replacement room.",
+        "answers": [
+          [
+            "telephone"
+          ],
+          [
+            "address"
+          ]
+        ],
+        "word_bank": [
+          "cleaner",
+          "address",
+          "telephone",
+          "square"
+        ],
+        "explanation": "Paragraph 2 names the list. The final paragraph specifies what will appear in the note."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "One missing reply does not stop the news",
+          "More ways to be sure people know about a move",
+          "An unexpected change of venue",
+          "The remaining gaps become visible at the old hall",
+          "A drawing class moves to a different weekday"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The paragraphs explain the move, a missed call, the confusion at the old hall and the revised system."
+      }
+    ]
+  },
+  "children": []
+}

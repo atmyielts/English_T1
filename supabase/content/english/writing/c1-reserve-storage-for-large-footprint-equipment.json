@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "c1-reserve-storage-for-large-footprint-equipment",
+    "title": "Propose a Shared Equipment Storage Policy",
+    "level": "C1",
+    "prompt_text": "Residents have asked for indoor storage space for their own equipment. Some need a large space for bulky equipment they use weekly. Others would like a small space for items they use every day. The building has 18 identical sections of shelving and limited staff time. Propose a system that handles different sizes, keeps the application process short, and gives people a way to revise their allocation when their needs change.",
+    "genre": "policy proposal",
+    "audience": "committee members at a community sports building",
+    "target_grammar": "Concessive structures and precise conditionals. Use nominal phrases to name procedures.",
+    "target_structure": "Define the allocation unit, describe two contrasting cases, and specify a review and appeal procedure.",
+    "target_vocabulary": [
+      "allocation",
+      "bulky",
+      "frequency",
+      "adjacent",
+      "unused",
+      "review period"
+    ],
+    "expected_length_min": 188,
+    "expected_length_max": 272,
+    "checklist": [
+      {
+        "point": "Explain how storage will be allocated across different equipment sizes.",
+        "keywords": [
+          "adjacent",
+          "two sections",
+          "each section",
+          "one section"
+        ]
+      },
+      {
+        "point": "Make the application short and easy to check.",
+        "keywords": [
+          "measurements",
+          "application",
+          "form",
+          "dimensions"
+        ]
+      },
+      {
+        "point": "Set out a transparent way to handle competing demand.",
+        "keywords": [
+          "waiting list",
+          "reserve",
+          "trial",
+          "priority"
+        ]
+      },
+      {
+        "point": "Provide a low-friction way to change an allocation.",
+        "keywords": [
+          "review period",
+          "change",
+          "contact",
+          "release a section",
+          "at renewal"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    },
+    "sort_order": 358
+  },
+  "children": []
+}

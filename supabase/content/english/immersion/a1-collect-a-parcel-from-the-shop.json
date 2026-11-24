@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-collect-a-parcel-from-the-shop",
+    "title": "Collect a parcel from the shop",
+    "level": "A1",
+    "mission_type": "service",
+    "context_text": "You are going to collect a parcel for your flat. Read the text and speak to the shop assistant.",
+    "objective_text": "Pick up the correct parcel or find a simple way to collect it later.",
+    "target_vocabulary": [
+      "parcel",
+      "code",
+      "form",
+      "name",
+      "counter"
+    ],
+    "success_conditions": [
+      "Pick up the correct parcel or find a simple way to collect it later.",
+      "Name the pickup shop",
+      "Give a code and reminder",
+      "Give tomorrow’s opening time",
+      "Mention ID"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the parcel text",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Parcel ready at King Street Shop. Collection code: 642. Come before six. Bring ID. Go to the counter at the back.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Where is the counter?",
+          "options": [
+            "At the back",
+            "At the front door",
+            "At the side window"
+          ],
+          "answer_index": 0,
+          "explanation": "The message says to use the counter at the back."
+        },
+        {
+          "prompt": "Which code should you give?",
+          "options": [
+            "642",
+            "624",
+            "462"
+          ],
+          "answer_index": 0,
+          "explanation": "The text shows 642."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the shop’s new hours",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Hello. The shop will shut at five today. If you cannot come by five, your parcel will still be here tomorrow. We open at nine.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When does the shop shut today?",
+          "options": [
+            "Six",
+            "Five",
+            "Nine"
+          ],
+          "answer_index": 1,
+          "explanation": "Today the shop is shutting at five."
+        },
+        {
+          "prompt": "What is the earliest time to come tomorrow?",
+          "options": [
+            "Five",
+            "Nine",
+            "Six"
+          ],
+          "answer_index": 1,
+          "explanation": "The shop opens at nine."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask at the counter",
+      "prompt_text": "You made it to the shop before five. Tell the assistant what you need.",
+      "instructions": "Give the collection code in clear, separate digits. Offer to show your ID.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Hello, I am here for a parcel. My code is six four two. I have my ID here if you need it.",
+      "points": [
+        {
+          "label": "State the right code",
+          "any": [
+            "six four two",
+            "642"
+          ]
+        },
+        {
+          "label": "Offer ID",
+          "any": [
+            "my id",
+            "show my id"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send a fallback plan",
+      "prompt_text": "Imagine you miss today’s closing time after all. Your flatmate asks what to do tomorrow.",
+      "instructions": "Tell them where to go, the earliest time, and what to take. Use a greeting so it reads like a real message.",
+      "goal": "Pick up the correct parcel or find a simple way to collect it later.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Hi Jo, please go to King Street Shop tomorrow. It opens at nine. Ask for the parcel at the back counter. The code is 642. Please bring your ID. I can meet you there if you like.",
+      "points": [
+        {
+          "label": "Name the pickup shop",
+          "any": [
+            "King Street Shop"
+          ]
+        },
+        {
+          "label": "Give a code and reminder",
+          "any": [
+            "642",
+            "six four two"
+          ]
+        },
+        {
+          "label": "Give tomorrow’s opening time",
+          "any": [
+            "opens at nine",
+            "from nine",
+            "at 9"
+          ]
+        },
+        {
+          "label": "Mention ID",
+          "any": [
+            "bring your id",
+            "take your id"
+          ]
+        }
+      ]
+    }
+  ]
+}

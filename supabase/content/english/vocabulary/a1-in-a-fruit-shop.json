@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "In a fruit shop",
+    "description": "Name different fruits and ask for the kind, size or amount you want to buy.",
+    "slug": "a1-in-a-fruit-shop",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 400,
+    "topic": "fruit shop"
+  },
+  "children": [
+    {
+      "word": "pear",
+      "part_of_speech": "noun",
+      "definition": "A sweet fruit that is wide and round at the bottom and narrow at the top.",
+      "example": "Can I have that big green pear, please?",
+      "translation_ru": "груша",
+      "translation_uz": "nok",
+      "collocations": [
+        "a green pear",
+        "a ripe pear"
+      ]
+    },
+    {
+      "word": "peach",
+      "part_of_speech": "noun",
+      "definition": "A round, sweet fruit with tiny, soft hairs on its skin and a large, hard stone inside.",
+      "example": "I'd like one soft peach to eat today, please.",
+      "translation_ru": "персик",
+      "translation_uz": "shaftoli",
+      "collocations": [
+        "a juicy peach",
+        "a ripe peach"
+      ]
+    },
+    {
+      "word": "plum",
+      "part_of_speech": "noun",
+      "definition": "A small fruit with smooth skin, often purple, and one hard stone inside.",
+      "example": "Can I try a purple plum before I buy a kilo?",
+      "translation_ru": "слива",
+      "translation_uz": "olxoʻri",
+      "collocations": [
+        "a purple plum",
+        "a sweet plum"
+      ]
+    },
+    {
+      "word": "grapes",
+      "part_of_speech": "plural noun",
+      "definition": "Small, round fruits that grow close together and can be green, red or purple.",
+      "example": "Can I have half a kilo of green grapes, please?",
+      "translation_ru": "виноград",
+      "translation_uz": "uzum",
+      "collocations": [
+        "a bunch of grapes",
+        "green grapes"
+      ]
+    },
+    {
+      "word": "strawberry",
+      "part_of_speech": "noun",
+      "definition": "A sweet red fruit with tiny seeds on the outside and small green leaves on top.",
+      "example": "May I try a strawberry from this box?",
+      "translation_ru": "клубника",
+      "translation_uz": "qulupnay",
+      "collocations": [
+        "a ripe strawberry",
+        "a sweet strawberry"
+      ]
+    },
+    {
+      "word": "cherry",
+      "part_of_speech": "noun",
+      "definition": "A very small, round fruit, often red or dark red, with one hard stone inside.",
+      "example": "Can I taste a cherry before I buy a bag?",
+      "translation_ru": "черешня",
+      "translation_uz": "gilos",
+      "collocations": [
+        "a sweet cherry",
+        "a dark red cherry"
+      ]
+    },
+    {
+      "word": "lemon",
+      "part_of_speech": "noun",
+      "definition": "A yellow fruit that tastes very sour and is often a little pointed at both ends.",
+      "example": "I'll take one large lemon for my tea, please.",
+      "translation_ru": "лимон",
+      "translation_uz": "limon",
+      "collocations": [
+        "a slice of lemon",
+        "a whole lemon"
+      ]
+    },
+    {
+      "word": "melon",
+      "part_of_speech": "noun",
+      "definition": "A large, sweet fruit with thick skin and many seeds together in the middle.",
+      "example": "Can I buy half a melon for tonight?",
+      "translation_ru": "дыня",
+      "translation_uz": "qovun",
+      "collocations": [
+        "a slice of melon",
+        "a ripe melon"
+      ]
+    },
+    {
+      "word": "orange",
+      "part_of_speech": "noun",
+      "definition": "A round, sweet fruit with bright skin the same color as a carrot and juicy pieces inside.",
+      "example": "Can I have one big orange to make juice?",
+      "translation_ru": "апельсин",
+      "translation_uz": "apelsin",
+      "collocations": [
+        "a juicy orange",
+        "peel an orange"
+      ]
+    },
+    {
+      "word": "pineapple",
+      "part_of_speech": "noun",
+      "definition": "A big fruit with hard, rough skin, long green leaves on top and sweet yellow fruit inside.",
+      "example": "I'd like that whole pineapple, please.",
+      "translation_ru": "ананас",
+      "translation_uz": "ananas",
+      "collocations": [
+        "a whole pineapple",
+        "a slice of pineapple"
+      ]
+    },
+    {
+      "word": "banana",
+      "part_of_speech": "noun",
+      "definition": "A long, curved fruit with soft, sweet fruit inside and skin that turns yellow when it is ready to eat.",
+      "example": "Can I buy just one banana for my lunch?",
+      "translation_ru": "банан",
+      "translation_uz": "banan",
+      "collocations": [
+        "a ripe banana",
+        "peel a banana"
+      ]
+    },
+    {
+      "word": "apricot",
+      "part_of_speech": "noun",
+      "definition": "A small, round, pale orange fruit with fine, soft hairs on its skin and a hard, flat stone inside.",
+      "example": "Can I try an apricot before I buy some for lunch?",
+      "translation_ru": "абрикос",
+      "translation_uz": "oʻrik",
+      "collocations": [
+        "a fresh apricot",
+        "a ripe apricot"
+      ]
+    },
+    {
+      "word": "kiwi",
+      "part_of_speech": "noun",
+      "definition": "A small fruit with brown, hairy skin and usually green fruit inside with tiny black seeds.",
+      "example": "Is this kiwi soft enough to eat today?",
+      "translation_ru": "киви",
+      "translation_uz": "kivi",
+      "collocations": [
+        "a ripe kiwi",
+        "a slice of kiwi"
+      ]
+    },
+    {
+      "word": "fig",
+      "part_of_speech": "noun",
+      "definition": "A small, soft fruit with green or purple skin and many tiny seeds inside.",
+      "example": "I'd like one fresh fig to try, please.",
+      "translation_ru": "инжир",
+      "translation_uz": "anjir",
+      "collocations": [
+        "a fresh fig",
+        "a ripe fig"
+      ]
+    }
+  ]
+}

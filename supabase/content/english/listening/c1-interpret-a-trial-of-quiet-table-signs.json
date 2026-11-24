@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c1-interpret-a-trial-of-quiet-table-signs",
+    "title": "Interpret a trial of quiet-table signs",
+    "level": "C1",
+    "summary": "A café owner describes how signs changed behaviour without changing the layout.",
+    "transcript_text": "We put quiet-table cards near the wall. I assumed people would see them as an invitation to work alone. A few regulars did. Others thought we had reserved the tables for staff. We changed the words to ask customers to keep conversations low. Groups began using them, and some moved their chairs into the aisle to talk to friends at the next table. Noise readings fell, but crossing the room became harder. Next month we'll try quieter tables in a separate corner, so the arrangement does some of the work. The trial helped me see how quickly a sign changes what a table means to people. A quieter room is only part of what we were trying to achieve.",
+    "category": "Everyday",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 49,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "everyday",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What surprised the owner about the original cards?",
+        "options": [
+          "Nobody saw any cards by the wall",
+          "People read the same cards as different instructions",
+          "The cards raised the noise level on their own",
+          "Staff claimed the labels were unreadable"
+        ],
+        "answer_index": 1,
+        "explanation": "Some people understood a quiet invitation and others inferred a staff reservation.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What did the revised wording change?",
+        "options": [
+          "Groups started using the marked tables",
+          "People used the wall only to read signs",
+          "Customers left chairs outside the café",
+          "Every visitor sat alone"
+        ],
+        "answer_index": 0,
+        "explanation": "Groups were willing to use the tables after the label changed.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Which measure improved?",
+        "options": [
+          "Ease of passing through the aisle",
+          "The number of chairs in their original places",
+          "The distance to the door",
+          "Recorded noise levels"
+        ],
+        "answer_index": 3,
+        "explanation": "Noise fell even though movement became more difficult.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why try another corner?",
+        "options": [
+          "Signs may be used only in that corner",
+          "People complained that the corner was too quiet",
+          "The layout could help manage the behaviour the sign alone did not",
+          "The owner is dropping the quiet-table idea"
+        ],
+        "answer_index": 2,
+        "explanation": "The owner wants the physical arrangement to help.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What conclusion is supported?",
+        "options": [
+          "Lower noise proves the whole room works better",
+          "Changing a sign can improve one aspect of a room while making another worse",
+          "Signs cannot affect behaviour",
+          "A separate corner is proven to solve the problem"
+        ],
+        "answer_index": 1,
+        "explanation": "The trial found both quieter readings and a more obstructed route.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "reserved the tables for staff",
+      "focus_phrase": "tables for staff",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "some moved their chairs into the aisle",
+      "focus_phrase": "into the aisle",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "crossing the room became harder",
+      "focus_phrase": "room became harder",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

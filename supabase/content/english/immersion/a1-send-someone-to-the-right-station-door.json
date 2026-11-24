@@ -1,0 +1,148 @@
+{
+  "item": {
+    "slug": "a1-send-someone-to-the-right-station-door",
+    "title": "Send someone to the right station door",
+    "level": "A1",
+    "mission_type": "travel",
+    "context_text": "A friend is coming to meet you at a station with two entrances. They have a large suitcase.",
+    "objective_text": "Give your friend a route and a meeting point they can use with a suitcase.",
+    "target_vocabulary": [
+      "entrance",
+      "stairs",
+      "meet",
+      "lift",
+      "crossing"
+    ],
+    "success_conditions": [
+      "Give your friend a route and a meeting point they can use with a suitcase.",
+      "Give the step-free entrance",
+      "Set the meeting point",
+      "Help identify each other"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the station map",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "North entrance: stairs only. South entrance: lift and ticket machines. From the south doors, go left for the café and right for the toilets.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which entrance has a lift?",
+          "options": [
+            "South",
+            "North",
+            "Neither"
+          ],
+          "answer_index": 0,
+          "explanation": "The lift is marked at the south entrance."
+        },
+        {
+          "prompt": "Which way from the south doors leads to the café?",
+          "options": [
+            "Left",
+            "Right",
+            "Straight to the stairs"
+          ],
+          "answer_index": 0,
+          "explanation": "The map puts the café to the left."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear your friend’s update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Hello! I am on the number six bus. It stops by the north entrance. I can walk along Station Road to the other side. I have my large red suitcase.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Where does the bus stop?",
+          "options": [
+            "By the north entrance",
+            "By the south entrance",
+            "Outside the café"
+          ],
+          "answer_index": 0,
+          "explanation": "The friend names the north entrance."
+        },
+        {
+          "prompt": "What can you look for when your friend arrives?",
+          "options": [
+            "A red suitcase",
+            "A red bus pass",
+            "A red coat"
+          ],
+          "answer_index": 0,
+          "explanation": "They say they have a large red suitcase."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Give spoken directions",
+      "prompt_text": "Your friend calls from the north bus stop and asks which way to go.",
+      "instructions": "Say the street, the door and one useful reason to take that route. Repeat slowly with a pause before the meeting point.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Walk along Station Road to the south entrance. Go through the doors and take the lift. I will meet you by the café.",
+      "points": [
+        {
+          "label": "Say the street",
+          "any": [
+            "Station Road"
+          ]
+        },
+        {
+          "label": "Name the south entrance",
+          "any": [
+            "south entrance",
+            "south doors"
+          ]
+        },
+        {
+          "label": "Mention the lift",
+          "any": [
+            "lift",
+            "elevator"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write one message for the trip",
+      "prompt_text": "Your friend’s phone battery is nearly empty. Write one message they can read at the bus stop.",
+      "instructions": "Put the door and the reason first. Include what to do when they reach the café. Read the note as if you have never visited this station.",
+      "goal": "Give your friend a route and a meeting point they can use with a suitcase.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Use the south entrance because it has a lift. Walk along Station Road from the bus stop. Go left when you come in. I will wait at the café and look for your red suitcase.",
+      "points": [
+        {
+          "label": "Give the step-free entrance",
+          "any": [
+            "south entrance",
+            "south doors"
+          ]
+        },
+        {
+          "label": "Set the meeting point",
+          "any": [
+            "café",
+            "cafe"
+          ]
+        },
+        {
+          "label": "Help identify each other",
+          "any": [
+            "red suitcase",
+            "red bag"
+          ]
+        }
+      ]
+    }
+  ]
+}

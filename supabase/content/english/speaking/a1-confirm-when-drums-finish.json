@@ -1,0 +1,49 @@
+{
+  "item": {
+    "slug": "a1-confirm-when-drums-finish",
+    "title": "Say When Practice Ends",
+    "level": "A1",
+    "prompt_text": "A visitor asks about an evening drum practice. It ends at half past seven. The door by the stairs will be open. Tell the visitor the time, which door to use, and where you will wait.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 25,
+    "target_grammar": "Ends at for a time, and by or next to for a location.",
+    "fluency_objective": "Read the three cues, practise the words for the time, then say the whole message. Listen back and check that every clue is easy to hear.",
+    "pronunciation_objective": "Say half past seven as one group. Stress stairs and bench.",
+    "target_vocabulary": [
+      "half past seven",
+      "stairs",
+      "open",
+      "wait",
+      "bench"
+    ],
+    "cues": [
+      {
+        "text": "Give the finishing time.",
+        "keywords": [
+          "half past seven",
+          "seven thirty"
+        ]
+      },
+      {
+        "text": "Tell the visitor which door to use.",
+        "keywords": [
+          "door by the stairs",
+          "door next to the stairs"
+        ]
+      },
+      {
+        "text": "Say where you will wait.",
+        "keywords": [
+          "wait on the bench",
+          "near the door",
+          "outside the door"
+        ]
+      }
+    ],
+    "model_opening": "Drum practice ends at half past seven.",
+    "model_answer": "Drum practice ends at half past seven. Use the door by the stairs. It will be open. I'll wait on the bench outside the door. See you there.",
+    "sort_order": 365
+  },
+  "children": []
+}

@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b1-follow-the-community-fridge-policy",
+    "title": "Follow the community fridge policy",
+    "level": "B1",
+    "summary": "A volunteer gives a new helper the reasoning behind collection and labelling rules.",
+    "transcript_text": "Volunteer: Most people think the community fridge is only for food that shops would throw away. Local residents can donate too, but we handle the two kinds of donations differently.\nHelper: Is that why there are two boxes of labels?\nVolunteer: Yes. Shops tell us when their items came off the shelf, so their label has a date and the shop name. At home, anyone can open a packet, so residents can only give sealed items. Put those on the top shelf and write down the date we received them.\nHelper: Someone offered us homemade soup yesterday.\nVolunteer: We cannot take it here. Ask them whether the café wants it for a shared lunch. The café can talk to them about how they made it.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 120,
+    "duration_seconds": 60,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "community",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Volunteer",
+        "Helper"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What does the volunteer mainly explain?",
+        "options": [
+          "Why a fridge should stand beside a café",
+          "How people can apply for food vouchers",
+          "How to handle two sources of donated food",
+          "Which shops sell the cheapest food"
+        ],
+        "answer_index": 2,
+        "explanation": "The conversation contrasts the procedures for shops and residents.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What information comes from shops?",
+        "options": [
+          "The names of customers who bought items",
+          "When items came off their shelves",
+          "Whether local residents opened an item",
+          "The café’s lunch schedule"
+        ],
+        "answer_index": 1,
+        "explanation": "The shop provides the date its item came off the shelf.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why can residents donate only sealed items?",
+        "options": [
+          "The team cannot check what happened after opening",
+          "The shop labels will not stick to open items",
+          "The top shelf is reserved for cold packages",
+          "Residents can give food only once"
+        ],
+        "answer_index": 0,
+        "explanation": "The volunteer says a packet may have been opened at home.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What belongs on the top shelf?",
+        "options": [
+          "Every donation from a shop",
+          "Homemade soup in any pot",
+          "Only food with no date",
+          "Qualifying items donated by residents"
+        ],
+        "answer_index": 3,
+        "explanation": "The volunteer directs eligible resident donations to the top shelf.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What should happen to the offer of soup?",
+        "options": [
+          "Put the soup in the fridge anyway",
+          "Report the donor to the shop",
+          "Ask the donor to check with the café",
+          "Put a shop label on the container"
+        ],
+        "answer_index": 2,
+        "explanation": "The fridge cannot take it, but the donor can ask the café about its rules.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "we handle the two kinds of donations differently",
+      "focus_phrase": "of donations differently",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "residents can only give sealed items",
+      "focus_phrase": "give sealed items",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "for a shared lunch",
+      "focus_phrase": "a shared lunch",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

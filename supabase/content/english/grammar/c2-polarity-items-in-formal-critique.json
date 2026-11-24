@@ -1,0 +1,172 @@
+{
+  "item": {
+    "title": "Polarity items in formal critique",
+    "explanation_text": "In a formal critique, polarity items help specify what the evidence fails to establish or what a reviewer is asking the authors to establish. In “The appendix does not provide any baseline estimates,” any falls within the scope of negation. In a direct question, “Did the panel ever test the threshold during the pilot?”, ever asks whether the test occurred on even one occasion within a closed period.\n\nAn explicit not is only one way to license these items. “The reviewers doubt that the adjustment had any effect at all” places any and at all inside the claim being doubted. “Hardly any submissions included a sensitivity analysis” uses the near-negative hardly. At all can sharpen the question of whether there was an effect to any degree.\n\nTemporal yet looks up to a reference point, such as the present in “Has the board responded yet?” In an affirmative rule, “Reviewers may inspect any file in the public archive” uses free-choice any: every file in that archive is an eligible choice.",
+    "contrast_text": "“The panel did not consult any external assessor” denies that an external consultation took place. “The panel may consult any external assessor on the register” makes each registered assessor eligible. The first is a claim about what happened, and the second is a statement of permission.",
+    "common_error_pattern": "Check where the polarity item sits relative to the question or negation. A negative phrase later in the sentence does not automatically license an earlier any. In a standard formal declarative intended to deny that any reports addressed an issue, use “No reports addressed it” or “The reports did not address it.”",
+    "tags": [
+      "polarity-items",
+      "formal-critique",
+      "negation",
+      "direct-questions",
+      "free-choice-any"
+    ],
+    "examples": [
+      {
+        "bad": "Any of the submissions did not disclose a funding source. (Intended meaning: zero submissions disclosed one.)",
+        "good": "The submissions did not disclose any funding sources."
+      },
+      {
+        "bad": "Did the contractor ever documented a calibration failure during the trial?",
+        "good": "Did the contractor ever document a calibration failure during the trial?"
+      },
+      {
+        "bad": "The new weighting affected the final ranking at all. (An affirmative finding that the ranking changed.)",
+        "good": "The new weighting affected the final ranking."
+      },
+      {
+        "bad": "The committee has already issued its response. (Status as of now: the response is still outstanding.)",
+        "good": "The committee has not issued its response yet."
+      }
+    ],
+    "slug": "c2-polarity-items-in-formal-critique",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 360,
+    "focus_area": "negative-polarity-items"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Report an absence in the record",
+      "instructions": "Complete the negative finding with the single determiner any. The register contains zero calibration logs from the subcontractor.",
+      "prompt_text": "The subcontractor did not submit ___ calibration logs for inclusion in the register.",
+      "accepted_answers": [
+        "any"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask about a closed pilot",
+      "instructions": "Insert the single adverb ever after the subject. Ask whether the team repeated the measurement on even one occasion during the completed pilot.",
+      "prompt_text": "Did the team ___ repeat the baseline measurement during the pilot?",
+      "accepted_answers": [
+        "ever"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Question whether an effect existed",
+      "instructions": "Complete the sentence with the two-word expression at all. The review questions whether the adjustment reduced discrepancies to any degree.",
+      "prompt_text": "The reviewers doubt that the adjustment reduced discrepancies ___.",
+      "accepted_answers": [
+        "at all"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check the status of a response",
+      "instructions": "Insert the single temporal adverb yet at the end of the direct question. The secretariat is asking whether the authors have responded by now.",
+      "prompt_text": "Have the authors responded to the methodological objections ___?",
+      "accepted_answers": [
+        "yet"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Express near absence",
+      "instructions": "Complete the sentence with hardly any. The review found a very small number of protocols with an independent verification step.",
+      "prompt_text": "___ of the sampled protocols specified an independent verification step.",
+      "accepted_answers": [
+        "Hardly any"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Put negation over the disputed link",
+      "instructions": "Begin with “The inquiry did not identify”. Use any before “causal link between the delay and the staffing change”. The inquiry identified zero such links.",
+      "prompt_text": "Any causal link between the delay and the staffing change was not identified by the inquiry.",
+      "accepted_answers": [
+        "The inquiry did not identify any causal link between the delay and the staffing change."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Record an outstanding publication",
+      "instructions": "Replace already with not after has and add yet at the end. As of now, the commission's technical annex remains unpublished. Keep the other words in their original order.",
+      "prompt_text": "The commission has already released the technical annex.",
+      "accepted_answers": [
+        "The commission has not released the technical annex yet."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn a possibility into a direct question",
+      "instructions": "Address the question to the hearing panel. Begin “Did the external assessor ever”, keep “request access to the raw recordings”, and retain “during the hearing” at the end. The hearing has concluded.",
+      "prompt_text": "It is unclear whether the external assessor requested access to the raw recordings during the hearing.",
+      "accepted_answers": [
+        "Did the external assessor ever request access to the raw recordings during the hearing?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Restate an open choice",
+      "instructions": "Rewrite the rule as one affirmative sentence beginning “Inspectors may select”. Use free-choice any, keep “of the accredited laboratories” immediately after it, and end with “for a follow-up test”.",
+      "prompt_text": "Each of the accredited laboratories is eligible for selection by inspectors for a follow-up test.",
+      "accepted_answers": [
+        "Inspectors may select any of the accredited laboratories for a follow-up test."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Preserve doubt about the scale of improvement",
+      "instructions": "Begin “The evaluator doubts that” and keep the proposition in the past simple. Replace “even slightly” with at all and put it at the end.",
+      "prompt_text": "The evaluator is skeptical that the revised rubric improved agreement between raters even slightly.",
+      "accepted_answers": [
+        "The evaluator doubts that the revised rubric improved agreement between raters at all."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Order a question about compliance",
+      "instructions": "Use each tile once to ask whether the contractor met even one disclosure requirement on the stated occasion. Begin with “Did” and put “at the initial review” last.",
+      "prompt_text": "meet / at the initial review / Did / any / of the disclosure requirements / the contractor / ?",
+      "accepted_answers": [
+        "Did the contractor meet any of the disclosure requirements at the initial review?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Order a finding at the audit cutoff",
+      "instructions": "Use each tile once to report that the reconciliation was still outstanding when the audit closed. Begin with “By the time the audit closed,” and place “yet” immediately before “reconciled”.",
+      "prompt_text": "yet / the finance team / By the time the audit closed, / the two ledgers / reconciled / had not / .",
+      "accepted_answers": [
+        "By the time the audit closed, the finance team had not yet reconciled the two ledgers."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.negative-polarity-items"
+    }
+  ]
+}

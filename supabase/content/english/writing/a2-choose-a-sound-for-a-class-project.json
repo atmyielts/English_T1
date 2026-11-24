@@ -1,0 +1,56 @@
+{
+  "item": {
+    "slug": "a2-choose-a-sound-for-a-class-project",
+    "title": "Describe a Sound for a Class Project",
+    "level": "A2",
+    "prompt_text": "Your class is collecting sounds from everyday places. Choose an ordinary sound that people can listen to for just a few seconds. Describe where and when you hear it, what the sound is like, and why it belongs in the collection. Invent an example if you want.",
+    "genre": "class project entry",
+    "audience": "classmates making a short sound collection",
+    "target_grammar": "Present simple for a regular sound, when for its context, and because for a reason.",
+    "target_structure": "Name the sound, locate it, then explain what it can tell a listener.",
+    "target_vocabulary": [
+      "bell",
+      "sound",
+      "metal",
+      "behind",
+      "morning"
+    ],
+    "expected_length_min": 52,
+    "expected_length_max": 94,
+    "checklist": [
+      {
+        "point": "Locate the sound in a real or imagined place.",
+        "keywords": [
+          "behind the shop",
+          "in the morning",
+          "outside",
+          "near the bakery"
+        ]
+      },
+      {
+        "point": "Describe the sound or its rhythm.",
+        "keywords": [
+          "rings twice",
+          "two short",
+          "metal",
+          "loud",
+          "soft"
+        ]
+      },
+      {
+        "point": "Explain why the collection should include it.",
+        "keywords": [
+          "belongs",
+          "i chose",
+          "include it",
+          "can tell"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    },
+    "sort_order": 392
+  },
+  "children": []
+}

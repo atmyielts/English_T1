@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b1-the-observatorys-cloud-plan",
+    "title": "The Observatory’s Cloud Plan",
+    "level": "B1",
+    "summary": "Visitors discover what they can learn from an observatory on a night without a clear sky.",
+    "content_markdown": "We booked a Saturday visit to Bell Hill Observatory because the notice said there would be a chance to use a telescope. When we arrived, the main dome looked as if it were sitting inside a cloud. Guide Mara showed us a small drawing of the sky. Something might become visible later, she said, but it would be a mistake to spend the whole visit waiting at the door.\n\nShe took the group into a room with a table by the window. On the table there was a photograph the observatory had made on a clear night. It showed four lights in a patch of sky. Beside it lay another photograph of the same patch taken a week later. Three of the lights were in the same positions. The fourth had moved. Mara gave us a sheet of transparent paper and asked us to mark the three lights that stayed still. Then we put the sheet over the second picture.\n\nAt first the fourth light seemed to have moved a long way. One visitor pointed out that the second picture had been printed a little bigger. Mara made us a copy of each picture at the same size. Only then could we see how much the fourth light had actually changed position. We could not identify it from the two prints, but we could make a better decision about what to check next.\n\nWe went outside at the end. The dome was still closed and the clouds had not lifted. The visit would have been different on a clear night. But I had learnt how people use an observation after they make it, which was a part of the visit I had not expected.",
+    "category": "Science",
+    "theme": "an astronomy visit in cloudy weather",
+    "tone": "mint",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "visitor account",
+      "word_count": 284
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the writer gain from the visit?",
+        "options": [
+          "A method for comparing observations after they have been made",
+          "A promise to return every Saturday",
+          "A way to predict when clouds will clear",
+          "A list of names for every light in the photograph"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer learns to compare pictures carefully even without observing through the telescope."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did Mara take the group into a room?",
+        "options": [
+          "The outside temperature had made the pictures wet.",
+          "She did not want the group to spend the visit waiting in the cloud.",
+          "The table was too heavy to move outside.",
+          "A new telescope was already being used there."
+        ],
+        "answer_index": 1,
+        "explanation": "Mara says waiting by the door would waste the visit and offers a task using existing observations."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why were the matching print sizes important?",
+        "options": [
+          "The original first picture was too dark to read.",
+          "The group needed photographs that could fit in a bag.",
+          "A size difference could make the change in position look different from what it was.",
+          "A larger image would identify the light immediately."
+        ],
+        "answer_index": 2,
+        "explanation": "The group cannot judge the shift accurately until print size is held constant."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “had not lifted” mean in the last paragraph?",
+        "options": [
+          "Had become brighter",
+          "Had reached the ground",
+          "Had moved behind the hill",
+          "Had not gone away"
+        ],
+        "answer_index": 3,
+        "explanation": "The sky was still cloudy when the group went out at the end."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Both photographs showed the same patch of sky.",
+        "answer": "true",
+        "explanation": "Mara supplies a second photograph of that same area taken a week later."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The group identified the fourth light by the end of the exercise.",
+        "answer": "false",
+        "explanation": "The text says the two prints did not allow the group to identify it."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The article gives the size of the telescope inside the dome.",
+        "answer": "not_given",
+        "explanation": "The visit mentions the telescope and the closed dome, but no dimensions are given."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Mara gave the visitors some transparent ___. The two pictures finally needed to be the same ___.",
+        "answers": [
+          [
+            "paper"
+          ],
+          [
+            "size"
+          ]
+        ],
+        "word_bank": [
+          "window",
+          "size",
+          "paper",
+          "lights"
+        ],
+        "explanation": "The second paragraph gives the transparent sheet and the third explains why the sizes must match."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Why the group stays indoors",
+          "A fairer comparison of the two prints",
+          "Comparing observations of the same area",
+          "An unexpected reason the visit was useful",
+          "How the dome is put together"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "The text moves from cloudy conditions, to the photographs, to the corrected comparison, and then reflects on what the visit provided."
+      }
+    ]
+  },
+  "children": []
+}

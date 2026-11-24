@@ -1,0 +1,52 @@
+{
+  "item": {
+    "slug": "a2-reply-to-a-neighbourhood-lunch-invitation",
+    "title": "Reply to a Lunch Invitation",
+    "level": "A2",
+    "prompt_text": "Your neighbour has invited you to lunch at noon on Sunday. You can come at half past twelve after work. Tell them how long you can stay, offer to bring fruit, and ask whether to go straight to the garden or wait by the front gate.",
+    "genre": "friendly reply",
+    "audience": "a neighbour inviting you to a shared lunch",
+    "target_grammar": "Can for availability, will for an arrival plan, and should for an indirect choice.",
+    "target_structure": "Accept the invitation, explain your arrival, offer something to bring, and ask where to meet.",
+    "target_vocabulary": [
+      "invitation",
+      "half past",
+      "bring",
+      "fruit",
+      "gate"
+    ],
+    "expected_length_min": 53,
+    "expected_length_max": 95,
+    "checklist": [
+      {
+        "point": "Thank the neighbour and give your arrival time.",
+        "keywords": [
+          "thanks for inviting",
+          "half past twelve",
+          "12:30"
+        ]
+      },
+      {
+        "point": "Say how long you can stay.",
+        "keywords": [
+          "until two",
+          "until 2",
+          "an hour"
+        ]
+      },
+      {
+        "point": "Offer to bring fruit and ask about the meeting point.",
+        "keywords": [
+          "bring fruit",
+          "front gate",
+          "straight to the garden"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    },
+    "sort_order": 391
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Days and Opening Times",
+    "description": "Read sports center notices to find out which days you can visit and what time to go.",
+    "slug": "a1-days-and-opening-times",
+    "level": "A1",
+    "status": "published",
+    "sort_order": 410,
+    "topic": "calendar and openings"
+  },
+  "children": [
+    {
+      "word": "weekday",
+      "part_of_speech": "noun",
+      "definition": "Any day from Monday to Friday.",
+      "example": "The pool has the same hours each weekday, from 7 in the morning to 8 in the evening.",
+      "translation_ru": "будний день",
+      "translation_uz": "haftaning ish kuni (dushanbadan jumagacha)",
+      "collocations": [
+        "weekday hours",
+        "on a weekday"
+      ]
+    },
+    {
+      "word": "daytime",
+      "part_of_speech": "noun",
+      "definition": "The part of the day when it is light outside.",
+      "example": "The outdoor courts are for daytime use only, so leave before it gets dark.",
+      "translation_ru": "дневное время",
+      "translation_uz": "kunduzgi vaqt",
+      "collocations": [
+        "during the daytime",
+        "daytime use"
+      ]
+    },
+    {
+      "word": "midnight",
+      "part_of_speech": "noun",
+      "definition": "Twelve at night, when a new day starts.",
+      "example": "The sports center car park shuts at midnight, so move your car before 12 at night.",
+      "translation_ru": "полночь",
+      "translation_uz": "yarim tun",
+      "collocations": [
+        "at midnight",
+        "before midnight"
+      ]
+    },
+    {
+      "word": "noon",
+      "part_of_speech": "noun",
+      "definition": "Twelve in the middle of the day.",
+      "example": "The pool shuts at noon on Sundays, so go in the morning.",
+      "translation_ru": "полдень",
+      "translation_uz": "peshin",
+      "collocations": [
+        "at noon",
+        "until noon"
+      ]
+    },
+    {
+      "word": "half past",
+      "part_of_speech": "time phrase",
+      "definition": "Thirty minutes after the hour you say next.",
+      "example": "The notice says you can go in from half past seven, so get there at 7:30.",
+      "translation_ru": "на тридцать минут позже названного часа (half past seven — половина восьмого)",
+      "translation_uz": "aytilgan soatdan oʻttiz daqiqa oʻtganda (half past seven — soat yetti yarim)",
+      "collocations": [
+        "half past seven",
+        "half past nine"
+      ]
+    },
+    {
+      "word": "o'clock",
+      "part_of_speech": "adverb",
+      "definition": "A word you say after a number to give the hour when the minutes are zero.",
+      "example": "The first time on the notice is 8:00, so you can go in at eight o'clock.",
+      "translation_ru": "обозначает целый час (eight o’clock — восемь часов)",
+      "translation_uz": "daqiqa nol boʻlganda ishlatiladi (eight o’clock — soat sakkiz)",
+      "collocations": [
+        "at eight o'clock",
+        "until six o'clock"
+      ]
+    },
+    {
+      "word": "today",
+      "part_of_speech": "adverb",
+      "definition": "On this day.",
+      "example": "The notice says the pool shuts early today, so we need to go before four.",
+      "translation_ru": "сегодня",
+      "translation_uz": "bugun",
+      "collocations": [
+        "shuts early today",
+        "come today"
+      ]
+    },
+    {
+      "word": "tomorrow",
+      "part_of_speech": "adverb",
+      "definition": "On the day after this day.",
+      "example": "It’s Tuesday, and the sign says we can come back tomorrow, so let’s go on Wednesday.",
+      "translation_ru": "завтра",
+      "translation_uz": "ertaga",
+      "collocations": [
+        "come back tomorrow",
+        "go tomorrow"
+      ]
+    },
+    {
+      "word": "yesterday",
+      "part_of_speech": "adverb",
+      "definition": "On the day before this day.",
+      "example": "The sign went up yesterday, but the new hours start next week.",
+      "translation_ru": "вчера",
+      "translation_uz": "kecha",
+      "collocations": [
+        "went up yesterday",
+        "was shut yesterday"
+      ]
+    },
+    {
+      "word": "Monday",
+      "part_of_speech": "proper noun",
+      "definition": "The day after Sunday and before Tuesday.",
+      "example": "The notice says the pool is shut on Monday, so let’s go on Tuesday instead.",
+      "translation_ru": "понедельник",
+      "translation_uz": "dushanba",
+      "collocations": [
+        "on Monday",
+        "Monday morning"
+      ]
+    },
+    {
+      "word": "Sunday",
+      "part_of_speech": "proper noun",
+      "definition": "The day after Saturday and before Monday.",
+      "example": "The pool shuts at six on Saturday and at four on Sunday, so it shuts two hours earlier on Sunday.",
+      "translation_ru": "воскресенье",
+      "translation_uz": "yakshanba",
+      "collocations": [
+        "on Sunday",
+        "Sunday afternoon"
+      ]
+    },
+    {
+      "word": "AM",
+      "part_of_speech": "abbreviation",
+      "definition": "You put this after a time from midnight until just before noon. You may also see it written a.m.",
+      "example": "The notice says 7 AM, so you can use the pool at seven in the morning.",
+      "translation_ru": "обозначение времени с полуночи до 11:59 утра (12 AM — полночь)",
+      "translation_uz": "yarim tundan ertalabki 11:59 gacha ishlatiladigan belgi (12 AM — yarim tun)",
+      "collocations": [
+        "at 7 AM",
+        "from 9 AM"
+      ]
+    },
+    {
+      "word": "PM",
+      "part_of_speech": "abbreviation",
+      "definition": "You put this after a time from noon until just before midnight. You may also see it written p.m.",
+      "example": "The notice says the pool shuts at 8 PM, so you can go after work.",
+      "translation_ru": "обозначение времени с полудня до 23:59 (12 PM — полдень)",
+      "translation_uz": "peshindan tungi 23:59 gacha ishlatiladigan belgi (12 PM — peshin)",
+      "collocations": [
+        "at 8 PM",
+        "until 6 PM"
+      ]
+    },
+    {
+      "word": "every day",
+      "part_of_speech": "adverbial phrase",
+      "definition": "On each day. In a weekly schedule, this means Monday through Sunday.",
+      "example": "The sports center lets people in from nine every day, so you can go at nine on Saturday too.",
+      "translation_ru": "каждый день",
+      "translation_uz": "har kuni",
+      "collocations": [
+        "come every day",
+        "from nine every day"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "Degree modifiers and adjective scales",
+    "explanation_text": "Gradable adjectives describe qualities that can vary in degree. A little stiff suggests a small amount of stiffness. Rather stiff suggests a more noticeable degree and can convey mild surprise or criticism. Highly also signals a strong degree, but it goes naturally with particular adjectives. A method can be highly effective and a finding highly significant. For ordinary physical descriptions such as stiff or warm, other modifiers are usually more natural.\n\nSome adjectives already convey a strong reaction or an endpoint. Absolutely delighted expresses intense pleasure, while completely impossible rules out any possibility under the stated conditions. Choose the pairing that fits both the intended strength and the context. A speaker might say rather impossible informally to suggest that something is practically unworkable or to soften a blunt judgment. In a technical statement that explicitly rules out every possibility, completely impossible reinforces the literal meaning of impossible.",
+    "contrast_text": "A little stiff describes slight resistance. Rather stiff describes noticeable resistance. Highly effective expresses a strong positive assessment. Absolutely delighted intensifies a strong emotional reaction, while completely impossible emphasizes that there is no way for something to happen under the stated conditions.",
+    "common_error_pattern": "Choosing a modifier for its strength alone can produce a strained pairing or misstate the degree. Check how the modifier typically combines with the adjective and whether the context calls for a slight degree, a noticeable degree, a strong assessment, or an endpoint.",
+    "tags": [
+      "c1-degree-modifiers-and-adjective-scales",
+      "degree-modifiers",
+      "gradable-adjectives",
+      "adjective-collocations"
+    ],
+    "examples": [
+      {
+        "bad": "The latch is little stiff.",
+        "good": "The latch is a little stiff."
+      },
+      {
+        "bad": "For a mild complaint about noticeable discomfort: The seats were absolutely uncomfortable.",
+        "good": "The seats were rather uncomfortable."
+      },
+      {
+        "bad": "In a routine temperature report: The sample was highly warm to the touch.",
+        "good": "The sample was rather warm to the touch."
+      },
+      {
+        "bad": "With every recovery route ruled out: Retrieving the original recording is a little impossible.",
+        "good": "Retrieving the original recording is completely impossible."
+      }
+    ],
+    "slug": "c1-degree-modifiers-and-adjective-scales",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 410,
+    "focus_area": "degree-modifiers-and-scales"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "A small adjustment",
+      "instructions": "Choose a little or rather. Use the option that explicitly presents the difference as small. Enter only the missing words.",
+      "prompt_text": "The margins are ___ uneven, but the difference is barely visible.",
+      "accepted_answers": [
+        "a little"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An understated complaint",
+      "instructions": "Choose rather or completely. Use the option that conveys mild surprise at a noticeable degree. Enter only the missing word.",
+      "prompt_text": "The reply was ___ abrupt for a first exchange.",
+      "accepted_answers": [
+        "rather"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A strong recommendation",
+      "instructions": "Choose highly or a little. Use the conventional pairing that describes someone as particularly well suited to the role. Enter only the missing word.",
+      "prompt_text": "The panel judged her ___ qualified to lead the mediation.",
+      "accepted_answers": [
+        "highly"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A celebratory reaction",
+      "instructions": "Choose absolutely or a little. Use the conventional emphatic pairing that expresses intense joy. Enter only the missing word.",
+      "prompt_text": "The apprentices were ___ delighted when they heard their design had been selected.",
+      "accepted_answers": [
+        "absolutely"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A limit in a specification",
+      "instructions": "Choose completely or rather. Use the option that explicitly emphasizes the absolute meaning of impossible. Enter only the missing word.",
+      "prompt_text": "With every copy permanently erased, restoring the file from the available backups is ___ impossible.",
+      "accepted_answers": [
+        "completely"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A missing word in a tasting note",
+      "instructions": "Correct the degree phrase by adding one word. Keep little, the slight degree, and the rest of the sentence.",
+      "prompt_text": "The broth is little salty.",
+      "accepted_answers": [
+        "The broth is a little salty."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A collocation in an evaluation",
+      "instructions": "Edit the evaluation for a conventional pairing in which the modifier expresses a strong positive assessment. Replace completely with highly or a little. Keep all other words.",
+      "prompt_text": "The pilot programme was completely effective at reducing missed appointments.",
+      "accepted_answers": [
+        "The pilot programme was highly effective at reducing missed appointments."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Tone down a review",
+      "instructions": "Replace very with a little or highly. The revised sentence should say that the chapter is only slightly dense. Keep all other words.",
+      "prompt_text": "The opening chapter is very dense.",
+      "accepted_answers": [
+        "The opening chapter is a little dense."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Report noticeable concern",
+      "instructions": "Replace slightly with rather. Present the residents' concern as noticeable and keep the rest of the sentence unchanged.",
+      "prompt_text": "Residents were slightly anxious about the overnight closure.",
+      "accepted_answers": [
+        "Residents were rather anxious about the overnight closure."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "State that there is no route through",
+      "instructions": "Use completely impossible to state that there is no way across. Start with “Without a permit, it is” and end with “to cross the reserve legally.”",
+      "prompt_text": "Without a permit, there is no way to cross the reserve legally.",
+      "accepted_answers": [
+        "Without a permit, it is completely impossible to cross the reserve legally."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Describe a refuge",
+      "instructions": "Use each tile once to form a sentence about a courtyard. Start with “In the afternoon,” and place rather directly before cool.",
+      "prompt_text": "rather / the courtyard / In the afternoon, / cool. / feels",
+      "accepted_answers": [
+        "In the afternoon, the courtyard feels rather cool."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Explain a curator's reaction",
+      "instructions": "Use each tile once. Begin with “The curator was” and put the because clause at the end.",
+      "prompt_text": "because / delighted / the owner agreed to lend the portrait. / The curator was / absolutely",
+      "accepted_answers": [
+        "The curator was absolutely delighted because the owner agreed to lend the portrait."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.degree-modifiers-and-scales"
+    }
+  ]
+}

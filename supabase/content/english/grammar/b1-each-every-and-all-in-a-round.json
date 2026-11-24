@@ -1,0 +1,169 @@
+{
+  "item": {
+    "title": "Each, every and all in a workshop round",
+    "explanation_text": "Use each or every before a singular count noun. Each participant gets a turn puts the focus on one person at a time. Every participant gets a turn makes clear that nobody is left out. Both sentences can describe the same workshop rule. Choose each if you want readers to think about people individually, and every if you want to stress that the rule covers everyone.\n\nUse all before a plural noun to refer to the whole group. All participants clap together describes a group action. All participants get a turn can also describe something people do separately. The rest of the sentence tells you how the group takes part.\n\nWhen you name a specific group, you can say each of the participants or all of the participants. Use each of them or all of them when the group is already clear. With each of, the subject takes a singular verb: Each of them has a turn. To use every with of, say every one of them.",
+    "contrast_text": "Each speaker gets a different question focuses on the question given to each person. Every speaker must answer a question stresses that the rule has no exceptions. All speakers read the final line together refers to the group doing one action together. Each and every can both fit many workshop rules, so pay attention to the focus or the form the task asks for.",
+    "common_error_pattern": "Use each or every with a singular count noun and all with a plural count noun in these patterns. Use each of or all of before an object pronoun such as them. If you use every with of, include one.",
+    "tags": [
+      "each-every-and-all",
+      "workshop-participation"
+    ],
+    "examples": [
+      {
+        "bad": "Each learners receives a cue card.",
+        "good": "Each learner receives a cue card."
+      },
+      {
+        "bad": "Every groups gets a chance to lead.",
+        "good": "Every group gets a chance to lead."
+      },
+      {
+        "bad": "All observer raise their hands together.",
+        "good": "All observers raise their hands together."
+      },
+      {
+        "bad": "Each them has a turn at the microphone.",
+        "good": "Each of them has a turn at the microphone."
+      }
+    ],
+    "slug": "b1-each-every-and-all-in-a-round",
+    "level": "B1",
+    "status": "published",
+    "sort_order": 370,
+    "focus_area": "each-every-all"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Hand out role badges",
+      "instructions": "Complete the note with one word. Use the same determiner as in the model 'Each helper gets a badge.'",
+      "prompt_text": "At sign-in, ___ volunteer picks up a badge with a different role on it.",
+      "accepted_answers": [
+        "each"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Set the time limit",
+      "instructions": "Complete the rule with one word. Use the determiner from the model 'Every turn counts.'",
+      "prompt_text": "The same time limit applies to ___ speaker in the story round.",
+      "accepted_answers": [
+        "every"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Show that the group is ready",
+      "instructions": "Choose one word from each, every and all.",
+      "prompt_text": "When the practice round is about to start, ___ teams hold up their green cards at the same time.",
+      "accepted_answers": [
+        "all"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Assign different sound effects",
+      "instructions": "Complete the sentence with a two-word phrase that starts with each and ends with of.",
+      "prompt_text": "We have three readers, and ___ them is responsible for a different sound effect.",
+      "accepted_answers": [
+        "each of"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Record a shared decision",
+      "instructions": "Use a two-word phrase with all to include the entire group.",
+      "prompt_text": "Six people tried the new warm-up, and ___ them voted to keep it.",
+      "accepted_answers": [
+        "all of"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the display schedule",
+      "instructions": "Correct the noun after every. Keep every and leave the other words as they are.",
+      "prompt_text": "Every presenters has a slot at the display table.",
+      "accepted_answers": [
+        "Every presenter has a slot at the display table."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the closing cue",
+      "instructions": "Replace the incorrect word before participants with one word that includes the whole group. Keep the other words.",
+      "prompt_text": "Each participants stand together when the closing music starts.",
+      "accepted_answers": [
+        "All participants stand together when the closing music starts."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Refer to the judges",
+      "instructions": "Replace 'Each judge' with a phrase using each of and them. Keep the rest of the second sentence.",
+      "prompt_text": "There are three judges. Each judge checks a different part of the model.",
+      "accepted_answers": [
+        "Each of them checks a different part of the model."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Describe the group photo",
+      "instructions": "Start with 'All of' and name the mentors. Keep 'stand behind the workbench for the photo'.",
+      "prompt_text": "The mentors stand behind the workbench for the photo. No mentor is missing.",
+      "accepted_answers": [
+        "All of the mentors stand behind the workbench for the photo."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Include every design in the feedback round",
+      "instructions": "Replace 'All the designs get' with a phrase that starts with Every and uses the singular of designs. Keep the rest of the sentence.",
+      "prompt_text": "All the designs get written feedback.",
+      "accepted_answers": [
+        "Every design gets written feedback."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Report what the listeners wrote",
+      "instructions": "Start with 'During the listening round' and use every tile once.",
+      "prompt_text": "one follow-up question / each listener / during the listening round / wrote",
+      "accepted_answers": [
+        "During the listening round, each listener wrote one follow-up question."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Explain how groups pass their sketches",
+      "instructions": "Start with 'At the signal', put 'to the next table' last, and use every tile once.",
+      "prompt_text": "their sketches / all groups / to the next table / pass / at the signal",
+      "accepted_answers": [
+        "At the signal, all groups pass their sketches to the next table."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.each-every-all"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "c1-set-boundaries-for-volunteer-interpreting",
+    "title": "Agree on the Role of a Volunteer Interpreter",
+    "level": "C1",
+    "prompt_text": "You will help interpret at an information evening. The organiser expects you to interpret the instructions and answer families' questions about joining clubs. Some questions will concern spaces, fees or exceptions the organiser must decide. Write an email that explains what you can do, how staff can handle unresolved questions, and one change to the evening that would make interpreting easier.",
+    "genre": "coordination email",
+    "audience": "the organiser of an after-school clubs information evening",
+    "target_grammar": "Indirect requests, appropriate hedging, and conditionals for unresolved information.",
+    "target_structure": "Confirm the role, give an example of a boundary, propose a handover, and ask for one operational change.",
+    "target_vocabulary": [
+      "interpret",
+      "clarify",
+      "fee exception",
+      "staff decision",
+      "hand over",
+      "run through"
+    ],
+    "expected_length_min": 184,
+    "expected_length_max": 262,
+    "checklist": [
+      {
+        "point": "Confirm the interpretation tasks you can do.",
+        "keywords": [
+          "interpret",
+          "instructions",
+          "questions",
+          "translate"
+        ]
+      },
+      {
+        "point": "Give an example of an enquiry staff should resolve.",
+        "keywords": [
+          "fee",
+          "places",
+          "exception",
+          "staff decision"
+        ]
+      },
+      {
+        "point": "Suggest a usable handover for unresolved questions.",
+        "keywords": [
+          "write down",
+          "hand over",
+          "queue",
+          "follow up",
+          "staff table"
+        ]
+      },
+      {
+        "point": "Request a change that would improve communication.",
+        "keywords": [
+          "brief pause",
+          "short sections",
+          "short statements",
+          "show the slide"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    },
+    "sort_order": 359
+  },
+  "children": []
+}

@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "c2-edit-a-family-recipe-with-missing-quantities",
+    "title": "Write an Editor’s Note for a Reconstructed Recipe",
+    "level": "C2",
+    "prompt_text": "An inherited cake recipe names several ingredients but gives no quantities for flour or milk. Two descendants remember different amounts, and one says the mixture was judged by feel. Your group has tested a version that works in a standard tin. Write a note accompanying the recipe that distinguishes the original record, oral accounts and editorial decisions. Give readers practical guidance without presenting the tested version as the only authentic one.",
+    "genre": "editorial note",
+    "audience": "readers of a community cookbook",
+    "target_grammar": "Careful attribution, concession, conditional guidance and parallel distinctions.",
+    "target_structure": "Identify the source evidence, compare memories with the test, and explain how readers should use the edited recipe.",
+    "target_vocabulary": [
+      "manuscript",
+      "quantities",
+      "oral account",
+      "editorial decision",
+      "consistency",
+      "working version"
+    ],
+    "expected_length_min": 225,
+    "expected_length_max": 322,
+    "checklist": [
+      {
+        "point": "State what the original record gives and what it omits.",
+        "keywords": [
+          "manuscript",
+          "original recipe",
+          "no amounts",
+          "names the"
+        ]
+      },
+      {
+        "point": "Represent the memories without treating one as settled fact.",
+        "keywords": [
+          "descendants",
+          "remembers",
+          "accounts",
+          "by feel"
+        ]
+      },
+      {
+        "point": "Make the origin of the printed quantities explicit.",
+        "keywords": [
+          "tested version",
+          "we tested",
+          "working version",
+          "editorial"
+        ]
+      },
+      {
+        "point": "Give readers usable guidance while preserving uncertainty.",
+        "keywords": [
+          "start with",
+          "add a little",
+          "consistency",
+          "not the only",
+          "other versions"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    },
+    "sort_order": 362
+  },
+  "children": []
+}

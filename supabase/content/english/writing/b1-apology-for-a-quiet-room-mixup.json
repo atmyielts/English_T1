@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "b1-apology-for-a-quiet-room-mixup",
+    "title": "Apologise for a Room Mix-Up",
+    "level": "B1",
+    "prompt_text": "You organised a practice interview in the room your colleague booked for quiet study. You saw the same room number on an older schedule. Write an apology, explain the mistake without blaming someone else, and suggest both an immediate solution and a way to prevent it next time.",
+    "genre": "apology email",
+    "audience": "a colleague who had planned a quiet study session",
+    "target_grammar": "Past simple for what went wrong, and could and will for repair and prevention.",
+    "target_structure": "Name the impact, explain what you did, and offer two distinct actions.",
+    "target_vocabulary": [
+      "booking",
+      "schedule",
+      "quiet",
+      "check",
+      "move"
+    ],
+    "expected_length_min": 96,
+    "expected_length_max": 148,
+    "checklist": [
+      {
+        "point": "Acknowledge the impact on the colleague's plans.",
+        "keywords": [
+          "sorry",
+          "interrupted",
+          "quiet study"
+        ]
+      },
+      {
+        "point": "Explain what you did with the old schedule.",
+        "keywords": [
+          "older schedule",
+          "old schedule",
+          "i looked at"
+        ]
+      },
+      {
+        "point": "Offer a solution now and a check for next time.",
+        "keywords": [
+          "book another",
+          "move our",
+          "from now on",
+          "check the current"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    },
+    "sort_order": 351
+  },
+  "children": []
+}

@@ -1,0 +1,48 @@
+{
+  "item": {
+    "slug": "a1-music-by-the-market-gate",
+    "title": "Describe What Is Happening Near the Gate",
+    "level": "A1",
+    "prompt_text": "You can see a market gate. A woman is playing a guitar by the gate. Two children are standing next to her, and a man is putting money into a hat. Tell a friend what you can see.",
+    "prompt_type": "guided_response",
+    "task_type": "describe",
+    "target_duration_seconds": 30,
+    "target_grammar": "Present continuous for actions and next to or by for position.",
+    "fluency_objective": "Say one line for each person or group. Listen back and check whether you used an action word every time.",
+    "pronunciation_objective": "Stress guitar, children and hat so your listener can follow the new details.",
+    "target_vocabulary": [
+      "gate",
+      "guitar",
+      "standing",
+      "money",
+      "hat"
+    ],
+    "cues": [
+      {
+        "text": "Say where the musician is and what she is doing.",
+        "keywords": [
+          "playing a guitar",
+          "by the gate"
+        ]
+      },
+      {
+        "text": "Say what the children are doing.",
+        "keywords": [
+          "two children",
+          "standing next to"
+        ]
+      },
+      {
+        "text": "Describe the man’s action.",
+        "keywords": [
+          "putting money",
+          "money into a hat"
+        ]
+      }
+    ],
+    "model_opening": "I can see a woman by the market gate.",
+    "model_answer": "I can see a woman by the market gate. She is playing a guitar. Two children are standing next to her. There is a man with a hat. He is putting money into it.",
+    "sort_order": 367
+  },
+  "children": []
+}

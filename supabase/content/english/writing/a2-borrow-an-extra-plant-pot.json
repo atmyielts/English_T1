@@ -1,0 +1,59 @@
+{
+  "item": {
+    "slug": "a2-borrow-an-extra-plant-pot",
+    "title": "Ask to Borrow an Empty Plant Pot",
+    "level": "A2",
+    "prompt_text": "You are helping a child grow beans for school. You need an empty pot about as wide as a dinner plate. Ask Eli if you can borrow one until Friday and explain how you will return it. Say what you will do if Eli has only a much smaller pot.",
+    "genre": "neighbourhood message",
+    "audience": "your neighbour Eli",
+    "target_grammar": "Could I for a request, as wide as for size, and if for an alternative.",
+    "target_structure": "Give the purpose and size, name the return plan, and end with a fallback.",
+    "target_vocabulary": [
+      "empty pot",
+      "dinner plate",
+      "borrow",
+      "return",
+      "smaller"
+    ],
+    "expected_length_min": 53,
+    "expected_length_max": 93,
+    "checklist": [
+      {
+        "point": "Explain why you need a pot.",
+        "keywords": [
+          "grow beans",
+          "school project",
+          "beans for school"
+        ]
+      },
+      {
+        "point": "Describe the size.",
+        "keywords": [
+          "dinner plate",
+          "wide enough"
+        ]
+      },
+      {
+        "point": "Give a return plan.",
+        "keywords": [
+          "on friday",
+          "bring it back",
+          "wash it"
+        ]
+      },
+      {
+        "point": "Say what you will do if the pot is too small.",
+        "keywords": [
+          "smaller pot",
+          "if it is too small",
+          "ask the school"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A2"
+    },
+    "sort_order": 345
+  },
+  "children": []
+}

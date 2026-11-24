@@ -1,0 +1,49 @@
+{
+  "item": {
+    "slug": "a1-bike-basket-by-the-wall",
+    "title": "Tell a Friend What Fell Off Your Bike",
+    "level": "A1",
+    "prompt_text": "You were walking beside your bike. Its small front basket came off near a white wall. You are waiting on a bench next to that wall. Tell a friend what happened, where you are and what you need your friend to bring.",
+    "prompt_type": "guided_response",
+    "task_type": "describe",
+    "target_duration_seconds": 28,
+    "target_grammar": "Past simple for the event and present continuous for the place where you are waiting.",
+    "fluency_objective": "Use one sentence about the bike and one about the place. End with a direct request.",
+    "pronunciation_objective": "Stress front basket, white wall and bag. Say white clearly before wall.",
+    "target_vocabulary": [
+      "bike",
+      "basket",
+      "white wall",
+      "bench",
+      "bag"
+    ],
+    "cues": [
+      {
+        "text": "Say what came off.",
+        "keywords": [
+          "front basket",
+          "basket came off"
+        ]
+      },
+      {
+        "text": "Give a clear place where you are waiting.",
+        "keywords": [
+          "bench",
+          "white wall"
+        ]
+      },
+      {
+        "text": "Ask for one thing to be brought.",
+        "keywords": [
+          "bring a bag",
+          "can you bring",
+          "bring me"
+        ]
+      }
+    ],
+    "model_opening": "The front basket came off my bike.",
+    "model_answer": "The front basket came off my bike. I am waiting on the bench by the white wall. Can you bring a big bag for the things in the basket? Thanks.",
+    "sort_order": 402
+  },
+  "children": []
+}

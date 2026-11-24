@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "b1-instructions-for-shared-pool-passes",
+    "title": "Write Instructions for Shared Pool Passes",
+    "level": "B1",
+    "prompt_text": "Your group uses four passes for a public pool. Members can collect one from a folder before a session. Each member should move their name from the waiting list to the used list, then return the pass by 7 p.m. Explain what to do if the folder is empty and what to do on a day when the office closes early.",
+    "genre": "procedure card",
+    "audience": "new members of a community swimming group",
+    "target_grammar": "Imperatives and if clauses for different conditions.",
+    "target_structure": "Give the normal steps in order, then give both exceptions.",
+    "target_vocabulary": [
+      "pass",
+      "folder",
+      "waiting list",
+      "used list",
+      "return",
+      "early"
+    ],
+    "expected_length_min": 99,
+    "expected_length_max": 149,
+    "checklist": [
+      {
+        "point": "Explain where to collect a pass and how to update the lists.",
+        "keywords": [
+          "waiting list",
+          "used list",
+          "folder"
+        ]
+      },
+      {
+        "point": "Say when the pass must normally be returned.",
+        "keywords": [
+          "by seven",
+          "7 p.m.",
+          "before seven"
+        ]
+      },
+      {
+        "point": "Explain both exceptions.",
+        "keywords": [
+          "empty",
+          "closes early",
+          "early closing",
+          "envelope"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    },
+    "sort_order": 350
+  },
+  "children": []
+}

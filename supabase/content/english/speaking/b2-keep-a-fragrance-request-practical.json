@@ -1,0 +1,55 @@
+{
+  "item": {
+    "slug": "b2-keep-a-fragrance-request-practical",
+    "title": "Suggest a Practical Fragrance Request",
+    "level": "B2",
+    "prompt_text": "A group running a small poetry reading wants to ask people to avoid strong fragrances. Some volunteers prefer a brief line on the entrance sign. Others want to explain the request before people arrive. Recommend how to communicate it, what to say to someone who sees it only at the door, and how to brief volunteers to respond respectfully.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 85,
+    "target_grammar": "Polite imperatives and requests, concession, and conditional responses.",
+    "fluency_objective": "Give an example of wording for each channel. Finish with one thing a volunteer should avoid assuming.",
+    "pronunciation_objective": "Use an even tone. Stress request and before you arrive rather than the person who forgot.",
+    "target_vocabulary": [
+      "fragrance",
+      "request",
+      "entrance sign",
+      "advance notice",
+      "volunteer",
+      "quietly"
+    ],
+    "cues": [
+      {
+        "text": "Explain how you would communicate before the event.",
+        "keywords": [
+          "invitation",
+          "booking email",
+          "before people arrive",
+          "advance"
+        ]
+      },
+      {
+        "text": "State what an entrance sign or volunteer should say.",
+        "keywords": [
+          "entrance",
+          "sign",
+          "please avoid",
+          "at the door"
+        ]
+      },
+      {
+        "text": "Suggest a respectful way to respond in person.",
+        "keywords": [
+          "quietly",
+          "without drawing attention",
+          "seating",
+          "avoid assuming"
+        ]
+      }
+    ],
+    "model_opening": "I would put the request in the booking email as well as on the entrance sign.",
+    "model_answer": "I would put the request in the booking email as well as on the entrance sign. The email could say, 'Please avoid wearing strong fragrances to the reading. The room is small and some guests find them uncomfortable.' That gives people time to act before they leave home. At the entrance, use the same short request instead of adding a different instruction.\n\nIf someone sees it only at the door, I would have a volunteer speak to them quietly if a problem comes up. The volunteer could explain the request, then ask whether a seat farther away from other listeners would help for this reading. We should check the seating before promising that option. I would also remind volunteers that fragrance can come from several sources and that they may not know what another guest is wearing. The aim is to manage the room without turning a shared request into a public judgement about one person.",
+    "sort_order": 379
+  },
+  "children": []
+}

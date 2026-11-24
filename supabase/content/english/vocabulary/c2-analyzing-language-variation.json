@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Analyzing Language Variation",
+    "description": "In a fictional bilingual radio interview, host Mira asks interpreter Leon how speakers draw on two languages and vary their speech across settings. The discussion moves between the interview itself and examples from the town where they work.",
+    "slug": "c2-analyzing-language-variation",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 400,
+    "topic": "language variation"
+  },
+  "children": [
+    {
+      "word": "diglossia",
+      "part_of_speech": "noun",
+      "definition": "A relatively stable arrangement in which a speech community assigns different social functions to two varieties of a language or to two languages.",
+      "example": "Leon described the town's diglossia by comparing the formal variety used to read council decisions with the everyday variety people used to discuss those same decisions at home.",
+      "translation_ru": "диглоссия",
+      "translation_uz": "diglossiya",
+      "collocations": [
+        "a situation of diglossia",
+        "a stable pattern of diglossia"
+      ]
+    },
+    {
+      "word": "idiolect",
+      "part_of_speech": "noun",
+      "definition": "The distinctive combination of pronunciation, vocabulary and grammatical habits characteristic of a particular speaker.",
+      "example": "Mira asked whether the unusual pair of verbs Leon used in both languages was part of his idiolect, since none of the other interpreters she had spoken to used it.",
+      "translation_ru": "идиолект",
+      "translation_uz": "idiolekt",
+      "collocations": [
+        "a speaker's idiolect",
+        "features of an idiolect"
+      ]
+    },
+    {
+      "word": "sociolect",
+      "part_of_speech": "noun",
+      "definition": "A variety distinguished by linguistic features shared by members of a social group.",
+      "example": "Leon used recordings from several years to show how the apprentices' sociolect included expressions they kept using with one another after they had moved into different occupations.",
+      "translation_ru": "социолект",
+      "translation_uz": "sotsiolekt",
+      "collocations": [
+        "features of a sociolect",
+        "a distinct sociolect"
+      ]
+    },
+    {
+      "word": "code-switching",
+      "part_of_speech": "noun",
+      "definition": "Alternation between languages or language varieties within a single interaction.",
+      "example": "Mira replayed a moment of code-switching in which Leon began his reply in one language, quoted his mentor in the other and then resumed his reply in the first.",
+      "translation_ru": "переключение языковых кодов",
+      "translation_uz": "til kodlarini almashtirish",
+      "collocations": [
+        "examples of code-switching",
+        "code-switching within a turn"
+      ]
+    },
+    {
+      "word": "dialect leveling",
+      "part_of_speech": "noun",
+      "definition": "The gradual reduction of differences between dialects when interaction among their speakers leads some distinctive local features to recede.",
+      "example": "To illustrate dialect leveling, Leon compared recordings of adjoining towns from before and after commuting became common. In later recordings, younger speakers in both towns used the same vowel in words their grandparents had pronounced differently.",
+      "translation_ru": "сглаживание диалектных различий",
+      "translation_uz": "shevalar oʻrtasidagi farqlarning kamayishi",
+      "collocations": [
+        "evidence of dialect leveling",
+        "a gradual process of dialect leveling"
+      ]
+    },
+    {
+      "word": "register",
+      "part_of_speech": "noun",
+      "definition": "A pattern of linguistic choices associated with a particular situation, purpose or relationship between speakers.",
+      "example": "Mira asked Leon to explain the same interpreting decision in the register he used at a professional hearing and then in the language he would use with a friend.",
+      "translation_ru": "речевой регистр",
+      "translation_uz": "nutq registri",
+      "collocations": [
+        "a formal register",
+        "a conversational register"
+      ]
+    },
+    {
+      "word": "shibboleth",
+      "part_of_speech": "noun",
+      "definition": "A pronunciation, expression or other linguistic feature used to judge whether someone belongs to a particular group.",
+      "example": "Mira asked why one pronunciation of the old ferry stop's name had become a shibboleth that longtime residents used to decide who had grown up locally.",
+      "translation_ru": "шибболет, языковой признак принадлежности к группе",
+      "translation_uz": "shibbolet, guruhga mansublikni aniqlash uchun ishlatiladigan til belgisi",
+      "collocations": [
+        "a local shibboleth",
+        "serve as a shibboleth"
+      ]
+    },
+    {
+      "word": "prestige variety",
+      "part_of_speech": "noun",
+      "definition": "A form of a language that carries high social status among the people who use or evaluate it.",
+      "example": "Leon recalled that the station once trained new presenters to use the town's prestige variety because its pronunciation was associated with public authority.",
+      "translation_ru": "престижная разновидность языка",
+      "translation_uz": "tilning nufuzli koʻrinishi",
+      "collocations": [
+        "a local prestige variety",
+        "adopt a prestige variety"
+      ]
+    },
+    {
+      "word": "language ideology",
+      "part_of_speech": "noun",
+      "definition": "A socially shared system of beliefs that links ways of speaking to judgments about speakers, institutions or social order.",
+      "example": "Mira traced a language ideology in the station's early training notes, which treated using the same accent on air and at home as a sign of personal sincerity.",
+      "translation_ru": "языковая идеология",
+      "translation_uz": "til mafkurasi",
+      "collocations": [
+        "a dominant language ideology",
+        "challenge a language ideology"
+      ]
+    },
+    {
+      "word": "linguistic repertoire",
+      "part_of_speech": "noun",
+      "definition": "The full range of languages, varieties and expressive resources that a speaker can draw on, including those they command only in certain settings.",
+      "example": "When Mira asked what his linguistic repertoire included, Leon listed the two languages he worked in, the local expressions he used with relatives and the formal greetings he knew in a third language.",
+      "translation_ru": "языковой репертуар",
+      "translation_uz": "til repertuari",
+      "collocations": [
+        "a bilingual speaker's linguistic repertoire",
+        "expand one's linguistic repertoire"
+      ]
+    },
+    {
+      "word": "marked form",
+      "part_of_speech": "noun",
+      "definition": "A linguistic variant whose use is less expected than an available alternative in a given context, making the choice potentially meaningful.",
+      "example": "Leon explained that the full ceremonial title was a marked form in the station's informal interviews, where using it could make a greeting sound deliberately solemn.",
+      "translation_ru": "маркированная форма",
+      "translation_uz": "markirlangan shakl, yaʼni muayyan vaziyatda odatdagidan ajralib turadigan til shakli",
+      "collocations": [
+        "a stylistically marked form",
+        "choose a marked form"
+      ]
+    },
+    {
+      "word": "hypercorrection",
+      "part_of_speech": "noun",
+      "definition": "The application of a perceived rule of correct or prestigious usage to a context in which that rule does not apply.",
+      "example": "During the English portion of the interview, Leon gave “between you and I” as an example of hypercorrection by a speaker who had learned to prefer “you and I” in subject position.",
+      "translation_ru": "гиперкоррекция",
+      "translation_uz": "giperkorreksiya",
+      "collocations": [
+        "an instance of hypercorrection",
+        "grammatical hypercorrection"
+      ]
+    },
+    {
+      "word": "honorific",
+      "part_of_speech": "noun",
+      "definition": "A title, form of address or grammatical element that conventionally signals respect or deference.",
+      "example": "Mira asked whether the honorific after the guest’s surname signalled respect, professional rank, or both.",
+      "translation_ru": "титул, форма обращения или грамматический элемент, выражающие уважение или почтение",
+      "translation_uz": "hurmat yoki ehtiromni bildiruvchi unvon, murojaat shakli yoki grammatik vosita",
+      "collocations": [
+        "use an honorific",
+        "an honorific before a surname"
+      ]
+    },
+    {
+      "word": "lexical borrowing",
+      "part_of_speech": "noun",
+      "definition": "The process by which a language adopts a word or fixed expression from another language into its vocabulary.",
+      "example": "Leon illustrated lexical borrowing with an old ferry term that had acquired a local plural ending and was now used even by speakers who knew no other words from the language it came from.",
+      "translation_ru": "лексическое заимствование",
+      "translation_uz": "leksik oʻzlashuv",
+      "collocations": [
+        "patterns of lexical borrowing",
+        "lexical borrowing between languages"
+      ]
+    }
+  ]
+}

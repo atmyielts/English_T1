@@ -1,0 +1,142 @@
+{
+  "item": {
+    "slug": "a1-set-up-for-a-birthday-at-the-hall",
+    "title": "Set up for a birthday at the hall",
+    "level": "A1",
+    "mission_type": "social",
+    "context_text": "You are helping with a birthday party. The hall has chairs but the kitchen is locked.",
+    "objective_text": "Tell helpers what to bring and set up before the guests arrive.",
+    "target_vocabulary": [
+      "table",
+      "balloons",
+      "cake",
+      "plates",
+      "spare"
+    ],
+    "success_conditions": [
+      "Tell helpers what to bring and set up before the guests arrive.",
+      "Set helper arrival",
+      "Mention kitchen closure",
+      "Keep the exit clear"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the hall note",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "You can enter at two. The party begins at three. There are tables and chairs. The kitchen is closed today. Leave the fire door clear.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When can helpers arrive?",
+          "options": [
+            "Three",
+            "Two",
+            "Four"
+          ],
+          "answer_index": 1,
+          "explanation": "The hall opens one hour before the party."
+        },
+        {
+          "prompt": "Which area is closed?",
+          "options": [
+            "The party room",
+            "The kitchen",
+            "The main door"
+          ],
+          "answer_index": 1,
+          "explanation": "The kitchen is closed today."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear a helper’s message",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "I have the cake and candles. I can bring some balloons too, but I do not have paper plates. The shop next to the bus stop sells them.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What is this helper bringing for sure?",
+          "options": [
+            "Paper plates",
+            "Chairs and plates",
+            "Cake and candles"
+          ],
+          "answer_index": 2,
+          "explanation": "The helper says they have the cake and candles."
+        },
+        {
+          "prompt": "Where can someone buy plates?",
+          "options": [
+            "At the hall",
+            "In the kitchen",
+            "At the shop by the bus stop"
+          ],
+          "answer_index": 2,
+          "explanation": "The helper names the shop by the bus stop."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask another helper for two things",
+      "prompt_text": "Pat is passing the shop before the party.",
+      "instructions": "Ask Pat to buy plates and arrive before the guests. Give a time.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Hi Pat, can you buy some paper plates at the shop by the bus stop? Please come at half past two so we can put them on the tables.",
+      "points": [
+        {
+          "label": "Ask for paper plates",
+          "any": [
+            "paper plates",
+            "plates"
+          ]
+        },
+        {
+          "label": "Suggest an early time",
+          "any": [
+            "half past two",
+            "2:30"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write a message for the helpers",
+      "prompt_text": "Send the whole group a short plan so people do not bring extra chairs or block a door.",
+      "instructions": "Include the helper arrival time, the kitchen rule and which door must stay clear. Add one setup job.",
+      "goal": "Tell helpers what to bring and set up before the guests arrive.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Please come at half past two to set up the hall. It has tables and chairs. Put the plates and cake on the long table. The kitchen is closed today. Leave the fire door clear. The party begins at three.",
+      "points": [
+        {
+          "label": "Set helper arrival",
+          "any": [
+            "half past two",
+            "2:30"
+          ]
+        },
+        {
+          "label": "Mention kitchen closure",
+          "any": [
+            "kitchen is closed",
+            "no kitchen"
+          ]
+        },
+        {
+          "label": "Keep the exit clear",
+          "any": [
+            "fire door clear",
+            "do not block the fire door"
+          ]
+        }
+      ]
+    }
+  ]
+}

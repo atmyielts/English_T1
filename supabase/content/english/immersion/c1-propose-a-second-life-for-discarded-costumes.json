@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "c1-propose-a-second-life-for-discarded-costumes",
+    "title": "Propose a second life for discarded costumes",
+    "level": "C1",
+    "mission_type": "problem_solving",
+    "context_text": "A local theatre clears costumes after a production. One school wants whole costumes, while a repair class wants material from damaged pieces.",
+    "objective_text": "Sort the offer by condition, record a fair response deadline, and avoid promising duplicates.",
+    "target_vocabulary": [
+      "inventory",
+      "reuse",
+      "donation",
+      "condition",
+      "storage"
+    ],
+    "success_conditions": [
+      "Sort the offer by condition, record a fair response deadline, and avoid promising duplicates.",
+      "Allocate six wearable pieces",
+      "Keep the matching items together",
+      "List faults for the repair class",
+      "Respect the storage limit"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the stock list",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "There are eight wearable coats, two coats with broken fastenings, and six damaged canvas aprons. The school asks for six wearable coats. The sewing class accepts items that can be taken apart. The theatre can store everything for two more weeks.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which items could fill the school’s request straight away?",
+          "options": [
+            "The canvas aprons",
+            "The two coats with broken fastenings",
+            "Six of the wearable coats"
+          ],
+          "answer_index": 2,
+          "explanation": "The school requested wearable coats and eight are available."
+        },
+        {
+          "prompt": "Which claim about storage is supported?",
+          "options": [
+            "The theatre will store them indefinitely",
+            "Everything has to be removed today",
+            "Materials can remain there for two weeks"
+          ],
+          "answer_index": 2,
+          "explanation": "The stock list gives a two-week window."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the wardrobe manager",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Two of the wearable coats actually match a complete set, and an amateur group might need it. We can offer six other wearable coats to the school first. Keep matching pieces together for one week. Offer damaged aprons and coats to the repair class now, but list the faults.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "How many wearable coats can the school get without breaking the set?",
+          "options": [
+            "Eight",
+            "Two",
+            "Six"
+          ],
+          "answer_index": 2,
+          "explanation": "The eight wearable items include two matching ones, leaving six."
+        },
+        {
+          "prompt": "What information do repair learners need before accepting the donations?",
+          "options": [
+            "The original ticket sales",
+            "What the school plans to do",
+            "Which items have faults and what they are"
+          ],
+          "answer_index": 2,
+          "explanation": "The manager asks for a fault list so the class can judge whether it can use the items."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Respond to the teacher by phone",
+      "prompt_text": "The teacher asks whether all eight coats can be reserved immediately.",
+      "instructions": "Explain what can be promised, why the other coats are temporarily separate and when you can give a final answer.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 35,
+      "model_answer": "We can reserve six wearable coats today. The other two form a matching set, and we are holding them together for a week. I’ll confirm after that whether the set is still available. I can email the confirmed allocation today.",
+      "points": [
+        {
+          "label": "Confirm six coats",
+          "any": [
+            "six wearable coats",
+            "six coats"
+          ]
+        },
+        {
+          "label": "Explain temporary hold",
+          "any": [
+            "matching set",
+            "hold for a week"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the sorting plan to volunteers",
+      "prompt_text": "The volunteer team collects the items next Tuesday.",
+      "instructions": "Write a practical inventory note. State the current destinations, the condition information to record, and what to do if nobody takes the set before storage ends.",
+      "goal": "Sort the offer by condition, record a fair response deadline, and avoid promising duplicates.",
+      "estimated_minutes": 14,
+      "min_words": 65,
+      "model_answer": "Mark six wearable coats for the school and keep the matching set of two on hold until next Tuesday. Offer both coats with broken fastenings and the six damaged canvas aprons to the sewing class, with a note about each fault. If the matching set is released and still unclaimed near the two-week storage limit, offer it as a pair before arranging another destination with the theatre manager.",
+      "points": [
+        {
+          "label": "Allocate six wearable pieces",
+          "any": [
+            "six wearable coats"
+          ]
+        },
+        {
+          "label": "Keep the matching items together",
+          "any": [
+            "matching set",
+            "offer it as a pair"
+          ]
+        },
+        {
+          "label": "List faults for the repair class",
+          "any": [
+            "note about each fault",
+            "broken fastenings"
+          ]
+        },
+        {
+          "label": "Respect the storage limit",
+          "any": [
+            "two-week storage limit",
+            "two weeks"
+          ]
+        }
+      ]
+    }
+  ]
+}

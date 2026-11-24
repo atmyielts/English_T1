@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "c1-separate-a-review-score-from-a-complaint",
+    "title": "Separate a review score from a complaint",
+    "level": "C1",
+    "summary": "Two service managers examine a high rating alongside recurring support cases.",
+    "transcript_text": "Asha: We had record satisfaction scores this quarter, but unresolved complaints rose too. Which do we show the board?\nJo: Both. The satisfaction form goes out only after a visitor books. Complaints often come from people who can't book at all. Even a survey with no missing returns would skip everyone who couldn't get past the login page.\nAsha: If we ask people at the help desk, we might just get the opposite bias.\nJo: Yes. Add a short exit question to the booking page, count where people leave and, with permission, ask a sample of callers what they tried before contacting us. We need to locate the barriers. One new score won't tell us where to work.\nAsha: We can report good experiences after booking alongside the problems that occur earlier.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 145,
+    "duration_seconds": 53,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "workplace",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Asha",
+        "Jo"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why can both trends be true?",
+        "options": [
+          "One of the two totals is necessarily incorrect",
+          "They largely reflect different groups or points in the process",
+          "The complaints are counted twice in the satisfaction score",
+          "They describe different quarters"
+        ],
+        "answer_index": 1,
+        "explanation": "Successful bookings and early obstacles are measured separately.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What would a perfect response rate still miss?",
+        "options": [
+          "People not sent a survey after failing to book",
+          "Everyone who booked successfully",
+          "The total number of returned forms",
+          "Staff who read the reports"
+        ],
+        "answer_index": 0,
+        "explanation": "People unable to book never enter the survey group.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What is the likely bias of help-desk interviews alone?",
+        "options": [
+          "They describe only people pleased with the booking tool",
+          "They never reach anyone who attempted a booking",
+          "They give a representative census automatically",
+          "They overrepresent people who encountered a problem"
+        ],
+        "answer_index": 3,
+        "explanation": "People who need help are more likely to call the desk.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What should the additional data help find?",
+        "options": [
+          "Which question makes the board happiest",
+          "Whether to replace the help desk",
+          "Where people encounter barriers",
+          "Which survey gets the most returns"
+        ],
+        "answer_index": 2,
+        "explanation": "The team is investigating where people get stuck.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How should the board receive the results?",
+        "options": [
+          "As a single average of all measures",
+          "As distinct findings about different stages",
+          "As proof that there is no booking problem",
+          "As a recommendation to cancel appointments"
+        ],
+        "answer_index": 1,
+        "explanation": "The final turn retains both successful experiences and early difficulties.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "unresolved complaints rose too",
+      "focus_phrase": "complaints rose too",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "we might just get the opposite bias",
+      "focus_phrase": "the opposite bias",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "we need to locate the barriers",
+      "focus_phrase": "locate the barriers",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

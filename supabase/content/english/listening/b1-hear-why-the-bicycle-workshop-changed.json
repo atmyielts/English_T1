@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b1-hear-why-the-bicycle-workshop-changed",
+    "title": "Hear why the bicycle workshop changed",
+    "level": "B1",
+    "summary": "A workshop organiser explains what learners can still do when a delivery is late.",
+    "transcript_text": "Tutor: We start with brakes rather than tyres this week. The delivery of inner tubes has been put back to Thursday.\nLearner: Do I need to bring my bike tonight, then?\nTutor: Please do. We can check the brakes on your bike. If a cable needs replacing, put a paper label on the handlebar. Anyone who wants to work on a flat tyre can use a spare wheel for practice, but we won't fit new tubes tonight.\nLearner: Should I bring the label back next week?\nTutor: Leave it on the bike until we have checked the cable. We'll take it off when the job is done.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 120,
+    "duration_seconds": 51,
+    "audio_url": null,
+    "focus_skill": "sequence",
+    "tags": [
+      "community",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Tutor",
+        "Learner"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why has the first activity changed?",
+        "options": [
+          "The tutor forgot the brake tools",
+          "No learners can bring a bike",
+          "A delivery will arrive later than planned",
+          "The workshop is closing on Thursday"
+        ],
+        "answer_index": 2,
+        "explanation": "The inner tubes have been delayed.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What should participants still bring?",
+        "options": [
+          "Their own inner tubes",
+          "Their own bicycles",
+          "Their own spare wheels",
+          "Their own cables"
+        ],
+        "answer_index": 1,
+        "explanation": "The tutor asks learners to bring their bikes for brake checks.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "When should a paper label be attached?",
+        "options": [
+          "When a cable needs changing",
+          "When a tyre has been replaced",
+          "When a bicycle arrives late",
+          "When a learner uses the spare wheel"
+        ],
+        "answer_index": 0,
+        "explanation": "A label identifies work still needed on a cable.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How can a learner practise dealing with a flat tyre tonight?",
+        "options": [
+          "By taking a tube from the delivery",
+          "By fitting a new tube to their bike",
+          "By returning on Thursday evening",
+          "By using a spare wheel"
+        ],
+        "answer_index": 3,
+        "explanation": "A spare wheel is available, although new tubes will not be fitted tonight.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Who should remove the label?",
+        "options": [
+          "The learner before the bicycle is checked",
+          "The delivery driver",
+          "The workshop team after checking the cable",
+          "The learner at the start of next week"
+        ],
+        "answer_index": 2,
+        "explanation": "The tutor says the team takes it off after the job.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the delivery of inner tubes",
+      "focus_phrase": "of inner tubes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "put a paper label on the handlebar",
+      "focus_phrase": "on the handlebar",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "leave it on the bike",
+      "focus_phrase": "on the bike",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

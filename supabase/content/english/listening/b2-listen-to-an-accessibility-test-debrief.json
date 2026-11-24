@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b2-listen-to-an-accessibility-test-debrief",
+    "title": "Listen to an accessibility test debrief",
+    "level": "B2",
+    "summary": "A campus team discovers why maps that passed a desk review still confused visitors.",
+    "transcript_text": "Coordinator: We tested the printed campus maps with new visitors. Most could identify the building by name, but several took the long route around it.\nDesigner: Did the maps show the steps at the south entrance?\nCoordinator: They showed steps, but the symbol for the lift was inside the building. People treated that as proof they could enter from the south and use it. In reality, the north entrance is the step-free one.\nDesigner: Let's mark the approach as well as the lift. We should test both a printed map and the web version outdoors.\nCoordinator: And give people a real task. Ask them to reach a room, rather than tell us whether the symbol makes sense.",
+    "category": "Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 132,
+    "duration_seconds": 51,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "study",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Coordinator",
+        "Designer"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What did the map test chiefly reveal?",
+        "options": [
+          "Visitors cannot read any symbol outdoors",
+          "Finding a building and finding a usable route are different tasks",
+          "Web maps always work better indoors",
+          "Building names should be replaced with numbers"
+        ],
+        "answer_index": 1,
+        "explanation": "The visitors could identify the building but misconstrued how to enter it.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Why did some visitors think the south entrance would work?",
+        "options": [
+          "They saw a lift marked inside the building",
+          "The map claimed the steps had been removed",
+          "The north entrance had no label",
+          "A visitor guide told them to go south"
+        ],
+        "answer_index": 0,
+        "explanation": "The lift symbol suggested a step-free connection that did not exist from the south.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What change does the designer propose?",
+        "options": [
+          "Remove all symbols from the printed map",
+          "Test the outdoor route with staff only",
+          "Move the entrance to the south side",
+          "Show the route to the step-free entrance"
+        ],
+        "answer_index": 3,
+        "explanation": "The designer wants to mark the approach as well as the lift.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Where should the next comparison be done?",
+        "options": [
+          "In a print shop",
+          "Inside the lift",
+          "Outdoors",
+          "In a classroom with staff"
+        ],
+        "answer_index": 2,
+        "explanation": "The designer proposes comparing both versions outside.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why is a real wayfinding task preferred?",
+        "options": [
+          "It avoids discussing any design decisions",
+          "It shows whether visitors can use the map to get there",
+          "It is the fastest way to identify all visitors",
+          "It removes the need to print maps"
+        ],
+        "answer_index": 1,
+        "explanation": "The coordinator distinguishes successful navigation from opinions about a symbol.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the symbol for the lift was inside the building",
+      "focus_phrase": "inside the building",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "mark the approach as well as the lift",
+      "focus_phrase": "as the lift",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "rather than tell us whether the symbol makes sense",
+      "focus_phrase": "symbol makes sense",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

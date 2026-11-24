@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Renting a Bicycle",
+    "description": "Learn words for collecting a hired bicycle, checking its parts, and using a cycle lane.",
+    "slug": "a2-renting-a-bicycle",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 400,
+    "topic": "bicycle rental"
+  },
+  "children": [
+    {
+      "word": "helmet",
+      "part_of_speech": "noun",
+      "definition": "A hard cover you wear on your head to keep it safe if you fall.",
+      "example": "At the hire point, I asked for a helmet that fit me.",
+      "translation_ru": "велосипедный шлем",
+      "translation_uz": "velosiped dubulgʻasi",
+      "collocations": [
+        "wear a helmet",
+        "fasten your helmet"
+      ]
+    },
+    {
+      "word": "pedal",
+      "part_of_speech": "noun",
+      "definition": "One of the two parts you push with your feet to make a bicycle move.",
+      "example": "The left pedal felt loose, so I asked for another bike.",
+      "translation_ru": "педаль",
+      "translation_uz": "pedal",
+      "collocations": [
+        "left pedal",
+        "push down on a pedal"
+      ]
+    },
+    {
+      "word": "chain",
+      "part_of_speech": "noun",
+      "definition": "A loop of small metal pieces that carries movement from the pedals to the back wheel.",
+      "example": "The chain came off during the check, so the assistant gave me a different bike.",
+      "translation_ru": "велосипедная цепь",
+      "translation_uz": "velosiped zanjiri",
+      "collocations": [
+        "check the chain",
+        "oil the chain"
+      ]
+    },
+    {
+      "word": "bell",
+      "part_of_speech": "noun",
+      "definition": "A small part on a bicycle that makes a ringing sound to let people know you are coming.",
+      "example": "Before I left, I rang the bell once to make sure it worked.",
+      "translation_ru": "велосипедный звонок",
+      "translation_uz": "velosiped qoʻngʻirogʻi",
+      "collocations": [
+        "ring the bell",
+        "test the bell"
+      ]
+    },
+    {
+      "word": "saddle",
+      "part_of_speech": "noun",
+      "definition": "The part of a bicycle that you sit on.",
+      "example": "Could you lower the saddle a little before I take the bike?",
+      "translation_ru": "велосипедное седло",
+      "translation_uz": "velosiped oʻrindigʻi",
+      "collocations": [
+        "lower the saddle",
+        "raise the saddle"
+      ]
+    },
+    {
+      "word": "wheel",
+      "part_of_speech": "noun",
+      "definition": "One of the two round parts that turn to let a bicycle move along the ground.",
+      "example": "The front wheel did not turn freely, so I asked the assistant to look at it.",
+      "translation_ru": "колесо",
+      "translation_uz": "gʻildirak",
+      "collocations": [
+        "front wheel",
+        "spin the wheel"
+      ]
+    },
+    {
+      "word": "brake",
+      "part_of_speech": "noun",
+      "definition": "A part of a bicycle that slows it down or stops it.",
+      "example": "I tested the back brake while walking the hire bike across the yard.",
+      "translation_ru": "тормоз",
+      "translation_uz": "tormoz",
+      "collocations": [
+        "test the brake",
+        "use the back brake"
+      ]
+    },
+    {
+      "word": "pump",
+      "part_of_speech": "noun",
+      "definition": "A tool that puts air into a bicycle tyre.",
+      "example": "The assistant used a pump to put more air in the back tyre before I left.",
+      "translation_ru": "велосипедный насос",
+      "translation_uz": "velosiped nasosi",
+      "collocations": [
+        "use a pump",
+        "a small bicycle pump"
+      ]
+    },
+    {
+      "word": "bike stand",
+      "part_of_speech": "noun",
+      "definition": "A fixed metal structure where you can leave a bicycle and secure it.",
+      "example": "When I brought the bicycle back, I secured it to the bike stand by the door.",
+      "translation_ru": "стойка для парковки велосипедов",
+      "translation_uz": "velosipedni qulflab qoʻyish uchun mahkam oʻrnatilgan tirgak",
+      "collocations": [
+        "lock a bike to a bike stand",
+        "leave a bike at a bike stand"
+      ]
+    },
+    {
+      "word": "tyre",
+      "part_of_speech": "noun",
+      "definition": "The rubber part around a bicycle wheel that touches the ground.",
+      "example": "The back tyre looked flat, so I asked the assistant to check it before I left.",
+      "translation_ru": "велосипедная шина",
+      "translation_uz": "velosiped shinasi",
+      "collocations": [
+        "a flat tyre",
+        "pump up a tyre"
+      ]
+    },
+    {
+      "word": "front light",
+      "part_of_speech": "noun",
+      "definition": "A small lamp on the front of a bicycle that helps you see ahead and helps others see you.",
+      "example": "Before I left, I asked how to turn on the front light.",
+      "translation_ru": "передняя фара велосипеда",
+      "translation_uz": "velosipedning old chirogʻi",
+      "collocations": [
+        "turn on the front light",
+        "check the front light"
+      ]
+    },
+    {
+      "word": "cycle lane",
+      "part_of_speech": "noun",
+      "definition": "A marked part of a road for people riding bicycles.",
+      "example": "The assistant pointed out the cycle lane just outside the hire point.",
+      "translation_ru": "велосипедная полоса",
+      "translation_uz": "yoʻlning velosipedlar uchun ajratilgan boʻlagi",
+      "collocations": [
+        "ride in a cycle lane",
+        "a marked cycle lane"
+      ]
+    },
+    {
+      "word": "mudguard",
+      "part_of_speech": "noun",
+      "definition": "A cover over a bicycle wheel that stops water and dirt from getting on you.",
+      "example": "It had just rained, so I asked for a bike with a mudguard over the back wheel.",
+      "translation_ru": "крыло велосипеда",
+      "translation_uz": "velosiped gʻildiragi ustidagi loy sachrashidan saqlovchi qopqoq",
+      "collocations": [
+        "back mudguard",
+        "fit a mudguard"
+      ]
+    },
+    {
+      "word": "hire point",
+      "part_of_speech": "noun",
+      "definition": "A place where you can get a bicycle to use for a short time and pay for using it.",
+      "example": "We went to the hire point by the river to get our bicycles.",
+      "translation_ru": "пункт проката велосипедов",
+      "translation_uz": "velosiped ijaraga beriladigan joy",
+      "collocations": [
+        "collect a bike from a hire point",
+        "return a bike to a hire point"
+      ]
+    }
+  ]
+}

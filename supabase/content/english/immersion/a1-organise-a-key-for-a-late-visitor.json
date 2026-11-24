@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a1-organise-a-key-for-a-late-visitor",
+    "title": "Organise a key for a late visitor",
+    "level": "A1",
+    "mission_type": "social",
+    "context_text": "A friend arrives after you leave for work. A café owner can help with the keys, but the café shuts early.",
+    "objective_text": "Give the visitor a safe pickup plan and a fallback.",
+    "target_vocabulary": [
+      "key",
+      "door",
+      "bell",
+      "late",
+      "café"
+    ],
+    "success_conditions": [
+      "Give the visitor a safe pickup plan and a fallback.",
+      "Explain the café closure",
+      "Name a meeting point",
+      "Specify the time"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the café hours",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Corner Café: Open 8 a.m. to 5 p.m. The owner can hand the key to Sam after three. Ask at the counter.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "Which visitor is named?",
+          "options": [
+            "The owner",
+            "Sam",
+            "Nobody"
+          ],
+          "answer_index": 1,
+          "explanation": "The note authorises Sam to collect the key."
+        },
+        {
+          "prompt": "When is the pickup window today?",
+          "options": [
+            "Eight to three",
+            "Three to five",
+            "Five to eight"
+          ],
+          "answer_index": 1,
+          "explanation": "The owner can give it after three, and the café closes at five."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear your friend’s travel update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Hi! My bus is late. I can get to your street at half past five. I can wait in the park until you come home at six. My phone is still working.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When will Sam reach the street?",
+          "options": [
+            "3:30",
+            "6:30",
+            "5:30"
+          ],
+          "answer_index": 2,
+          "explanation": "Sam says half past five."
+        },
+        {
+          "prompt": "Why is the café plan now a problem?",
+          "options": [
+            "It opens at eight",
+            "Sam cannot use a phone",
+            "It shuts at five"
+          ],
+          "answer_index": 2,
+          "explanation": "Sam arrives half an hour after closing."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Call the café",
+      "prompt_text": "You want to cancel the handover. The owner answers your call.",
+      "instructions": "Say who will be late, ask the café to keep the key, and say when you will collect it.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 16,
+      "model_answer": "Hi, this is Mel. Sam will be late today. Please keep the key. I will pick it up tomorrow morning. Thank you for your help.",
+      "points": [
+        {
+          "label": "Cancel Sam’s pickup",
+          "any": [
+            "Sam will be late",
+            "Sam is late"
+          ]
+        },
+        {
+          "label": "Ask the café to keep the key",
+          "any": [
+            "keep the key"
+          ]
+        },
+        {
+          "label": "Say when you will collect it",
+          "any": [
+            "tomorrow morning",
+            "tomorrow"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Confirm where to meet",
+      "prompt_text": "Text Sam before they get off the bus.",
+      "instructions": "Explain why they should skip the café. Confirm what time and where you can meet, and ask for a text if the bus changes again.",
+      "goal": "Give the visitor a safe pickup plan and a fallback.",
+      "estimated_minutes": 10,
+      "min_words": 35,
+      "model_answer": "Hi Sam, the café shuts at five, so please go to the park. I can meet you by the park gate at six. Send me a text if your bus is late again. I will bring another key.",
+      "points": [
+        {
+          "label": "Explain the café closure",
+          "any": [
+            "shuts at five",
+            "closes at five"
+          ]
+        },
+        {
+          "label": "Name a meeting point",
+          "any": [
+            "park gate",
+            "gate at the park"
+          ]
+        },
+        {
+          "label": "Specify the time",
+          "any": [
+            "at six",
+            "6 p.m.",
+            "6pm"
+          ]
+        }
+      ]
+    }
+  ]
+}

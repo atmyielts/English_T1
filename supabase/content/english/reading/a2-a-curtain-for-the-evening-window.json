@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a2-a-curtain-for-the-evening-window",
+    "title": "A Curtain for the Evening Window",
+    "level": "A2",
+    "summary": "Two messages explain why a family puts up a curtain that can be moved from one side of a window to the other.",
+    "content_markdown": "**From Lian to Hana.** You asked why there is a piece of yellow cloth over half our kitchen window. The sun comes through that side at five. It shines straight onto Grandad's chair, so sometimes he cannot see the pages of his newspaper. We tried using a piece of cardboard, but each time I wanted to open the window I had to move it first.\n\n**From Hana to Lian.** Is the cloth long enough for the whole window? I have some blue material from a skirt. You can use it if you want to cover the other half. I can bring it when I come for tea on Thursday.\n\n**From Lian to Hana.** Thank you, but one piece is better here. My father put the cloth on a line above the window, so we can move it across without taking it off. Grandad pushes it to the left at five. Later he moves it to the right so he can open the left side of the window. We still have light when we wash up.",
+    "category": "Everyday",
+    "theme": "choosing a movable curtain",
+    "tone": "sand",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "message exchange",
+      "word_count": 175
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What are the messages mainly about?",
+        "options": [
+          "Why a movable curtain suits one kitchen",
+          "How to make a skirt from a curtain",
+          "Why Grandad reads in another room",
+          "When Hana will begin making new windows"
+        ],
+        "answer_index": 0,
+        "explanation": "They explain why the window needs some shade and how a single piece of cloth can move."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What made the cardboard difficult to use?",
+        "options": [
+          "It did not stop any light.",
+          "It had to be moved to open the window.",
+          "It was shorter than the newspaper.",
+          "It stopped Grandad moving his chair."
+        ],
+        "answer_index": 1,
+        "explanation": "Lian had to move the cardboard each time before opening the window."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Lian prefer not to add blue material?",
+        "options": [
+          "The yellow cloth is too heavy already.",
+          "The blue material belongs to Grandad.",
+          "A second piece would not help with the current need to shade one side while using the other.",
+          "Hana cannot come before the family has tea."
+        ],
+        "answer_index": 2,
+        "explanation": "Lian wants one piece that can move so some light and a way to open the window remain."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “straight onto” mean in the first message?",
+        "options": [
+          "For a short time only",
+          "From the left each day",
+          "From behind the cardboard",
+          "Directly onto"
+        ],
+        "answer_index": 3,
+        "explanation": "The light reaches Grandad’s chair directly and makes his newspaper difficult to see."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Hana offers a piece of blue material.",
+        "answer": "true",
+        "explanation": "Her reply says she has some blue material from a skirt."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Lian’s father fixes the cloth so it cannot move.",
+        "answer": "false",
+        "explanation": "The line lets the family move the cloth without taking it off."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Lian says what kind of material the yellow cloth is made from.",
+        "answer": "not_given",
+        "explanation": "Lian gives the colour and describes how it is hung, but does not name the fabric."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Grandad has trouble seeing the pages of his ___. The cloth hangs on a ___ above the window.",
+        "answers": [
+          [
+            "newspaper"
+          ],
+          [
+            "line"
+          ]
+        ],
+        "word_bank": [
+          "chair",
+          "line",
+          "skirt",
+          "newspaper"
+        ],
+        "explanation": "The first message names the newspaper; the final message names the line."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "How one piece solved the problem",
+          "A suggestion to add more material",
+          "An unwanted patch of sunlight",
+          "Choosing new furniture"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "First Lian explains the light, Hana offers more fabric, and Lian describes moving a single piece."
+      }
+    ]
+  },
+  "children": []
+}

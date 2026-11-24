@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "c2-credit-a-design-copy-without-a-single-inventor",
+    "title": "Explain Credit When More Than One Person Shaped a Design",
+    "level": "C2",
+    "prompt_text": "A small museum has a hand tool. One workshop produced the oldest surviving example, but a later maker added the grip most people now associate with the design. An exhibition designer wants to say the first workshop invented it. Give an alternative credit line, explain what each claim can support, and say what evidence might change your wording.",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 116,
+    "target_grammar": "Precision in attribution and evidential verbs. Use counterfactuals to show what would change a claim.",
+    "fluency_objective": "State the credit line in language a visitor could hear once. Then explain the two different kinds of credit.",
+    "pronunciation_objective": "Stress earliest surviving and added the grip separately. Avoid giving the same emphasis to evidence and guesses.",
+    "target_vocabulary": [
+      "surviving",
+      "attribution",
+      "maker",
+      "feature",
+      "documented",
+      "prototype"
+    ],
+    "cues": [
+      {
+        "text": "Give a usable short credit line.",
+        "keywords": [
+          "earliest surviving",
+          "credit line",
+          "i would write",
+          "introduced"
+        ]
+      },
+      {
+        "text": "Explain what the surviving object can and cannot prove.",
+        "keywords": [
+          "surviving example",
+          "doesn't prove",
+          "can't tell",
+          "earliest known"
+        ]
+      },
+      {
+        "text": "Explain how to credit the later maker's feature.",
+        "keywords": [
+          "grip",
+          "later maker",
+          "recognisable",
+          "added"
+        ]
+      },
+      {
+        "text": "Describe evidence that would change the attribution.",
+        "keywords": [
+          "dated",
+          "catalogue",
+          "earlier example",
+          "workshop record",
+          "if we found"
+        ]
+      }
+    ],
+    "model_opening": "I would write, 'The earliest surviving example was made at the North Lane workshop.",
+    "model_answer": "I would write, 'The earliest surviving example was made at the North Lane workshop. A later version by Rosa Bell introduced the shaped grip shown here.' Visitors would hear two claims they can connect to the objects. The line would still be short enough to use next to the case.\n\nAn early surviving tool tells us that a workshop was making the design by a certain date. It doesn't prove that nobody made a similar tool earlier. A maker could also have produced an early version without leaving one that the museum can identify. Giving the workshop credit for the example respects the evidence we have. Giving Rosa Bell credit for the shaped grip identifies a specific feature she added. The later grip need not make her the inventor of everything that came before it.\n\nA dated catalogue showing that same grip before Bell's example would change the second claim. I would say her version is the earliest one we have in the collection with that grip, or use a new attribution if another source identifies its maker. A clear workshop record describing a new design and who developed it could support a stronger claim about authorship. Until then, the label can explain each maker's part without combining them into a single story about invention.",
+    "sort_order": 386
+  },
+  "children": []
+}

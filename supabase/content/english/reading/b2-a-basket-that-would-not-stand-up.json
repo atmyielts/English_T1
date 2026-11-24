@@ -1,0 +1,123 @@
+{
+  "item": {
+    "slug": "b2-a-basket-that-would-not-stand-up",
+    "title": "A Basket That Would Not Stand Up",
+    "level": "B2",
+    "summary": "A basket maker asks why one model succeeds on a shelf and fails on a journey.",
+    "content_markdown": "**Nina:** Your first shopping basket was chosen at the design show, yet you decided to stop making it. What went wrong?\n\n**Sol:** The basket stood straight on our shelf. It had a wide base and could hold a good deal. The organiser saw it there and asked us to make twenty. The first person to return one had carried it by train. Her floor space was narrow, and she had to keep one hand on its handle whenever the train moved. The part she liked least was the part that had made the basket stand out on our shelf.\n\n**Nina:** Was it enough to make the base narrower?\n\n**Sol:** That was our first idea. A narrow base took up less room, but the basket leaned when someone set it down with a large bottle at one end. We asked three people to make an ordinary journey with the new version. Nobody put the bottle in the middle just because there was room there. They packed in the order they bought things. We put a flat pocket near the bottom at each end. A round bottle could still move, but a pair of folded packets kept it next to the side.\n\n**Nina:** What did the people testing it think?\n\n**Sol:** One asked if the pockets had made it smaller. In fact they replaced space that was often left empty when something large went in first. Another person was disappointed that it no longer held the same number of books. The first model is still on sale for people who carry flat objects or walk home on quiet streets. Our second one suits buyers trying to fit in shopping while changing trains. I would not describe that as discovering the right shape for a basket. We found a shape for a particular series of places, the shop counter, the floor of a carriage, and the front step. Changing any one of them could change the answer again.",
+    "category": "Design",
+    "theme": "designing a basket for its route",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "design interview",
+      "word_count": 325
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does Sol keep two models?",
+        "options": [
+          "The same buyer needs to take two baskets on every trip.",
+          "Neither shape works for anybody going by train.",
+          "Different journeys and loads make different features useful.",
+          "The two models hold exactly the same objects."
+        ],
+        "answer_index": 2,
+        "explanation": "The first suits some loads and trips, while the second is designed around shopping on a train."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What did the earliest return show about the wide base?",
+        "options": [
+          "It made the basket hard to keep in a tight space on a moving train.",
+          "It removed the need for a handle when carrying it.",
+          "It fitted almost every carriage space without moving.",
+          "It caused the basket to look small on the display shelf."
+        ],
+        "answer_index": 0,
+        "explanation": "The buyer had little floor space and had to hold the handle whenever the train moved."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What did the ordinary shopping trips reveal?",
+        "options": [
+          "People naturally place the tallest objects in the middle.",
+          "Everyone packs in order of weight.",
+          "A narrower base always gives more room.",
+          "A design cannot rely on shoppers arranging purchases in the most stable way."
+        ],
+        "answer_index": 3,
+        "explanation": "People packed in purchase order, and the maker found the positions would not necessarily keep the load balanced."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “stand out” mean in the first answer?",
+        "options": [
+          "Stay outside the shop",
+          "Attract attention",
+          "Drop onto one side",
+          "Take the least space"
+        ],
+        "answer_index": 1,
+        "explanation": "The wide, stable base helped make the basket noticeable on the show shelf."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "People tried the changed basket on real shopping trips.",
+        "answer": "true",
+        "explanation": "Sol asks three people to make an ordinary journey with it."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "All the testers thought the second basket was better for carrying books.",
+        "answer": "false",
+        "explanation": "One person was disappointed that the new one held fewer books."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Sol identifies the material used for the handles.",
+        "answer": "not_given",
+        "explanation": "The interview talks about holding the handle without giving its material."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "One first customer carried the basket by ___. The maker added a flat ___ near the bottom at each end.",
+        "answers": [
+          [
+            "train"
+          ],
+          [
+            "pocket"
+          ]
+        ],
+        "word_bank": [
+          "train",
+          "bottle",
+          "pocket",
+          "street"
+        ],
+        "explanation": "In the first answer Sol describes a train journey. The middle answer describes finding space for pockets."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,63 @@
+{
+  "item": {
+    "slug": "c1-explain-a-refund-and-a-separate-deposit",
+    "title": "Explain a Refund Without Mixing Up Two Charges",
+    "level": "C1",
+    "prompt_text": "You are training a member of staff at a music centre. Visitors sometimes pay for a workshop seat and separately leave a refundable deposit for a borrowed stand. A visitor cancelled the workshop and returned the stand. The refund and return follow different conditions. Explain how to speak clearly to the visitor, which facts to check, and what to do if you cannot confirm one of the amounts.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 106,
+    "target_grammar": "Precise reference, reported conditions and explicit conditional wording.",
+    "fluency_objective": "Name the two charges before explaining a status. Then give a sample sentence for a case with one amount still outstanding.",
+    "pronunciation_objective": "Give workshop fee and stand deposit separate emphasis. Leave a pause between their statuses.",
+    "target_vocabulary": [
+      "refund",
+      "deposit",
+      "separate",
+      "receipt",
+      "return record",
+      "confirm"
+    ],
+    "cues": [
+      {
+        "text": "Separate what the two charges paid for.",
+        "keywords": [
+          "workshop fee",
+          "stand deposit",
+          "two charges"
+        ]
+      },
+      {
+        "text": "Say what to check for each amount.",
+        "keywords": [
+          "cancellation",
+          "return record",
+          "receipt",
+          "date"
+        ]
+      },
+      {
+        "text": "Give sample wording for a partial confirmation.",
+        "keywords": [
+          "i can confirm",
+          "still checking",
+          "the deposit",
+          "write to you"
+        ]
+      },
+      {
+        "text": "Explain who should follow up or how.",
+        "keywords": [
+          "follow up",
+          "leave a note",
+          "check with",
+          "confirmation"
+        ]
+      }
+    ],
+    "model_opening": "Start by separating the workshop fee from the stand deposit.",
+    "model_answer": "Start by separating the workshop fee from the stand deposit. They may appear on the same receipt, but they have different conditions. For the workshop fee, check the cancellation date against the conditions printed on the booking confirmation. For the stand deposit, check the return record and make sure its number matches the stand on the receipt. A return does not tell us whether the seat refund was approved.\n\nIf only one amount is clear, say exactly which one. For instance, 'I can confirm the stand was returned and the deposit is ready to be refunded. I am still checking whether the workshop cancellation was received before the deadline.' That is more useful than saying that the refund is being processed, because the visitor can tell which part is settled.\n\nGive the visitor a copy or a note with the booking reference. If the cancellation time is missing, leave a message for the booking coordinator and agree how the visitor will hear back. Record who will follow up and when. That way another member of staff can help without asking the visitor to explain everything again.",
+    "sort_order": 409
+  },
+  "children": []
+}

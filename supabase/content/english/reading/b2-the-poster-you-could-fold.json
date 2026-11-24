@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b2-the-poster-you-could-fold",
+    "title": "The Poster You Could Fold",
+    "level": "B2",
+    "summary": "A designer tests whether a large map still works when people carry it in a pocket.",
+    "content_markdown": "The Foldway festival asked designer Nura to turn a wall poster into a guide that visitors could carry in a pocket. The original poster showed five sites connected by a wide orange line. Its labels looked clear from across a hall. When Nura printed a smaller copy on a single sheet, everything fitted. She had not moved a street or dropped a site from the map.\n\nShe gave the guide to four volunteers on the first morning. They folded it without being asked. One kept the festival schedule visible; two put the map on the outside; the fourth folded the whole sheet down to the width of a hand. When Nura asked where they would go after the riverside stage, three opened the map but could not see its next turn. That part of the orange route was on the other side of a fold. A guide could have all the right information and still separate details people needed together.\n\nNura made a second version that planned for two common folds. She kept each stretch between festival sites within one section of the sheet. At the edge of a section she used a small orange arrow to say where the next stretch began. She also printed the name of each site on the reverse beside the part of the schedule that went with it. These changes meant the map did not look as tidy when it lay completely flat.\n\nFor the final trial, volunteers started with the map folded as they would normally carry it. They were asked to choose a stage from the schedule and find it on the map, and then find the next turn in the route. The shorter search times did not make the smaller guide a better wall display. Nura kept the original poster at the entrances, where a single image could show the whole site at once. The project produced two designs because it had turned one large question about clarity into two smaller ones: what can someone take in from a distance, and what do they need to find while moving?",
+    "category": "Design",
+    "theme": "designing a foldable guide",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "design case study",
+      "word_count": 348
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why did the designer keep two final versions?",
+        "options": [
+          "Volunteers could not agree on one official festival route.",
+          "The poster and the carry guide supported two different ways of finding information.",
+          "A map cannot show more than one stage at a time.",
+          "The smaller map could not contain all five sites."
+        ],
+        "answer_index": 1,
+        "explanation": "Visitors can see the flat poster from a distance, while the portable guide supports looking up a route in parts."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What caused three visitors to miss the next turn on the trial guide?",
+        "options": [
+          "The guide lacked an orange route.",
+          "The stage had moved to a different street.",
+          "The next turn was on the other side of a fold.",
+          "They had started with the wrong schedule."
+        ],
+        "answer_index": 2,
+        "explanation": "The turn was present but not visible in the folded view they were using."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why might the second design look less tidy when unfolded?",
+        "options": [
+          "Its lettering is smaller because an entire site was dropped.",
+          "The festival schedule was hidden in the folded copy.",
+          "The route map had to be copied from different cities.",
+          "Some marks help people move between separate visible sections rather than see everything at once."
+        ],
+        "answer_index": 3,
+        "explanation": "The arrows and repeated site names serve the folded guide, even if they make the flat version look busier."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “take in” mean in the final question?",
+        "options": [
+          "Understand or notice",
+          "Fold towards the inside",
+          "Enter a room to collect",
+          "Cover a line with another colour"
+        ],
+        "answer_index": 0,
+        "explanation": "The poster is designed for people to see and understand from across an entrance area."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The first smaller print included all five sites.",
+        "answer": "true",
+        "explanation": "Nura says no site was dropped from the map."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The new map made the original poster unnecessary at entrances.",
+        "answer": "false",
+        "explanation": "Nura keeps the wall poster because it suits people viewing the map all at once."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The article gives the dimensions of the second version in centimetres.",
+        "answer": "not_given",
+        "explanation": "It describes the folds and pocket use, but gives no final measurements."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "On the revised map a small ___ shows where the next route section starts. Volunteers use the ___ to choose a stage.",
+        "answers": [
+          [
+            "arrow"
+          ],
+          [
+            "schedule"
+          ]
+        ],
+        "word_bank": [
+          "festival",
+          "schedule",
+          "arrow",
+          "poster"
+        ],
+        "explanation": "Paragraph 3 describes the arrow, and the final trial starts with a stage in the schedule."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Choosing a structure that suits the folds",
+          "Shrinking the original poster",
+          "Finding distinct uses for the two final designs",
+          "A problem that appears in people’s hands",
+          "Using only one map for every visitor"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The paragraphs move from a simple size change to actual use, a redesigned structure and two different contexts for reading maps."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "b1-the-parcel-with-the-creased-corner",
+    "title": "The Parcel with the Creased Corner",
+    "level": "B1",
+    "summary": "A small design shop changes how it handles complaints after a delivery arrives bent.",
+    "content_markdown": "I helped at a shop that sent framed prints to people who ordered them online. On my third day a customer emailed a photograph of a parcel with one corner badly bent. I wrote back that the delivery driver must have dropped it. My supervisor, Timo, asked me how I could tell the difference between a parcel dropped after leaving the shop and one already damaged at the time of collection. I could not tell from the photograph.\n\nWe checked the orders still waiting near the door. I found another box with the same kind of mark. It had been strapped against the edge of a trolley with two much larger boxes. When the trolley turned, the lower box leaned against a metal bar. Our own packing area could have caused a mark like the customer’s, although we had no way of knowing whether it had done so in that case.\n\nTimo asked me to write again to the customer. I asked whether the frame inside had been damaged and offered a replacement if it had. The customer replied that the frame was fine. She had written because the box was a gift and now looked untidy. We sent her a clean box and checked that the frame would fit before posting it.\n\nAfter that we put a piece of stiff card between parcels and the bar. We also started taking one picture of each parcel before the driver collected it. The pictures were easy to store with the order. If another box arrived bent, we would first have a better answer to the question of when the damage appeared. We would still have to ask what the customer needed.",
+    "category": "Work",
+    "theme": "documenting a damaged delivery",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "workplace account",
+      "word_count": 280
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What two things does the shop learn to separate?",
+        "options": [
+          "The number of deliveries and the number of orders",
+          "How much a frame costs and how heavy it is",
+          "Working out what happened and finding a useful response for the customer",
+          "Whether the order was online and where the driver lives"
+        ],
+        "answer_index": 2,
+        "explanation": "The conclusion says a photo can help date the damage, while the customer still needs to say what help is useful."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did Timo question the first email?",
+        "options": [
+          "The customer had sent the picture to the wrong shop.",
+          "A bent box did not show when or how it was damaged.",
+          "The driver’s name was missing from the parcel.",
+          "Timo had already seen the frame in the customer’s home."
+        ],
+        "answer_index": 1,
+        "explanation": "The photo could not distinguish damage before pickup from damage after pickup."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the shop send a box rather than a frame?",
+        "options": [
+          "The customer needed new packaging for a gift; the frame itself was fine.",
+          "The customer had already ordered a frame from another shop.",
+          "The frame would have been too small for the printed picture.",
+          "Timo could not look inside the parcel before it left."
+        ],
+        "answer_index": 0,
+        "explanation": "The customer reports that the frame was fine and that she was concerned about the appearance of the box."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "A parcel “strapped against” the trolley was…",
+        "options": [
+          "Placed loosely underneath it.",
+          "Painted to match its colour.",
+          "Returned by the person who ordered it.",
+          "Held tight in position by a band or strap."
+        ],
+        "answer_index": 3,
+        "explanation": "The parcel was secured on the trolley rather than resting freely."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The shop found a similar mark on a box that had not yet been collected.",
+        "answer": "true",
+        "explanation": "The writer sees another box with the same kind of mark while checking orders by the door."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The customer reported that the print frame itself was broken.",
+        "answer": "false",
+        "explanation": "She wrote that the frame inside was fine."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage says how much the shop spent to send the replacement box.",
+        "answer": "not_given",
+        "explanation": "The article describes what was sent but gives no postage cost."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The lower box leaned against a metal ___. After the complaint, staff put stiff ___ between parcels and the bar.",
+        "answers": [
+          [
+            "bar"
+          ],
+          [
+            "card"
+          ]
+        ],
+        "word_bank": [
+          "trolley",
+          "card",
+          "bar",
+          "frame"
+        ],
+        "explanation": "Paragraph 2 gives the metal bar, and the final paragraph describes the protective card."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A possible cause inside the shop",
+          "Changes to packing and records",
+          "The first explanation is questioned",
+          "What the customer actually needed",
+          "The driver offers to pay"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The narrative questions an early assumption, finds another possibility, responds to the customer and makes two changes."
+      }
+    ]
+  },
+  "children": []
+}

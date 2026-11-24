@@ -1,0 +1,156 @@
+{
+  "item": {
+    "slug": "c1-chair-a-decision-on-evening-sports-court-access",
+    "title": "Chair a decision on evening sports court access",
+    "level": "C1",
+    "mission_type": "problem_solving",
+    "context_text": "A community sports group wants to reserve the same court every Wednesday. Walk-in players have historically used that evening.",
+    "objective_text": "Keep a workable reservation schedule and ensure walk-in users can still use the court.",
+    "target_vocabulary": [
+      "allocation",
+      "demand",
+      "pilot",
+      "walk-in",
+      "review"
+    ],
+    "success_conditions": [
+      "Keep a workable reservation schedule and ensure walk-in users can still use the court.",
+      "Publish the walk-in window",
+      "Publish the league window",
+      "Record unmet demand",
+      "Retain a timed trial"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the booking proposal",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "The league requests all Wednesdays from 6 to 9. The previous rota left this entire evening open for walk-ins. Usage records count bookings but cannot show how many people came without a booking. The facility can split the three-hour slot.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What demand is missing from the current figures?",
+          "options": [
+            "The number of league bookings",
+            "Use by people without reservations",
+            "The court’s capacity"
+          ],
+          "answer_index": 1,
+          "explanation": "Walk-in players are not represented in by-booking records."
+        },
+        {
+          "prompt": "What practical compromise is available?",
+          "options": [
+            "Give every Wednesday to the league",
+            "Divide the three-hour window",
+            "Stop taking bookings altogether"
+          ],
+          "answer_index": 1,
+          "explanation": "The facility can split the slot."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the caretaker’s suggestion",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "The league says it can play from seven to nine if the setup can start fifteen minutes early. Walk-ins tell me many of them come around six. Let's put the equipment beside the court ahead of time and record whether the walk-in hour reaches capacity.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "When must the league’s setup begin?",
+          "options": [
+            "At 6:15",
+            "At 7:15",
+            "At 6:45"
+          ],
+          "answer_index": 2,
+          "explanation": "Fifteen minutes before seven is 6:45."
+        },
+        {
+          "prompt": "What should the club record during the trial?",
+          "options": [
+            "Only how many matches are won",
+            "How long booking has existed",
+            "Whether the walk-in period fills"
+          ],
+          "answer_index": 2,
+          "explanation": "Actual walk-in use can indicate demand the old records omit."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Propose the trial at the meeting",
+      "prompt_text": "The league asks for a permanent answer. Another resident wants to refuse all bookings.",
+      "instructions": "Suggest a split with a defined review. Address equipment setup without taking away all walk-in time.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 6,
+      "min_words": 35,
+      "model_answer": "Let's trial open play at six, followed by league matches at seven. The league can prepare its equipment off the court before seven. Record whether open play reaches capacity, then review the split after four weeks.",
+      "points": [
+        {
+          "label": "Retain open play",
+          "any": [
+            "open play at six",
+            "walk-in at six"
+          ]
+        },
+        {
+          "label": "Protect playing space during setup",
+          "any": [
+            "off the court"
+          ]
+        },
+        {
+          "label": "Define a review",
+          "any": [
+            "after four weeks",
+            "four-week review"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Post the trial decision",
+      "prompt_text": "The club has agreed a four-week trial. Give residents an update they can act on now.",
+      "instructions": "Include times and say how someone can respond if the walk-in hour is already full. Explain what will be reviewed before making a longer commitment.",
+      "goal": "Keep a workable reservation schedule and ensure walk-in users can still use the court.",
+      "estimated_minutes": 14,
+      "min_words": 65,
+      "model_answer": "For four Wednesdays, the court will be open to walk-in players from six to seven and reserved for the league from seven to nine. League equipment will be set up off the court before seven. If the walk-in hour is already full when you arrive, tell the caretaker so we can record unmet demand. We will review those numbers and how both groups use the court after four weeks.",
+      "points": [
+        {
+          "label": "Publish the walk-in window",
+          "any": [
+            "from six to seven",
+            "6 to 7"
+          ]
+        },
+        {
+          "label": "Publish the league window",
+          "any": [
+            "from seven to nine",
+            "7 to 9"
+          ]
+        },
+        {
+          "label": "Record unmet demand",
+          "any": [
+            "unmet demand",
+            "tell the caretaker"
+          ]
+        },
+        {
+          "label": "Retain a timed trial",
+          "any": [
+            "after four weeks",
+            "four Wednesdays"
+          ]
+        }
+      ]
+    }
+  ]
+}

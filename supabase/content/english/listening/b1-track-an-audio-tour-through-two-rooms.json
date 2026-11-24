@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-track-an-audio-tour-through-two-rooms",
+    "title": "Track an audio tour through two rooms",
+    "level": "B1",
+    "summary": "A museum guide helps visitors match objects to two craft processes.",
+    "transcript_text": "Our first room is about getting colour into cloth. Stop at the table with the three glass jars. The jar in the middle holds onion skins. Workers saved the outer layers because they made a strong yellow colour. The cloth hanging beside the table is a modern sample, so please feel how stiff it is. In the next room, follow the dotted floor line to the large wooden frame. That frame holds the cloth flat while a worker stitches a border. The cloth there came from a workshop that closed in the nineteen fifties. You can look closely, but please do not touch it.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 120,
+    "duration_seconds": 52,
+    "audio_url": null,
+    "focus_skill": "sequence",
+    "tags": [
+      "culture",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What is the guide mainly doing?",
+        "options": [
+          "Giving instructions for buying cloth",
+          "Explaining how all rooms were built",
+          "Making a case for closing a museum room",
+          "Directing visitors through two steps of a craft"
+        ],
+        "answer_index": 3,
+        "explanation": "The first room concerns colouring cloth and the next shows stitching.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Which jar is connected with yellow dye?",
+        "options": [
+          "The jar nearest the door",
+          "The jar in the next room",
+          "The middle jar",
+          "The only empty jar"
+        ],
+        "answer_index": 2,
+        "explanation": "The middle jar contains the onion skins that produced yellow.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Which piece can visitors handle?",
+        "options": [
+          "The stitched historic cloth",
+          "The modern sample",
+          "Any cloth on the wooden frame",
+          "Only a cloth in the shop"
+        ],
+        "answer_index": 1,
+        "explanation": "The guide explicitly invites visitors to feel the modern sample.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What does the dotted line help people find?",
+        "options": [
+          "A wooden frame",
+          "The dye table",
+          "The glass jars",
+          "The museum exit"
+        ],
+        "answer_index": 0,
+        "explanation": "Visitors follow the line to the frame in the next room.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Why is cloth stretched across the frame?",
+        "options": [
+          "To make it dry faster",
+          "To compare the colour to the jars",
+          "To carry it to the shop",
+          "To keep it flat while stitching"
+        ],
+        "answer_index": 3,
+        "explanation": "The frame holds it flat before and during stitching.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the jar in the middle holds onion skins",
+      "focus_phrase": "holds onion skins",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "follow the dotted floor line",
+      "focus_phrase": "dotted floor line",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "stitches a border",
+      "focus_phrase": "stitches a border",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

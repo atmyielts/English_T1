@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "c1-brief-a-colleague-taking-over-a-tryout",
+    "title": "Explain Which Parts of a Tryout Are Settled",
+    "level": "C1",
+    "prompt_text": "You arranged a tryout for a community cycling group's new membership process. A colleague will take your place. The first part is confirmed, the second is optional if there is time, and one promised resource has not arrived. Use a concrete example to brief the colleague. Make it clear which choices are theirs and which issue they should send back to you.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 108,
+    "target_grammar": "Reported commitments, modal distinctions and precise conditionals.",
+    "fluency_objective": "Describe confirmed, optional and unresolved items in that order. End with the decision your colleague can make without you.",
+    "pronunciation_objective": "Stress confirmed and optional differently. Keep the unresolved resource in a separate sentence.",
+    "target_vocabulary": [
+      "tryout",
+      "confirmed",
+      "optional",
+      "resource",
+      "decision",
+      "follow up"
+    ],
+    "cues": [
+      {
+        "text": "Give a confirmed part of the tryout.",
+        "keywords": [
+          "confirmed",
+          "first part",
+          "agreed",
+          "check-in"
+        ]
+      },
+      {
+        "text": "Describe the optional activity and a condition for using it.",
+        "keywords": [
+          "optional",
+          "if there is time",
+          "if the group",
+          "second activity"
+        ]
+      },
+      {
+        "text": "Identify the unconfirmed resource and what to do about it.",
+        "keywords": [
+          "has not arrived",
+          "still waiting",
+          "missing",
+          "send me"
+        ]
+      },
+      {
+        "text": "Separate delegated choices from issues to follow up.",
+        "keywords": [
+          "your decision",
+          "you can decide",
+          "please let me",
+          "i will follow up"
+        ]
+      }
+    ],
+    "model_opening": "The first part is confirmed.",
+    "model_answer": "The first part is confirmed. Meet the new riders at the library doors and ask them to try the sign-in card. Priya has agreed to bring the cards and collect them at the end. You can decide whether people try the card individually or in pairs. We are mainly interested in whether someone can work out where to write their contact details.\n\nThe second activity is optional. If the group finishes that part early, walk through the first two membership steps using a mock reminder on paper. If there is no time, record how long the card took and leave the other activity for the next tryout. There is no need to rush the sign-in test to fit it in.\n\nThe promised list of beginner group times has not arrived. Please let me know tomorrow if it is still missing. I will follow up with the person who keeps the timetable, so you don't have to give visitors a time we cannot confirm. You can still show the blank reminder and explain where a time would usually appear.",
+    "sort_order": 383
+  },
+  "children": []
+}

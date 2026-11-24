@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a1-choose-a-seat-for-the-puppet-show",
+    "title": "Choose a seat for the puppet show",
+    "level": "A1",
+    "summary": "A volunteer gives families directions inside a performance room.",
+    "transcript_text": "Welcome to the puppet show. Children can sit on the green mats at the front. There are chairs for adults behind the mats. Leave pushchairs in the hall by the coat rack. The show starts in ten minutes and ends before lunch. You can meet the puppets after the show.",
+    "category": "Leisure",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 98,
+    "duration_seconds": 31,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "leisure",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "Who is the message meant for?",
+        "options": [
+          "Families arriving for a show",
+          "People leaving a shop",
+          "Adults ordering lunch",
+          "People collecting coats after work"
+        ],
+        "answer_index": 0,
+        "explanation": "The message welcomes families to the puppet show.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "Where can children sit?",
+        "options": [
+          "On chairs by the door",
+          "On the stairs",
+          "On the stage",
+          "On green mats"
+        ],
+        "answer_index": 3,
+        "explanation": "The front mats are for children.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Where are the adult seats?",
+        "options": [
+          "Next to the coat rack",
+          "Outside the hall",
+          "Behind the mats",
+          "Beside the puppets"
+        ],
+        "answer_index": 2,
+        "explanation": "The chairs for adults are behind the mats.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "Where should families leave pushchairs?",
+        "options": [
+          "At the front",
+          "By the coat rack",
+          "On the green mats",
+          "Outside the building"
+        ],
+        "answer_index": 1,
+        "explanation": "Pushchairs go in the hall by the coat rack.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "When can families meet the puppets?",
+        "options": [
+          "After the show",
+          "Before the show",
+          "In the middle of the show",
+          "During lunch"
+        ],
+        "answer_index": 0,
+        "explanation": "The speaker says visitors can meet the puppets after the performance.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "green mats at the front",
+      "focus_phrase": "at the front",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "in the hall by the coat rack",
+      "focus_phrase": "the coat rack",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "starts in ten minutes",
+      "focus_phrase": "in ten minutes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

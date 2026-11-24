@@ -1,0 +1,54 @@
+{
+  "item": {
+    "slug": "b1-send-the-important-page-first",
+    "title": "Explain Which Page to Send First",
+    "level": "B1",
+    "prompt_text": "A club member needs proof of a booking today, and you have a five-page document. Only the first page shows the name and date. The other pages explain the terms. Speak to a teammate who wants to send everything. Explain what to send now, what to keep for later and how to avoid sending the wrong information.",
+    "prompt_type": "roleplay",
+    "task_type": "roleplay",
+    "target_duration_seconds": 66,
+    "target_grammar": "Only, first and after for order. Use could and if to give a reason and a fallback.",
+    "fluency_objective": "Name what the recipient needs before describing the documents. End with a short pre-send check.",
+    "pronunciation_objective": "Stress name and date as the two things the recipient needs to see immediately.",
+    "target_vocabulary": [
+      "booking",
+      "proof",
+      "first page",
+      "terms",
+      "attach",
+      "check"
+    ],
+    "cues": [
+      {
+        "text": "Identify what is needed today.",
+        "keywords": [
+          "proof",
+          "name and date",
+          "today"
+        ]
+      },
+      {
+        "text": "Say what should be sent first and what stays available.",
+        "keywords": [
+          "first page",
+          "terms",
+          "later",
+          "keep the rest"
+        ]
+      },
+      {
+        "text": "Give a practical check before sending.",
+        "keywords": [
+          "check the",
+          "attach",
+          "open the file",
+          "right date"
+        ]
+      }
+    ],
+    "model_opening": "They only need proof of the booking today, so I would send the first page.",
+    "model_answer": "They only need proof of the booking today, so I would send the first page. It shows the club name and the date in the same place. The other four pages explain the terms. Keep the rest of the document in the shared folder so we can send those pages later if someone asks for them.\n\nBefore you send the message, open the file you are about to attach and check the name and the date. We booked the same room twice this month, so it would be easy to pick the wrong file. Put the booking date in the message as well. That gives the reader a quick check before opening it.",
+    "sort_order": 405
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Asking for a haircut",
+    "description": "Explain how you want your hair cut and styled, from how much to take off to where you want your parting.",
+    "slug": "a2-asking-for-a-haircut",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 390,
+    "topic": "hair salon"
+  },
+  "children": [
+    {
+      "word": "barber",
+      "part_of_speech": "noun",
+      "definition": "A person who cuts mainly men's hair and may also cut or shave their beards.",
+      "example": "I asked the barber to cut the sides shorter and leave the top a bit longer.",
+      "translation_ru": "мужской парикмахер",
+      "translation_uz": "erkaklar sartaroshi",
+      "collocations": [
+        "go to the barber",
+        "ask the barber for a shorter cut"
+      ]
+    },
+    {
+      "word": "fringe",
+      "part_of_speech": "noun",
+      "definition": "Hair cut so that it falls over the top part of your face, above your eyes.",
+      "example": "Could you leave my fringe just above my eyebrows?",
+      "translation_ru": "чёлка",
+      "translation_uz": "peshonaga tushadigan qilib kesilgan soch",
+      "collocations": [
+        "a short fringe",
+        "cut a fringe"
+      ]
+    },
+    {
+      "word": "parting",
+      "part_of_speech": "noun",
+      "definition": "The line where your hair is divided so that it falls to the left and right.",
+      "example": "I'd like my parting on the left, please.",
+      "translation_ru": "пробор",
+      "translation_uz": "sochni ikki tomonga ajratib turadigan chiziq",
+      "collocations": [
+        "a middle parting",
+        "a side parting"
+      ]
+    },
+    {
+      "word": "comb",
+      "part_of_speech": "noun",
+      "definition": "A flat tool with a row of teeth that you pull through your hair to make it neat.",
+      "example": "Could you use a comb to move my hair to the left so I can see how it looks?",
+      "translation_ru": "расчёска",
+      "translation_uz": "taroq",
+      "collocations": [
+        "a wide-tooth comb",
+        "run a comb through your hair"
+      ]
+    },
+    {
+      "word": "curl",
+      "part_of_speech": "verb",
+      "definition": "To make hair go round in loose or tight rings.",
+      "example": "Could you curl my hair loosely after the cut?",
+      "translation_ru": "завивать волосы",
+      "translation_uz": "sochni jingalak qilmoq",
+      "collocations": [
+        "curl your hair",
+        "curl the front sections"
+      ]
+    },
+    {
+      "word": "straighten",
+      "part_of_speech": "verb",
+      "definition": "To make wavy or curly hair straight.",
+      "example": "Could you straighten my hair after the cut? I'd like it smooth for a work dinner.",
+      "translation_ru": "выпрямлять волосы",
+      "translation_uz": "sochni tekislamoq",
+      "collocations": [
+        "straighten your hair",
+        "straighten your fringe"
+      ]
+    },
+    {
+      "word": "layers",
+      "part_of_speech": "plural noun",
+      "definition": "Sections of hair cut to different lengths, with shorter hair lying over longer hair.",
+      "example": "I'd like long layers, with the shortest pieces just below my chin.",
+      "translation_ru": "слои в стрижке",
+      "translation_uz": "turli uzunlikda kesilgan soch qatlamlari",
+      "collocations": [
+        "long layers",
+        "add layers"
+      ]
+    },
+    {
+      "word": "hair clip",
+      "part_of_speech": "noun",
+      "definition": "A small object that closes over some of your hair to hold it in place.",
+      "example": "Could you use a hair clip to keep the top section out of the way while you cut the sides?",
+      "translation_ru": "заколка для волос",
+      "translation_uz": "soch qisqichi",
+      "collocations": [
+        "a metal hair clip",
+        "hold your hair back with a hair clip"
+      ]
+    },
+    {
+      "word": "ends",
+      "part_of_speech": "plural noun",
+      "definition": "The tips of your hair, farthest from where it grows.",
+      "example": "Please cut just the ends. I want to keep my hair long.",
+      "translation_ru": "кончики волос",
+      "translation_uz": "soch uchlari",
+      "collocations": [
+        "dry ends",
+        "cut the ends"
+      ]
+    },
+    {
+      "word": "hairstyle",
+      "part_of_speech": "noun",
+      "definition": "The way your hair looks as a whole because of how it is cut and arranged.",
+      "example": "I'd like a hairstyle I can get ready in five minutes before work.",
+      "translation_ru": "причёска",
+      "translation_uz": "soch turmagi",
+      "collocations": [
+        "a simple hairstyle",
+        "try a new hairstyle"
+      ]
+    },
+    {
+      "word": "scissors",
+      "part_of_speech": "plural noun",
+      "definition": "A cutting tool with two sharp blades that you open and close with your fingers.",
+      "example": "Could you use scissors around my ears so you can take off just a little?",
+      "translation_ru": "ножницы",
+      "translation_uz": "qaychi",
+      "collocations": [
+        "a pair of scissors",
+        "cut hair with scissors"
+      ]
+    },
+    {
+      "word": "clippers",
+      "part_of_speech": "plural noun",
+      "definition": "A tool, usually electric, used to cut hair, especially for short haircuts.",
+      "example": "Could you use clippers on the sides and leave the top long enough to comb?",
+      "translation_ru": "машинка для стрижки волос",
+      "translation_uz": "soch olish mashinkasi",
+      "collocations": [
+        "electric clippers",
+        "use clippers on the sides"
+      ]
+    },
+    {
+      "word": "length",
+      "part_of_speech": "noun",
+      "definition": "How long your hair is from where it grows to its tips.",
+      "example": "I'd like to keep the length at the back so I can still tie my hair up.",
+      "translation_ru": "длина волос",
+      "translation_uz": "soch uzunligi",
+      "collocations": [
+        "keep the length",
+        "check the length"
+      ]
+    },
+    {
+      "word": "salon",
+      "part_of_speech": "noun",
+      "definition": "A place where people can have their hair cut, coloured or styled.",
+      "example": "At the salon, I showed a photo of the cut I wanted before they started.",
+      "translation_ru": "парикмахерский салон",
+      "translation_uz": "sartaroshxona",
+      "collocations": [
+        "a hair salon",
+        "get a haircut at a salon"
+      ]
+    }
+  ]
+}

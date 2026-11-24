@@ -1,0 +1,150 @@
+{
+  "item": {
+    "slug": "a1-two-postage-stamps",
+    "title": "Two Postage Stamps",
+    "level": "A1",
+    "summary": "A customer checks what belongs on two envelopes before posting them.",
+    "content_markdown": "Amal takes two envelopes to the post office. The little one is for his aunt. She lives in the next town. The big one is for a friend in another country. It has a letter and a picture inside.\n\n“Does the big one need two stamps?” Amal asks. The woman at the desk puts it on a scale. “You need this green stamp,” she says. “One stamp is enough. The little one needs this red stamp.” She shows Amal where to put each stamp.\n\nAmal pays for the two stamps. Before he leaves, the woman looks at the back of the little envelope. “Please write your own name and address here,” she says. Amal writes them with the pen on the desk. Then he puts both envelopes in the box beside the post office door.",
+    "category": "Everyday",
+    "theme": "letters and postage",
+    "tone": "peach",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "shop dialogue",
+      "word_count": 135
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does Amal go to the post office?",
+        "options": [
+          "To pick up a picture from his aunt",
+          "To look for a new pen",
+          "To buy a scale for his letters",
+          "To send two envelopes"
+        ],
+        "answer_index": 3,
+        "explanation": "Amal brings two envelopes, buys postage and puts both in the post box."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Who will get the little envelope?",
+        "options": [
+          "A friend in another country",
+          "Amal’s aunt",
+          "The woman at the desk",
+          "The aunt’s friend"
+        ],
+        "answer_index": 1,
+        "explanation": "The first paragraph says the little one is for his aunt."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What colour stamp goes on the big envelope?",
+        "options": [
+          "Green",
+          "Red",
+          "Blue",
+          "Yellow"
+        ],
+        "answer_index": 0,
+        "explanation": "The woman says the big envelope needs one green stamp."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What does Amal still need to add before he posts the little envelope?",
+        "options": [
+          "A second green stamp",
+          "His friend’s picture",
+          "His own name and address",
+          "The weight of the letter"
+        ],
+        "answer_index": 2,
+        "explanation": "The woman asks him to add his own name and address on the back."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Amal’s friend lives in the same town as his aunt.",
+        "answer": "false",
+        "explanation": "The aunt lives in the next town. The friend lives in another country."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Amal pays for two stamps.",
+        "answer": "true",
+        "explanation": "The third paragraph says he pays for two."
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The passage gives the price of the green stamp.",
+        "answer": "not_given",
+        "explanation": "It gives the colour of each stamp and says Amal pays, but lists no price."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The woman uses a ___ to check the big envelope. Amal writes with the ___ on the desk.",
+        "answers": [
+          [
+            "scale"
+          ],
+          [
+            "pen"
+          ]
+        ],
+        "word_bank": [
+          "box",
+          "pen",
+          "scale",
+          "stamp"
+        ],
+        "explanation": "The second paragraph names the scale and the last names the pen."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Finishing the letters before posting",
+          "Two envelopes for different people",
+          "Choosing the stamps",
+          "Opening an envelope at home"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "First Amal brings the letters, then learns which stamps to use, and then adds his address and posts them."
+      }
+    ]
+  },
+  "children": []
+}

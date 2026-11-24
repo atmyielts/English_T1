@@ -1,0 +1,142 @@
+{
+  "item": {
+    "slug": "a2-switch-a-choir-rehearsal-around-a-late-bus",
+    "title": "Switch a choir rehearsal around a late bus",
+    "level": "A2",
+    "mission_type": "social",
+    "context_text": "You are coordinating a choir rehearsal. The pianist is on a late bus and the room has a strict closing time.",
+    "objective_text": "Find useful work the choir can do before the pianist arrives.",
+    "target_vocabulary": [
+      "rehearsal",
+      "pianist",
+      "delay",
+      "practise",
+      "recording"
+    ],
+    "success_conditions": [
+      "Find useful work the choir can do before the pianist arrives.",
+      "Explain what happens early",
+      "Say when the pianist arrives",
+      "State the finish limit"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the room agreement",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Tuesday, 7:00–8:20. At twenty past eight everyone must be outside. You can sing without a piano and use the portable speaker. The key goes in the front desk box.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "What can the group use before the pianist arrives?",
+          "options": [
+            "The front desk box",
+            "The portable speaker",
+            "A piano from another room"
+          ],
+          "answer_index": 1,
+          "explanation": "The room agreement allows the speaker."
+        },
+        {
+          "prompt": "What must be true by 8:20?",
+          "options": [
+            "The last song has just started",
+            "Everyone is outside",
+            "The pianist has arrived"
+          ],
+          "answer_index": 1,
+          "explanation": "The agreement requires everyone to be outside by closing."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the pianist’s voice message",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "My bus is running half an hour late. I should be there at seven thirty-five. Start with the warm-up recording I sent yesterday, but wait for me before trying the new song. The ending is difficult without the piano.",
+      "estimated_minutes": 3,
+      "questions": [
+        {
+          "prompt": "When does the pianist expect to arrive?",
+          "options": [
+            "7:05",
+            "8:20",
+            "7:35"
+          ],
+          "answer_index": 2,
+          "explanation": "The pianist gives seven thirty-five."
+        },
+        {
+          "prompt": "What should wait?",
+          "options": [
+            "The warm-up",
+            "Opening the room",
+            "The new song"
+          ],
+          "answer_index": 2,
+          "explanation": "The pianist says to wait before trying the new song."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Give an opening announcement",
+      "prompt_text": "The choir is in the room and some members are opening the new music.",
+      "instructions": "Correct the plan politely and explain what they can start with. Say why the plan changes.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 4,
+      "min_words": 22,
+      "model_answer": "Let’s use the warm-up recording first. Our pianist is running late and should be here at seven thirty-five. Please save the new song until then.",
+      "points": [
+        {
+          "label": "Start with the warm-up",
+          "any": [
+            "warm-up recording",
+            "warm up recording"
+          ]
+        },
+        {
+          "label": "Save the new song",
+          "any": [
+            "save the new song",
+            "wait for the new song"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Message someone who will arrive later",
+      "prompt_text": "A singer expects to arrive at seven forty. Send them a short update.",
+      "instructions": "Tell them what the group is doing early and what they should bring in quietly. Give the actual closing limit.",
+      "goal": "Find useful work the choir can do before the pianist arrives.",
+      "estimated_minutes": 11,
+      "min_words": 40,
+      "model_answer": "Hi! We are using the warm-up recording before the pianist arrives at seven thirty-five. We will start the new song after that. Bring the new music and come in quietly if we are singing. Please help us put the chairs away. Everyone has to be outside by eight twenty.",
+      "points": [
+        {
+          "label": "Explain what happens early",
+          "any": [
+            "warm-up recording",
+            "warm up recording"
+          ]
+        },
+        {
+          "label": "Say when the pianist arrives",
+          "any": [
+            "seven thirty-five",
+            "7:35"
+          ]
+        },
+        {
+          "label": "State the finish limit",
+          "any": [
+            "eight twenty",
+            "8:20"
+          ]
+        }
+      ]
+    }
+  ]
+}

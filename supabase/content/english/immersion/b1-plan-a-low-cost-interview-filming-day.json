@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "b1-plan-a-low-cost-interview-filming-day",
+    "title": "Plan a low-cost interview filming day",
+    "level": "B1",
+    "mission_type": "workplace",
+    "context_text": "Your student group has one afternoon to film two interviews for a class project. One speaker needs an earlier time.",
+    "objective_text": "Propose a room and schedule that satisfy both the venue rules and the speakers.",
+    "target_vocabulary": [
+      "background",
+      "permission",
+      "outlet",
+      "schedule",
+      "lighting"
+    ],
+    "success_conditions": [
+      "Propose a room and schedule that satisfy both the venue rules and the speakers.",
+      "Confirm first booking",
+      "Confirm second booking",
+      "Avoid corridor cables"
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the facilities notes",
+      "instructions": "Read closely and use the details to answer.",
+      "prompt_text": "Room A has power and good light, and is free 1–3. It has no carpet. Room B is quiet and free 2–5 but has no power sockets. A separate form is required to place cables across a corridor.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which room is available at one?",
+          "options": [
+            "Room B",
+            "Both",
+            "Room A"
+          ],
+          "answer_index": 2,
+          "explanation": "Only Room A is free before two."
+        },
+        {
+          "prompt": "What needs separate permission?",
+          "options": [
+            "Using power inside Room A",
+            "Recording in a quiet room",
+            "Putting a cable across a corridor"
+          ],
+          "answer_index": 2,
+          "explanation": "The cable rule applies specifically to the corridor."
+        }
+      ]
+    },
+    {
+      "kind": "listen",
+      "title": "Hear the producer’s update",
+      "instructions": "Listen twice. First identify the update, then check the details you need.",
+      "prompt_text": "Our first speaker can only do one thirty. The second can do three fifteen. The camera battery will last past both interviews if we charge it at lunch. We can use a small rug to reduce sound from the floor in Room A.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "How can the crew avoid a power issue in Room B?",
+          "options": [
+            "Charge the camera at lunch",
+            "Use a cable across the corridor automatically",
+            "Move the first speaker to three"
+          ],
+          "answer_index": 0,
+          "explanation": "The battery will last if the crew charges in advance."
+        },
+        {
+          "prompt": "What helps with sound in Room A?",
+          "options": [
+            "A small rug",
+            "An extra power socket",
+            "Filming after three"
+          ],
+          "answer_index": 0,
+          "explanation": "The producer suggests a rug to reduce floor sound."
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain the order to the crew",
+      "prompt_text": "Two crew members wanted to use the quiet room for both speakers.",
+      "instructions": "Say where the first session has to happen. Propose a sound fix and explain the charging plan.",
+      "goal": "Give an actionable response to what you just learned.",
+      "estimated_minutes": 5,
+      "min_words": 25,
+      "model_answer": "We need Room A at one thirty because Room B isn't free yet. Put the small rug under the speaker’s chair. Please charge the camera at lunch.",
+      "points": [
+        {
+          "label": "Name the early room and time",
+          "any": [
+            "Room A at one thirty",
+            "Room A at 1:30"
+          ]
+        },
+        {
+          "label": "Suggest the rug",
+          "any": [
+            "small rug",
+            "rug under"
+          ]
+        },
+        {
+          "label": "Mention battery preparation",
+          "any": [
+            "charge the camera",
+            "charge the battery"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send confirmations to both interviewees",
+      "prompt_text": "You can send one schedule to the team with instructions to pass the right line to each speaker.",
+      "instructions": "Name both rooms and times, tell the crew what to move, and say how they can avoid running a corridor cable.",
+      "goal": "Propose a room and schedule that satisfy both the venue rules and the speakers.",
+      "estimated_minutes": 12,
+      "min_words": 45,
+      "model_answer": "Please confirm Room A at one thirty with the first speaker and Room B at three fifteen with the second. Bring a small rug to Room A. Charge the camera over lunch, then move it and the recorder to Room B after the first interview. We won't need to run a cable across the corridor.",
+      "points": [
+        {
+          "label": "Confirm first booking",
+          "any": [
+            "Room A at one thirty",
+            "Room A at 1:30"
+          ]
+        },
+        {
+          "label": "Confirm second booking",
+          "any": [
+            "Room B at three fifteen",
+            "Room B at 3:15"
+          ]
+        },
+        {
+          "label": "Avoid corridor cables",
+          "any": [
+            "won't need to run a cable",
+            "avoid a cable"
+          ]
+        }
+      ]
+    }
+  ]
+}

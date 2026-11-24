@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Lighting a Live Performance",
+    "description": "Describe how stage lighting changes during a public performance and how those changes shape what spectators can see.",
+    "slug": "c1-lighting-a-live-performance",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 380,
+    "topic": "stage lighting"
+  },
+  "children": [
+    {
+      "word": "cue sequence",
+      "part_of_speech": "noun",
+      "definition": "The planned order in which lighting changes are triggered during a performance.",
+      "example": "The cue sequence for the balcony scene begins with the stairway lights and ends with a spotlight on the singer.",
+      "translation_ru": "последовательность световых команд",
+      "translation_uz": "sahna chiroqlarini oʻzgartirish uchun beriladigan signallar ketma-ketligi",
+      "collocations": [
+        "revise the cue sequence",
+        "rehearse the cue sequence"
+      ]
+    },
+    {
+      "word": "lighting state",
+      "part_of_speech": "noun",
+      "definition": "The combination of active stage lights, their colors and their brightness at a particular moment.",
+      "example": "The opening lighting state leaves the chorus in shadow and gives the storyteller a pool of amber light.",
+      "translation_ru": "световая картина на сцене",
+      "translation_uz": "sahna yoritishining muayyan holati",
+      "collocations": [
+        "hold a lighting state",
+        "return to the previous lighting state"
+      ]
+    },
+    {
+      "word": "blackout",
+      "part_of_speech": "noun",
+      "definition": "A planned moment when all stage lighting is off and the stage is dark.",
+      "example": "The blackout after the judge’s verdict hides the courtroom as the performers leave.",
+      "translation_ru": "полное затемнение сцены",
+      "translation_uz": "sahna chiroqlari butunlay oʻchirilib, sahna qorongʻi qoladigan payt",
+      "collocations": [
+        "a sudden blackout",
+        "hold the blackout"
+      ]
+    },
+    {
+      "word": "fade-out",
+      "part_of_speech": "noun",
+      "definition": "A gradual decrease in brightness until a light or group of lights goes out.",
+      "example": "The fade-out of the light on the empty chair lets the image linger after the actor has left.",
+      "translation_ru": "плавное угасание света",
+      "translation_uz": "yorugʻlikning asta-sekin soʻnishi",
+      "collocations": [
+        "a slow fade-out",
+        "a fade-out to darkness"
+      ]
+    },
+    {
+      "word": "sidelight",
+      "part_of_speech": "noun",
+      "definition": "Illumination directed across the stage from the left or right, often to emphasize the shape and movement of performers’ bodies.",
+      "example": "Cool sidelight picks out the dancers’ raised arms as they turn together in the square.",
+      "translation_ru": "боковое освещение",
+      "translation_uz": "yon tomondan yoritish",
+      "collocations": [
+        "low sidelight",
+        "strong sidelight"
+      ]
+    },
+    {
+      "word": "beam angle",
+      "part_of_speech": "noun",
+      "definition": "The angular width of a light beam. In fixture specifications it is often measured between the two points where intensity has fallen to half of its value at the centre.",
+      "example": "The narrow beam angle keeps the light on the letter in the actor’s hand while the desk stays in shadow.",
+      "translation_ru": "угол раскрытия светового пучка",
+      "translation_uz": "yorugʻlik dastasining yoyilish burchagi",
+      "collocations": [
+        "a narrow beam angle",
+        "a wide beam angle"
+      ]
+    },
+    {
+      "word": "crossfade",
+      "part_of_speech": "noun",
+      "definition": "A gradual transition from one lighting state to another. In a typical crossfade, some lights dim as others brighten.",
+      "example": "During the crossfade, the amber light on the kitchen dims as blue light reveals the street.",
+      "translation_ru": "плавный переход от одной световой картины к другой",
+      "translation_uz": "bir yoritish holatidan boshqasiga asta-sekin oʻtish",
+      "collocations": [
+        "a smooth crossfade",
+        "a crossfade between two lighting states"
+      ]
+    },
+    {
+      "word": "sightline",
+      "part_of_speech": "noun",
+      "definition": "The direct line of view from a spectator’s position to a particular part of the stage.",
+      "example": "A low lighting fixture blocked the sightline from the aisle seats to the dancer’s feet.",
+      "translation_ru": "линия обзора с места зрителя",
+      "translation_uz": "tomoshabinning koʻzidan sahnadagi muayyan nuqtagacha boʻlgan toʻgʻri chiziq",
+      "collocations": [
+        "an obstructed sightline",
+        "a clear sightline to the stage"
+      ]
+    },
+    {
+      "word": "rigging point",
+      "part_of_speech": "noun",
+      "definition": "A designated overhead location where suspended equipment can be supported.",
+      "example": "From the available rigging point, the fixture could illuminate the clock face above the actors.",
+      "translation_ru": "точка подвеса оборудования",
+      "translation_uz": "jihoz osish uchun moʻljallangan nuqta",
+      "collocations": [
+        "an overhead rigging point",
+        "a designated rigging point"
+      ]
+    },
+    {
+      "word": "gel",
+      "part_of_speech": "noun",
+      "definition": "A thin, transparent filter that changes the color of light from a stage fixture.",
+      "example": "An amber gel gives the light on the station steps the warm color of late afternoon.",
+      "translation_ru": "цветной плёночный светофильтр для сценического прибора",
+      "translation_uz": "yupqa plyonkali rang filtri",
+      "collocations": [
+        "an amber gel",
+        "a pale blue gel"
+      ]
+    },
+    {
+      "word": "silhouette",
+      "part_of_speech": "noun",
+      "definition": "A dark shape with a clear outline and little visible detail, seen against a brighter background.",
+      "example": "The performer appears in silhouette against the illuminated curtain before stepping into the light.",
+      "translation_ru": "силуэт",
+      "translation_uz": "siluet",
+      "collocations": [
+        "appear in silhouette",
+        "a sharp silhouette"
+      ]
+    },
+    {
+      "word": "followspot",
+      "part_of_speech": "noun",
+      "definition": "A spotlight with a beam that can be steered to keep a moving performer lit.",
+      "example": "The followspot stays on the soloist as she crosses the bridge above the chorus.",
+      "translation_ru": "следящий прожектор",
+      "translation_uz": "ijrochini kuzatib boruvchi projektor",
+      "collocations": [
+        "operate a followspot",
+        "pick out a performer with a followspot"
+      ]
+    },
+    {
+      "word": "gobo",
+      "part_of_speech": "noun",
+      "definition": "A patterned insert used in a lighting fixture to project a shape or texture onto a surface.",
+      "example": "A gobo projects a pattern of bare branches across the floor as the prisoner steps into the yard.",
+      "translation_ru": "гобо, шаблон для проекции светового рисунка",
+      "translation_uz": "gobo, sirtga yorugʻlik yordamida shakl yoki naqsh tushirish uchun chiroqqa oʻrnatiladigan andaza",
+      "collocations": [
+        "a leaf-pattern gobo",
+        "project a pattern with a gobo"
+      ]
+    },
+    {
+      "word": "house lights",
+      "part_of_speech": "plural noun",
+      "definition": "The lights that illuminate the seating area of a theater.",
+      "example": "The house lights come up at the interval as the actors freeze around the dinner table.",
+      "translation_ru": "освещение зрительного зала",
+      "translation_uz": "tomoshabinlar zali chiroqlari",
+      "collocations": [
+        "dim the house lights",
+        "bring up the house lights"
+      ]
+    }
+  ]
+}

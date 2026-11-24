@@ -1,0 +1,156 @@
+{
+  "item": {
+    "slug": "c2-an-intermission-for-the-ear",
+    "title": "An Intermission for the Ear",
+    "level": "C2",
+    "summary": "A music critic tries to explain what an unusual pause can change without prescribing what the audience should hear.",
+    "content_markdown": "The most disputed decision at Leven Hall last week came when nobody was playing. The concert’s first piece ended with scarcely more than a sustained tone. After the applause the conductor turned towards the hall and waited. This was not the usual moment spent resetting a piano bench or straightening a page. The same players were in their places and the second piece required no different instruments. Still she waited long enough for a few listeners to wonder aloud what was wrong.\n\nIn the printed programme, the two pieces were described as distant relatives. Their composers worked a century apart, yet the editors claimed both had built substantial movements from a figure of three descending notes. Some people at the interval thought the pause had given them time to recognise that relationship. Several others said the opposite. Had the second piece started sooner they might have tried to pick out notes they had just heard. Instead, with the first piece no longer immediately available to the ear, they could hear the new descent as a feature of a different musical language. If they wanted to compare the two later, they would have to recall rather than catch the figure.\n\nOne reviewer defended the pause by saying that it restored the independence of the second piece. The word “restored” makes an assumption worth examining. Independence was not something the second piece automatically possessed before it was put in a programme with the first. Every such pairing, even one separated by an ordinary interval, gives a listener at least a little reason to relate what comes later to what came before. The conductor's decision was not to offer one work free of its surroundings. It made a particular route between those works less easy to take.\n\nI am reluctant to defend the pause on the grounds that it made everybody more attentive. In the row ahead of me a person put on his coat and left. Another spent the whole time watching the conductor’s elbow for a move to lift it. There is no reason to turn either response into proof of a general failure. Nor should we turn delay itself into a badge of seriousness. A pause in a different programme could look like a request for the audience to feel the importance of something for which the music had made no case.\n\nThe unusual length of this gap did one thing that seems worth defending. It made the passage from one work to another audible as a decision, even to people who wished it were a different one. Usually such a passage is made on our behalf and passed off as a matter of getting the next players in place. Here it became possible to hear both works and also notice how the programme had asked us to travel between them. That is not the same as saying an audience should have to notice every joint in a concert. Some evenings are successful precisely because we can scarcely tell which piece is still going on.",
+    "category": "Arts",
+    "theme": "silence between concert pieces and the listener’s sense of continuity",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "concert criticism",
+      "word_count": 505
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the critic ultimately value about the pause?",
+        "options": [
+          "It gave the audience an agreed way to recognise a figure the two works shared.",
+          "It demonstrated that listeners become more attentive when they have to wait.",
+          "It allowed the second work to be heard independently of the evening’s programme.",
+          "It made a programming choice perceptible to listeners with different reactions to it."
+        ],
+        "answer_index": 3,
+        "explanation": "The essay ultimately praises the visibility of the choice between works, while allowing different responses and valuing seamless transitions elsewhere."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What response to the pause does the second paragraph attribute to several listeners?",
+        "options": [
+          "It freed them to hear the descending figure within the second piece on its own terms.",
+          "It let them keep the first piece immediately present so they could identify the same notes again.",
+          "It meant they could not recognise the descending figure at all in the second piece.",
+          "It gave them time to check whether the printed notes accurately described each composer’s instruments."
+        ],
+        "answer_index": 0,
+        "explanation": "They say a shorter gap would have encouraged immediate note-spotting. The longer gap lets the descent register as part of a different musical language."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the critic question the use of ‘restored’?",
+        "options": [
+          "The critic doubts the conductor knew the usual way to programme the second work.",
+          "The phrase implies a prior independence, whereas programming choices already help shape how works relate.",
+          "The pause gave the first piece a new identity that the reviewer overlooks.",
+          "The critic thinks the reviewer took the word from the conductor’s printed notes."
+        ],
+        "answer_index": 1,
+        "explanation": "The author observes that any pairing influences how the later piece is heard. A pause changes the relation without restoring an original absence of relation."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does ‘joint’ refer to in the final paragraph?",
+        "options": [
+          "A repeated set of notes with a similar function in both pieces",
+          "A moment of physical preparation for all the players",
+          "A connection by which parts of the programme are joined",
+          "A pause required by a composer within one piece"
+        ],
+        "answer_index": 2,
+        "explanation": "The word is a metaphor for the transition between works, potentially noticed or experienced as seamless."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The second piece began with the same musicians and no required change of instruments.",
+        "answer": "true",
+        "explanation": "The opening states that the players remained in place and the second piece needed no different instruments."
+      },
+      {
+        "id": "q6",
+        "type": "tfng",
+        "skill": "reading.main_idea",
+        "prompt": "The critic maintains that every successful programme should make its transitions obvious.",
+        "answer": "false",
+        "explanation": "The last sentence allows that some evenings succeed because the joints are hard to detect.",
+        "variant": "yes_no"
+      },
+      {
+        "id": "q7",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The conductor had asked the programme editors to emphasise the descending figure.",
+        "answer": "not_given",
+        "explanation": "The editors’ description is given, but no request or discussion between them and the conductor appears."
+      },
+      {
+        "id": "q8",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The works share a three-note descending ___. A reviewer claimed that the pause restored the second piece’s ___.",
+        "answers": [
+          [
+            "figure"
+          ],
+          [
+            "independence"
+          ]
+        ],
+        "word_bank": [
+          "figure",
+          "movement",
+          "independence",
+          "importance"
+        ],
+        "explanation": "The programme notes call the figure a feature of both works. The third paragraph quotes the review’s claim about independence."
+      },
+      {
+        "id": "q9",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A claim is questioned for its hidden premise",
+          "Even reactions of disengagement need not settle the question",
+          "An interruption departs from the usual practical pauses",
+          "Two ways the gap changed a musical comparison",
+          "An instrument fails at a critical moment"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The opening describes the pause, then the critic compares reactions, examines a defence of the pause and considers signs of distraction without generalising."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Designing for a Longer Material Life",
+    "description": "Design a household desk lamp that can be serviced, rebuilt or taken apart for its materials. Discuss what happens from sourcing the metal to retiring the lamp.",
+    "slug": "c1-designing-for-a-longer-material-life",
+    "level": "C1",
+    "status": "published",
+    "sort_order": 370,
+    "topic": "material life cycle"
+  },
+  "children": [
+    {
+      "word": "design for disassembly",
+      "part_of_speech": "noun phrase",
+      "definition": "An approach that makes a product easy to take apart without damaging the components that need to be kept.",
+      "example": "The team applied design for disassembly by using clips that let a technician remove the lamp's shade without bending it.",
+      "translation_ru": "проектирование с учётом разборки",
+      "translation_uz": "qismlarga ajratishni hisobga olib loyihalash",
+      "collocations": [
+        "apply design for disassembly",
+        "adopt design for disassembly"
+      ]
+    },
+    {
+      "word": "interchangeable module",
+      "part_of_speech": "noun phrase",
+      "definition": "A self-contained unit that can take the place of another unit in the same position using the existing connections.",
+      "example": "The lamp's LED unit is an interchangeable module that uses the same connector and mounting points across three models.",
+      "translation_ru": "взаимозаменяемый модуль",
+      "translation_uz": "oʻzaro almashtiriladigan modul",
+      "collocations": [
+        "fit an interchangeable module",
+        "specify an interchangeable module"
+      ]
+    },
+    {
+      "word": "composition record",
+      "part_of_speech": "noun phrase",
+      "definition": "A record of the materials and substances that make up a product or component.",
+      "example": "The lamp's composition record identifies the alloy in the base and the coating on the shade, both of which the processor needs to know before sorting the parts.",
+      "translation_ru": "документ о составе материалов",
+      "translation_uz": "materiallar tarkibi haqidagi hujjat",
+      "collocations": [
+        "maintain a composition record",
+        "consult a composition record"
+      ]
+    },
+    {
+      "word": "secondary material",
+      "part_of_speech": "noun phrase",
+      "definition": "An input for production obtained by processing discarded products or manufacturing scrap.",
+      "example": "The foundry proposed aluminium from discarded window frames as a secondary material for casting the lamp's base.",
+      "translation_ru": "вторичное сырьё",
+      "translation_uz": "ikkilamchi xomashyo",
+      "collocations": [
+        "source secondary material",
+        "use secondary material"
+      ]
+    },
+    {
+      "word": "closed-loop recycling system",
+      "part_of_speech": "noun phrase",
+      "definition": "A system that recovers used material and feeds it back into production of the same kind of item.",
+      "example": "In the closed-loop recycling system, crates that can no longer be repaired are shredded and moulded into new crates.",
+      "translation_ru": "система переработки с возвратом материалов в производство однотипных изделий",
+      "translation_uz": "qayta ishlangan materiallarni shu turdagi buyumlar ishlab chiqarishda qayta qoʻllash tizimi",
+      "collocations": [
+        "set up a closed-loop recycling system",
+        "operate a closed-loop recycling system"
+      ]
+    },
+    {
+      "word": "embodied impact",
+      "part_of_speech": "noun phrase",
+      "definition": "The environmental effects associated with a product’s materials and the processes used to make and supply it, within the life-cycle stages covered by the assessment.",
+      "example": "To estimate the lamp's embodied impact, the team requested figures for metal production, factory assembly and delivery.",
+      "translation_ru": "воздействие на окружающую среду, связанное с материалами, производством и поставкой изделия",
+      "translation_uz": "buyumning materiallari, ishlab chiqarilishi va yetkazib berilishi bilan bogʻliq ekologik taʼsir",
+      "collocations": [
+        "estimate embodied impact",
+        "compare embodied impact"
+      ]
+    },
+    {
+      "word": "upstream impact",
+      "part_of_speech": "noun phrase",
+      "definition": "An environmental effect arising from activities earlier in the supply chain than the operation being studied.",
+      "example": "From the lamp assembler's perspective, the effect of water withdrawals at the alloy supplier's plant counts as an upstream impact.",
+      "translation_ru": "воздействие на окружающую среду на предшествующих этапах цепочки поставок",
+      "translation_uz": "taʼminot zanjirining oldingi bosqichlaridagi ekologik taʼsir",
+      "collocations": [
+        "identify an upstream impact",
+        "measure an upstream impact"
+      ]
+    },
+    {
+      "word": "serviceability",
+      "part_of_speech": "noun",
+      "definition": "The ease with which a product can be inspected, maintained or repaired, including how easily a fault can be found.",
+      "example": "To test the lamp's serviceability, the team timed how long a technician took to locate a loose connection and restore power.",
+      "translation_ru": "удобство обслуживания и ремонта",
+      "translation_uz": "texnik xizmat koʻrsatish va taʼmirlash qulayligi",
+      "collocations": [
+        "test serviceability",
+        "improve serviceability"
+      ]
+    },
+    {
+      "word": "end of life",
+      "part_of_speech": "noun phrase",
+      "definition": "The point at which a product reaches the end of its service life and is taken out of use.",
+      "example": "At end of life, a lamp with a cracked base goes to a processor who separates the metals from the electronics.",
+      "translation_ru": "окончание срока эксплуатации изделия",
+      "translation_uz": "buyumning xizmat muddati tugashi",
+      "collocations": [
+        "plan for end of life",
+        "reach end of life"
+      ]
+    },
+    {
+      "word": "remanufacture",
+      "part_of_speech": "verb",
+      "definition": "To rebuild a used product through a controlled industrial process and test it against the performance requirements for a new unit.",
+      "example": "The factory can remanufacture returned lamps by inspecting the housings, fitting new wiring where needed and testing each finished unit to the same standard as a new lamp.",
+      "translation_ru": "восстанавливать изделие в заводских условиях до характеристик нового",
+      "translation_uz": "buyumni zavod sharoitida yangi buyum talablariga mos holda tiklamoq",
+      "collocations": [
+        "remanufacture used equipment",
+        "remanufacture returned units"
+      ]
+    },
+    {
+      "word": "feedstock reclamation",
+      "part_of_speech": "noun phrase",
+      "definition": "The extraction and preparation of usable substances from discarded goods for use as inputs in production.",
+      "example": "The processor's estimate for feedstock reclamation included separating the aluminium from the steel inserts and preparing the aluminium for melting.",
+      "translation_ru": "извлечение и подготовка вторичного сырья",
+      "translation_uz": "ikkilamchi xomashyoni ajratib olish va tayyorlash",
+      "collocations": [
+        "plan for feedstock reclamation",
+        "cost of feedstock reclamation"
+      ]
+    },
+    {
+      "word": "circularity",
+      "part_of_speech": "noun",
+      "definition": "The extent to which an arrangement keeps products, components and substances in use through continued use, rebuilding or processing for further production.",
+      "example": "To gauge circularity across the lamp range, the team tracked which returned units went back into use and which yielded metal for further production.",
+      "translation_ru": "степень сохранения изделий, деталей и материалов в хозяйственном обороте",
+      "translation_uz": "buyumlar, qismlar va materiallarning qay darajada foydalanishda saqlanishi",
+      "collocations": [
+        "measure circularity",
+        "product circularity"
+      ]
+    },
+    {
+      "word": "material stream",
+      "part_of_speech": "noun phrase",
+      "definition": "A flow of substances grouped by type as they move through collection, sorting or processing.",
+      "example": "The processor sends the lamp's steel inserts into a separate material stream from its aluminium base.",
+      "translation_ru": "поток материалов",
+      "translation_uz": "materiallar oqimi",
+      "collocations": [
+        "separate material stream",
+        "contaminate a material stream"
+      ]
+    },
+    {
+      "word": "planned obsolescence",
+      "part_of_speech": "noun phrase",
+      "definition": "The deliberate limitation of how long a product can remain usable or useful, intended to bring forward the purchase of a replacement.",
+      "example": "The project brief ruled out planned obsolescence, including a proposal to disable the lamp after a fixed number of operating hours to prompt a new purchase.",
+      "translation_ru": "запланированное устаревание",
+      "translation_uz": "buyumning foydali xizmat muddatini ataylab qisqartirish",
+      "collocations": [
+        "a strategy of planned obsolescence",
+        "evidence of planned obsolescence"
+      ]
+    }
+  ]
+}

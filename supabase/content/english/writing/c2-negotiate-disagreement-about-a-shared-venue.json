@@ -1,0 +1,67 @@
+{
+  "item": {
+    "slug": "c2-negotiate-disagreement-about-a-shared-venue",
+    "title": "Summarise a Disagreement Over a Shared Venue",
+    "level": "C2",
+    "prompt_text": "One group wants to store half-finished scenery overnight so volunteers can continue the next morning. A second group needs the floor clear for an early exercise class. There is a side room, but its capacity and exit clearance have not been checked. Write a neutral meeting summary that accurately represents both demands, distinguishes confirmed facts from assumptions, and proposes a limited test neither group has yet agreed to.",
+    "genre": "mediation summary",
+    "audience": "two groups that use the same community venue",
+    "target_grammar": "Attribution and conditionals. Use precise modality for a proposal that is pending agreement.",
+    "target_structure": "Record the separate needs, list only verified facts, define test conditions, and explain how to review the result.",
+    "target_vocabulary": [
+      "overnight",
+      "clearance",
+      "provisional",
+      "confirmed",
+      "joint inspection",
+      "test period"
+    ],
+    "expected_length_min": 229,
+    "expected_length_max": 315,
+    "checklist": [
+      {
+        "point": "Represent the two reasons without favouring one group.",
+        "keywords": [
+          "scenery",
+          "next morning",
+          "exercise class",
+          "floor clear"
+        ]
+      },
+      {
+        "point": "Separate the known side room from unverified capacity or clearance.",
+        "keywords": [
+          "have not checked",
+          "remains unknown",
+          "capacity",
+          "clearance"
+        ]
+      },
+      {
+        "point": "Propose a limited test with clear conditions.",
+        "keywords": [
+          "trial",
+          "one evening",
+          "provisional",
+          "if both",
+          "joint inspection"
+        ]
+      },
+      {
+        "point": "Show how the result and agreement would be recorded.",
+        "keywords": [
+          "agreement",
+          "review",
+          "record",
+          "neither group",
+          "confirm"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    },
+    "sort_order": 363
+  },
+  "children": []
+}

@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "c2-judge-a-return-policy-on-ordinary-and-event-days",
+    "title": "Evaluate a Policy Under Two Kinds of Demand",
+    "level": "C2",
+    "prompt_text": "A venue asks visitors to return reusable headsets to one staffed station. On ordinary days, returns are quick. After a large one-off event, the line delayed people trying to catch the last bus. Staff disagree about whether this proves the rule is bad or the event was unusual. Give a recommendation that respects both observations and defines when the usual rule should change.",
+    "prompt_type": "guided_response",
+    "task_type": "presentation",
+    "target_duration_seconds": 118,
+    "target_grammar": "Concessive clauses, distinguishing cases, proportional recommendations and explicit conditions.",
+    "fluency_objective": "Tell the listener what you infer from the two observations. Name a change that staff can trigger before a clearly described event.",
+    "pronunciation_objective": "Stress normal day and event day so the listener hears the difference in conditions before the recommendation.",
+    "target_vocabulary": [
+      "exception",
+      "return station",
+      "capacity",
+      "threshold",
+      "event programme",
+      "handover"
+    ],
+    "cues": [
+      {
+        "text": "Explain what each observation supports.",
+        "keywords": [
+          "ordinary days",
+          "one event",
+          "line",
+          "quick",
+          "last bus"
+        ]
+      },
+      {
+        "text": "Avoid treating the exceptional case as proof that the ordinary rule fails.",
+        "keywords": [
+          "doesn't show",
+          "one event",
+          "usual arrangement",
+          "special event",
+          "work for most of the week"
+        ]
+      },
+      {
+        "text": "Propose a measurable trigger and an event-day alternative.",
+        "keywords": [
+          "number of",
+          "expect",
+          "second station",
+          "when",
+          "threshold"
+        ]
+      },
+      {
+        "text": "Say what staff should measure before deciding to keep or change it.",
+        "keywords": [
+          "waiting time",
+          "count",
+          "miss",
+          "track",
+          "review"
+        ]
+      }
+    ],
+    "model_opening": "The ordinary returns show that one station can handle a steady flow.",
+    "model_answer": "The ordinary returns show that one station can handle a steady flow. The reason to pay attention to the large event is that many visitors tried to leave at once. Returning a headset took the same number of steps, but the available time was different. A rule can work for most of the week and still need an exception that staff can plan for.\n\nI would keep one station on ordinary days and put a second staffed return point near the side exit when a single session is expected to use more headsets than the main desk usually receives in its busiest half-hour. That threshold is an estimate based on the venue's own records. Before selling tickets, staff could use it to flag events that need another person on duty. Both desks should use the same way of counting returned headsets so the change doesn't create a new problem when the sets are put away.\n\nRecord the longest wait at each desk, how many headsets remain unreturned and when the last group of visitors reaches the exit. Check those times against the bus schedule published for the event. If use is uneven, clearer directions may matter more than adding a third station. If waits are still long with both desks in use, staff have a reason to change the layout or the timetable rather than treating another missed bus as an exception.",
+    "sort_order": 388
+  },
+  "children": []
+}

@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "c2-judge-small-grants-across-different-projects",
+    "title": "Advise a Panel on Comparing Small Grant Projects",
+    "level": "C2",
+    "prompt_text": "A public grants panel wants one measure for every funded project. A neighbourhood orchestra could count concert visitors, while a workshop that helps a few people finish a long project could track how often they return. The panel wants fair comparison and a way to explain awards publicly. Write a briefing that keeps one useful common standard, gives two different indicators, and explains how to handle a superficially impressive figure.",
+    "genre": "panel briefing",
+    "audience": "a panel awarding grants to community projects",
+    "target_grammar": "Nominalisation, qualification and parallel cases. Give an explicit condition for revising a judgement.",
+    "target_structure": "Define the shared judgement, pair each activity with evidence of its purpose, and test one misleading success figure.",
+    "target_vocabulary": [
+      "reach",
+      "continuity",
+      "threshold",
+      "purpose",
+      "indicator",
+      "comparison",
+      "context"
+    ],
+    "expected_length_min": 230,
+    "expected_length_max": 323,
+    "checklist": [
+      {
+        "point": "State one meaningful common standard.",
+        "keywords": [
+          "common standard",
+          "shared question",
+          "purpose",
+          "aim"
+        ]
+      },
+      {
+        "point": "Give separate indicators for the two projects.",
+        "keywords": [
+          "concert visitors",
+          "return",
+          "workshop",
+          "repeated attendance"
+        ]
+      },
+      {
+        "point": "Explain why an impressive number may not show the intended result.",
+        "keywords": [
+          "impressive",
+          "count",
+          "does not establish",
+          "may include",
+          "late arrivals"
+        ]
+      },
+      {
+        "point": "Show how the panel could report a clear and fair comparison.",
+        "keywords": [
+          "public",
+          "publish",
+          "explain",
+          "next round",
+          "comparable"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C2"
+    },
+    "sort_order": 364
+  },
+  "children": []
+}

@@ -1,0 +1,181 @@
+{
+  "item": {
+    "title": "Evaluating Typographic Detail",
+    "description": "Review the proof for Lines Across Water, an illustrated monograph on ferry terminals, and describe how type design and page composition affect the finished pages. The production team uses widow for the last line of a paragraph stranded at the top of the next page or column.",
+    "slug": "c2-evaluating-typographic-detail",
+    "level": "C2",
+    "status": "published",
+    "sort_order": 390,
+    "topic": "typography criticism"
+  },
+  "children": [
+    {
+      "word": "kerning",
+      "part_of_speech": "noun",
+      "definition": "Adjustment of the horizontal space between a specific pair of glyphs to correct an apparent gap or collision.",
+      "example": "The kerning between the W and A in WATER needs tightening because their diagonal strokes leave a conspicuous gap.",
+      "translation_ru": "кернинг",
+      "translation_uz": "kerning (muayyan belgilar jufti orasidagi masofani sozlash)",
+      "collocations": [
+        "adjust the kerning",
+        "manual kerning"
+      ]
+    },
+    {
+      "word": "leading",
+      "part_of_speech": "noun",
+      "definition": "The vertical distance from the baseline of one line of type to the baseline of the next.",
+      "example": "Increase the leading in the ferry schedules so the eye can follow each row of departure times across the spread.",
+      "translation_ru": "интерлиньяж",
+      "translation_uz": "satrlarning tayanch chiziqlari orasidagi masofa",
+      "collocations": [
+        "generous leading",
+        "reduce the leading"
+      ]
+    },
+    {
+      "word": "tracking",
+      "part_of_speech": "noun",
+      "definition": "A consistent increase or decrease in interletter spacing across a selected span of text.",
+      "example": "Loosen the tracking across the entire chapter heading so the spaced capitals in NIGHT CROSSINGS feel less cramped.",
+      "translation_ru": "трекинг",
+      "translation_uz": "treking (matn boʻlagi boʻylab harflar oraligʻini bir xil miqdorda oʻzgartirish)",
+      "collocations": [
+        "tight tracking",
+        "loosen the tracking"
+      ]
+    },
+    {
+      "word": "optical alignment",
+      "part_of_speech": "noun",
+      "definition": "Positioning typographic elements according to their perceived edges or centers so they appear to line up.",
+      "example": "For optical alignment, let the opening quotation mark on the dockworker’s statement hang just beyond the left edge of the column.",
+      "translation_ru": "оптическое выравнивание",
+      "translation_uz": "optik tekislash",
+      "collocations": [
+        "check optical alignment",
+        "adjust optical alignment"
+      ]
+    },
+    {
+      "word": "typographic color",
+      "part_of_speech": "noun",
+      "definition": "The overall impression of lightness or darkness in a block of type, produced by the distribution of strokes and white space.",
+      "example": "The typographic color of the route histories is uneven in the proof because patches of tight spacing alternate with broad gaps between words.",
+      "translation_ru": "типографический цвет (зрительная плотность набора)",
+      "translation_uz": "terilgan matnning umumiy och-toʻq koʻrinishi",
+      "collocations": [
+        "even typographic color",
+        "uneven typographic color"
+      ]
+    },
+    {
+      "word": "ligature",
+      "part_of_speech": "noun",
+      "definition": "A single glyph that represents a sequence of two or more characters, often with their forms joined.",
+      "example": "In the heading ‘The first crossing’, use the fi ligature in ‘first’ to keep the hook of the f from crowding the dot of the i.",
+      "translation_ru": "лигатура",
+      "translation_uz": "ligatura (ikki yoki undan ortiq belgini ifodalovchi yagona glif)",
+      "collocations": [
+        "standard ligature",
+        "discretionary ligature"
+      ]
+    },
+    {
+      "word": "widow",
+      "part_of_speech": "noun",
+      "definition": "Under this production team's convention, the last line of a paragraph carried over on its own to the top of the next page or column.",
+      "example": "The paragraph about the last steam ferry leaves a widow at the top of page 47, so reflow the text to carry two lines over together.",
+      "translation_ru": "последняя строка абзаца, оставшаяся одна в начале следующей страницы или колонки",
+      "translation_uz": "xatboshining keyingi sahifa yoki ustun boshida yolgʻiz qolgan oxirgi satri",
+      "collocations": [
+        "remove a widow",
+        "leave a widow"
+      ]
+    },
+    {
+      "word": "rag",
+      "part_of_speech": "noun",
+      "definition": "The uneven outline formed by the ends of lines at the unaligned edge of a text block.",
+      "example": "The right-hand rag of the terminal captions has a deep notch where three short lines fall together.",
+      "translation_ru": "неровный край набора",
+      "translation_uz": "matn satrlari uchlari hosil qilgan notekis chet",
+      "collocations": [
+        "an even rag",
+        "a rag on the right"
+      ]
+    },
+    {
+      "word": "x-height",
+      "part_of_speech": "noun",
+      "definition": "The distance from the baseline to the top of a typeface’s lowercase x, used as a measure of the height of its main lowercase forms.",
+      "example": "At the same point size, the face with the larger x-height makes the lowercase words in the terminal captions look bigger.",
+      "translation_ru": "высота строчной буквы x",
+      "translation_uz": "kichik x harfining tayanch chizigʻidan tepasigacha boʻlgan balandligi",
+      "collocations": [
+        "a large x-height",
+        "measure the x-height"
+      ]
+    },
+    {
+      "word": "counter",
+      "part_of_speech": "noun",
+      "definition": "An area of negative space wholly or partly enclosed by the strokes of a glyph.",
+      "example": "On the uncoated proof, ink spread has nearly filled the counter of the lowercase e in the smallest ferry captions.",
+      "translation_ru": "внутрибуквенный просвет",
+      "translation_uz": "belgi chiziqlari toʻliq yoki qisman oʻrab turgan boʻshliq",
+      "collocations": [
+        "an enclosed counter",
+        "a partially enclosed counter"
+      ]
+    },
+    {
+      "word": "overshoot",
+      "part_of_speech": "noun",
+      "definition": "The slight extension of a rounded or pointed glyph beyond a horizontal reference line so it appears to align with glyphs whose flat edges meet that line.",
+      "example": "The capital O in the title lettering has enough overshoot below the baseline to look level with the flat-footed L beside it.",
+      "translation_ru": "оптический вынос за линию шрифта",
+      "translation_uz": "belgilar koʻzga bir tekis koʻrinishi uchun yumaloq yoki uchli qismning gorizontal moʻljal chizigʻidan biroz chiqib turishi",
+      "collocations": [
+        "baseline overshoot",
+        "adjust the overshoot"
+      ]
+    },
+    {
+      "word": "small caps",
+      "part_of_speech": "plural noun",
+      "definition": "Capital-shaped forms drawn at a reduced height, usually near the lowercase height, with proportions and stroke weights designed to match the surrounding type.",
+      "example": "Set the ferry names in small caps so their capital forms sit comfortably beside lowercase text in the route notes.",
+      "translation_ru": "капитель",
+      "translation_uz": "kichik harflar boʻyiga yaqin qilib maxsus chizilgan bosh harf shakllari",
+      "collocations": [
+        "set in small caps",
+        "true small caps"
+      ]
+    },
+    {
+      "word": "typographic hierarchy",
+      "part_of_speech": "noun",
+      "definition": "The system of visual distinctions in type that signals the relative importance and relationships of text elements.",
+      "example": "The typographic hierarchy on the opening spread should make the chapter title register first, the terminal name second, and the construction date third.",
+      "translation_ru": "типографическая иерархия",
+      "translation_uz": "tipografik iyerarxiya",
+      "collocations": [
+        "establish a typographic hierarchy",
+        "a clear typographic hierarchy"
+      ]
+    },
+    {
+      "word": "crop marks",
+      "part_of_speech": "plural noun",
+      "definition": "Short lines printed outside the finished page area to indicate where the sheet should be cut.",
+      "example": "Use the crop marks to locate the trim line, then check that the ferry-ramp photograph extends at least 3 mm beyond it.",
+      "translation_ru": "метки обреза",
+      "translation_uz": "bosma varaqni qayerdan kesish kerakligini koʻrsatuvchi belgilar",
+      "collocations": [
+        "add crop marks",
+        "print with crop marks"
+      ]
+    }
+  ]
+}

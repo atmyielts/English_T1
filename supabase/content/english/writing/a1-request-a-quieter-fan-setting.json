@@ -1,0 +1,49 @@
+{
+  "item": {
+    "slug": "a1-request-a-quieter-fan-setting",
+    "title": "Write a Note About the Fan",
+    "level": "A1",
+    "prompt_text": "You are reading at the table. The fan is on high and it is loud. Ask Dana to turn it down. Say you still want the fan on and tell Dana when you finish reading.",
+    "genre": "request note",
+    "audience": "a person sharing your study room",
+    "target_grammar": "Can you or please for a request. Keep it on for a continued action.",
+    "target_structure": "Say the problem, make the request, and add the time.",
+    "target_vocabulary": [
+      "fan",
+      "turn down",
+      "on",
+      "finish"
+    ],
+    "expected_length_min": 25,
+    "expected_length_max": 55,
+    "checklist": [
+      {
+        "point": "Say what is making noise.",
+        "keywords": [
+          "fan is loud",
+          "fan is on high"
+        ]
+      },
+      {
+        "point": "Ask Dana to turn it down and keep it on.",
+        "keywords": [
+          "turn the fan down",
+          "keep it on"
+        ]
+      },
+      {
+        "point": "Say when you finish.",
+        "keywords": [
+          "finish at six",
+          "finish reading at",
+          "until six"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    },
+    "sort_order": 342
+  },
+  "children": []
+}

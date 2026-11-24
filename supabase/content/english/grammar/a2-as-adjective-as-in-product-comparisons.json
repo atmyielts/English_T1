@@ -1,0 +1,171 @@
+{
+  "item": {
+    "title": "As ... as for store comparisons",
+    "explanation_text": "Use as + adjective + as when two things have the same length, weight or price. If two shelves are each 60 cm long, you can say, “The top shelf is as long as the bottom shelf.” Put the first shelf before is and the second shelf after the last as. Keep the adjective in its basic form. Use long, heavy or expensive.\n\nUse not as + adjective + as when the first thing has less of that quality than the second. If a blue box weighs 2 kg and a red box weighs 4 kg, you can say, “The blue box is not as heavy as the red box.” The order matters because the blue box is the lighter one. In the same way, compare a lower-priced bottle to a higher-priced bottle with not as expensive as.",
+    "contrast_text": "If both bottles cost $4, the green bottle is as expensive as the clear bottle. If the green bottle costs $3 and the clear bottle costs $4, the green bottle is not as expensive as the clear bottle.",
+    "common_error_pattern": "Use the basic adjective inside as ... as and keep both occurrences of as. In a not as ... as comparison, put the item with less of the named quality first.",
+    "tags": [
+      "a2",
+      "as-adjective-as",
+      "product-comparisons",
+      "shopping"
+    ],
+    "examples": [
+      {
+        "bad": "The front shelf is as longer as the back shelf.",
+        "good": "The front shelf is as long as the back shelf."
+      },
+      {
+        "bad": "The white box is as heavy the gray box.",
+        "good": "The white box is as heavy as the gray box."
+      },
+      {
+        "bad": "The glass water bottle is as expensive than the steel water bottle.",
+        "good": "The glass water bottle is as expensive as the steel water bottle."
+      },
+      {
+        "bad": "The narrow shelf is not as longer as the wide shelf.",
+        "good": "The narrow shelf is not as long as the wide shelf."
+      }
+    ],
+    "slug": "a2-as-adjective-as-in-product-comparisons",
+    "level": "A2",
+    "status": "published",
+    "sort_order": 410,
+    "focus_area": "equality-with-as-as"
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Match the shelf lengths",
+      "instructions": "The left shelf and the right shelf are each 55 cm long. Compare the left shelf to the right shelf. Complete the pattern as + long + as.",
+      "prompt_text": "The left shelf is ___ the right shelf.",
+      "accepted_answers": [
+        "as long as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Finish a price label",
+      "instructions": "Both water bottles cost $6. Compare the yellow bottle to the purple bottle. Write the one word that comes after expensive in the as ... as pattern.",
+      "prompt_text": "The yellow water bottle is as expensive ___ the purple water bottle.",
+      "accepted_answers": [
+        "as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Read a box weight",
+      "instructions": "Box A weighs 1 kg and box B weighs 3 kg. Fill the gap with exactly four words using not + as + heavy + as.",
+      "prompt_text": "Box A is ___ box B.",
+      "accepted_answers": [
+        "not as heavy as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Compare two sale prices",
+      "instructions": "The striped water bottle costs $5. The plain water bottle costs $8. Compare the striped bottle to the plain bottle. Complete the pattern with as + expensive + as. The word not is already there.",
+      "prompt_text": "The striped water bottle is not ___ the plain water bottle.",
+      "accepted_answers": [
+        "as expensive as"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Choose the weight adjective",
+      "instructions": "The full glass water bottle and the full metal water bottle each weigh 700 g. Compare the glass bottle to the metal bottle. Choose long, heavy or expensive to complete the weight comparison.",
+      "prompt_text": "The glass water bottle is as ___ as the metal water bottle.",
+      "accepted_answers": [
+        "heavy"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the shelf note",
+      "instructions": "The wall shelf is 40 cm long. The counter shelf is 70 cm long. The note compares the wall shelf to the counter shelf. Replace the wrong adjective form and keep the other words.",
+      "prompt_text": "The wall shelf is not as longer as the counter shelf.",
+      "accepted_answers": [
+        "The wall shelf is not as long as the counter shelf."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Fix the box price card",
+      "instructions": "The gift box and the storage box each cost $4. The card compares the gift box to the storage box. Replace one word to complete the as ... as pattern. Keep the other words.",
+      "prompt_text": "The gift box is as expensive than the storage box.",
+      "accepted_answers": [
+        "The gift box is as expensive as the storage box."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Turn weights into a comparison",
+      "instructions": "Compare the empty display box to the empty delivery box in one sentence. Start with The empty display box is, use as heavy as, and name the empty delivery box in full.",
+      "prompt_text": "The empty display box weighs 500 g. The empty delivery box also weighs 500 g.",
+      "accepted_answers": [
+        "The empty display box is as heavy as the empty delivery box."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Reverse the shelf comparison",
+      "instructions": "Now compare the window shelf to the door shelf. Start with The window shelf is, use not as long as, and end with the door shelf.",
+      "prompt_text": "The door shelf is longer than the window shelf.",
+      "accepted_answers": [
+        "The window shelf is not as long as the door shelf."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Update a bottle comparison",
+      "instructions": "The black water bottle now costs $9. The orange water bottle still costs $7. Rewrite the old sentence to compare the orange bottle to the black bottle. Start with The orange water bottle is, add not, and keep the rest of the comparison.",
+      "prompt_text": "The orange water bottle is as expensive as the black water bottle.",
+      "accepted_answers": [
+        "The orange water bottle is not as expensive as the black water bottle."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Build a shelf sentence",
+      "instructions": "Both shelves are 45 cm long. Compare the checkout shelf to the corner shelf. Use every tile once and start with The checkout shelf.",
+      "prompt_text": "as / the corner shelf / long / The checkout shelf / as / is",
+      "accepted_answers": [
+        "The checkout shelf is as long as the corner shelf."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Build a box weight sentence",
+      "instructions": "The shoe box weighs 300 g. The book box weighs 900 g. Compare the shoe box to the book box. Use every tile once and start with The shoe box.",
+      "prompt_text": "heavy / as / The shoe box / not / the book box / is / as",
+      "accepted_answers": [
+        "The shoe box is not as heavy as the book box."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.equality-with-as-as"
+    }
+  ]
+}

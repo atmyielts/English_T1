@@ -1,0 +1,110 @@
+{
+  "item": {
+    "slug": "b2-interpret-a-switch-in-language-class-attendance",
+    "title": "Interpret a switch in language class attendance",
+    "level": "B2",
+    "summary": "A course organiser explains how a sign-in change affects the claim that attendance improved.",
+    "transcript_text": "Tutor: The Tuesday group shows higher attendance after we moved to a code on the board. Does that mean the change made people come more often?\nCoordinator: Maybe, but the old list often stayed at the door, where late arrivals forgot to sign. The new code stays up all class. More names could just mean we record more of the people who were already there.\nTutor: We have learners without phones.\nCoordinator: We still take their names on paper, so that part stays open. Next week, ask an observer to count people once in each class and compare that total with the register.\nTutor: Should I use the new totals in the review?\nCoordinator: Use them, but flag the break in how we collected the data.",
+    "category": "Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 132,
+    "duration_seconds": 55,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "study",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Tutor",
+        "Coordinator"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why might the increase be misleading?",
+        "options": [
+          "The new group is meeting on a different day",
+          "Late arrivals are no longer allowed in",
+          "The attendance method may now capture more people",
+          "The register counts tutors as students"
+        ],
+        "answer_index": 2,
+        "explanation": "A change in recording can explain higher counts without changing real attendance.",
+        "focus": "gist"
+      },
+      {
+        "prompt": "What could happen under the old system?",
+        "options": [
+          "People could log in after class ended",
+          "Late arrivals could miss signing in",
+          "Everyone had to bring a phone",
+          "Two classes could share one code"
+        ],
+        "answer_index": 1,
+        "explanation": "The list at the door was easier for late arrivals to miss.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How can people without phones still sign in?",
+        "options": [
+          "By having their names written on paper",
+          "By borrowing the tutor’s phone",
+          "By signing in at home",
+          "By sending a message to an observer"
+        ],
+        "answer_index": 0,
+        "explanation": "Paper recognition remains available.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "What is the purpose of an observer’s count?",
+        "options": [
+          "To determine who arrives first",
+          "To collect proof of why each person came",
+          "To replace the register indefinitely",
+          "To compare an independent headcount with the register"
+        ],
+        "answer_index": 3,
+        "explanation": "The team wants an additional measure for checking completeness.",
+        "focus": "detail"
+      },
+      {
+        "prompt": "How should the review present the new totals?",
+        "options": [
+          "Compare them without any comment",
+          "Remove all new totals",
+          "Use them and explain the change in data collection",
+          "Treat them as proof of more attendance"
+        ],
+        "answer_index": 2,
+        "explanation": "The coordinator says to flag the break in measurement.",
+        "focus": "detail"
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the old list often stayed at the door",
+      "focus_phrase": "at the door",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "the new code stays up all class",
+      "focus_phrase": "up all class",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "flag the break in how we collected the data",
+      "focus_phrase": "collected the data",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}
