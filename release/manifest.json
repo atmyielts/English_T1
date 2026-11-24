@@ -1,27 +1,45 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-catalog-pagination",
+  "releaseId": "exam-practice-depth",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [],
-  "edgeFunctions": [
-    "sat-practice"
-  ],
+  "frontends": ["ielts-practice", "sat-practice", "toefl-ibt-simulator"],
+  "migrations": ["20261124120000_ielts_practice_library.sql"],
+  "edgeFunctions": ["ielts-practice", "sat-practice"],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "IELTS_PRACTICE_SCORE_SESSION_FUNCTION", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "OPENROUTER_APP_NAME", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "OPENROUTER_REFERER", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
   "rolloutOrder": [
+    "pages",
+    "migration:20261124120000_ielts_practice_library.sql",
+    "secret:AI_ADDON_PRODUCT_ID",
+    "secret:IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
+    "secret:OPENAI_API_KEY",
+    "secret:OPENROUTER_API_KEY",
+    "secret:OPENROUTER_APP_NAME",
+    "secret:OPENROUTER_BASE_URL",
+    "secret:OPENROUTER_MODEL",
+    "secret:OPENROUTER_REFERER",
+    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
+    "function:ielts-practice",
     "function:sat-practice",
-    "verify:entitled-sat-practice-bank"
+    "content:authorized-private-practice-supplements",
+    "verify:learner-access"
   ],
   "manualFollowUps": [
-    "Run supabase functions deploy sat-practice with JWT verification enabled.",
-    "Confirm a paid-access test account can read questions at and beyond the previous catalog limit, with answers withheld until submission."
+    "Run supabase db push --linked with only the IELTS Practice library migration in the release scope.",
+    "Run supabase functions deploy ielts-practice with its existing JWT setting.",
+    "Run supabase functions deploy sat-practice with its existing JWT setting.",
+    "Import the verified private content packages after their learner routes are deployed.",
+    "Preserve the existing Edge settings. The existing reconfiguration commands, if ever needed, are supabase secrets set AI_ADDON_PRODUCT_ID=, supabase secrets set IELTS_PRACTICE_SCORE_SESSION_FUNCTION=, supabase secrets set OPENAI_API_KEY=, supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_APP_NAME=, supabase secrets set OPENROUTER_BASE_URL=, supabase secrets set OPENROUTER_MODEL=, supabase secrets set OPENROUTER_REFERER=, and supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=."
   ],
   "verification": [
-    "Run the SAT Practice Edge tests. Compare the live learner catalogue with both ordered database RPC pages."
+    "Verify counts and review actions for an exhausted SAT Unseen filter.",
+    "Verify IELTS reading submissions and feedback, and confirm the library never returns answer keys before submission.",
+    "Verify TOEFL focused practice can start individually and existing playable sections remain available."
   ],
   "rollback": {
-    "edge": "Restore the prior sat-practice Edge Function bundle with JWT verification enabled."
+    "pages": "Restore the three previous Cloudflare Pages deployments.",
+    "edge": "Restore the prior IELTS and SAT Edge Function bundles with their original JWT verification settings.",
+    "content": "Unpublish the supplemental records by their release IDs if required. Keep the compatible IELTS table in place."
   }
 }

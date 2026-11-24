@@ -3756,3 +3756,10 @@ audio.practice-audio {
     white-space: normal;
   }
 }
+.practice-library { display: grid; gap: 1rem; max-width: 64rem; margin-inline: auto; }
+.practice-library .dashboard-card { padding: clamp(1rem, 3vw, 1.75rem); }
+.practice-library textarea { width: 100%; display: block; }
+.practice-library fieldset { margin-block: 1rem; }
+.practice-library .library-option { display: block; padding: 0.35rem 0; }
+.practice-library .library-table { overflow: auto; margin-block: 1rem; }
+.practice-library td, .practice-library th { padding: 0.5rem; text-align: left; }

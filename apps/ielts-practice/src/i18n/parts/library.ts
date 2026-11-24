@@ -1,0 +1,58 @@
+const en = {
+  'library.title': 'Practice library',
+  'library.intro': 'Choose an IELTS skill and practise with original sets. Check your Reading evidence or compare your Writing and Speaking with a worked response.',
+  'library.track': 'Test type',
+  'library.both': 'Both test types',
+  'library.academic': 'Academic',
+  'library.general': 'General Training',
+  'library.minutes': '{count} min',
+  'library.empty': 'There are no sets for this selection yet.',
+  'library.listeningSoon': 'New Listening sets are coming soon. They’ll open when their recordings are ready.',
+  'library.yourResponse': 'Your response',
+  'library.words': '{count} words written · {minimum} minimum',
+  'library.check': 'Check my answers',
+  'library.answer': 'Correct answer: {answer}.',
+  'library.score': '{correct} of {total} correct',
+  'library.model': 'Show worked response',
+  'library.modelTitle': 'Worked response',
+};
+
+const uz: Record<keyof typeof en, string> = {
+  'library.title': 'Mashqlar kutubxonasi',
+  'library.intro': 'IELTS ko‘nikmasini tanlang va original to‘plamlar bilan mashq qiling. Reading javoblaringizni dalillar bilan tekshiring, Writing va Speaking javoblaringizni namunalar bilan solishtiring.',
+  'library.track': 'Test turi',
+  'library.both': 'Ikkala test turi',
+  'library.academic': 'Academic',
+  'library.general': 'General Training',
+  'library.minutes': '{count} daq',
+  'library.empty': 'Bu tanlov uchun hozircha mashq yo‘q.',
+  'library.listeningSoon': 'Yangi Listening mashqlari tez orada qo‘shiladi. Audio yozuvlar tayyor bo‘lganda ular ochiladi.',
+  'library.yourResponse': 'Javobingiz',
+  'library.words': '{count} ta so‘z yozildi · kamida {minimum} ta',
+  'library.check': 'Javoblarimni tekshirish',
+  'library.answer': 'To‘g‘ri javob: {answer}.',
+  'library.score': '{total} tadan {correct} ta to‘g‘ri',
+  'library.model': 'Namunaviy javobni ko‘rish',
+  'library.modelTitle': 'Namunaviy javob',
+};
+
+const ru: Record<keyof typeof en, string> = {
+  'library.title': 'Библиотека упражнений',
+  'library.intro': 'Выберите навык IELTS и потренируйтесь на авторских заданиях. Разберите обоснования ответов в Reading или сравните свои ответы с образцами для Writing и Speaking.',
+  'library.track': 'Тип теста',
+  'library.both': 'Оба типа теста',
+  'library.academic': 'Academic',
+  'library.general': 'General Training',
+  'library.minutes': '{count} мин',
+  'library.empty': 'Для этого выбора пока нет упражнений.',
+  'library.listeningSoon': 'Новые задания Listening появятся, когда будут готовы аудиозаписи.',
+  'library.yourResponse': 'Ваш ответ',
+  'library.words': 'Написано слов: {count} · минимум {minimum}',
+  'library.check': 'Проверить ответы',
+  'library.answer': 'Правильный ответ: {answer}.',
+  'library.score': 'Верных ответов: {correct} из {total}',
+  'library.model': 'Показать образец ответа',
+  'library.modelTitle': 'Образец ответа',
+};
+
+export const library = { en, uz, ru };

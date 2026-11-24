@@ -213,6 +213,8 @@ export const uz: Record<keyof typeof en, string> = {
   'bank.loading': 'Mos savollar yuklanmoqda…',
   'bank.showing': '{total} ta mos savoldan {from}–{to} ko‘rsatilmoqda.',
   'bank.none': 'Bu filtrlarga mos savol hozircha yo‘q. Boshqa ko‘nikma, qiyinlik yoki tarixni tanlang.',
+  'bank.unseenComplete': 'Bu filtrlarga mos barcha savollarni ishlab ko‘rdingiz. Xatolarni tahlil qiling, to‘g‘ri javoblarni takrorlang yoki filtrlarni kengaytiring.',
+  'bank.historyMatches': 'Tanlangan filtrlarga mos savollar va javoblar tarixi',
   'bank.prev': 'Oldingi sahifa',
   'bank.next': 'Keyingi sahifa',
   'bank.clear': 'Filtrlarni tozalash',

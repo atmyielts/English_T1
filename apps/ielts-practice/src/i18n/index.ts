@@ -15,12 +15,13 @@ import { results } from './parts/results';
 import { extras } from './parts/extras';
 import { pages } from './parts/pages';
 import { experience } from './parts/experience';
+import { library } from './parts/library';
 
 // UI chrome only. Learning content (passages, questions, prompts, model
 // answers) stays in English; AI coaching prose follows the chosen locale.
 // Each part file holds one area's en/uz/ru messages; uz and ru are typed
 // against en so a missing key fails the build.
-const parts = [common, shell, today, reviews, generator, speaking, onboarding, dashboard, insights, lab, results, extras, pages, experience] as const;
+const parts = [common, shell, today, reviews, generator, speaking, onboarding, dashboard, insights, lab, results, extras, pages, experience, library] as const;
 
 type PartKeys<P> = P extends { en: infer E } ? keyof E : never;
 export type AppKey = PartKeys<(typeof parts)[number]> & string;

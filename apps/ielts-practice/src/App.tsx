@@ -8,6 +8,7 @@ import { RequireAdmin } from './components/platform/RequireAdmin';
 import { LandingPage } from './pages/LandingPage';
 
 const DashboardPage = lazy(async () => ({ default: (await import('./pages/DashboardPage')).DashboardPage }));
+const PracticeLibraryPage = lazy(async () => ({ default: (await import('./pages/PracticeLibraryPage')).PracticeLibraryPage }));
 const TodaySessionPage = lazy(async () => ({ default: (await import('./pages/TodaySessionPage')).TodaySessionPage }));
 const WritingPrepPage = lazy(async () => ({ default: (await import('./pages/WritingPrepPage')).WritingPrepPage }));
 const MockGeneratorPage = lazy(async () => ({ default: (await import('./pages/MockGeneratorPage')).MockGeneratorPage }));
@@ -76,6 +77,8 @@ function App() {
 
         <Route element={<RequireProductEntitlement />}>
           <Route path="/dashboard" element={lazyPage(<DashboardPage />)} />
+          <Route path="/library" element={lazyPage(<PracticeLibraryPage />)} />
+          <Route path="/library/:slug" element={lazyPage(<PracticeLibraryPage />)} />
           <Route path="/today" element={lazyPage(<TodaySessionPage />)} />
           <Route path="/writing-prep" element={lazyPage(<WritingPrepPage />)} />
           <Route path="/generator" element={lazyPage(<MockGeneratorPage />)} />

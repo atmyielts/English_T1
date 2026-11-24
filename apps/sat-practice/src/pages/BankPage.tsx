@@ -10,6 +10,7 @@ import { useAppT, useErrorText, type AppKey } from '../i18n';
 
 const PAGE = 12;
 const FILTERS = ['section_type', 'official_domain', 'skill', 'difficulty', 'format', 'status'] as const;
+const HISTORIES = ['unseen', 'missed', 'correct'] as const;
 
 export const BankPage = () => {
   const t = useAppT();
@@ -24,6 +25,7 @@ export const BankPage = () => {
   const [count, setCount] = useState(10);
   const [questions, setQuestions] = useState<SatQuestion[]>([]);
   const [history, setHistory] = useState<Record<string, QuestionStatus>>({});
+  const [matchingHistory, setMatchingHistory] = useState<Record<QuestionStatus, number> | null>(null);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ export const BankPage = () => {
       difficulty: (difficulty || undefined) as never, format: (format || undefined) as never, status: (status || undefined) as never, limit: PAGE, offset,
     }).then(result => {
       if (!active) return;
-      setQuestions(result.questions); setHistory(result.history ?? {}); setFacets(result.facets ?? null); setTotal(result.total ?? result.questions.length);
+      setQuestions(result.questions); setHistory(result.history ?? {}); setMatchingHistory(result.matching_history ?? null); setFacets(result.facets ?? null); setTotal(result.total ?? result.questions.length);
     }).catch(err => { if (active) { setError(err); setQuestions([]); } })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -141,14 +143,24 @@ export const BankPage = () => {
           <label>{t('bank.status')}
             <select value={status} onChange={event => changeFilter('status', event.target.value)}>
               <option value="">{t('bank.anyStatus')}</option>
-              {(['unseen', 'missed', 'correct'] as const).map(s => <option key={s} value={s}>{facet('status', s, t(`status.${s}`))}</option>)}
+              {HISTORIES.map(s => <option key={s} value={s}>{!loading && matchingHistory ? t('bank.facet', { label: t(`status.${s}`), count: matchingHistory[s] }) : t(`status.${s}`)}</option>)}
             </select>
           </label>
         </fieldset>
         <div className="bank-status">
-          <p role="status">{loading ? t('bank.loading') : !error ? total ? t('bank.showing', { from: offset + 1, to: Math.min(total, offset + questions.length), total }) : t('bank.none') : ''}</p>
+          <p role="status">{loading ? t('bank.loading') : !error ? total ? t('bank.showing', { from: offset + 1, to: Math.min(total, offset + questions.length), total }) : status === 'unseen' && matchingHistory && (matchingHistory.missed || matchingHistory.correct) ? t('bank.unseenComplete') : t('bank.none') : ''}</p>
           {anyFilter ? <button type="button" className="btn ghost compact" onClick={() => setParams(new URLSearchParams())}>{t('bank.clear')}</button> : null}
         </div>
+        {!loading && !error && status === 'unseen' && total === 0 && matchingHistory && (matchingHistory.missed > 0 || matchingHistory.correct > 0) ? (
+          <div className="row-actions" role="group" aria-label={t('bank.historyMatches')}>
+            {HISTORIES.filter(value => value !== 'unseen' && matchingHistory[value] > 0).map(value => (
+              <button key={value} type="button" className="btn ghost compact" disabled={starting} onClick={() => changeFilter('status', value)}>
+                {t('bank.facet', { label: t(`status.${value}`), count: matchingHistory[value] })}
+              </button>
+            ))}
+            <button type="button" className="btn ghost compact" disabled={starting} onClick={() => changeFilter('status', '')}>{t('bank.anyStatus')}</button>
+          </div>
+        ) : null}
         <section className="question-grid" aria-label={t('bank.preview')} aria-busy={loading}>
           {questions.map(question => {
             const tax = questionTaxonomy(question);

@@ -609,6 +609,7 @@ export const DashboardPage = () => {
               <p className="eyebrow">{t('dash.labs.eyebrow')}</p>
               <h2>{t('dash.labs.title')}</h2>
               <p>{t('dash.labs.lead')}</p>
+              <Link className="btn ghost" to="/library">{t('library.title')}</Link>
               <div className="task-feature-row">
                 {LAB_FEATURES.map((feature) => (
                   <span className="feature-pill" key={feature}>{t(feature)}</span>
@@ -623,6 +624,7 @@ export const DashboardPage = () => {
                     </div>
                     <strong>{row.item ? getPlanItemTitle(row.item, t) : t(SECTION_FALLBACK_COPY[row.section])}</strong>
                     <p>{row.item ? getPlanItemDescription(row.item, t) : t('dash.labs.addSection')}</p>
+                    {row.section === 'listening' ? <p className="muted">{t('library.listeningSoon')}</p> : null}
                   </article>
                 ))}
               </div>

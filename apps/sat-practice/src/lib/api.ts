@@ -254,7 +254,7 @@ export type BankParams = Partial<{
   section_type: SatSectionType; official_domain: OfficialDomain; skill: string; difficulty: SatDifficulty;
   format: 'mcq' | 'spr'; status: QuestionStatus; limit: number; offset: number;
 }>;
-export const bankGet = (accessToken: string, opts?: BankParams): Promise<{ questions: SatQuestion[]; total: number; offset: number; limit: number; facets: Facets; history: Record<string, QuestionStatus> }> => {
+export const bankGet = (accessToken: string, opts?: BankParams): Promise<{ questions: SatQuestion[]; total: number; offset: number; limit: number; facets: Facets; history: Record<string, QuestionStatus>; matching_history?: Record<QuestionStatus, number> }> => {
   const qs = new URLSearchParams();
   for (const [key, value] of Object.entries(opts ?? {})) {
     if (value != null && value !== '') qs.set(key, String(value));

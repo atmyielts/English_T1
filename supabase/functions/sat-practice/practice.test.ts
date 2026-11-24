@@ -1,5 +1,6 @@
 import { assertEquals, assertRejects } from 'jsr:@std/assert';
-import { loadCatalog } from './practice.ts';
+import { bankPage, bankSelection, loadCatalog } from './practice.ts';
+import { normalizeCatalog } from '../_shared/sat-practice-selection.ts';
 
 function fixture(total: number, failSecondPage = false) {
   const rows = Array.from({ length: total }, (_, index) => ({
@@ -48,4 +49,17 @@ Deno.test('SAT Practice does not request an empty page at the row limit', async 
 Deno.test('SAT Practice does not serve a silently truncated catalog after a page error', async () => {
   const sb = fixture(1104, true);
   await assertRejects(() => loadCatalog(sb, 'learner'), Error, 'question bank is temporarily unavailable');
+});
+
+Deno.test('SAT Practice reports the review pool when a skill has no unseen matches', () => {
+  const source = (id: string, skill: string, seen: number, correct: boolean, difficulty = 'hard') => ({ id, section_type: 'math', domain: 'algebra', official_domain: 'algebra', skill, seen, last_correct: correct, difficulty });
+  const catalog = normalizeCatalog([
+    source('missed', 'linear_functions', 1, false), source('correct', 'linear_functions', 1, true),
+    source('wrong-skill', 'linear_inequalities', 0, false), source('wrong-level', 'linear_functions', 0, false, 'easy'),
+  ]);
+  const filters = { skill: 'linear_functions', difficulty: 'hard', limit: 24, offset: 0 } as const;
+  const exhausted = bankPage(catalog, { ...filters, status: 'unseen' });
+  assertEquals(exhausted.total, 0);
+  assertEquals(exhausted.matchingHistory, { unseen: 0, missed: 1, correct: 1 });
+  assertEquals(bankSelection(catalog, { ...filters, status: 'missed' }, 5).ids, ['missed']);
 });
