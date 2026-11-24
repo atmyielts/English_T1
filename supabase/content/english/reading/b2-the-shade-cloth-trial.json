@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b2-the-shade-cloth-trial",
+    "title": "The Shade Cloth Trial",
+    "level": "B2",
+    "summary": "A nursery learns that its strongest early comparison changed two things at once.",
+    "content_markdown": "At the Rillbank Nursery, young tomato plants on one outdoor bench developed pale edges on their leaves. A gardener suspected that light levels were too high and stretched shade cloth above half the bench. The covered plants looked better after two weeks. The manager was ready to order enough cloth for all the benches when another worker checked the watering records. The covered half had received an extra visit each afternoon because it stood nearer the tap.\n\nThe improvement was real, but its cause was uncertain. The cloth might have changed the light enough to help the plants. The extra water might have made the difference. Both could have helped, or one could have mattered only in combination with the other. The manager postponed the order and asked the team to design a comparison that could separate the two changes.\n\nFor the next round, workers divided plants of the same age among four groups. Two groups had shade and two did not. Within each pair, one group received the usual watering and one received an extra afternoon visit. The workers set each plant pot into a numbered tray so they could record its condition without choosing only the plants that looked most unusual. They also put each group on both sides of the yard to reduce the chance that a warmer corner would favour one treatment.\n\nWhen the team reviewed the results, the strength of the response depended on how the plants were watered. With usual watering, fewer shaded plants developed pale leaf edges than unshaded plants. With extra watering, few plants developed pale edges in either light condition. The manager kept shade cloth for benches that could not receive an extra visit and kept checking both groups through the hottest weeks. The workers had learned enough to make a local decision. Their trial did not establish that the same choice would be best for older plants or another nursery, where temperatures and watering routines could differ.",
+    "category": "Science",
+    "theme": "designing a shade trial",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "research narrative",
+      "word_count": 327
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the nursery’s experience mainly show?",
+        "options": [
+          "Shade cloth is usually less useful than watering in every nursery.",
+          "A small local test can distinguish factors that were mixed together in an earlier comparison.",
+          "Tomato plants of different ages should always be tested together.",
+          "Watering records give a more direct measure of plant health than leaf colour."
+        ],
+        "answer_index": 1,
+        "explanation": "The first trial changed shade and watering together. Four combinations let workers tell when shade mattered."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did the team put each group on both sides of the yard?",
+        "options": [
+          "To make the group numbers easier to read",
+          "To give half the plants more water without changing records",
+          "To reduce the chance that local warmth affected only one treatment",
+          "To check whether older plants needed less light"
+        ],
+        "answer_index": 2,
+        "explanation": "The work was spread across the yard so that a warmer corner would not favour just one treatment."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "What did the second test suggest about the nursery’s choice?",
+        "options": [
+          "The manager could stop measuring pale leaf edges after one test.",
+          "The effect of extra watering could only be seen on the shaded plants.",
+          "The nursery needed shade cloth equally on all benches.",
+          "Where extra watering was impractical, shade cloth could be useful."
+        ],
+        "answer_index": 3,
+        "explanation": "Shade was useful under usual watering, while pale leaf edges were uncommon in both light conditions with extra watering."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “in combination with” mean in the second paragraph?",
+        "options": [
+          "Together with",
+          "Before the beginning of",
+          "In a larger amount than",
+          "In a separate group from"
+        ],
+        "answer_index": 0,
+        "explanation": "The article considers whether one change might work only when the other is made as well."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The second test included an unshaded group that received extra afternoon watering.",
+        "answer": "true",
+        "explanation": "One group in each shade pair received extra watering, including one of the groups without shade."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Each pot went into a numbered ___ so workers could track it. The manager kept cloth for benches that could not receive an extra ___.",
+        "answers": [
+          [
+            "tray"
+          ],
+          [
+            "visit"
+          ]
+        ],
+        "word_bank": [
+          "shade",
+          "tray",
+          "visit",
+          "records"
+        ],
+        "explanation": "Paragraph 3 identifies the numbered tray used for each pot. The last paragraph explains when an extra watering visit was not possible."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A four-group comparison",
+          "A change to the height of the benches",
+          "An encouraging result with a hidden difference",
+          "A decision limited to one nursery",
+          "Why the cause was uncertain"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "Paragraph 1 introduces the improvement and the unexpected watering difference. Paragraph 2 evaluates competing explanations, paragraph 3 sets up four groups, and paragraph 4 explains the decision and why it is local."
+      }
+    ]
+  },
+  "children": []
+}

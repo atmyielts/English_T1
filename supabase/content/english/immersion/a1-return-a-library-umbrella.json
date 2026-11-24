@@ -1,0 +1,99 @@
+{
+  "item": {
+    "slug": "a1-return-a-library-umbrella",
+    "title": "Return a library umbrella",
+    "level": "A1",
+    "mission_type": "service",
+    "context_text": "You borrowed a green umbrella. Today your sister can take it back to the library.",
+    "objective_text": "Find the return desk and tell your sister when to go.",
+    "target_vocabulary": [
+      "umbrella",
+      "return",
+      "desk",
+      "card"
+    ],
+    "success_conditions": [
+      "Find the return desk and tell your sister when to go."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "LIBRARY HALL\nUmbrellas: return to the blue desk by the front door before six. Books go to the red desk by the lift. Bring the small loan card with the umbrella.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Where does the umbrella go?",
+          "options": [
+            "The red desk",
+            "The blue desk",
+            "The lift"
+          ],
+          "answer_index": 1,
+          "explanation": "The sign sends umbrellas to the blue desk."
+        },
+        {
+          "prompt": "Which item goes back with the umbrella?",
+          "options": [
+            "A book",
+            "A bag",
+            "The loan card"
+          ],
+          "answer_index": 2,
+          "explanation": "The sign says to bring the loan card."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Text your sister",
+      "prompt_text": "Sister: Where do I go?",
+      "instructions": "Give the desk and the closing time.",
+      "goal": "Tell her how to return it.",
+      "estimated_minutes": 5,
+      "min_words": 12,
+      "model_answer": "Please take it to the blue desk by the front door before six today.",
+      "points": [
+        {
+          "label": "Name the blue desk",
+          "any": [
+            "blue desk"
+          ]
+        },
+        {
+          "label": "Give the cutoff",
+          "any": [
+            "before six",
+            "before 6"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Talk to the library worker",
+      "prompt_text": "Worker: Hello! Can I help?",
+      "instructions": "Name the thing you are returning and offer the card.",
+      "goal": "Return it politely.",
+      "estimated_minutes": 3,
+      "min_words": 8,
+      "model_answer": "Hello, I'd like to return this umbrella. Here is the card.",
+      "points": [
+        {
+          "label": "Name the umbrella",
+          "any": [
+            "umbrella"
+          ]
+        },
+        {
+          "label": "Mention the card",
+          "any": [
+            "card"
+          ]
+        }
+      ]
+    }
+  ]
+}

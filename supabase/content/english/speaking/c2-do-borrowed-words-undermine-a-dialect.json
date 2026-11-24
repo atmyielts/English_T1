@@ -1,0 +1,72 @@
+{
+  "item": {
+    "slug": "c2-do-borrowed-words-undermine-a-dialect",
+    "title": "Respond to a Claim About Borrowed Words",
+    "level": "C2",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 120,
+    "prompt_text": "A festival panel is discussing a local dialect. One guest says a dialect becomes less authentic whenever speakers adopt words from another language. Another says speakers should use whichever terms fit their listeners. Give a nuanced response that distinguishes changes speakers choose from pressures to abandon local words. Use a concrete example and end with a practical proposal for the festival.",
+    "target_grammar": "Concessive clauses; contrasts signalled with where and when; modal qualification of generalisations.",
+    "fluency_objective": "State the distinction early. Move from a local example to a practical festival choice without losing your line of reasoning.",
+    "pronunciation_objective": "Contrast the old and new terms without imitating an accent. Use stress to show which relationship or audience changes in your example.",
+    "target_vocabulary": [
+      "borrowed word",
+      "local expression",
+      "authenticity",
+      "pressure",
+      "audience",
+      "usage",
+      "choice"
+    ],
+    "sort_order": 271,
+    "cues": [
+      {
+        "text": "Give a clear position on the authenticity claim.",
+        "keywords": [
+          "authentic",
+          "borrowed word",
+          "doesn't make",
+          "not enough",
+          "dialect"
+        ]
+      },
+      {
+        "text": "Distinguish ordinary choice from pressure to stop using a local expression.",
+        "keywords": [
+          "choose",
+          "pressure",
+          "told to stop",
+          "corrected",
+          "speakers decide",
+          "repeatedly told",
+          "asking whether speakers"
+        ]
+      },
+      {
+        "text": "Develop a concrete example with different listeners or purposes.",
+        "keywords": [
+          "for example",
+          "market",
+          "visitor",
+          "at home",
+          "community event"
+        ]
+      },
+      {
+        "text": "Offer a specific festival practice that respects both understanding and local expression.",
+        "keywords": [
+          "program",
+          "programme",
+          "glossary",
+          "caption",
+          "two versions",
+          "invite speakers"
+        ]
+      }
+    ],
+    "model_opening": "I would be wary of judging a dialect by whether every individual word came from the same place.",
+    "model_answer": "I would be wary of judging a dialect by whether every individual word came from the same place. In a market, a seller may use a familiar local word with neighbours and a borrowed word with visitors. The change can be a choice about the listener and the moment. It doesn't make the conversation with neighbours any less local.\n\nThere is a different issue when people are repeatedly told that their familiar word sounds uneducated or has no place on a sign. In that case the community may lose the chance to use a word in public, even if people still use it at home. It is worth asking whether speakers are adding a useful option or being pushed to give up an existing one. The same pair of words could tell very different stories depending on who gets to make that decision.\n\nFor the festival, I would invite speakers to keep the words they naturally use on stage. The programme could give a brief gloss where a visitor might be confused, preferably supplied by the speakers themselves. We could also collect short examples of when different terms are useful and let visitors compare them. That would treat the dialect as something people use to do things together, while giving newcomers a way to follow the conversation."
+  },
+  "children": []
+}

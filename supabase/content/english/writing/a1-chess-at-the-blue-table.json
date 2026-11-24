@@ -1,0 +1,53 @@
+{
+  "item": {
+    "slug": "a1-chess-at-the-blue-table",
+    "title": "A Note for the Chess Club",
+    "level": "A1",
+    "genre": "short note",
+    "audience": "a classmate",
+    "prompt_text": "Chess club is today. It starts at 4 p.m. at the blue table in the hall. Lena has the chess pieces, so your classmate Ben needs to bring only a board. Write a note to Ben.",
+    "expected_length_min": 30,
+    "expected_length_max": 55,
+    "target_grammar": "Present simple for time; bring and go for instructions.",
+    "target_structure": "Greeting → time and place → what to bring → goodbye.",
+    "target_vocabulary": [
+      "blue table",
+      "hall",
+      "board",
+      "pieces",
+      "bring"
+    ],
+    "sort_order": 260,
+    "checklist": [
+      {
+        "point": "Say when the club starts.",
+        "keywords": [
+          "4 p.m.",
+          "four o'clock",
+          "at four",
+          "4 pm"
+        ]
+      },
+      {
+        "point": "Tell Ben where to go.",
+        "keywords": [
+          "blue table",
+          "table in the hall",
+          "in the hall"
+        ]
+      },
+      {
+        "point": "Explain what Ben needs to bring.",
+        "keywords": [
+          "bring a board",
+          "bring your board",
+          "need a board"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "A1"
+    }
+  },
+  "children": []
+}

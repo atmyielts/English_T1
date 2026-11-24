@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-soup-for-six",
+    "title": "Soup for Six",
+    "level": "A2",
+    "summary": "A community-kitchen card explains how to make and share a pot of soup.",
+    "content_markdown": "This is the carrot and potato soup we serve at our Friday lunch. One pot makes six bowls. You do not need a mixer. You will need a large pot, a knife and a wooden spoon.\n\nFirst, cut four carrots and three potatoes into small pieces. Cut one onion and cook it in a little oil for five minutes. Add the carrots, potatoes and one litre of water. When the water starts to boil, turn the heat down. Cook for twenty minutes. The vegetables should be soft enough to break with the spoon.\n\nBefore serving, put one bowl aside for the volunteer at the front desk. She cannot leave her desk until one. Put the other five bowls on the long table near the kitchen. There is a basket of bread on the table. Keep the sixth bowl off the table, even if someone asks for more soup. Next week we will try the same recipe with beans instead of potatoes.",
+    "category": "Food",
+    "theme": "community soup recipe",
+    "tone": "mint",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "recipe card",
+      "word_count": 161
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Who is this card most useful for?",
+        "options": [
+          "Someone opening the front desk",
+          "A customer buying a mixer",
+          "A volunteer making lunch for a small group",
+          "A farmer growing potatoes"
+        ],
+        "answer_index": 2,
+        "explanation": "It gives a recipe for six people and explains where to put the bowls."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What goes into the pot before the carrots?",
+        "options": [
+          "The bread",
+          "The potatoes",
+          "The onion",
+          "The beans"
+        ],
+        "answer_index": 2,
+        "explanation": "Cook the onion in oil for five minutes before adding the carrots and potatoes."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why should one bowl stay off the long table?",
+        "options": [
+          "It is for a volunteer who cannot come to the table until one.",
+          "It has to cool before anyone eats it.",
+          "It is the only bowl without potatoes.",
+          "The cook is keeping it for the next day."
+        ],
+        "answer_index": 0,
+        "explanation": "The card asks the cook to keep a bowl for the person who is still working at the front desk."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “put one bowl aside” mean?",
+        "options": [
+          "Put a bowl on the table.",
+          "Turn a bowl over.",
+          "Wash an extra bowl.",
+          "Keep one bowl separate."
+        ],
+        "answer_index": 3,
+        "explanation": "The first bowl is being kept apart from the five bowls on the table."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The cook must use a mixer for this soup.",
+        "answer": "false",
+        "explanation": "The first paragraph says, “You do not need a mixer.”"
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "When the water boils, turn the ___ down. There is a basket of ___ on the table.",
+        "answers": [
+          [
+            "heat"
+          ],
+          [
+            "bread"
+          ]
+        ],
+        "word_bank": [
+          "water",
+          "bread",
+          "heat",
+          "oil"
+        ],
+        "explanation": "The instructions say to turn the heat down and put bread in a basket on the table."
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,104 @@
+{
+  "item": {
+    "slug": "a2-ask-for-a-locker-reset",
+    "title": "Ask for a locker reset",
+    "level": "A2",
+    "mission_type": "service",
+    "context_text": "Your backpack is in a gym locker, but the keypad does not open. Read the sign before you go to the desk.",
+    "objective_text": "Give the locker number and follow the reset procedure.",
+    "target_vocabulary": [
+      "locker",
+      "keypad",
+      "membership",
+      "receipt",
+      "reset"
+    ],
+    "success_conditions": [
+      "Give the locker number and follow the reset procedure."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "GYM LOCKERS\nFor a locker that won't open, report its number at the front desk. Bring your membership card or today's guest receipt. Staff can reset keys after the swimming lesson ends at 16:20. Please wait at the desk rather than pulling on the locker door. You have a guest receipt and locker 18.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Which document can you show?",
+          "options": [
+            "A bank card",
+            "Today's guest receipt",
+            "A swimming certificate"
+          ],
+          "answer_index": 1,
+          "explanation": "The receipt is an accepted alternative to a membership card."
+        },
+        {
+          "prompt": "What is the earliest staff can reset the locker?",
+          "options": [
+            "When the lesson ends at 16:20",
+            "At 16:00",
+            "As soon as you pull the door"
+          ],
+          "answer_index": 0,
+          "explanation": "The notice says resets are available after the lesson finishes."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Tell your friend why you're late",
+      "prompt_text": "Friend: Are you ready to leave?",
+      "instructions": "Say why you are delayed and when someone can help.",
+      "goal": "Explain the delay simply.",
+      "estimated_minutes": 5,
+      "min_words": 18,
+      "model_answer": "My locker won't open, so I'm waiting at the desk. Someone can reset it after 16:20. I'll message you when I have my bag.",
+      "points": [
+        {
+          "label": "Name the locker difficulty",
+          "any": [
+            "locker",
+            "keypad"
+          ]
+        },
+        {
+          "label": "Say after 16:20",
+          "any": [
+            "16:20",
+            "4:20",
+            "twenty past four"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Ask the desk for help",
+      "prompt_text": "Staff member: What seems to be the problem?",
+      "instructions": "Give the locker number and offer the correct document.",
+      "goal": "Make an appropriate request.",
+      "estimated_minutes": 3,
+      "min_words": 13,
+      "model_answer": "Could you open locker eighteen, please? My backpack is inside. I have today's guest receipt here.",
+      "points": [
+        {
+          "label": "Give locker 18",
+          "any": [
+            "18",
+            "eighteen"
+          ]
+        },
+        {
+          "label": "Offer the guest receipt",
+          "any": [
+            "guest receipt",
+            "receipt"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "item": {
+    "title": "Imperatives at a craft table",
+    "explanation_text": "Use an imperative to tell someone what to do. Use the base form of the verb in an affirmative imperative, like cut, sort, or wash. Say “Cut the paper in half.” The person you are speaking to knows the instruction is for them, so you usually leave out you.\n\nTo tell someone what to avoid, put don’t before the base verb. Say “Don’t cut the blue paper.” You can also use do not, which you often see on signs. A common mistake is to write “Don’t to cut.” After don’t or do not, use cut without to.\n\nYou can add please to make an instruction sound more polite. Put it at the start in “Please wash the cups” or at the end in “Wash the cups, please.” It also works in a negative instruction, as in “Please don’t use the big scissors.” When the craft table is closing, use an imperative to tell people where to put things back.",
+    "contrast_text": "“You wash the brushes” can describe what someone usually does. “Wash the brushes” gives that person an instruction.",
+    "common_error_pattern": "Learners sometimes put to after don’t or do not. Use “Don’t open the glue” instead of “Don’t to open the glue.”",
+    "tags": [
+      "A1",
+      "a1-imperatives-at-a-craft-table",
+      "imperatives",
+      "affirmative imperatives",
+      "negative imperatives",
+      "please",
+      "craft table"
+    ],
+    "examples": [
+      {
+        "bad": "To cut the card in half.",
+        "good": "Cut the card in half."
+      },
+      {
+        "bad": "Please sorts the buttons by color.",
+        "good": "Please sort the buttons by color."
+      },
+      {
+        "bad": "Don't to wash the scissors.",
+        "good": "Don't wash the scissors."
+      },
+      {
+        "bad": "Please not put wet brushes in the box.",
+        "good": "Please don't put wet brushes in the box."
+      }
+    ],
+    "slug": "a1-imperatives-at-a-craft-table",
+    "level": "A1",
+    "status": "published",
+    "focus_area": "imperative-instructions",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Cut the paper",
+      "instructions": "Complete the instruction with the base form of the verb in brackets. Write only the missing word.",
+      "prompt_text": "___ along the dotted line. (cut)",
+      "accepted_answers": [
+        "Cut"
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Sort the beads",
+      "instructions": "Complete the instruction with the base form of the verb in brackets. Write only the missing word.",
+      "prompt_text": "Please ___ the beads by color. (sort)",
+      "accepted_answers": [
+        "sort"
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Wash the paint cups",
+      "instructions": "Complete the instruction with the base form of the verb in brackets. Write only the missing word.",
+      "prompt_text": "___ the paint cups in the sink, please. (wash)",
+      "accepted_answers": [
+        "Wash"
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Keep glue off the table",
+      "instructions": "Complete the negative instruction with don't and the verb in brackets. Write only the missing words.",
+      "prompt_text": "Please ___ glue on the table. (put)",
+      "accepted_answers": [
+        "don't put"
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Save the ribbon",
+      "instructions": "Complete the sign with do not and the verb in brackets. Write only the missing words.",
+      "prompt_text": "___ the gold ribbon. (cut)",
+      "accepted_answers": [
+        "Do not cut"
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Dry the brushes",
+      "instructions": "Write the same sentence again. Fix only the form of the verb.",
+      "prompt_text": "Please dries the brushes with a towel.",
+      "accepted_answers": [
+        "Please dry the brushes with a towel."
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Leave the small buttons in the bowl",
+      "instructions": "Write the same sentence again. Fix only the error after don't.",
+      "prompt_text": "Don't to take the small buttons out of the bowl.",
+      "accepted_answers": [
+        "Don't take the small buttons out of the bowl."
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Put the lids back on",
+      "instructions": "Put the tiles in order to make an instruction. Use every tile once. Keep the comma and the period attached to their words.",
+      "prompt_text": "the lids / jars, / on / Put / please. / the",
+      "accepted_answers": [
+        "Put the lids on the jars, please."
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Protect the paper shapes",
+      "instructions": "Change the sentence into a negative imperative. Start with Please, then use don't or do not. Keep the rest of the sentence.",
+      "prompt_text": "Touch the wet paper shapes.",
+      "accepted_answers": [
+        "Please don't touch the wet paper shapes.",
+        "Please do not touch the wet paper shapes."
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Close the craft table",
+      "instructions": "Tell a visitor what to do. Change the sentence into an affirmative imperative. Start with Put, keep the words after put, and end with a comma and please.",
+      "prompt_text": "The craft table is closing. You put the glue sticks back in the drawer.",
+      "accepted_answers": [
+        "Put the glue sticks back in the drawer, please."
+      ],
+      "target_skill_key": "grammar.imperative-instructions",
+      "status": "published"
+    }
+  ]
+}

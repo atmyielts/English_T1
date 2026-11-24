@@ -1,0 +1,66 @@
+{
+  "item": {
+    "slug": "a2-the-picture-frame-that-kept-tilting",
+    "title": "Tell How You Fixed a Tilting Picture",
+    "level": "A2",
+    "prompt_type": "storytelling",
+    "task_type": "story",
+    "target_duration_seconds": 45,
+    "prompt_text": "Tell a friend about a time you put a picture on a wall and it would not stay straight. Say what you tried first, what finally helped, and what you would check next time. You can invent the story.",
+    "target_grammar": "Past simple for the events; first, then and next time.",
+    "fluency_objective": "Tell the events in order. Give the first try and the successful try separate stress.",
+    "pronunciation_objective": "Keep the final consonant in fixed and checked audible when they come before another word.",
+    "target_vocabulary": [
+      "frame",
+      "straight",
+      "tilt",
+      "hook",
+      "check",
+      "next time"
+    ],
+    "sort_order": 263,
+    "cues": [
+      {
+        "text": "Describe the picture and the problem.",
+        "keywords": [
+          "frame",
+          "kept tilting",
+          "crooked",
+          "not straight",
+          "wasn't straight"
+        ]
+      },
+      {
+        "text": "Say what you tried first.",
+        "keywords": [
+          "first",
+          "at first",
+          "moved the hook",
+          "turned the frame"
+        ]
+      },
+      {
+        "text": "Say what worked.",
+        "keywords": [
+          "tape",
+          "second hook",
+          "small pad",
+          "stayed straight",
+          "put a pad"
+        ]
+      },
+      {
+        "text": "Say what you would do next time.",
+        "keywords": [
+          "next time",
+          "check the back",
+          "check first",
+          "before i hang"
+        ]
+      }
+    ],
+    "model_opening": "I put a picture of my dog on the wall last week.",
+    "model_answer": "I put a picture of my dog on the wall last week. The frame looked straight at first, but one corner moved down every time I closed the door. First, I moved the hook a little. That did not help. Then I put a small pad behind the low corner. The picture stayed straight after that. Next time, I will check that both corners touch the wall before I finish."
+  },
+  "children": []
+}

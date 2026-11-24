@@ -1,0 +1,60 @@
+{
+  "item": {
+    "slug": "a1-the-photo-by-the-door",
+    "title": "Describe a Family Photo",
+    "level": "A1",
+    "prompt_type": "guided_response",
+    "task_type": "describe",
+    "target_duration_seconds": 26,
+    "prompt_text": "Imagine a photo of two people in your family. Where are they in the photo? Say who they are, what you can see near them, and one thing a person is doing.",
+    "target_grammar": "These are; next to and near; present continuous for actions.",
+    "fluency_objective": "Point out the people first. Use one short sentence for each detail.",
+    "pronunciation_objective": "Give the main action word a little more stress, for example holding in 'She's holding a cup'.",
+    "target_vocabulary": [
+      "photo",
+      "next to",
+      "in front of",
+      "holding",
+      "sitting"
+    ],
+    "sort_order": 261,
+    "cues": [
+      {
+        "text": "Name two people in the photo.",
+        "keywords": [
+          "my brother",
+          "my sister",
+          "my mother",
+          "my father",
+          "my aunt",
+          "my uncle",
+          "my cousins"
+        ]
+      },
+      {
+        "text": "Say where they are or what is near them.",
+        "keywords": [
+          "door",
+          "table",
+          "next to",
+          "in front of",
+          "near the"
+        ]
+      },
+      {
+        "text": "Say what one person is doing.",
+        "keywords": [
+          "holding",
+          "sitting",
+          "standing",
+          "smiling",
+          "drinking",
+          "walking"
+        ]
+      }
+    ],
+    "model_opening": "These are my sister and my uncle.",
+    "model_answer": "These are my sister and my uncle. They are in front of our old house. My sister is next to the door. She is holding a small red cup. My uncle is sitting by the window."
+  },
+  "children": []
+}

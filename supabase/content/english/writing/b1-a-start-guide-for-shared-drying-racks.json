@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "b1-a-start-guide-for-shared-drying-racks",
+    "title": "Write a Guide for Shared Drying Racks",
+    "level": "B1",
+    "genre": "how-to guide",
+    "audience": "residents of a shared apartment building",
+    "prompt_text": "The building has two shared folding drying racks. One is for residents to use for two hours at a time. The other is marked for small towels only. Write a short guide for new residents. Explain how to claim a rack, what to do if you need longer, and how to leave the space ready for the next person.",
+    "expected_length_min": 99,
+    "expected_length_max": 145,
+    "target_grammar": "Imperatives; if clauses for exceptions; time sequencing.",
+    "target_structure": "Name the two racks → describe the routine → explain the exception → finish with a clearing check.",
+    "target_vocabulary": [
+      "folding rack",
+      "claim",
+      "time card",
+      "slot",
+      "remove",
+      "fold"
+    ],
+    "sort_order": 265,
+    "checklist": [
+      {
+        "point": "State what each rack is for.",
+        "keywords": [
+          "two hours",
+          "towels only",
+          "small towels",
+          "first rack",
+          "second rack"
+        ]
+      },
+      {
+        "point": "Show how someone claims time.",
+        "keywords": [
+          "write your name",
+          "time card",
+          "reserve a slot",
+          "sign-up sheet"
+        ]
+      },
+      {
+        "point": "Explain what to do if they need longer.",
+        "keywords": [
+          "need longer",
+          "not dry",
+          "another slot",
+          "later slot"
+        ]
+      },
+      {
+        "point": "Describe how to leave the area.",
+        "keywords": [
+          "fold the rack",
+          "remove your clothes",
+          "clear the area",
+          "wipe",
+          "remove all your clothes",
+          "fold the empty rack"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    }
+  },
+  "children": []
+}

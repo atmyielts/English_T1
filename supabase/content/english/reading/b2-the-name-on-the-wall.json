@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b2-the-name-on-the-wall",
+    "title": "The Name on the Wall",
+    "level": "B2",
+    "summary": "A public art project has to explain how different people contributed to the final work.",
+    "content_markdown": "On the wall of a former bakery, a painted loaf stretches across three doorways. Thin white lines show where the baker once cut the dough, and small blue letters carry words from interviews with people who used to work there. When the mural was finished, the arts committee planned to fix a plate to the wall saying “Design by Nara Sethi”. Sethi had drawn the first image of the loaf. She asked the committee to wait before ordering the plate.\n\nDuring the project, shopkeeper Mari Dene had suggested stretching the image across the doors so the building itself formed part of the picture. Two former bakers had corrected the position of the lines: the cuts were made at an angle, they said, and the way they opened in the oven was part of the point. A sign painter, Tomas Pell, found a way to set the blue letters against the rough wall without losing their thinnest strokes. None of these changes could be seen on the first drawing.\n\nSome committee members proposed a list of every person who had helped. That would have recognised more people, but Sethi was concerned that a single list would make very different kinds of work sound alike. She wanted readers to know who had shaped the idea, who had offered practical knowledge and who had solved a technical problem. Dene suggested using the plate for a few specific credits and making a longer account available at the community hall.\n\nThe final plate names Sethi for the first design, Dene for the layout and Pell for the lettering. It credits the former bakery team for the accounts and working details that informed the piece. In the hall, a set of sketches traces the changes in order. Visitors can now compare what one person proposed at the start with what several people developed together. The longer account also leaves space for more names to be added if further contributions are identified. The result is an explanation of the design as well as a record of who worked on it.",
+    "category": "Culture",
+    "theme": "credit on a public mural",
+    "tone": "sand",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "reported feature",
+      "word_count": 343
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the article mainly about?",
+        "options": [
+          "How the committee chose the first mural design",
+          "How a committee found a clearer way to credit different kinds of work",
+          "Why rough walls are difficult to paint",
+          "Why the bakery owners opposed the picture"
+        ],
+        "answer_index": 1,
+        "explanation": "The article follows the change from a single name to specific credits and a longer account of contributions."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What change came from Dene?",
+        "options": [
+          "Turning interview extracts into blue lettering",
+          "Drawing the first outline of the loaf",
+          "Extending the image across the building’s doors",
+          "Reversing the angle of the cuts in the loaf"
+        ],
+        "answer_index": 2,
+        "explanation": "Dene suggested stretching the image across the doors so that the building became part of it."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did Sethi object to a single long list?",
+        "options": [
+          "A list could include more names but still fail to explain what each person did.",
+          "She thought only people who worked for the bakery should be named.",
+          "The committee could not fit any more names on a plate.",
+          "She did not agree that the first drawing had changed."
+        ],
+        "answer_index": 0,
+        "explanation": "Her concern was that a list of equal-looking entries would hide differences between design, local knowledge and technical work."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “informed the piece” mean here?",
+        "options": [
+          "Announced that the mural would be ready",
+          "Explained how people could find the hall",
+          "Helped shape details in the final artwork",
+          "Corrected a written name on the plate"
+        ],
+        "answer_index": 2,
+        "explanation": "The former bakers’ accounts and knowledge shaped the lines and words in the mural."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The account displayed at the hall leaves room to recognise further contributions.",
+        "answer": "true",
+        "explanation": "The final paragraph explicitly says additional names can be added if further contributions are identified."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The first design was drawn by ___. The longer record is kept at the community ___.",
+        "answers": [
+          [
+            "Sethi"
+          ],
+          [
+            "hall"
+          ]
+        ],
+        "word_bank": [
+          "Pell",
+          "hall",
+          "bakery",
+          "Sethi"
+        ],
+        "explanation": "The plate names Sethi for the first design and the long account is in the community hall."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Giving the finished work its first credit",
+          "A plate and a fuller record",
+          "A dispute over whether the mural could stay",
+          "Why a simple list was not enough",
+          "What several people added to the design"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The passage moves from the first credit proposal to individual contributions, the difficulty of listing them and the final arrangement."
+      }
+    ]
+  },
+  "children": []
+}

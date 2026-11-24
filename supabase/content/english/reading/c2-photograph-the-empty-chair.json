@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c2-photograph-the-empty-chair",
+    "title": "Photograph the Empty Chair",
+    "level": "C2",
+    "summary": "A literary story explores why a photographer waits before choosing what to show of a room after its caretaker is gone.",
+    "content_markdown": "The editor had asked for a photograph of the chair. She did not mean any chair: she meant the green one at the edge of the field, on which Irena had sat with a pair of knitting needles and a radio through every Saturday training session I could remember. I thought such an assignment would take as long as setting down my camera bag. When I got there, three other chairs had been put beside it. All of them faced the field. From a distance it looked like an ordinary row of seats that nobody had yet chosen.\n\nI pushed the other chairs aside until I could see the surface the green chair had flattened in the grass. The picture on the screen was simple enough to be mistaken for something staged: low light, an empty chair, a dark line of trees. You could tell it was about a person no longer there. What you could not tell was that it had taken me three minutes to make the other chairs disappear, and that somebody had put them there before I arrived. I took another picture and disliked it for the same reason.\n\nOne of the coaches came over with a thermos. He said Irena would have complained if she had seen me blocking the gate with a tripod. I moved it. He put the other chairs back where he remembered finding them, as if he thought I had shifted them by mistake. People had started bringing chairs after Irena stopped coming, he said. No one had decided who belonged at the end of the field, but that was where the coaches learnt which children needed a lift home. Irena used to know by looking at their bags. Now the people with chairs asked.\n\nI waited until practice ended. A woman collected one of the chairs and left her scarf on another while she took a bag to a car. A boy dragged a third round to face the road. The green chair stayed where it was. By the time I took the picture I sent to the editor, the sun had gone behind the trees and the chair was no longer the brightest thing in the frame. A boy’s hand was visible on the back of the seat he was turning. The green one remained in the centre, which seemed by then less a decision I had made than a problem the picture had agreed to keep.\n\nThe editor called that evening. She wanted to know whether I had a closer picture. I said there was one but asked her to use the wider view. There was a long pause, during which I wished I could think of a reason that would sound like a fact. Finally I said that the empty chair would be visible either way, but in the close one you could not see what everybody else had done with the space. She did not say she understood. She asked me to spell Irena’s name. I found myself spelling it slowly, as though there were time after all to get one thing right.",
+    "category": "Fiction",
+    "theme": "photographing an absence",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 517
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why does the narrator choose the wider photograph?",
+        "options": [
+          "It removes the empty chair from the centre of the picture.",
+          "It offers a less direct way to show who owned the chair.",
+          "It lets the editor identify every person who now sits near the field.",
+          "It keeps Irena’s absence in view while showing how other people have responded to it."
+        ],
+        "answer_index": 3,
+        "explanation": "The wider photograph retains the green chair and includes a boy moving another. The narrator explicitly wants the picture to show what others did with the space."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What does the coach say is now learned near the end of the field?",
+        "options": [
+          "Which family first placed a chair by the gate",
+          "Which children need help getting home",
+          "Which players receive instructions by radio",
+          "Which spectators own each chair"
+        ],
+        "answer_index": 1,
+        "explanation": "The people with chairs now ask who needs a lift. Irena used to know from looking at children’s bags."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the narrator dislike the first two pictures?",
+        "options": [
+          "Their simplicity was achieved by removing evidence of how the space had changed.",
+          "They accidentally show the tripod blocking the gate.",
+          "They fail to make the chair look as worn as it does in person.",
+          "They were taken before the light became bright enough."
+        ],
+        "answer_index": 0,
+        "explanation": "The narrator removed the other chairs to make both pictures. Those chairs were part of the scene and later reveal a change in how people use the field."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “a problem the picture had agreed to keep” suggest?",
+        "options": [
+          "An obstacle that prevents the photograph from being published",
+          "An accidental mark on the lens that the photographer chose to keep",
+          "An unresolved tension the final picture leaves visible",
+          "A movement the camera cannot capture from that position"
+        ],
+        "answer_index": 2,
+        "explanation": "The green chair still matters, though it is now surrounded by evidence of a changing community. The framing holds both meanings together."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The editor explicitly agrees to print the wider photograph.",
+        "answer": "not_given",
+        "explanation": "She asks how to spell Irena’s name after hearing the request. Her final choice is not stated."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The coach tells the narrator that the tripod is blocking the ___. As practice ends, a woman leaves a ___ on a chair.",
+        "answers": [
+          [
+            "gate"
+          ],
+          [
+            "scarf"
+          ]
+        ],
+        "word_bank": [
+          "scarf",
+          "gate",
+          "radio",
+          "bag"
+        ],
+        "explanation": "The coach points out the obstructed gate, and a woman leaves her scarf while carrying a bag away."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "An apparently easy assignment becomes less simple",
+          "A picture made by removing part of the scene",
+          "An editor confirms what the photograph means",
+          "A wider frame retains the tension",
+          "The new use of a familiar place"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "Paragraphs 1 and 2 complicate the assignment and show what was excluded. The coach explains the chairs in paragraph 3. Paragraph 4 describes the resulting wider frame."
+      }
+    ]
+  },
+  "children": []
+}

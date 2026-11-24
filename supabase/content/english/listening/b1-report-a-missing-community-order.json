@@ -1,0 +1,80 @@
+{
+  "item": {
+    "slug": "b1-report-a-missing-community-order",
+    "title": "Report a delivery mix-up",
+    "level": "B1",
+    "summary": "A coordinator leaves a message about a delivery mistake and what to do next.",
+    "transcript_text": "Hi, it's Jamshid from the community kitchen. The flour arrived, but the driver brought the wrong size bags. We ordered six one-kilo bags for the cooking class; these are six big five-kilo bags. Don't open them. The shop will exchange them on Thursday morning, but only if the bags are sealed. I've borrowed enough flour from the cafe for tonight's class. Please check the labels when the new order comes, and leave the return note on the office desk.",
+    "category": "Workplace",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 124,
+    "duration_seconds": 39,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "workplace",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "Why is the order being returned?",
+        "options": [
+          "It arrived a day early",
+          "It contains a different ingredient",
+          "The packages are the wrong size",
+          "The shop sent only three bags"
+        ],
+        "answer_index": 2,
+        "explanation": "They ordered small bags and received large ones."
+      },
+      {
+        "prompt": "What makes the exchange possible?",
+        "options": [
+          "All bags remain unopened",
+          "The class is cancelled",
+          "The office desk is moved",
+          "The original driver returns tonight"
+        ],
+        "answer_index": 0,
+        "explanation": "The exchange is allowed only if the bags are sealed."
+      },
+      {
+        "prompt": "How can tonight's class go ahead?",
+        "options": [
+          "The shop will deliver earlier",
+          "The class will use the new large bags",
+          "The participants will each bring a bag",
+          "The cafe has lent the kitchen enough flour"
+        ],
+        "answer_index": 3,
+        "explanation": "Jamshid has borrowed what they need from the cafe."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "the driver brought the wrong size bags",
+      "focus_phrase": "wrong size bags",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "only if the bags are sealed",
+      "focus_phrase": "the bags are sealed",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "leave the return note on the office desk",
+      "focus_phrase": "return note",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

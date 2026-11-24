@@ -1,0 +1,205 @@
+{
+  "item": {
+    "slug": "c2-sensory-precision-in-food-writing",
+    "title": "Sensory precision in food writing",
+    "description": "Practise choosing precise terms for flavour, aroma, texture and mouthfeel in food and drink criticism. Distinguish neutral descriptions from praise and criticism, and notice where the balance of a dish determines the judgement.",
+    "level": "C2",
+    "status": "published",
+    "topic": "sensory description",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "astringent",
+      "part_of_speech": "adjective",
+      "definition": "Producing a dry, puckering sensation in the mouth.",
+      "example": "The quince skin was astringent enough to make my mouth pucker, even with a spoonful of custard.",
+      "translation_ru": "вяжущий",
+      "translation_uz": "ogʻizda quruqlik va tortishish hissini uygʻotadigan",
+      "collocations": [
+        "astringent finish",
+        "astringent mouthfeel",
+        "astringent tea"
+      ]
+    },
+    {
+      "word": "cloying",
+      "part_of_speech": "adjective",
+      "definition": "So sweet that it becomes unpleasant to eat or drink.",
+      "example": "The buttercream was already cloying by the second bite, and the candied petals only made matters worse.",
+      "translation_ru": "приторный",
+      "translation_uz": "shirinligi koʻngilga uradigan",
+      "collocations": [
+        "cloying sweetness",
+        "cloying frosting",
+        "cloying syrup"
+      ]
+    },
+    {
+      "word": "unctuous",
+      "part_of_speech": "adjective",
+      "definition": "Rich and smooth in the mouth, with a pleasantly fatty or silky texture.",
+      "example": "The braised pork belly was unctuous, and a spoonful of pickled mustard greens cut through its richness.",
+      "translation_ru": "насыщенный, с нежной маслянистой текстурой",
+      "translation_uz": "ogʻizda yoqimli yogʻlilik va mayinlik hissini beradigan",
+      "collocations": [
+        "unctuous sauce",
+        "unctuous pork belly",
+        "unctuous texture"
+      ]
+    },
+    {
+      "word": "piquant",
+      "part_of_speech": "adjective",
+      "definition": "Having a pleasantly sharp, lively flavour, often from spice or acidity.",
+      "example": "A piquant relish of green chilli and lime brought the grilled aubergine to life.",
+      "translation_ru": "пикантный",
+      "translation_uz": "yoqimli oʻtkir taʼmli",
+      "collocations": [
+        "piquant relish",
+        "piquant dressing",
+        "piquant kick"
+      ]
+    },
+    {
+      "word": "herbaceous",
+      "part_of_speech": "adjective",
+      "definition": "Having a green aroma or flavour reminiscent of fresh herbs or grass.",
+      "example": "The olive oil had a herbaceous aroma that reminded me of freshly cut grass.",
+      "translation_ru": "с нотами свежей зелени",
+      "translation_uz": "hidi yoki taʼmi yangi koʻkat yoki yangi oʻrilgan oʻtni eslatadigan",
+      "collocations": [
+        "herbaceous aroma",
+        "herbaceous notes",
+        "herbaceous olive oil"
+      ]
+    },
+    {
+      "word": "tannic",
+      "part_of_speech": "adjective",
+      "definition": "Having a pronounced drying grip on the palate from tannins, especially in wine.",
+      "example": "The young red was tannic on its own, but the grip softened with a bite of lamb.",
+      "translation_ru": "с выраженными танинами",
+      "translation_uz": "taninlari yaqqol seziladigan",
+      "collocations": [
+        "tannic red wine",
+        "tannic structure",
+        "tannic grip"
+      ]
+    },
+    {
+      "word": "briny",
+      "part_of_speech": "adjective",
+      "definition": "Having a salty taste or smell reminiscent of seawater or a saltwater solution.",
+      "example": "The oyster's briny liquor made the squeeze of lemon almost superfluous.",
+      "translation_ru": "со вкусом или запахом морской воды или рассола",
+      "translation_uz": "taʼmi yoki hidi dengiz suvi yoki namakobni eslatadigan",
+      "collocations": [
+        "briny oysters",
+        "briny liquor",
+        "briny tang"
+      ]
+    },
+    {
+      "word": "gamey",
+      "part_of_speech": "adjective",
+      "definition": "Having the strong, distinctive flavour or smell associated with the meat of wild animals.",
+      "example": "The venison pie had a gamey depth that held its own against the juniper in the gravy.",
+      "translation_ru": "с характерным вкусом или запахом дичи",
+      "translation_uz": "yovvoyi hayvon goʻshtiga xos taʼm yoki hidga ega",
+      "collocations": [
+        "gamey flavour",
+        "gamey aroma",
+        "gamey venison"
+      ]
+    },
+    {
+      "word": "resinous",
+      "part_of_speech": "adjective",
+      "definition": "Having an aroma or flavour reminiscent of tree resin, often with a pine-like or woody quality.",
+      "example": "The mastic ice cream left a delicate resinous note that lingered after the sweetness faded.",
+      "translation_ru": "со смолистыми нотами",
+      "translation_uz": "hidi yoki taʼmi daraxt smolasini eslatadigan",
+      "collocations": [
+        "resinous aroma",
+        "resinous note",
+        "resinous finish"
+      ]
+    },
+    {
+      "word": "acrid",
+      "part_of_speech": "adjective",
+      "definition": "Having a harsh, irritating smell or taste, often like that of burnt food or smoke.",
+      "example": "The blackened garlic gave the broth an acrid edge that overwhelmed the mushrooms.",
+      "translation_ru": "едкий",
+      "translation_uz": "achishtiradigan darajada oʻtkir",
+      "collocations": [
+        "acrid smoke",
+        "acrid smell",
+        "acrid aftertaste"
+      ]
+    },
+    {
+      "word": "mealy",
+      "part_of_speech": "adjective",
+      "definition": "Having a dry, grainy texture that breaks down into fine particles when chewed.",
+      "example": "The pear looked ripe, but its mealy flesh crumbled instead of yielding a mouthful of juice.",
+      "translation_ru": "с сухой, зернисто-мучнистой текстурой",
+      "translation_uz": "quruq, chaynaganda mayda donachalarga ajraladigan",
+      "collocations": [
+        "mealy texture",
+        "mealy flesh",
+        "mealy pear"
+      ]
+    },
+    {
+      "word": "gelatinous",
+      "part_of_speech": "adjective",
+      "definition": "Having a soft, thick consistency that wobbles or yields like jelly.",
+      "example": "The chilled consommé was lightly gelatinous and melted as soon as it touched the tongue.",
+      "translation_ru": "желеобразный",
+      "translation_uz": "jele kabi yumshoq va liqildoq",
+      "collocations": [
+        "gelatinous texture",
+        "gelatinous stock",
+        "gelatinous layer"
+      ]
+    },
+    {
+      "word": "effervescent",
+      "part_of_speech": "adjective",
+      "definition": "Giving off small bubbles of gas that create a tingling sensation when drunk.",
+      "example": "The cider was gently effervescent, with a fine prickle that faded before the apple flavour did.",
+      "translation_ru": "с мелкими пузырьками газа, слегка пощипывающими язык",
+      "translation_uz": "mayda pufakchalari tilni qitiqlaydigan",
+      "collocations": [
+        "effervescent cider",
+        "effervescent wine",
+        "effervescent drink"
+      ]
+    },
+    {
+      "word": "caramelized",
+      "part_of_speech": "adjective",
+      "definition": "Browned by heating sugars until they develop the flavour of caramel.",
+      "example": "The tart had a thin crust of caramelized sugar that tasted of toffee.",
+      "translation_ru": "карамелизованный",
+      "translation_uz": "shakari qizib karamellashgan",
+      "collocations": [
+        "caramelized onions",
+        "caramelized edges",
+        "caramelized sugar"
+      ],
+      "word_family": [
+        {
+          "word": "caramelize",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "caramelization",
+          "part_of_speech": "noun"
+        }
+      ]
+    }
+  ]
+}

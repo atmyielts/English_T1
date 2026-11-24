@@ -1,0 +1,194 @@
+{
+  "item": {
+    "slug": "b1-at-a-small-music-venue",
+    "title": "At a small music venue",
+    "description": "Learn how to talk about getting ready to play a local show and what happens when you go to see one.",
+    "level": "B1",
+    "status": "published",
+    "topic": "live music",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "venue",
+      "part_of_speech": "noun",
+      "definition": "A place where an organised event such as a concert takes place.",
+      "example": "The band chose a small venue near the station so friends could come by train.",
+      "translation_ru": "площадка для проведения мероприятия",
+      "translation_uz": "tadbir oʻtkaziladigan joy",
+      "collocations": [
+        "music venue",
+        "book a venue",
+        "small venue"
+      ]
+    },
+    {
+      "word": "rehearsal",
+      "part_of_speech": "noun",
+      "definition": "A practice session before a performance.",
+      "example": "At rehearsal, we played the last song three times to get the ending right.",
+      "translation_ru": "репетиция",
+      "translation_uz": "chiqish oldidan oʻtkaziladigan mashq",
+      "collocations": [
+        "band rehearsal",
+        "final rehearsal",
+        "run a rehearsal"
+      ]
+    },
+    {
+      "word": "stage",
+      "part_of_speech": "noun",
+      "definition": "The area where musicians or other performers stand or sit while people watch them.",
+      "example": "Someone brought out a chair and put it in the middle of the stage for the guitarist.",
+      "translation_ru": "сцена",
+      "translation_uz": "sahna",
+      "collocations": [
+        "go on stage",
+        "leave the stage",
+        "edge of the stage"
+      ]
+    },
+    {
+      "word": "drummer",
+      "part_of_speech": "noun",
+      "definition": "Someone who plays the drums.",
+      "example": "Our drummer counted to four, and we all started playing together.",
+      "translation_ru": "барабанщик",
+      "translation_uz": "barabanchi",
+      "collocations": [
+        "the band's drummer",
+        "a jazz drummer",
+        "find a drummer"
+      ]
+    },
+    {
+      "word": "tune",
+      "part_of_speech": "verb",
+      "definition": "To adjust a musical instrument so that it produces the correct notes.",
+      "example": "I tuned my guitar in the hall while the room was still quiet.",
+      "translation_ru": "настраивать музыкальный инструмент",
+      "translation_uz": "cholgʻu asbobini sozlamoq",
+      "collocations": [
+        "tune a guitar",
+        "tune a violin",
+        "tune an instrument"
+      ]
+    },
+    {
+      "word": "microphone",
+      "part_of_speech": "noun",
+      "definition": "A device used to pick up a voice or another sound so it can be made louder or recorded.",
+      "example": "The singer held the microphone out so we could sing the last line with her.",
+      "translation_ru": "микрофон",
+      "translation_uz": "mikrofon",
+      "collocations": [
+        "hold a microphone",
+        "test a microphone",
+        "sing into a microphone"
+      ]
+    },
+    {
+      "word": "opening act",
+      "part_of_speech": "noun",
+      "definition": "A performer or group that plays before the main performer or group at a show.",
+      "example": "The opening act was a singer from our neighbourhood who played her own songs.",
+      "translation_ru": "исполнитель или группа на разогреве",
+      "translation_uz": "asosiy chiqishdan oldin sahnaga chiqadigan ijrochi yoki guruh",
+      "collocations": [
+        "the opening act for a band",
+        "be the opening act"
+      ]
+    },
+    {
+      "word": "queue",
+      "part_of_speech": "noun",
+      "definition": "A line of people waiting for their turn.",
+      "example": "We joined the queue outside just as someone came to open the doors.",
+      "translation_ru": "очередь",
+      "translation_uz": "navbat",
+      "collocations": [
+        "join a queue",
+        "stand in a queue",
+        "front of the queue"
+      ]
+    },
+    {
+      "word": "sell out",
+      "part_of_speech": "phrasal verb",
+      "definition": "If a show does this, people buy all the available tickets.",
+      "example": "We bought tickets early because Saturday shows often sell out.",
+      "translation_ru": "о концерте или другом мероприятии: все билеты на него распродаются",
+      "translation_uz": "barcha chiptalari sotilib ketmoq",
+      "collocations": [
+        "sell out quickly",
+        "sell out in advance",
+        "a show sells out"
+      ]
+    },
+    {
+      "word": "front row",
+      "part_of_speech": "noun phrase",
+      "definition": "The line of seats closest to the people performing.",
+      "example": "We sat in the front row and could see the guitarist's fingers clearly.",
+      "translation_ru": "первый ряд",
+      "translation_uz": "birinchi qator",
+      "collocations": [
+        "front row seats",
+        "sit in the front row",
+        "a seat in the front row"
+      ]
+    },
+    {
+      "word": "applause",
+      "part_of_speech": "noun",
+      "definition": "The sound of people clapping to show that they enjoyed something.",
+      "example": "The applause was so loud that we could barely hear the singer say thank you.",
+      "translation_ru": "аплодисменты",
+      "translation_uz": "qarsaklar",
+      "collocations": [
+        "loud applause",
+        "a round of applause",
+        "burst into applause"
+      ]
+    },
+    {
+      "word": "encore",
+      "part_of_speech": "noun",
+      "definition": "An extra performance of one or more pieces at the end of a show, usually because the audience wants to hear more.",
+      "example": "People kept clapping, so the band came back and played an encore.",
+      "translation_ru": "номер на бис",
+      "translation_uz": "konsert oxirida, odatda tomoshabinlar iltimosiga koʻra, bir yoki bir nechta asarning qoʻshimcha ijro etilishi",
+      "collocations": [
+        "play an encore",
+        "call for an encore",
+        "come back for an encore"
+      ]
+    },
+    {
+      "word": "set",
+      "part_of_speech": "noun",
+      "definition": "A series of songs or pieces musicians perform one after another in one part of a show.",
+      "example": "We started our second set with a slow song and finished with something people could dance to.",
+      "translation_ru": "блок песен или пьес в рамках одного выступления",
+      "translation_uz": "ketma-ket ijro etiladigan qoʻshiq yoki kuylardan iborat konsert boʻlimi",
+      "collocations": [
+        "play a short set",
+        "finish a set",
+        "an acoustic set"
+      ]
+    },
+    {
+      "word": "wristband",
+      "part_of_speech": "noun",
+      "definition": "A strip worn around the wrist to show that someone is allowed into an event or area.",
+      "example": "The volunteer gave me a blue wristband so I could go outside and come back in between bands.",
+      "translation_ru": "пропускной браслет",
+      "translation_uz": "kirish uchun bilakka taqiladigan tasma",
+      "collocations": [
+        "wear a wristband",
+        "show your wristband",
+        "a paper wristband"
+      ]
+    }
+  ]
+}

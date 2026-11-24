@@ -1,0 +1,80 @@
+{
+  "item": {
+    "slug": "c2-interpret-an-archive-sampling-rule",
+    "title": "Interpret an archive sampling rule",
+    "level": "C2",
+    "summary": "An archivist explains how collecting rules can distort a historical picture.",
+    "transcript_text": "The archive's diaries are often described as a window into the neighbourhood. That metaphor is useful as long as we ask whose window it was. The first donors were readers of one local paper, and staff subsequently selected documents for legibility and for the likelihood that families could be identified. We now have many accounts of households that already left a substantial paper trail. The lack of diaries about shift work, for example, does not imply that shift workers were absent. Adding oral histories can extend the picture, but we should describe the new collection as differently selective. People who volunteer for an interview also share certain opportunities and incentives. Our job is to let the sources illuminate one another without making either represent an invisible whole.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 51,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "culture",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What function does the window metaphor serve?",
+        "options": [
+          "It claims the archive is comprehensive",
+          "It introduces a useful but limited viewpoint",
+          "It dismisses diaries as unreliable",
+          "It explains how the archive building was designed"
+        ],
+        "answer_index": 1,
+        "explanation": "The speaker keeps the metaphor while asking which perspective it represents."
+      },
+      {
+        "prompt": "What can be inferred from the lack of shift-work diaries?",
+        "options": [
+          "Shift work ceased when the archive opened",
+          "The archive should reject family diaries",
+          "The material leaves a gap in what can be known",
+          "New oral histories will fully eliminate the gap"
+        ],
+        "answer_index": 2,
+        "explanation": "The speaker explicitly distinguishes a gap in surviving or selected evidence from absence of shift workers."
+      },
+      {
+        "prompt": "Why call oral histories differently selective?",
+        "options": [
+          "They can expand coverage but involve their own volunteer biases",
+          "They are necessarily less legible than diaries",
+          "They always include less accurate dates",
+          "They replace a selection rule with a completely representative census"
+        ],
+        "answer_index": 0,
+        "explanation": "The speaker explains that interview volunteers also share opportunities and incentives."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "whose window it was",
+      "focus_phrase": "whose window",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "already left a substantial paper trail",
+      "focus_phrase": "a substantial paper trail",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "differently selective",
+      "focus_phrase": "differently selective",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

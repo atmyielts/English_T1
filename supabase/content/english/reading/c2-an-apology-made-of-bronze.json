@@ -1,0 +1,140 @@
+{
+  "item": {
+    "slug": "c2-an-apology-made-of-bronze",
+    "title": "An Apology Made of Bronze",
+    "level": "C2",
+    "summary": "An essay asks what a commemorative plaque can acknowledge without deciding the history for its readers.",
+    "content_markdown": "The new plaque in Eastmere stood three steps from the old one. The first was set into the stone around the canal gates and thanked the engineer who had widened them. The second ran along a sloping rail at waist height and named the houses that had been demolished to make the work possible. Its last line read, “The council acknowledges the cost to those who lived here.” At the unveiling, the chair said that the two plaques would at last tell the whole story. It was the only sentence of the afternoon that made me wish we had remained under the tent.\n\nA second plaque can pay attention where the first withheld it. That is already something. The names on the rail correspond to a street that no longer has a surface: the visitor cannot walk along it, and nothing on the ground announces that it has ended. But the fact that names have been supplied does not make the narrative complete. Several households rented rooms rather than houses, and the official list did not record all of them. A younger reader could easily take the new lettering as proof that everybody affected now had a place in the account.\n\nOne proposal had been to remove the engineer’s plaque. Its opponents said a removal would erase what the town once believed. That objection assumes that a plaque must remain in the place of honour in order to survive as evidence, an equation the town would not accept for a discarded election poster. Yet I see a good reason to keep this particular plaque at the gates. Anyone reading the new account can also see how confidently the old one set the limits of the story. The distance of three steps makes the difference harder to smooth away.\n\nThe placement could still turn into a formula. Visitors might learn that the appropriate thing to do is to read the engineer’s name in one place and the dispossessed families’ names in another, then consider the matter settled. A useful inscription should leave readers a way out of that orderly arrangement. In this case, a note at the end directs them to surviving tenancy records and explains why the list of names may grow. One can come away knowing which source was used, what it could not contain and how a name might still be added. These are modest things for a plaque to offer. They are more exact than completeness.\n\nBronze encourages a particular confidence: the events may be distant, but someone has been willing to cut the words into metal. There is nothing wrong with that confidence when it attaches to a claim that can bear it. The canal was widened. People were made to move. What a council should resist is the idea that an apology, because it occupies a permanent object, has made the obligations of memory permanent too. Those obligations can be kept only by people who remain able to object to what the metal seems to have decided.",
+    "category": "Culture",
+    "theme": "commemorative plaques and historical responsibility",
+    "tone": "sand",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "essay",
+      "word_count": 502
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Which position best represents the essay’s argument?",
+        "options": [
+          "An old commemorative plaque can survive as evidence only if it stays in its original location.",
+          "A historical acknowledgement has value when it names harms and leaves its incompleteness open to challenge.",
+          "A town should delay any acknowledgement until it can name everyone affected.",
+          "Public apologies should avoid claims made with confidence."
+        ],
+        "answer_index": 1,
+        "explanation": "The writer accepts acknowledging harm and retaining the old plaque, but insists that the sources, gaps and ways to add names remain visible."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which people might be absent from the new rail’s list?",
+        "options": [
+          "Households who rented individual rooms",
+          "Visitors who walked to the site from another street",
+          "Staff who checked the new plaque’s spelling",
+          "Engineers who were added to the project after the gates opened"
+        ],
+        "answer_index": 0,
+        "explanation": "The second paragraph explains that the official list did not include all people who rented rooms."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer favour keeping this particular old plaque in place?",
+        "options": [
+          "Doing so removes the need to add further names to the new account.",
+          "It prevents the newer plaque from drawing attention to the demolished street.",
+          "It allows visitors to compare what the old account confidently left out with what the new one acknowledges.",
+          "Doing so proves that all older accounts should remain in places of honour."
+        ],
+        "answer_index": 2,
+        "explanation": "The writer rejects a universal preservation rule but finds the side-by-side comparison revealing in this case."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “smooth away” mean in paragraph 3?",
+        "options": [
+          "Polish a mark off the metal",
+          "Move the old plaque to an archive",
+          "Give the gates a simpler shape",
+          "Make the disagreement between accounts less noticeable"
+        ],
+        "answer_index": 3,
+        "explanation": "Being only three steps apart makes the two accounts’ different limits difficult to overlook."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.inference",
+        "prompt": "The writer claims that the council did not need to acknowledge that people had to move.",
+        "answer": "false",
+        "explanation": "The writer explicitly treats it as a claim the wording can support. The objection is to treating the apology as complete.",
+        "variant": "yes_no"
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The new account sends readers to surviving ___ records. A reader may find how another ___ can be added.",
+        "answers": [
+          [
+            "tenancy"
+          ],
+          [
+            "name"
+          ]
+        ],
+        "word_bank": [
+          "name",
+          "bronze",
+          "tenancy",
+          "street"
+        ],
+        "explanation": "Paragraph 4 identifies the records and explains how the list can remain open to additional names."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "The danger of confusing an enduring object with an enduring duty",
+          "How an inscription can invite further inquiry",
+          "A conditional case for preserving the earlier account",
+          "The neglected history is recognised but still incomplete",
+          "Evidence that the original engineer opposed the widening"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 0
+          }
+        ],
+        "explanation": "Paragraph 2 limits the new account, paragraph 3 weighs keeping the old plaque, paragraph 4 gives a way forward, and paragraph 5 separates the material from the duty."
+      }
+    ]
+  },
+  "children": []
+}

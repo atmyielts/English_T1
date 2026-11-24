@@ -1,0 +1,181 @@
+{
+  "item": {
+    "slug": "a1-walk-by-the-pond",
+    "title": "A walk by the pond",
+    "level": "A1",
+    "topic": "a walk by the pond",
+    "description": "Name plants, animals and things you see on a short walk. Use simple verbs to say what you do by the water.",
+    "status": "published",
+    "sort_order": 330
+  },
+  "children": [
+    {
+      "word": "pond",
+      "part_of_speech": "noun",
+      "definition": "A small area of still water with land all around it.",
+      "example": "Two ducks are on the pond.",
+      "translation_ru": "пруд",
+      "translation_uz": "hovuz (kichik, turgʻun suv havzasi)",
+      "collocations": [
+        "a small pond",
+        "by the pond"
+      ]
+    },
+    {
+      "word": "duck",
+      "part_of_speech": "noun",
+      "definition": "A bird with a wide, flat beak that often swims on water.",
+      "example": "A duck swims past the bench.",
+      "translation_ru": "утка",
+      "translation_uz": "oʻrdak",
+      "collocations": [
+        "a wild duck",
+        "a duck swims"
+      ]
+    },
+    {
+      "word": "frog",
+      "part_of_speech": "noun",
+      "definition": "A small animal with long back legs that can jump and swim.",
+      "example": "A frog sat on a stone by the water.",
+      "translation_ru": "лягушка",
+      "translation_uz": "qurbaqa",
+      "collocations": [
+        "a green frog",
+        "a frog jumps"
+      ]
+    },
+    {
+      "word": "leaf",
+      "part_of_speech": "noun",
+      "definition": "One of the flat, usually green parts of a plant or tree.",
+      "example": "A yellow leaf fell onto the bench.",
+      "translation_ru": "лист (растения)",
+      "translation_uz": "barg",
+      "collocations": [
+        "a green leaf",
+        "a leaf falls"
+      ]
+    },
+    {
+      "word": "grass",
+      "part_of_speech": "noun",
+      "definition": "A low green plant that often covers the ground in a park.",
+      "example": "You can sit on the grass here.",
+      "translation_ru": "трава",
+      "translation_uz": "maysa",
+      "collocations": [
+        "green grass",
+        "sit on the grass"
+      ]
+    },
+    {
+      "word": "stone",
+      "part_of_speech": "noun",
+      "definition": "A small, hard piece of rock.",
+      "example": "Put the stone back beside the path.",
+      "translation_ru": "камень",
+      "translation_uz": "tosh",
+      "collocations": [
+        "a flat stone",
+        "pick up a stone"
+      ]
+    },
+    {
+      "word": "bench",
+      "part_of_speech": "noun",
+      "definition": "A long seat with space for more than one person.",
+      "example": "Is there room on the bench for me?",
+      "translation_ru": "скамейка",
+      "translation_uz": "uzun oʻrindiq",
+      "collocations": [
+        "a park bench",
+        "sit on a bench"
+      ]
+    },
+    {
+      "word": "path",
+      "part_of_speech": "noun",
+      "definition": "A narrow way that people can walk along.",
+      "example": "This path goes around the pond.",
+      "translation_ru": "тропинка",
+      "translation_uz": "soʻqmoq",
+      "collocations": [
+        "follow a path",
+        "a path through the park"
+      ]
+    },
+    {
+      "word": "tree",
+      "part_of_speech": "noun",
+      "definition": "A plant with a thick, hard main stem and branches. Many grow very tall.",
+      "example": "Meet me by the big tree at the end of the path.",
+      "translation_ru": "дерево",
+      "translation_uz": "daraxt",
+      "collocations": [
+        "a tall tree",
+        "under a tree"
+      ]
+    },
+    {
+      "word": "branch",
+      "part_of_speech": "noun",
+      "definition": "A long, hard part that grows out from the main stem of a tree or from one of its thicker parts.",
+      "example": "There is a bird on that branch.",
+      "translation_ru": "ветка",
+      "translation_uz": "shox",
+      "collocations": [
+        "a low branch",
+        "a tree branch"
+      ]
+    },
+    {
+      "word": "watch",
+      "part_of_speech": "verb",
+      "definition": "To look at someone or something for a while to see what happens.",
+      "example": "Let's watch the ducks for a minute.",
+      "translation_ru": "наблюдать",
+      "translation_uz": "kuzatmoq",
+      "collocations": [
+        "watch the ducks",
+        "watch a bird"
+      ]
+    },
+    {
+      "word": "sit",
+      "part_of_speech": "verb",
+      "definition": "To rest with the lower part of your body on a seat or on the ground.",
+      "example": "We can sit under the tree and eat our lunch.",
+      "translation_ru": "сидеть",
+      "translation_uz": "oʻtirmoq",
+      "collocations": [
+        "sit on a bench",
+        "sit under a tree"
+      ]
+    },
+    {
+      "word": "jump",
+      "part_of_speech": "verb",
+      "definition": "To quickly push yourself up into the air with your legs.",
+      "example": "I can jump over that stone.",
+      "translation_ru": "прыгать",
+      "translation_uz": "sakramoq",
+      "collocations": [
+        "jump up",
+        "jump over a stone"
+      ]
+    },
+    {
+      "word": "mud",
+      "part_of_speech": "noun",
+      "definition": "Soft, wet earth.",
+      "example": "There is mud on my shoes after our walk.",
+      "translation_ru": "грязь (мокрая земля)",
+      "translation_uz": "loy",
+      "collocations": [
+        "thick mud",
+        "get mud on your shoes"
+      ]
+    }
+  ]
+}

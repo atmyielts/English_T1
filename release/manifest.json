@@ -1,53 +1,30 @@
 {
   "schemaVersion": 1,
-  "releaseId": "practice-short-sets-and-worked-examples",
+  "releaseId": "english-hub-practice-depth",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": ["academy", "company", "ielts-playbook", "ielts-practice", "sat-practice", "toefl-ibt-simulator"],
-  "migrations": [
-    "20261124141000_sat_practice_short_set_scope.sql",
-    "20261124141100_sat_playbook_worked_examples.sql",
-    "20261124151000_english_hub_read_reply_speak.sql"
-  ],
-  "edgeFunctions": ["company", "review-session", "sat-practice"],
+  "frontends": [],
+  "migrations": ["20261124153000_english_hub_practice_depth.sql"],
+  "edgeFunctions": ["writing-workbench"],
   "workers": [],
-  "sharedEdgeConsumers": ["sat-practice"],
-  "requiredSecrets": ["AI_ADDON_PRODUCT_ID", "OPENROUTER_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_MODEL", "SAT_TUTOR_SERVICE_DAILY_LIMIT"],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261124141000_sat_practice_short_set_scope.sql",
-    "migration:20261124141100_sat_playbook_worked_examples.sql",
-    "migration:20261124151000_english_hub_read_reply_speak.sql",
-    "secret:AI_ADDON_PRODUCT_ID",
-    "secret:OPENROUTER_API_KEY",
-    "secret:OPENROUTER_BASE_URL",
-    "secret:OPENROUTER_MODEL",
-    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
-    "function:company",
-    "function:review-session",
-    "function:sat-practice",
-    "content:private-sat-short-sets",
-    "content:private-ielts-practice-and-playbook",
-    "content:private-toefl-playbook",
-    "content:toefl-2026-focused-wave5",
-    "verify:entitled-practice"
+    "migration:20261124153000_english_hub_practice_depth.sql",
+    "content:private-authored-writing-models",
+    "function:writing-workbench",
+    "verify:english-hub-catalogue"
   ],
   "manualFollowUps": [
-    "After Pages, dry-run supabase db push --linked and apply only the listed content migrations. Use a migration directory restricted to applied versions and the release scope if the repository contains unrelated pending migrations.",
-    "Run supabase functions deploy company, supabase functions deploy review-session, and supabase functions deploy sat-practice against the linked Schood English project with each function's existing authentication settings.",
-    "Retain the existing paid AI configuration. If restoring configuration, use supabase secrets set AI_ADDON_PRODUCT_ID=<existing value>, supabase secrets set OPENROUTER_API_KEY=<existing value>, supabase secrets set OPENROUTER_BASE_URL=<existing value>, supabase secrets set OPENROUTER_MODEL=<existing value>, and supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=<existing value> as configured for Schood. The content release requires no new provider calls or credentials.",
-    "Apply the private, release-specific SAT Practice, IELTS Practice and Playbook, and TOEFL Playbook data files using the existing administrative content workflow. Keep the private data files and answer keys out of GitHub and use their exact release hashes. These data operations require no migration history entries.",
-    "Build and import only the TOEFL focused wave 5 experience through the native admin publisher. Validate the private review keys and paid catalogue before activating it. Keep the new Listening sources offline."
+    "Dry-run supabase db push --linked from a workspace containing the applied migration versions and only the English Hub release migration as pending. Apply the migration and the checksum-verified private Writing model cache seed.",
+    "Run supabase functions deploy writing-workbench with its current authentication configuration. Writing model responses still require the learner to submit their own response first."
   ],
   "verification": [
-    "Verify Weeks 2, 4, 6, and 8 checkpoints and normal catalogue browsing in SAT, IELTS, and TOEFL Practice as an entitled learner.",
-    "Verify SAT and TOEFL answer feedback is available after completing the selected set, and verify IELTS models appear after self-review.",
-    "Verify the authored exercises in the SAT, IELTS, and TOEFL Playbooks and confirm that all eight English Hub immersion missions have a read, reply, and speak step.",
-    "Verify Academy teachers can assign the homework and follow-up separately, and a Company English learning seat can finish a scenario and compare the authored example."
+    "Find all 96 new English Hub activities across seven skills and CEFR A1 through C2 using the native learner catalogue.",
+    "Check the browser-read Listening path and verify that IELTS and TOEFL Listening release plans remain independent.",
+    "Check that each new Writing prompt has an authored cache entry at its declared level and that the completed-learner model route returns that entry when the preferred level has no cached example."
   ],
   "rollback": {
-    "pages": "Revert the affected Pages projects to their last known good deployments.",
-    "edge": "Redeploy the prior company, review-session, and sat-practice functions with current runtime settings.",
-    "content": "Unpublish only affected new question and catalogue rows by their release-specific IDs. Archive English Hub missions if learners have attempts; restore the previous Playbook content blocks if needed. Preserve learner progress and existing question banks."
+    "content": "Archive the release-specific new items through English Content Studio and preserve existing activity attempts. Retain the private Writing model cache rows for the corresponding prompts.",
+    "edge": "Redeploy the previous writing-workbench bundle with its existing configuration."
   }
 }

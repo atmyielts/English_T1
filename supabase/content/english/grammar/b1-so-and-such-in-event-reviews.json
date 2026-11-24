@@ -1,0 +1,153 @@
+{
+  "item": {
+    "title": "So and such in event reviews",
+    "explanation_text": "Use so before an adjective or adverb to make it stronger. If the hall was so cold, you are describing the hall. If the actors spoke so clearly, you are describing how they spoke.\n\nUse such before a noun phrase. With a singular countable noun, put a or an after such, as in such a lively market or such an unusual display. Choose a or an according to the sound of the next word. With plural nouns and uncountable nouns, leave out a and an, as in such bright lanterns and such loud music. To stress quantity, use so many with plural countable nouns and so much with uncountable nouns.\n\nIn a review, add a clause beginning with that to show what happened as a result. For example, the guide spoke so quietly that people at the back moved closer. The first part tells readers how quietly the guide spoke, and the that clause shows the result.",
+    "contrast_text": "Compare The square was so crowded that we left with It was such a crowded square that we left. In the first sentence, crowded stands on its own. In the second, crowded describes the noun square. Compare such bright lights, which describes the lights, with so many lights, which stresses their number.",
+    "common_error_pattern": "Use such to emphasize a description within a noun phrase, as in such fresh bread. Use so much or so many for quantity. Use so before an adjective on its own, as in so warm. With a singular countable noun, put a or an after such.",
+    "tags": [
+      "B1",
+      "b1-so-and-such-in-event-reviews",
+      "degree",
+      "articles",
+      "quantity",
+      "result clauses",
+      "event reviews"
+    ],
+    "examples": [
+      {
+        "bad": "The rehearsal room was such warm that we opened a window.",
+        "good": "The rehearsal room was so warm that we opened a window."
+      },
+      {
+        "bad": "It was such unusual lantern display that we stayed until closing time.",
+        "good": "It was such an unusual lantern display that we stayed until closing time."
+      },
+      {
+        "bad": "The market sold so fresh bread that we bought another loaf to take home.",
+        "good": "The market sold such fresh bread that we bought another loaf to take home."
+      },
+      {
+        "bad": "There were so much people on the guided walk that the guide split us into two groups.",
+        "good": "There were so many people on the guided walk that the guide split us into two groups."
+      }
+    ],
+    "slug": "b1-so-and-such-in-event-reviews",
+    "level": "B1",
+    "status": "published",
+    "focus_area": "so-and-such",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "The rehearsal hall",
+      "instructions": "Complete the sentence with so or such. Write only the missing word.",
+      "prompt_text": "The hall was ___ quiet that we could hear the actors turn their pages.",
+      "accepted_answers": [
+        "so"
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An evening of lanterns",
+      "instructions": "Complete the sentence with such and the correct form of a or an. Write only the missing words.",
+      "prompt_text": "It was ___ unusual lantern display that we went back the next evening.",
+      "accepted_answers": [
+        "such an"
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Music at the market",
+      "instructions": "Complete the sentence with so or such. Write only the missing word.",
+      "prompt_text": "The market band played ___ lively music that people started dancing between the stalls.",
+      "accepted_answers": [
+        "such"
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Details on the guided walk",
+      "instructions": "Complete the sentence with so or such. Write only the missing word.",
+      "prompt_text": "Our guide pointed out ___ tiny details in the stonework that I had to step closer to see them.",
+      "accepted_answers": [
+        "such"
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A queue around the square",
+      "instructions": "Use so much or so many to stress the quantity. Write only the missing words.",
+      "prompt_text": "There were ___ visitors at the lantern display that the queue stretched around the square.",
+      "accepted_answers": [
+        "so many"
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A clear view from the back",
+      "instructions": "Rewrite the same sentence. Replace only the incorrect word so that the adjective introduces a result.",
+      "prompt_text": "The signs at the market were such clear that we found the food stalls straight away.",
+      "accepted_answers": [
+        "The signs at the market were so clear that we found the food stalls straight away."
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A change of route",
+      "instructions": "Rewrite the same sentence. Add only the missing article.",
+      "prompt_text": "It was such steep path that the guide took us back by a different route.",
+      "accepted_answers": [
+        "It was such a steep path that the guide took us back by a different route."
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "A rehearsal worth watching",
+      "instructions": "Combine the sentences using such with a singular noun phrase, followed by that. Start with 'It was' and keep the words 'lively rehearsal' and 'we stayed until the end'.",
+      "prompt_text": "The rehearsal was lively. We stayed until the end.",
+      "accepted_answers": [
+        "It was such a lively rehearsal that we stayed until the end."
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Calling the next group",
+      "instructions": "Combine the sentences using so much followed by a result clause with that. Start with 'There was' and keep 'noise by the entrance' and 'we could not hear the guide'. You may contract 'could not'.",
+      "prompt_text": "There was a lot of noise by the entrance. We could not hear the guide.",
+      "accepted_answers": [
+        "There was so much noise by the entrance that we could not hear the guide.",
+        "There was so much noise by the entrance that we couldn't hear the guide."
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "From the first beat",
+      "instructions": "Use every slash-delimited tile once to make a review sentence with so and a result clause. Start with “The drummer” and end with the tile that includes the period.",
+      "prompt_text": "that / the dancers missed their cue. / quickly / played / The drummer / so",
+      "accepted_answers": [
+        "The drummer played so quickly that the dancers missed their cue."
+      ],
+      "target_skill_key": "grammar.so-and-such",
+      "status": "published"
+    }
+  ]
+}

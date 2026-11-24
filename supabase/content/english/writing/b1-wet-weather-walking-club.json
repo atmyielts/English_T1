@@ -1,0 +1,65 @@
+{
+  "item": {
+    "slug": "b1-wet-weather-walking-club",
+    "title": "Offer a Wet-Weather Plan",
+    "level": "B1",
+    "genre": "group chat update",
+    "audience": "members of a weekend walking club",
+    "prompt_text": "Your walking club planned an outdoor river walk on Sunday. Part of the path is now muddy after heavy rain. Suggest a shorter route through the covered market and tell the group where to meet. Explain one advantage and one drawback of the new route, and ask for a reply by Saturday evening.",
+    "expected_length_min": 96,
+    "expected_length_max": 145,
+    "target_grammar": "First conditional; because, although and so; could for a proposal.",
+    "target_structure": "State the change → give the route and meeting point → weigh one benefit and one drawback → ask for a reply.",
+    "target_vocabulary": [
+      "muddy",
+      "covered market",
+      "entrance",
+      "quieter",
+      "crowded",
+      "reply"
+    ],
+    "sort_order": 264,
+    "checklist": [
+      {
+        "point": "Explain the problem with the original route.",
+        "keywords": [
+          "muddy",
+          "heavy rain",
+          "wet path",
+          "too slippery"
+        ]
+      },
+      {
+        "point": "Give a new route and meeting point.",
+        "keywords": [
+          "covered market",
+          "market route",
+          "market entrance",
+          "north entrance"
+        ]
+      },
+      {
+        "point": "Give a benefit and a drawback.",
+        "keywords": [
+          "stay dry",
+          "under cover",
+          "crowded",
+          "busy",
+          "less time outside"
+        ]
+      },
+      {
+        "point": "Ask for a reply by Saturday evening.",
+        "keywords": [
+          "saturday evening",
+          "by saturday night",
+          "before sunday"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "B1"
+    }
+  },
+  "children": []
+}

@@ -1,0 +1,151 @@
+{
+  "item": {
+    "title": "Fused relatives and bounded choice",
+    "explanation_text": "Start with what: in ‘We restored what we could save’, what we could save means ‘the material that we could save’. What combines the understood noun and the relative word. The whole expression functions as a noun phrase: it names the material that underwent restoration.\n\nWhoever can mean ‘any person who’, and whatever can mean ‘anything that’. Both can leave the identity open while still imposing a condition: ‘whoever meets the criteria’ leaves the person’s identity open but requires them to qualify. Whichever signals a choice from an identifiable set. In ‘Use whichever of the two finishes the conservator approves’, either finish is eligible for selection, but the choice stays within the named pair.\n\nCompare ‘We will implement whichever plan the board approves’ with ‘We need to establish which plan the board approved’. The first identifies the plan to implement. The second poses an embedded question about the plan’s identity. Even with a named set, an embedded question normally uses which. Keep statement word order inside it: ‘which plan the board approved’. In “whichever mount she considers safer”, the chosen mount is already understood as the object of considers. Do not add it to repeat that object.",
+    "contrast_text": "‘Preserve what the team recovered’ refers to the recovered material. ‘Find out what the team recovered’ asks someone to identify what was recovered. The words ‘what the team recovered’ are identical, so use the surrounding verb and the intended meaning to tell the two constructions apart.",
+    "common_error_pattern": "Learners sometimes add an explicit antecedent before fused what, as in ‘the material what we recovered’. Use either ‘what we recovered’ or ‘the material that we recovered’. Use which to ask for the identity of a member of a set, stated explicitly or understood from context. For example, “determine which of the two exemptions the board granted”.",
+    "tags": [
+      "C2",
+      "c2-free-relatives-and-bounded-choice",
+      "fused relatives",
+      "free choice",
+      "bounded choice",
+      "embedded interrogatives"
+    ],
+    "examples": [
+      {
+        "bad": "The editors published the material what the fact-checkers had verified.",
+        "good": "The editors published what the fact-checkers had verified."
+      },
+      {
+        "bad": "Whomever chairs the panel will sign the recommendation.",
+        "good": "Whoever chairs the panel will sign the recommendation."
+      },
+      {
+        "bad": "The conservator may use whichever of the two mounts she considers it safer.",
+        "good": "The conservator may use whichever of the two mounts she considers safer."
+      },
+      {
+        "bad": "The registrar needs to determine which of the two exemptions did the board grant.",
+        "good": "The registrar needs to determine which of the two exemptions the board granted."
+      }
+    ],
+    "slug": "c2-free-relatives-and-bounded-choice",
+    "level": "C2",
+    "status": "published",
+    "focus_area": "free-relatives",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "The text that could be recovered",
+      "instructions": "Fill the gap with the single word that means “the information that” in this sentence. Enter only the missing word.",
+      "prompt_text": "The editorial panel retained ___ the damaged proofs still revealed about the original wording.",
+      "accepted_answers": [
+        "what"
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An open invitation to chair",
+      "instructions": "Use the single fused relative word meaning ‘any person who’. Enter only the missing word.",
+      "prompt_text": "The charter allows any panel member to volunteer. The secretariat will brief ___ agrees to chair the appeals hearing.",
+      "accepted_answers": [
+        "whoever"
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Materials that meet the standard",
+      "instructions": "Use the single fused relative word meaning ‘anything that’. Enter only the missing word.",
+      "prompt_text": "The restoration grant specifies a conservation standard and leaves the list of eligible materials open. The grant will pay for ___ the conservator certifies as compliant with that standard.",
+      "accepted_answers": [
+        "whatever"
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A choice between two finishes",
+      "instructions": "Use the single fused relative word that signals a choice within the named pair. Enter only the missing word.",
+      "prompt_text": "The approved finishes are wax and shellac. The workshop will apply ___ of the two the conservator specifies in the treatment plan.",
+      "accepted_answers": [
+        "whichever"
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Identify the approved route",
+      "instructions": "Complete the embedded question about the identity of one member of a named set. Enter only the missing word.",
+      "prompt_text": "The minutes record three proposed access routes but omit the final vote. The administrator needs to establish ___ of the three routes the committee approved.",
+      "accepted_answers": [
+        "which"
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Remove the repeated noun phrase",
+      "instructions": "The object should be a fused relative beginning with ‘what’. Rewrite the same sentence, deleting only the redundant words immediately before ‘what’.",
+      "prompt_text": "The editorial panel will publish the material what the legal review clears for release.",
+      "accepted_answers": [
+        "The editorial panel will publish what the legal review clears for release."
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Restore embedded question order",
+      "instructions": "Rewrite the same sentence, correcting only the word order in the embedded question. Keep all the original words.",
+      "prompt_text": "The clerk must determine which of the two schedules has the board ratified.",
+      "accepted_answers": [
+        "The clerk must determine which of the two schedules the board has ratified."
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Delegate the choice of wording",
+      "instructions": "Rewrite using a fused relative beginning with “whichever”. Begin with “The editors will print”, keep “of the three versions”, and keep “the legal team clears for publication” in the active voice.",
+      "prompt_text": "The editors will print the version that the legal team clears for publication from among the three versions.",
+      "accepted_answers": [
+        "The editors will print whichever of the three versions the legal team clears for publication."
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Ask about a restoration decision",
+      "instructions": "Turn the direct question into an embedded interrogative. Begin with ‘The archivist wants to find out’, keep ‘what’ and ‘from the damaged ledger’, and express ‘manage to recover’ in the simple past.",
+      "prompt_text": "What did the restoration team manage to recover from the damaged ledger?",
+      "accepted_answers": [
+        "The archivist wants to find out what the restoration team managed to recover from the damaged ledger."
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Assign responsibility under a new rule",
+      "instructions": "Use every slash-delimited tile exactly once. Begin with the fused relative as the subject of the sentence. Keep the full stop attached to the last tile.",
+      "prompt_text": "will be responsible / takes over the register / Whoever / for recording the exemptions.",
+      "accepted_answers": [
+        "Whoever takes over the register will be responsible for recording the exemptions."
+      ],
+      "target_skill_key": "grammar.free-relatives",
+      "status": "published"
+    }
+  ]
+}

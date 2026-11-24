@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b1-a-room-for-the-spare-piano",
+    "title": "A Room for the Spare Piano",
+    "level": "B1",
+    "summary": "A local report follows a community group looking for a useful home for a donated piano.",
+    "content_markdown": "The owners of a closed café wanted to give away the piano that had stood beside their front window. They offered it to a community group, which planned to place it somewhere people could play without booking a lesson. Finding that room was harder than finding someone who wanted the piano.\n\nThe first offer came from a sports hall. It had a wide front door and plenty of space, but teams used the building every evening. The manager said there would be no regular time for the piano to be played except on Monday mornings. A music teacher offered a spare room upstairs in her school. There were no steps inside the room, but there was a narrow flight of stairs leading to it. The people moving the piano could not turn it safely at the top.\n\nFinally, the caretaker of a small bus station suggested the former ticket office. A new counter had been built in the main hall, leaving the old room empty. It had a wide door to the street and already held a few chairs. The group agreed that playing could take place at lunchtime for the first month. The caretaker wanted to find out whether people could still hear announcements outside the room.\n\nAt the end of the first week, the station had received no complaints about announcements. One passenger had written a note asking if someone could teach him a tune he remembered from school. The group put a notebook beside the piano so that visitors could leave requests or offer to help.",
+    "category": "Community",
+    "theme": "finding a piano a new home",
+    "tone": "lime",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "local news report",
+      "word_count": 259
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What problem drives the report?",
+        "options": [
+          "Choosing which café to close",
+          "Finding a place where a donated piano can be moved in and used",
+          "Deciding who should pay for lessons",
+          "Making station announcements louder"
+        ],
+        "answer_index": 1,
+        "explanation": "The group needs a room where people can play, and each offer is assessed for access and availability."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did the school room fail as an option?",
+        "options": [
+          "The stairs made it impossible to turn the piano safely.",
+          "There were steps inside the room.",
+          "The school was only open in the mornings.",
+          "It did not have enough chairs."
+        ],
+        "answer_index": 0,
+        "explanation": "The movers could not turn the piano at the top of the narrow stairs."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why did the caretaker limit the playing at first?",
+        "options": [
+          "He wanted to check whether announcements could still be heard.",
+          "He wanted to count the people who took lessons.",
+          "He hoped the group would choose the quieter sports hall instead.",
+          "He had agreed to keep the ticket office open all day."
+        ],
+        "answer_index": 0,
+        "explanation": "He wanted to see whether playing in the former ticket office would interfere with hearing announcements."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “former ticket office” mean?",
+        "options": [
+          "A room that used to be the ticket office",
+          "A planned new ticket office",
+          "A room next to the ticket office",
+          "A temporary place to buy tickets"
+        ],
+        "answer_index": 0,
+        "explanation": "A new counter replaced it, so the old office no longer sells tickets."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The group charged visitors to play the piano during the first month.",
+        "answer": "not_given",
+        "explanation": "It wanted people to be able to play without booking a lesson. The report does not say whether there was any charge."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The piano’s new room had a door directly to the ___. Visitors could leave requests in a ___.",
+        "answers": [
+          [
+            "street"
+          ],
+          [
+            "notebook"
+          ]
+        ],
+        "word_bank": [
+          "notebook",
+          "stairs",
+          "street",
+          "window"
+        ],
+        "explanation": "The old office has a door to the street. The notebook lets visitors leave requests."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A gift that needs a suitable home",
+          "The first response to the new piano",
+          "A short trial in an empty room",
+          "Two rooms that will not work",
+          "How to tune the instrument"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "Paragraph 1 introduces the offer, paragraph 2 explains two problems, paragraph 3 describes a trial space, and paragraph 4 reports the response."
+      }
+    ]
+  },
+  "children": []
+}

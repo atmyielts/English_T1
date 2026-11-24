@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c2-the-minute-that-keeps-the-meeting-open",
+    "title": "The Minute That Keeps the Meeting Open",
+    "level": "C2",
+    "summary": "A short story follows a temporary clerk trying to record an objection that the official vote would not show.",
+    "content_markdown": "The last train had already left when the members of the hall committee got to the item about keys. By then the coffee had cooled, and Mara, covering for their usual clerk, had drawn a line under the space in which she expected to record the result. The chair wanted to give the kitchen key to the evening caretaker. There had been a small flood while the kitchen was locked, and somebody had fetched him from his other job with a towel still round his shoulders.\n\nNobody argued that he should be unable to open the kitchen. At the far end of the table, however, Ilyas asked whether giving him the key meant taking it away from the people who cooked on Saturdays. The chair said the committee could discuss copies later. She asked for a show of hands. Every hand went up, including his. Mara wrote “Agreed unanimously”, although she found that she had left a much larger space after the words than she normally would.\n\nWhen the others were pushing chairs back under the table, Ilyas returned to pick up his scarf. He saw the line in her notebook and said he supposed it was correct. Mara waited for him to say what else it might be. He did not. At the sink the chair rinsed the coffee cups and discussed whether they could stay in the cupboard unlocked. On his way out, Ilyas picked up the old kitchen rota and folded it so that it would fit in his coat. He said he wanted to check who would be cooking next week.\n\nMara typed the minutes at home, on a chair that had to be dragged near the radiator because the cable would only reach so far. She copied “Agreed unanimously”. From her notes she added “The number of keys and arrangements for Saturday access remain for decision.” She read the two sentences aloud. They sounded less neat than the minutes she had been given to use as a model. They also sounded closer to the meeting: even the members who had wanted to go home had heard the question.\n\nA week later the chair circulated the agenda. Before the list of speakers and before the apologies, there was a follow-up item on kitchen access. Its description took most of Mara’s second sentence, although the chair had replaced “remain” with “are still”. Mara had expected that if the words stayed, they would stay exactly as she had put them. She found she liked this version better. It sounded as though somebody, somewhere between the notebook and the agenda, had picked the question up.\n\nOn Saturday morning she passed the hall on the way to the station. Above the old letter box was a strip of green paper that had not been there before. It asked people on the rota to tell the committee when they would need a key. A list had been pinned underneath it, but the rain had lifted the bottom corner and she could only read the first name. She had time before her train, so she went in to find a second drawing pin.",
+    "category": "Fiction",
+    "theme": "recording dissent in meeting minutes",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 522
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the effect of adding the second sentence to the minutes?",
+        "options": [
+          "It challenges whether the vote can properly be described as unanimous.",
+          "It records a disagreement as though it stopped the committee from voting.",
+          "It changes a suggestion about issuing copies into a binding instruction.",
+          "It keeps an unresolved practical question on the agenda without undoing the unanimous vote."
+        ],
+        "answer_index": 3,
+        "explanation": "The vote stands in the first sentence. The next preserves the unresolved key-copy and Saturday access questions, and the chair gives them a follow-up agenda item."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What question did Ilyas raise before the vote?",
+        "options": [
+          "Whether the Saturday cooks would lose access to the kitchen",
+          "Whether the caretaker had another job",
+          "Whether the chair would pay for the damage from the flood",
+          "Whether the members could leave before a vote was taken"
+        ],
+        "answer_index": 0,
+        "explanation": "He asks whether giving the caretaker the key means taking it away from the people who cook on Saturdays."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why does Mara come to prefer the chair’s rewording?",
+        "options": [
+          "It allows her to avoid being connected to the point about Saturday access.",
+          "It shows that the chair has solved the problem before the meeting.",
+          "It makes the agenda look more like the sample minutes she was given.",
+          "It suggests the chair has taken up the question instead of just reproducing Mara’s words."
+        ],
+        "answer_index": 3,
+        "explanation": "Mara describes the revised wording as if somebody had picked up the question between her notes and the agenda."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does the phrase “found that she had left a much larger space” help to suggest?",
+        "options": [
+          "Mara was still waiting for a member to raise a hand.",
+          "She sensed that the vote’s outcome did not fully account for what had been discussed.",
+          "She wanted a blank area where the chair could add a signature.",
+          "The notes were copied from a book with missing pages."
+        ],
+        "answer_index": 1,
+        "explanation": "The gap appears immediately after the incomplete summary. Mara later writes the remaining issues into that record."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "A final decision about how many keys to make had been taken by the time Mara saw the green notice.",
+        "answer": "not_given",
+        "explanation": "The notice asks people when they will need a key. The story does not report a decision on how many keys to make."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Before leaving, Ilyas takes the kitchen ___. At the end, Mara goes in to find another drawing ___.",
+        "answers": [
+          [
+            "rota"
+          ],
+          [
+            "pin"
+          ]
+        ],
+        "word_bank": [
+          "pin",
+          "agenda",
+          "rota",
+          "scarf"
+        ],
+        "explanation": "Ilyas folds the rota into his coat, and Mara goes inside looking for a pin to secure the list."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "A unanimous answer leaves one question open",
+          "A changed result of the committee vote",
+          "A later agenda picks up the question",
+          "After the meeting, the practical point persists",
+          "A small addition to the official record"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 2
+          }
+        ],
+        "explanation": "The two sentences preserve different outcomes: the group’s agreement and the continuing question. The surrounding paragraphs trace how the latter survives."
+      }
+    ]
+  },
+  "children": []
+}

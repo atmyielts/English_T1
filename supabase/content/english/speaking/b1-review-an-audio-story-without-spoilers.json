@@ -1,0 +1,58 @@
+{
+  "item": {
+    "slug": "b1-review-an-audio-story-without-spoilers",
+    "title": "Recommend an Audio Story Without Spoilers",
+    "level": "B1",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 63,
+    "prompt_text": "Give a short spoken review of an audio story for your listening club. Introduce the basic situation without giving away the ending. Describe one sound or voice that helped you follow the story. Recommend it to a particular kind of listener and explain why.",
+    "target_grammar": "Present simple for the plot; relative clauses for listeners; comparatives for sound choices.",
+    "fluency_objective": "Move from setup to one concrete listening detail, then make the recommendation.",
+    "pronunciation_objective": "Slow down slightly at the title and use a pause after you introduce it.",
+    "target_vocabulary": [
+      "episode",
+      "character",
+      "sound effect",
+      "voices",
+      "recommend",
+      "suspense"
+    ],
+    "sort_order": 264,
+    "cues": [
+      {
+        "text": "Set up the story without revealing its ending.",
+        "keywords": [
+          "story starts",
+          "opens with",
+          "episode",
+          "character",
+          "it starts with"
+        ]
+      },
+      {
+        "text": "Explain how a particular voice or sound helped.",
+        "keywords": [
+          "sound of",
+          "voice",
+          "sound effect",
+          "footsteps",
+          "music"
+        ]
+      },
+      {
+        "text": "Recommend it to a specific kind of listener.",
+        "keywords": [
+          "i'd recommend",
+          "i would recommend",
+          "if you like",
+          "listen carefully",
+          "listeners who"
+        ]
+      }
+    ],
+    "model_opening": "I'd recommend a short audio story called The Upstairs Light.",
+    "model_answer": "I'd recommend a short audio story called The Upstairs Light. It starts with a young woman who looks after an empty building. One evening, she notices a light upstairs, even though she thought she was the last person there. I won't say what she finds. The sound I liked most was the set of footsteps on the stairs. They were much louder when she was near them, so I could tell where she was without a narrator having to explain it. I'd recommend the story to listeners who like suspense but don't want anything too frightening. It takes about fifteen minutes, and the ending is worth hearing for yourself."
+  },
+  "children": []
+}

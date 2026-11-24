@@ -1,0 +1,71 @@
+{
+  "item": {
+    "slug": "c1-museum-map-name-correction",
+    "title": "Correct Two Names on a Museum Map",
+    "level": "C1",
+    "genre": "public correction",
+    "audience": "museum visitors and front-desk staff",
+    "prompt_text": "A museum map printed last month calls a room the East Study while the sign above its door says Map Room. The same map also labels a different room East Study, which is correct. Visitors have missed tours because some staff use the printed name in directions. Draft a public correction that distinguishes the two rooms, gives visitors an immediate way to check their destination, and explains how the museum will introduce the updated map without blaming staff.",
+    "expected_length_min": 200,
+    "expected_length_max": 274,
+    "target_grammar": "Specific reference; concessive and relative clauses; future forms for publication changes.",
+    "target_structure": "Name the old and current labels → give two location cues → explain the immediate workaround → state the change and timing.",
+    "target_vocabulary": [
+      "designation",
+      "printed key",
+      "wayfinding",
+      "distinguish",
+      "temporary",
+      "replacement map",
+      "briefing"
+    ],
+    "sort_order": 268,
+    "checklist": [
+      {
+        "point": "Correct the two room names with clear identifying details.",
+        "keywords": [
+          "map room",
+          "east study",
+          "printed map",
+          "door sign"
+        ]
+      },
+      {
+        "point": "Give a route or identifying detail visitors can act on immediately.",
+        "keywords": [
+          "look for",
+          "door beside",
+          "front desk",
+          "appointment message",
+          "check the"
+        ]
+      },
+      {
+        "point": "Explain how staff and visitors will be told about the replacement.",
+        "keywords": [
+          "replacement map",
+          "until then",
+          "desk staff",
+          "tour confirmations",
+          "desk briefing"
+        ]
+      },
+      {
+        "point": "Use accountable wording without blaming individual staff.",
+        "keywords": [
+          "we published",
+          "we used",
+          "our earlier",
+          "we gave",
+          "we will correct",
+          "our printed map",
+          "we are correcting"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    }
+  },
+  "children": []
+}

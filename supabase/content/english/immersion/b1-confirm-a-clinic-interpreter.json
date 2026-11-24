@@ -1,0 +1,114 @@
+{
+  "item": {
+    "slug": "b1-confirm-a-clinic-interpreter",
+    "title": "Confirm a clinic interpreter",
+    "level": "B1",
+    "mission_type": "service",
+    "context_text": "You help a neighbour understand appointment arrangements. The message offers two interpreter slots and a different check-in for video calls.",
+    "objective_text": "Find the slot that works and communicate the check-in details.",
+    "target_vocabulary": [
+      "interpreter",
+      "appointment",
+      "reception",
+      "video",
+      "confirm"
+    ],
+    "success_conditions": [
+      "Find the slot that works and communicate the check-in details."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "APPOINTMENT UPDATE\nThe appointment is Tuesday at 16:00. An interpreter can attend in person only before 15:00, but can join by video at 16:00. There is no extra charge. To use video, arrive 15 minutes early and ask reception for Tablet 2. Please confirm your choice by 12:00 on Monday. Your neighbour cannot finish work before 15:30.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Why is video the practical choice?",
+          "options": [
+            "The neighbour can stay only until 15:00",
+            "The clinic charges for in-person help",
+            "The in-person interpreter is unavailable when the neighbour can attend"
+          ],
+          "answer_index": 2,
+          "explanation": "Work finishes at 15:30, after the in-person option ends."
+        },
+        {
+          "prompt": "What must happen by Monday noon?",
+          "options": [
+            "Confirm the interpreter choice",
+            "Take the tablet home",
+            "Arrive at reception for the appointment"
+          ],
+          "answer_index": 0,
+          "explanation": "Monday noon is the confirmation deadline, not the appointment time."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Confirm with the clinic",
+      "prompt_text": "Clinic: Which interpreter arrangement works for you?",
+      "instructions": "Confirm the date, time and video option, then ask about the early arrival.",
+      "goal": "Send a clear appointment confirmation.",
+      "estimated_minutes": 5,
+      "min_words": 28,
+      "model_answer": "Hello, please book a video interpreter for Tuesday at 16:00. My neighbour can arrive at 15:45, fifteen minutes early as requested. Should we ask directly at the main reception desk for Tablet 2?",
+      "points": [
+        {
+          "label": "Confirm Tuesday and 16:00",
+          "any": [
+            "Tuesday",
+            "16:00",
+            "four"
+          ]
+        },
+        {
+          "label": "Ask for video interpreting",
+          "any": [
+            "video",
+            "video interpreter"
+          ]
+        },
+        {
+          "label": "Mention the early arrival",
+          "any": [
+            "15 minutes",
+            "fifteen minutes",
+            "15:45",
+            "quarter to four"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Explain check-in to your neighbour",
+      "prompt_text": "Neighbour: What do I do when I get there?",
+      "instructions": "Say when to arrive and what to ask for.",
+      "goal": "Give clear instructions orally.",
+      "estimated_minutes": 3,
+      "min_words": 19,
+      "model_answer": "Please arrive at a quarter to four. At reception, say you're waiting for the video interpreter and ask to borrow Tablet Two for the appointment.",
+      "points": [
+        {
+          "label": "Give the early check-in time",
+          "any": [
+            "15:45",
+            "quarter to four",
+            "fifteen minutes"
+          ]
+        },
+        {
+          "label": "Ask for Tablet 2",
+          "any": [
+            "Tablet 2",
+            "tablet two"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a2-a-photograph-on-the-fridge",
+    "title": "A Photograph on the Fridge",
+    "level": "A2",
+    "summary": "A fallen fridge magnet helps a boy understand a photograph from his mother’s childhood.",
+    "content_markdown": "Adam opens the fridge and a small red magnet falls on the floor. The photograph under the magnet falls too. In the picture, a girl in a yellow coat is standing on a low wall. There is a dark dog beside her. Adam has seen this picture many times, but he has never looked at it closely.\n\nWhen Adam's mother comes into the kitchen, he asks her who the girl is. “That was me,” she says. She tells him the dog was called Coal. On the day her father took the photo, Coal had found a way out of the garden. Adam's mother walked along the wall with a bag of dog food until he came back.\n\nAdam looks at the picture again. He sees the corner of a paper bag in the girl's left hand. He used to think the girl was just standing there for the photo. Now he thinks she was looking down at Coal. He finds a larger magnet and puts the picture back, a little lower this time, where he can see it easily.",
+    "category": "Fiction",
+    "theme": "childhood photograph",
+    "tone": "lavender",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "short story",
+      "word_count": 179
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What changes for Adam during the story?",
+        "options": [
+          "He learns how to use a camera.",
+          "He decides the picture is of someone else.",
+          "He decides to buy a dog.",
+          "He understands what was happening in an old photo."
+        ],
+        "answer_index": 3,
+        "explanation": "His mother’s story helps him understand why the girl is on the wall and what she is looking at."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Who took the old photograph?",
+        "options": [
+          "Adam’s grandfather",
+          "The owner of the garden",
+          "Adam’s mother",
+          "Adam"
+        ],
+        "answer_index": 0,
+        "explanation": "Adam's mother says her father took the photo, which makes him Adam's grandfather."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How did Adam’s mother get Coal to come back?",
+        "options": [
+          "She opened the kitchen door.",
+          "She asked her father to call him.",
+          "She carried dog food along the wall.",
+          "She took a toy to the garden."
+        ],
+        "answer_index": 2,
+        "explanation": "She walked along the wall with a bag of dog food until Coal returned."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "In the story, what does “looked at it closely” mean?",
+        "options": [
+          "Looked carefully at its small details",
+          "Looked at it from outside",
+          "Looked from very far away",
+          "Looked at it with a camera"
+        ],
+        "answer_index": 0,
+        "explanation": "Before that day, Adam had seen the photograph without paying attention to details such as the corner of the bag."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Adam’s grandfather kept a copy of the photograph.",
+        "answer": "not_given",
+        "explanation": "Adam’s mother identifies her father as the person who took the picture. She does not say whether he kept a copy."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Adam puts the photo back with a larger ___.",
+        "answers": [
+          [
+            "magnet"
+          ]
+        ],
+        "word_bank": [
+          "coat",
+          "magnet",
+          "bag"
+        ],
+        "explanation": "He finds a larger magnet to hold the photograph."
+      }
+    ]
+  },
+  "children": []
+}

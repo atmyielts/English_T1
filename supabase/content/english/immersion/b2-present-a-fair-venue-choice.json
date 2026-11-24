@@ -1,0 +1,121 @@
+{
+  "item": {
+    "slug": "b2-present-a-fair-venue-choice",
+    "title": "Present a fair venue choice",
+    "level": "B2",
+    "mission_type": "workplace",
+    "context_text": "You help a student society select a venue for an evening event. Both choices have a trade-off that matters to the audience.",
+    "objective_text": "Make a defensible recommendation involving access, capacity, and cost.",
+    "target_vocabulary": [
+      "capacity",
+      "step-free",
+      "overflow",
+      "quote",
+      "venue"
+    ],
+    "success_conditions": [
+      "Make a defensible recommendation involving access, capacity, and cost."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "VENUE QUOTES\nRiverside Room: seventy seats, step-free access, 320,000 som. Garden Loft: ninety seats, stairs only, 280,000 som. Sixty-five people have confirmed, and up to twelve more may come. One confirmed guest needs step-free access. The committee can hire eight overflow seats for Riverside at 3,000 som each. Its budget is 350,000 som.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "What would Riverside cost with the overflow seats?",
+          "options": [
+            "344,000 som",
+            "356,000 som",
+            "323,000 som"
+          ],
+          "answer_index": 0,
+          "explanation": "Eight seats cost 24,000 som, bringing Riverside's total to 344,000."
+        },
+        {
+          "prompt": "Which selection accommodates both the expected maximum and the access need?",
+          "options": [
+            "Garden Loft",
+            "Riverside with overflow seats",
+            "Riverside with the standard layout alone"
+          ],
+          "answer_index": 1,
+          "explanation": "Riverside has step-free access and reaches 78 seats, one above the potential group of 77."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Send the committee a recommendation",
+      "prompt_text": "Committee: Which venue should we book and why?",
+      "instructions": "Recommend the option that meets access, capacity, and budget. Name the amount.",
+      "goal": "Justify your choice with numbers.",
+      "estimated_minutes": 5,
+      "min_words": 36,
+      "model_answer": "I recommend Riverside with the eight overflow seats. It provides step-free access and has space for up to seventy-eight people, which covers the full expected attendance. The total is 344,000 som, leaving 6,000 som in the budget.",
+      "points": [
+        {
+          "label": "Recommend Riverside",
+          "any": [
+            "Riverside"
+          ]
+        },
+        {
+          "label": "Address step-free access",
+          "any": [
+            "step-free",
+            "step free"
+          ]
+        },
+        {
+          "label": "Give the revised cost",
+          "any": [
+            "344,000",
+            "344000",
+            "344 000"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Respond to a cheaper suggestion",
+      "prompt_text": "Treasurer: Can we save money by using the loft?",
+      "instructions": "Acknowledge the price advantage, then explain the deciding requirement.",
+      "goal": "Trade off cost and access diplomatically.",
+      "estimated_minutes": 3,
+      "min_words": 23,
+      "model_answer": "I agree the loft is cheaper, but stairs would exclude one confirmed guest. Riverside with the extra seats is within budget and gives everyone a way in.",
+      "points": [
+        {
+          "label": "Acknowledge the lower price",
+          "any": [
+            "cheaper",
+            "costs less",
+            "lower price",
+            "saves money"
+          ]
+        },
+        {
+          "label": "Identify the access problem",
+          "any": [
+            "stairs",
+            "step-free",
+            "step free"
+          ]
+        },
+        {
+          "label": "Keep the budget in view",
+          "any": [
+            "budget",
+            "afford",
+            "within"
+          ]
+        }
+      ]
+    }
+  ]
+}

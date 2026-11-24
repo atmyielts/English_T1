@@ -1,0 +1,122 @@
+{
+  "item": {
+    "slug": "c1-reconcile-a-part-time-project-plan",
+    "title": "Reconcile a part-time project plan",
+    "level": "C1",
+    "mission_type": "workplace",
+    "context_text": "A supplier asks your team to share a daily update during a trial. Two staff members work different hours, and a longer handover would undermine the time the trial is meant to save.",
+    "objective_text": "Offer a reliable update format with an escalation rule.",
+    "target_vocabulary": [
+      "overlap",
+      "handover",
+      "exception",
+      "daily update",
+      "ownership"
+    ],
+    "success_conditions": [
+      "Offer a reliable update format with an escalation rule."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "TRIAL BRIEF\nThe morning team finishes at 13:00 and the early afternoon team starts at 12:45. The supplier requests written updates after 16:00 because their coordinator is in another time zone. A daily group call would use the fifteen-minute period in which both teams can resolve local issues. Urgent blockers should reach both team leads within one hour. Routine totals are available by 16:30.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Why could a daily group call hinder the trial?",
+          "options": [
+            "It uses the one period when the two teams can resolve issues together",
+            "The afternoon team has already left at noon",
+            "The supplier has forbidden written updates"
+          ],
+          "answer_index": 0,
+          "explanation": "The fifteen-minute overlap has an operational purpose that a regular call would displace."
+        },
+        {
+          "prompt": "Which event needs a separate alert?",
+          "options": [
+            "The arrival of routine totals at 16:30",
+            "An urgent blocker",
+            "A scheduled monthly report"
+          ],
+          "answer_index": 1,
+          "explanation": "Routine information can wait for the daily update; urgent blockers must reach leads within an hour."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Offer a reliable alternative",
+      "prompt_text": "Supplier: Can we set up a daily meeting instead of written messages?",
+      "instructions": "Suggest a written-update time, keep the local overlap, and give an exception process.",
+      "goal": "Meet the underlying need while protecting staff time.",
+      "estimated_minutes": 5,
+      "min_words": 48,
+      "model_answer": "Could we send one written update at 16:30, when the routine totals are complete? That would preserve the team's fifteen-minute overlap for decisions we need to make together. An urgent blocker would still go to both team leads within an hour, with the owner and next action visible in the message.",
+      "points": [
+        {
+          "label": "Keep the fifteen-minute overlap for local work",
+          "any": [
+            "overlap",
+            "fifteen minutes",
+            "12:45"
+          ]
+        },
+        {
+          "label": "Offer an update around 16:30",
+          "any": [
+            "16:30",
+            "4:30",
+            "half past four"
+          ]
+        },
+        {
+          "label": "Escalate blockers within an hour",
+          "any": [
+            "within an hour",
+            "one hour",
+            "60 minutes"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Brief the afternoon lead",
+      "prompt_text": "Team lead: What has changed for us?",
+      "instructions": "Explain the handover and distinguish a routine update from an exception.",
+      "goal": "Give a succinct oral briefing.",
+      "estimated_minutes": 3,
+      "min_words": 24,
+      "model_answer": "We keep the short handover for local decisions. The routine figures go in a written summary at four thirty. If an urgent blocker comes up, alert both team leads within the hour.",
+      "points": [
+        {
+          "label": "Use the overlap for local decisions",
+          "any": [
+            "overlap",
+            "handover"
+          ]
+        },
+        {
+          "label": "Mention the written report",
+          "any": [
+            "written",
+            "16:30",
+            "update"
+          ]
+        },
+        {
+          "label": "Mention immediate escalation",
+          "any": [
+            "blocker",
+            "urgent",
+            "escalate"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "item": {
+    "title": "Only and even: choosing the focus",
+    "explanation_text": "Use only to rule out relevant alternatives. In “The panel funded only the pilot,” the focus is “the pilot.” The sentence excludes the other proposals under consideration. Use even to single out something especially unexpected. In “The panel funded even the pilot,” funding the pilot was particularly unlikely or surprising in that context.\n\nIn a written brief, placing only or even immediately before the focused phrase often makes the intended reading easier to recover. English also allows these words earlier in the clause. In “The editor only moved the interview to Friday,” context or spoken stress can make “to Friday” the focus, though a reader might take “moved the interview to Friday” as the one action the editor took.\n\nWhen revising, identify the exact phrase you mean to highlight. Then ask what the reader should infer. Are you excluding competing options, or are you drawing attention to an option that runs against expectations? In the examples, the corrections show how to match the intended focus to the context.",
+    "contrast_text": "“Only the deputy signed” excludes the other potential signers. “Even the deputy signed” presents the deputy as a particularly unlikely signer. The deputy is the focus in both sentences.",
+    "common_error_pattern": "Check which alternatives are excluded. “Only the review board can extend the deadline” restricts who has the authority. “The review board can do only one thing, extend the deadline” restricts the available action.",
+    "tags": [
+      "C1",
+      "c1-only-even-and-focus-in-briefs",
+      "focus adverbs",
+      "only",
+      "even",
+      "written briefings"
+    ],
+    "examples": [
+      {
+        "bad": "The annex was the sole document released. Only the press office released the annex.",
+        "good": "The annex was the sole document released. The press office released only the annex."
+      },
+      {
+        "bad": "The external auditor was the least likely person to back the proposal. The external auditor backed only the proposal.",
+        "good": "The external auditor was the least likely person to back the proposal. Even the external auditor backed the proposal."
+      },
+      {
+        "bad": "The grant is restricted to work carried out after approval. Only the grant covers work carried out after approval.",
+        "good": "The grant is restricted to work carried out after approval. The grant covers only work carried out after approval."
+      },
+      {
+        "bad": "The editors expected the photo essay to miss the deadline, but it made the launch alongside the other pieces. The launch schedule includes only the photo essay.",
+        "good": "The editors expected the photo essay to miss the deadline, but it made the launch alongside the other pieces. The launch schedule includes even the photo essay."
+      }
+    ],
+    "slug": "c1-only-even-and-focus-in-briefs",
+    "level": "C1",
+    "status": "published",
+    "focus_area": "focus-particle-scope",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Who can publish the briefing?",
+      "instructions": "Complete the sentence with only or even. Choose the word that excludes everyone except the duty editor.",
+      "prompt_text": "The publication policy reserves release authority for one role. ___ the duty editor can publish the morning briefing.",
+      "accepted_answers": [
+        "Only"
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "The least likely endorsement",
+      "instructions": "Complete the sentence with only or even. Choose the word that marks the budget adviser as the least likely endorser.",
+      "prompt_text": "Several advisers endorsed the plan. The budget adviser, who had argued against funding it all month, was the least likely to do so. ___ the budget adviser endorsed it.",
+      "accepted_answers": [
+        "Even"
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A limit on eligible costs",
+      "instructions": "Fill the blank with only followed by the exact focus “travel between field sites”.",
+      "prompt_text": "The award excludes travel from home to the first site and back from the last. Under the revised rules, the award reimburses ___.",
+      "accepted_answers": [
+        "only travel between field sites"
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An interview saved from the cut",
+      "instructions": "Fill the blank with even followed by the exact focus “the long interview”.",
+      "prompt_text": "The long interview had been first on the list of proposed cuts. The revised running order keeps the news roundup and the photo essay, and it includes ___.",
+      "accepted_answers": [
+        "even the long interview"
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A deadline for one kind of edit",
+      "instructions": "Fill the blank with only followed by the exact focus “corrections to factual errors”.",
+      "prompt_text": "Once the issue has been sent to the printer, stylistic edits and layout changes have to wait. At that stage, the production desk will accept ___.",
+      "accepted_answers": [
+        "only corrections to factual errors"
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Who sent the briefing, and to whom?",
+      "instructions": "Return the same sentence with only moved directly before “to the regional desks”. Preserve every other word and adjust capitalization as needed.",
+      "prompt_text": "Several teams sent the briefing. In this sentence, the restriction should concern the coordinating team's recipients. Correct this sentence: “Only the coordinating team sent the briefing to the regional desks.”",
+      "accepted_answers": [
+        "The coordinating team sent the briefing only to the regional desks."
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "The application that surprised the panel",
+      "instructions": "Return the same sentence with the focus adverb corrected. Keep its position directly before “the unfunded pilot” and change no other word.",
+      "prompt_text": "The panel shortlisted four proposals, including the unfunded pilot, which reviewers had expected to be eliminated. Correct this sentence: “The panel shortlisted only the unfunded pilot.”",
+      "accepted_answers": [
+        "The panel shortlisted even the unfunded pilot."
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Limit the action taken",
+      "instructions": "Combine the two sentences using only directly before “acknowledged the delay”. Begin with “At the briefing, the director” and end with “the delay”.",
+      "prompt_text": "At the briefing, the director acknowledged the delay. The director did nothing else about it at the briefing.",
+      "accepted_answers": [
+        "At the briefing, the director only acknowledged the delay."
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "The late addition to the schedule",
+      "instructions": "Write one sentence with even directly before “the overnight fact-check”. Begin with “The final schedule includes” and end with “the overnight fact-check”.",
+      "prompt_text": "The final schedule includes the overnight fact-check. Of all the items under discussion, that was the one the editors thought least likely to make it into the schedule.",
+      "accepted_answers": [
+        "The final schedule includes even the overnight fact-check."
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Grant decisions for the public briefing",
+      "instructions": "The panel could disclose its decisions at the public briefing. Its rankings and deliberations stayed confidential. Use every tile once. Begin with “At the public briefing,” and put the focus adverb directly before “the final funding decisions”.",
+      "prompt_text": "the panel / the final funding decisions. / only / At the public briefing, / could disclose",
+      "accepted_answers": [
+        "At the public briefing, the panel could disclose only the final funding decisions."
+      ],
+      "target_skill_key": "grammar.focus-particle-scope",
+      "status": "published"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "item": {
+    "slug": "c2-when-a-public-demonstration-goes-wrong",
+    "title": "Decide How to Discuss Mistakes in a Demonstration",
+    "level": "C2",
+    "prompt_type": "guided_response",
+    "task_type": "opinion",
+    "target_duration_seconds": 116,
+    "prompt_text": "A public craft workshop will ask beginners to demonstrate what they made. The organiser thinks naming each beginner's biggest mistake will help the audience learn. A participant worries that public comparisons will discourage people from returning. Respond to both views and propose a way to keep the useful teaching without pressuring beginners to disclose more than they want.",
+    "target_grammar": "Concessive and conditional clauses; qualified claims; reported choices.",
+    "fluency_objective": "Open by distinguishing the teaching purpose from public attribution. Carry that distinction into a concrete demonstration plan.",
+    "pronunciation_objective": "Keep your emphasis on two key terms such as choice and example. Pause before the safeguard so it sounds like part of the plan.",
+    "target_vocabulary": [
+      "disclosure",
+      "attribution",
+      "demonstration",
+      "voluntary",
+      "diagnose",
+      "safeguard"
+    ],
+    "sort_order": 270,
+    "cues": [
+      {
+        "text": "Acknowledge what concrete mistakes can teach.",
+        "keywords": [
+          "diagnose",
+          "audience can learn",
+          "mistake",
+          "useful detail",
+          "repair"
+        ]
+      },
+      {
+        "text": "Explain the concern in terms of exposure or comparison.",
+        "keywords": [
+          "publicly",
+          "put on the spot",
+          "compare",
+          "choose",
+          "attribution",
+          "compared in public",
+          "skip the next workshop"
+        ]
+      },
+      {
+        "text": "Give an implementable alternative example or format.",
+        "keywords": [
+          "instructor",
+          "anonymous",
+          "opt in",
+          "volunteer",
+          "own example"
+        ]
+      },
+      {
+        "text": "State how to check that the alternative still teaches the intended lesson.",
+        "keywords": [
+          "feedback",
+          "what would you do",
+          "check whether",
+          "audience",
+          "ask the group"
+        ]
+      }
+    ],
+    "model_opening": "The organiser is right that a demonstration can be more useful when the audience sees where a technique breaks down.",
+    "model_answer": "The organiser is right that a demonstration can be more useful when the audience sees where a technique breaks down. If a paper joint opens as soon as you put weight on it, people can learn to look at the angle of the fold. Watching a flawless version may leave them with the impression that patience alone solves the problem. A beginner who expects to be compared in public may decide to show less of their work or skip the next workshop.\n\nI would separate the example from the obligation to identify who made it. The instructor could bring two joints prepared in advance, one that opens and one that holds. An audience member could predict which will fail and explain where they would check. Beginners who want to describe a mistake from their own work could opt in after seeing that example. I would give them the chance to rehearse what they are comfortable saying and let them change their minds before the demonstration.\n\nThat approach preserves the concrete detail the organiser wants and gives participants some control over how they are represented. It also avoids making the most inexperienced person responsible for supplying the most revealing mistake. At the end, I would give the audience a third joint and ask them what they would change before adding weight. If people can explain a specific adjustment, the decision to use an instructor's example has served the same teaching purpose."
+  },
+  "children": []
+}

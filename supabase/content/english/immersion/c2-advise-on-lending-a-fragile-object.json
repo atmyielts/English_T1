@@ -1,0 +1,122 @@
+{
+  "item": {
+    "slug": "c2-advise-on-lending-a-fragile-object",
+    "title": "Advise on lending a fragile object",
+    "level": "C2",
+    "mission_type": "problem_solving",
+    "context_text": "A museum partner asks to borrow a fragile paper object. Your committee must distinguish an acceptable educational alternative from a risk it cannot undo.",
+    "objective_text": "Give a reasoned recommendation that protects the original and preserves the partnership.",
+    "target_vocabulary": [
+      "facsimile",
+      "loan condition",
+      "exposure",
+      "luminosity",
+      "conservation"
+    ],
+    "success_conditions": [
+      "Give a reasoned recommendation that protects the original and preserves the partnership."
+    ]
+  },
+  "children": [
+    {
+      "kind": "read",
+      "title": "Read the situation",
+      "instructions": "Read the information and answer both questions.",
+      "prompt_text": "CONSERVATION NOTE\nThe original paper can tolerate at most two weeks of display under low light before reaching its exposure allowance for the year. The partner's loan request covers six weeks. Its cases cannot guarantee the specified light limit. A colour facsimile is available now, and conservators can provide a short filmed inspection of the original. The partner wants students to compare pencil marks with later printed changes, a purpose a high-resolution scan can partly serve.",
+      "estimated_minutes": 4,
+      "questions": [
+        {
+          "prompt": "Why would a two-week loan still fail the condition?",
+          "options": [
+            "The cases cannot guarantee the required lighting level",
+            "All loans must last at least six weeks",
+            "The colour facsimile is unavailable for two weeks"
+          ],
+          "answer_index": 0,
+          "explanation": "Duration and lighting are separate requirements. The partner cannot meet the lighting requirement even with a shorter loan."
+        },
+        {
+          "prompt": "Which goal can the replacement most directly support?",
+          "options": [
+            "Letting visitors handle the fragile original",
+            "Showing only a list of owners",
+            "Letting students compare marks with later printed changes"
+          ],
+          "answer_index": 2,
+          "explanation": "The conservation note identifies a high-resolution scan as useful for the comparison."
+        }
+      ]
+    },
+    {
+      "kind": "reply",
+      "title": "Write a partnership recommendation",
+      "prompt_text": "Director: Send me a recommendation we can share with the lending partner.",
+      "instructions": "Explain the dual condition, propose an educational alternative, and acknowledge its limits.",
+      "goal": "Offer a viable alternative without obscuring the trade-off.",
+      "estimated_minutes": 5,
+      "min_words": 58,
+      "model_answer": "I recommend offering the facsimile and high-resolution scan, accompanied by the filmed inspection. Even a two-week loan would require the light limit to be guaranteed, which the cases cannot do. Students can compare the pencil marks with later printed changes using the scan. The substitute cannot convey the texture of the original, so the film should explain that difference explicitly.",
+      "points": [
+        {
+          "label": "Identify the lighting constraint",
+          "any": [
+            "light limit",
+            "lighting",
+            "low light"
+          ]
+        },
+        {
+          "label": "Offer a facsimile or scan",
+          "any": [
+            "facsimile",
+            "scan"
+          ]
+        },
+        {
+          "label": "Address the study goal and a limit",
+          "any": [
+            "pencil",
+            "marks",
+            "texture",
+            "physical"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "speak",
+      "title": "Answer a proposed compromise",
+      "prompt_text": "Partner: What if we simply display it for two weeks?",
+      "instructions": "Explain why shortening alone is insufficient and suggest an alternative that teaches the intended skill.",
+      "goal": "Keep the conversation constructive while preserving the lending condition.",
+      "estimated_minutes": 3,
+      "min_words": 26,
+      "model_answer": "Two weeks would meet the duration limit, but the lighting requirement would still apply. Could we provide a high-resolution scan so students can compare the pencil marks, together with a short conservator-led film?",
+      "points": [
+        {
+          "label": "Reject duration alone",
+          "any": [
+            "duration",
+            "two weeks",
+            "shorter"
+          ]
+        },
+        {
+          "label": "Explain the separate light limit",
+          "any": [
+            "light",
+            "lighting"
+          ]
+        },
+        {
+          "label": "Offer a way to compare marks",
+          "any": [
+            "facsimile",
+            "scan",
+            "video"
+          ]
+        }
+      ]
+    }
+  ]
+}

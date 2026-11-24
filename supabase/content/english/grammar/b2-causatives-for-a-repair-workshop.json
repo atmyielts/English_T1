@@ -1,0 +1,152 @@
+{
+  "item": {
+    "title": "Causatives in the repair workshop",
+    "explanation_text": "Use let when you give someone permission to act, and make when you require them to act. Put the person who does the work directly after let or make, then use the base form of the verb without to. In “The supervisor let the apprentice test the brakes,” the apprentice does the testing.\n\nUse have when you assign a task to someone and get when you persuade someone or manage to arrange for them to act. After have + person, use the base form without to. After get + person, use to + base form.\n\nWhen the focus is on a service you arrange, use have or get + the thing that receives the work + a past participle. For example, “We got the drill repaired” means someone else repaired it for us. A common mistake is to add to after active make, have or let, or to leave it out after get when the next word or phrase names the person doing the work.",
+    "contrast_text": "“We had the technician calibrate the gauge” names the technician as the person doing the work. “We had the gauge calibrated” focuses on the service and leaves the technician unnamed. With get, the same contrast is “We got the technician to calibrate the gauge” and “We got the gauge calibrated.”",
+    "common_error_pattern": "In active sentences, use the bare infinitive after make, have or let + person, and the to-infinitive after get + person. When have or get is followed by the thing receiving a service, use a past participle.",
+    "tags": [
+      "b2-causatives-for-a-repair-workshop",
+      "B2",
+      "causatives",
+      "bare-infinitive",
+      "to-infinitive",
+      "past-participle",
+      "repair-workshop"
+    ],
+    "examples": [
+      {
+        "bad": "The foreman made the crew to repeat the pressure test.",
+        "good": "The foreman made the crew repeat the pressure test."
+      },
+      {
+        "bad": "The mechanic let me to watch the wheel alignment.",
+        "good": "The mechanic let me watch the wheel alignment."
+      },
+      {
+        "bad": "We got the supplier send a replacement seal.",
+        "good": "We got the supplier to send a replacement seal."
+      },
+      {
+        "bad": "We had both blades sharpen at a specialist shop.",
+        "good": "We had both blades sharpened at a specialist shop."
+      }
+    ],
+    "slug": "b2-causatives-for-a-repair-workshop",
+    "level": "B2",
+    "status": "published",
+    "focus_area": "causative-verb-patterns",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Permission to use the bench",
+      "instructions": "Use the verb in brackets to complete the sentence. Enter only the missing word or words.",
+      "prompt_text": "The workshop manager let the apprentice ___ the spare bench while her usual station was being rewired. (use)",
+      "accepted_answers": [
+        "use"
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A required safety check",
+      "instructions": "Use the verb in brackets to complete the sentence. Enter only the missing word or words.",
+      "prompt_text": "After a guard came loose, the supervisor made the operators ___ every machine before the next shift. (inspect)",
+      "accepted_answers": [
+        "inspect"
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An assigned repair",
+      "instructions": "Use the verb in brackets to complete the sentence. Enter only the missing word or words.",
+      "prompt_text": "The service manager had the electrician ___ the damaged plug before returning the saw to the customer. (replace)",
+      "accepted_answers": [
+        "replace"
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An earlier delivery",
+      "instructions": "Use the verb in brackets to complete the sentence. Enter only the missing word or words.",
+      "prompt_text": "After two phone calls, the parts coordinator got the courier ___ the gasket before the workshop closed. (deliver)",
+      "accepted_answers": [
+        "to deliver"
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A specialist rewires the motor",
+      "instructions": "Use the verb in brackets to complete the service construction. Enter only the missing word or words.",
+      "prompt_text": "The venue manager got the stage lift motor ___ by a specialist before the theatre reopened. (rewire)",
+      "accepted_answers": [
+        "rewired"
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A task for the closing shift",
+      "instructions": "Rewrite the same sentence. Fix only the verb form after 'the technician' and keep all other wording and punctuation.",
+      "prompt_text": "The shift leader had the technician to drain the compressor before closing.",
+      "accepted_answers": [
+        "The shift leader had the technician drain the compressor before closing."
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A repair at a welding shop",
+      "instructions": "Rewrite the same sentence. Fix only the verb form after 'the cracked bracket' and keep all other wording and punctuation.",
+      "prompt_text": "We got the cracked bracket weld at a specialist shop.",
+      "accepted_answers": [
+        "We got the cracked bracket welded at a specialist shop."
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "An editor helps with the manual",
+      "instructions": "Begin with “The workshop owner”. Use every slash-delimited tile exactly once. Keep the words within each tile together and put the period at the end.",
+      "prompt_text": "the revised safety instructions / to proofread / The workshop owner / . / got / a freelance editor",
+      "accepted_answers": [
+        "The workshop owner got a freelance editor to proofread the revised safety instructions."
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "A repair the manager insists on",
+      "instructions": "Rewrite this as one sentence using active make to show that the manager required the repair. Begin with 'The venue manager made the maintenance crew' and keep 'fix the loose handrail before the doors opened' in that order.",
+      "prompt_text": "The venue manager insisted that the maintenance crew fix the loose handrail before the doors opened.",
+      "accepted_answers": [
+        "The venue manager made the maintenance crew fix the loose handrail before the doors opened."
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "A service for the next event",
+      "instructions": "Rewrite in one sentence. Begin with “The events team had the loading ramp”, add the past participle of resurface, and end with “before the exhibition”. Leave out the person who did the work.",
+      "prompt_text": "The events team arranged for a contractor to resurface the loading ramp before the exhibition.",
+      "accepted_answers": [
+        "The events team had the loading ramp resurfaced before the exhibition."
+      ],
+      "target_skill_key": "grammar.causative-verb-patterns",
+      "status": "published"
+    }
+  ]
+}

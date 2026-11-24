@@ -1,0 +1,151 @@
+{
+  "item": {
+    "title": "Adverbs of manner in the practice room",
+    "explanation_text": "A manner adverb tells us how someone does something. At an orchestra rehearsal, the players listen carefully and speak quietly. Many manner adverbs end in -ly: careful becomes carefully, quiet becomes quietly, and easy becomes easily. The adverb for good is well. Fast and hard keep the same form: you can play fast or work hard.\n\nUse an adjective after a linking verb such as be or sound when you describe the subject. In “The music sounds good,” good describes the music. In “The orchestra plays well,” well tells us how the orchestra plays. A common mistake is to use good to describe how someone plays.\n\nA common place for a manner adverb is after the action verb when there is no object, as in “They practised quietly.” When the verb has an object, the adverb often comes after it: “They packed their instruments carefully.” You can use the same pattern for everyday tasks: “I folded the shirts carefully.”",
+    "contrast_text": "“The hall is quiet” describes the hall. “The players speak quietly” describes how the players speak. In the same way, “The music sounds good” describes the music, and “The orchestra plays well” describes how the orchestra plays.",
+    "common_error_pattern": "Using an adjective to say how someone does something, as in “She plays the violin good.” Use the manner adverb well.",
+    "tags": [
+      "A2",
+      "grammar",
+      "adverbs of manner",
+      "linking verbs",
+      "adverb placement",
+      "a2-manner-adverbs-in-the-practice-room"
+    ],
+    "examples": [
+      {
+        "bad": "The rehearsal room is quietly.",
+        "good": "The rehearsal room is quiet."
+      },
+      {
+        "bad": "She plays the violin good.",
+        "good": "She plays the violin well."
+      },
+      {
+        "bad": "He carried to the car carefully the cello.",
+        "good": "He carried the cello carefully to the car."
+      },
+      {
+        "bad": "The drummer can play that part fastly.",
+        "good": "The drummer can play that part fast."
+      }
+    ],
+    "slug": "a2-manner-adverbs-in-the-practice-room",
+    "level": "A2",
+    "status": "published",
+    "focus_area": "adverbs-of-manner",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "The tuning note",
+      "instructions": "Write the manner adverb made from the word in brackets.",
+      "prompt_text": "Before they start, the string players listen ___ to the tuning note. (careful)",
+      "accepted_answers": [
+        "carefully"
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A quiet start",
+      "instructions": "Write the manner adverb made from the word in brackets.",
+      "prompt_text": "While the conductor is speaking, two players close the door ___. (quiet)",
+      "accepted_answers": [
+        "quietly"
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "An easy page to read",
+      "instructions": "Write the manner adverb made from the word in brackets.",
+      "prompt_text": "The notes are large, so I can read the music ___. (easy)",
+      "accepted_answers": [
+        "easily"
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "How the piano sounds",
+      "instructions": "Choose quiet or quietly. Write only the missing word.",
+      "prompt_text": "From the back of the hall, the piano sounds very ___.",
+      "accepted_answers": [
+        "quiet"
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A lot of effort",
+      "instructions": "Use the manner adverb that means “with a lot of effort” and has the same form as the adjective in brackets.",
+      "prompt_text": "The stage crew worked ___ to get everything ready before the concert. (hard)",
+      "accepted_answers": [
+        "hard"
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "A strong performance",
+      "instructions": "Rewrite the same sentence. Change only the word that should be a manner adverb.",
+      "prompt_text": "The brass players played their part very good.",
+      "accepted_answers": [
+        "The brass players played their part very well."
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "How the soup tastes",
+      "instructions": "Rewrite the same sentence. Replace wonderfully with its adjective form.",
+      "prompt_text": "The soup tastes wonderfully.",
+      "accepted_answers": [
+        "The soup tastes wonderful."
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "From a fast runner to running fast",
+      "instructions": "Rewrite the sentence to say how Lena runs. Start with “Lena runs” and use the manner adverb for “fast.”",
+      "prompt_text": "Lena is a fast runner.",
+      "accepted_answers": [
+        "Lena runs fast."
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "A question about the rehearsal",
+      "instructions": "Put the tiles in order to ask how well the orchestra played. Start with “How well.” Use every slash-separated tile once and put the question mark at the end.",
+      "prompt_text": "the orchestra / play / How / ? / well / did",
+      "accepted_answers": [
+        "How well did the orchestra play?"
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Packing a glass for the move",
+      "instructions": "Combine the two sentences by adding only the manner adverb formed from careful after “I wrapped the glass”.",
+      "prompt_text": "I wrapped the glass. I was careful.",
+      "accepted_answers": [
+        "I wrapped the glass carefully."
+      ],
+      "target_skill_key": "grammar.adverbs-of-manner",
+      "status": "published"
+    }
+  ]
+}

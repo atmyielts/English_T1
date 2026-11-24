@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "b1-a-fairer-clothes-swap",
+    "title": "A Fairer Clothes Swap",
+    "level": "B1",
+    "summary": "A community organiser explains why a swap changed from matching donations to sharing clothes in rounds.",
+    "content_markdown": "When Yasmin helped to run the first clothes swap at Ash Lane Hall, she thought a simple rule would keep things fair. For every clean item a visitor brought, they could take a different one home. Volunteers counted the donations at the door and wrote the number on a card. Near the end of the morning, however, a father arrived looking for a coat for his daughter. She had grown out of hers during the winter, but he had already given it to a cousin. He had nothing to bring to the swap.\n\nYasmin watched him walk around the room without taking anything. She also noticed that two visitors with full bags collected several coats before most people had reached the display. The rule stopped one person from taking home a great deal without donating, but it did not give every visitor the same chance to find what they needed.\n\nAt the next swap, everyone could choose one item in the first round, whether they had brought clothes or not. At noon, visitors could come back to the tables and take any of the clothes that were left. Volunteers still checked every donation for holes or broken zips. They did this at a separate table so that people could look for clothes while the checks were going on.\n\nThe second event did not run out of coats. It also ended with fewer full bags by the door. Some visitors who came with nothing stayed to help put the clothes into boxes for the next swap.",
+    "category": "Community",
+    "theme": "clothes swap access",
+    "tone": "lavender",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "local feature",
+      "word_count": 255
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What does the article mainly explain?",
+        "options": [
+          "How volunteers learned to sew broken zips",
+          "Why a swap changed the way visitors could choose clothes",
+          "Why a council stopped accepting used coats",
+          "How people donated more coats at a later event"
+        ],
+        "answer_index": 1,
+        "explanation": "It starts with the one-for-one rule, shows whom it left out, and describes the later first-round limit."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Why did the father have nothing to exchange?",
+        "options": [
+          "He had given the old coat to a cousin.",
+          "He had forgotten the card at home.",
+          "The volunteers had found a hole in his coat.",
+          "The coat was too wet to bring inside."
+        ],
+        "answer_index": 0,
+        "explanation": "The father had already given his daughter’s old coat to a cousin."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Who gained a chance to choose an item in the first round under the new rule?",
+        "options": [
+          "People who arrived without clothes to swap",
+          "People who brought the most items",
+          "Only people who arrived with more than one coat",
+          "Only visitors who helped at the check table"
+        ],
+        "answer_index": 0,
+        "explanation": "The first round allows one item for everyone, whether they made a donation or not."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “the clothes that were left” refer to?",
+        "options": [
+          "Clothes people had collected and later returned",
+          "Clothes still on the tables after the first round",
+          "Clothes that volunteers stored before opening",
+          "Clothes that had been put by the door to be checked"
+        ],
+        "answer_index": 1,
+        "explanation": "Visitors can return at noon and choose from items still available after the first round."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The volunteers stopped checking donations at the second swap.",
+        "answer": "false",
+        "explanation": "They still checked every donation for holes or broken zips."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The first round allowed ___ item per visitor. People could return to the tables at ___.",
+        "answers": [
+          [
+            "one"
+          ],
+          [
+            "noon"
+          ]
+        ],
+        "word_bank": [
+          "noon",
+          "two",
+          "one",
+          "closing"
+        ],
+        "explanation": "The new system allows one item in the first round and opens the remaining tables at noon."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Reasons to change the rule",
+          "A rule that seems fair at first",
+          "Plans to shut the hall for repairs",
+          "The new way to share",
+          "The result after the change"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 1
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 4
+          }
+        ],
+        "explanation": "Paragraph 1 introduces matching clothes to donations. Paragraph 2 explains the problems, paragraph 3 gives the new procedure, and paragraph 4 reports what happened afterwards."
+      }
+    ]
+  },
+  "children": []
+}

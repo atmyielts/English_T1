@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a1-a-seat-near-the-door",
+    "title": "A Seat Near the Door",
+    "level": "A1",
+    "summary": "Friends exchange messages about where to meet and sit at a school show.",
+    "content_markdown": "**Maya, 5:15.** Hello, Dilorom! I am at the school show. I have two seats in the first row, but it is very warm here. Do you want to sit near the door instead?\n\n**Dilorom, 5:20.** Yes, please. I am on the bus. I can be there at six. Can we sit together? My sister is coming later. She has her own ticket.\n\n**Maya, 5:23.** I found two seats near the door. I will wait outside by the big tree until you come. There are two doors into the hall. The front door is closed today. Use the side door by the tree. The show starts at half past six.",
+    "category": "Everyday",
+    "theme": "evening school show",
+    "tone": "lavender",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "messages",
+      "word_count": 109
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How is Dilorom going to the show?",
+        "options": [
+          "By train",
+          "By bus",
+          "By car",
+          "On foot"
+        ],
+        "answer_index": 1,
+        "explanation": "Dilorom writes, “I am on the bus.”"
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What are Maya and Dilorom doing in these messages?",
+        "options": [
+          "Finding their way home",
+          "Asking for a new start time",
+          "Making a plan to meet and sit together",
+          "Buying a ticket for Maya’s sister"
+        ],
+        "answer_index": 2,
+        "explanation": "They agree to meet by the tree and take seats near the door."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Where does Maya plan to wait?",
+        "options": [
+          "On the bus",
+          "Outside by the big tree",
+          "Inside in the first row",
+          "At the closed front door"
+        ],
+        "answer_index": 1,
+        "explanation": "Maya will wait outside by the big tree."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Which door should Dilorom use?",
+        "options": [
+          "The back door",
+          "The front door",
+          "The side door",
+          "A door near the stage"
+        ],
+        "answer_index": 2,
+        "explanation": "The front door is closed. Maya says to use the side door by the tree."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Dilorom’s sister already has a ticket.",
+        "answer": "true",
+        "explanation": "Dilorom says, “She has her own ticket.”"
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "The show starts at half past ___.",
+        "answers": [
+          [
+            "six"
+          ]
+        ],
+        "word_bank": [
+          "five",
+          "six",
+          "seven"
+        ],
+        "explanation": "Maya gives the start time in her last message."
+      }
+    ]
+  },
+  "children": []
+}

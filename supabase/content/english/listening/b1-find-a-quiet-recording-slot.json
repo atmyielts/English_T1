@@ -1,0 +1,83 @@
+{
+  "item": {
+    "slug": "b1-find-a-quiet-recording-slot",
+    "title": "Find a quiet recording slot",
+    "level": "B1",
+    "summary": "Two students negotiate a room and equipment booking for a podcast.",
+    "transcript_text": "Dana: The sign-up sheet says Studio B is free at eleven. Shall we take it?\nIlyas: The room is free, but sound checks in the hall go on until noon. We need clean audio for the interview.\nDana: There's a one o'clock slot. Our guest can't come to campus then, though.\nIlyas: She said she can join online after twelve thirty. We can use Studio B at one and send her the meeting link.\nDana: Fine. Do we still need to collect the recorder?\nIlyas: Yes. The online call will capture her side. Our recorder gives us a clear backup of our questions. Let's collect it at twelve forty-five.",
+    "category": "Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 124,
+    "duration_seconds": 53,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "study",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Dana",
+        "Ilyas"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why is eleven a poor choice?",
+        "options": [
+          "The guest is already on campus",
+          "The studio has a class",
+          "There may be background noise",
+          "The recording desk is shut"
+        ],
+        "answer_index": 2,
+        "explanation": "Sound checks in the hall continue until noon and could get into the recording."
+      },
+      {
+        "prompt": "How will the guest take part?",
+        "options": [
+          "She will connect online",
+          "She will leave a written reply",
+          "She will arrive at eleven",
+          "She will use the hall"
+        ],
+        "answer_index": 0,
+        "explanation": "The pair choose a one o'clock studio slot and send her a meeting link."
+      },
+      {
+        "prompt": "Why do they still need the recorder?",
+        "options": [
+          "To set up the meeting link",
+          "To record a backup of their own voices",
+          "To test the sound in the hall",
+          "To play old episodes to the guest"
+        ],
+        "answer_index": 1,
+        "explanation": "Ilyas wants a clear local backup of the questions the students ask."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "sound checks in the hall go on until noon",
+      "focus_phrase": "sound checks",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "send her the meeting link",
+      "focus_phrase": "meeting link",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "a clear backup of our questions",
+      "focus_phrase": "a clear backup",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

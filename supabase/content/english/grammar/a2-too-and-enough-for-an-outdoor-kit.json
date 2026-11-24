@@ -1,0 +1,150 @@
+{
+  "item": {
+    "title": "Too and enough for an outdoor kit",
+    "explanation_text": "Put too before an adjective when something goes past a limit and causes a problem. If your lunch box will not fit in your bag, you can say, “The box is too wide for this bag.” Very wide describes the size. The box may still fit.\n\nPut enough after an adjective when something meets a need. If a blanket keeps you warm on a cool morning, it is warm enough. If you still feel cold under it, it is not warm enough. You can add a purpose, as in “The bag is big enough to hold two towels.”\n\nPut enough before a noun when you have the amount or number you need. Say “enough water” for an amount and “enough cups” for a number. Put enough directly before these nouns. Before a short visit to a lake, check whether your clothes are warm enough, whether anything is too big for your bag, and whether you have enough water for everyone.",
+    "contrast_text": "“The flask is very heavy” describes its weight. “The flask is too heavy to carry” says its weight makes carrying it a problem.",
+    "common_error_pattern": "A common mistake is to use the same word order everywhere. Say “warm enough” with an adjective and “enough water” with a noun.",
+    "tags": [
+      "a2",
+      "a2-too-and-enough-for-an-outdoor-kit",
+      "too",
+      "enough",
+      "outdoor-kit"
+    ],
+    "examples": [
+      {
+        "bad": "These boots are small too for me to wear.",
+        "good": "These boots are too small for me to wear."
+      },
+      {
+        "bad": "This coat is enough warm for the morning walk.",
+        "good": "This coat is warm enough for the morning walk."
+      },
+      {
+        "bad": "We have enough of napkins for five people.",
+        "good": "We have enough napkins for five people."
+      },
+      {
+        "bad": "The water in the flask is too much hot to drink.",
+        "good": "The water in the flask is too hot to drink."
+      }
+    ],
+    "slug": "a2-too-and-enough-for-an-outdoor-kit",
+    "level": "A2",
+    "status": "published",
+    "focus_area": "too-and-enough",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Tea at the picnic table",
+      "instructions": "Complete the sentence with too and the adjective in parentheses. Write only the missing words.",
+      "prompt_text": "I need to wait before I take a sip. The tea is ___ to drink. (hot)",
+      "accepted_answers": [
+        "too hot"
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A hat that fits",
+      "instructions": "Complete the sentence with the adjective in parentheses and enough. Write only the missing words.",
+      "prompt_text": "The sun hat fits over both my ears without feeling tight. It is ___ for me. (big)",
+      "accepted_answers": [
+        "big enough"
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Snacks for the group",
+      "instructions": "Complete the sentence with enough and the noun in parentheses. Write only the missing words.",
+      "prompt_text": "There are four of us, and I packed four apples. We have ___ for everyone to get one. (apples)",
+      "accepted_answers": [
+        "enough apples"
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Cold hands on a walk",
+      "instructions": "Complete the sentence with the adjective in parentheses and enough. Write only the missing words.",
+      "prompt_text": "My fingers still feel cold in these gloves. The gloves are not ___ for this walk. (warm)",
+      "accepted_answers": [
+        "warm enough"
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "A bag you can still carry",
+      "instructions": "Choose very or too. Here, use too only if the bag is above the 8 kg limit. Write just the missing word.",
+      "prompt_text": "You can carry up to 8 kg. Your packed bag weighs 7 kg. It feels ___ heavy, but you can still carry it.",
+      "accepted_answers": [
+        "very"
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Space on the mat",
+      "instructions": "Fix only the position of enough. Write the same full sentence, including the period.",
+      "prompt_text": "This mat is enough wide for two people to sit on.",
+      "accepted_answers": [
+        "This mat is wide enough for two people to sit on."
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Filling the bottles",
+      "instructions": "Rewrite the full sentence. Remove the extra word after enough.",
+      "prompt_text": "There is not enough of water to fill both bottles.",
+      "accepted_answers": [
+        "There is not enough water to fill both bottles."
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "From very to too",
+      "instructions": "Combine the two sentences. Begin with “The rock is”. Add too and cold, then put “to sit on” directly after cold.",
+      "prompt_text": "The rock is very cold. It feels so cold that we cannot sit on it.",
+      "accepted_answers": [
+        "The rock is too cold to sit on."
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "One cup for each person",
+      "instructions": "Express the same idea with enough + noun. Start with “We have” and add just two words, using enough and cups. Finish with “for everyone”.",
+      "prompt_text": "Six people are coming to the picnic, and we have six cups, so each person can have one.",
+      "accepted_answers": [
+        "We have enough cups for everyone."
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Choosing what to wear",
+      "instructions": "It will get cooler by the lake after lunch. Put the tiles in order to tell someone their jacket will keep them warm. Start with “Your jacket” and use every tile once.",
+      "prompt_text": "for / Your jacket / enough / warm / is / the afternoon.",
+      "accepted_answers": [
+        "Your jacket is warm enough for the afternoon."
+      ],
+      "target_skill_key": "grammar.too-and-enough",
+      "status": "published"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "item": {
+    "slug": "c1-archive-photos-permission-cards",
+    "title": "Record Permission for an Everyday Photo Archive",
+    "level": "C1",
+    "genre": "internal proposal",
+    "audience": "the coordinator of a neighbourhood photo archive",
+    "prompt_text": "A volunteer archive wants to keep photographs of ordinary shopfronts and community events. Some photographers allow viewing in the archive but do not allow images to be posted online. Volunteers have inherited older photo envelopes with little information about permission. Propose a simple tracking system, including what to do when permission is unclear and how to resolve conflicting records.",
+    "expected_length_min": 206,
+    "expected_length_max": 275,
+    "target_grammar": "Conditionals for workflow; nominalisation; reporting permissions with may and authorised to.",
+    "target_structure": "Purpose → minimum record and default → conflicting evidence example → practical handover.",
+    "target_vocabulary": [
+      "permission",
+      "access level",
+      "record",
+      "restriction",
+      "verify",
+      "review date",
+      "public display"
+    ],
+    "sort_order": 269,
+    "checklist": [
+      {
+        "point": "Distinguish accession, in-room viewing and online publication permissions.",
+        "keywords": [
+          "viewing",
+          "online",
+          "publication",
+          "access level",
+          "catalogue"
+        ]
+      },
+      {
+        "point": "Give a simple default when permission is unknown.",
+        "keywords": [
+          "hold",
+          "keep offline",
+          "permission unclear",
+          "restrict",
+          "unconfirmed"
+        ]
+      },
+      {
+        "point": "Show how a concrete conflict would be resolved and documented.",
+        "keywords": [
+          "conflict",
+          "envelope",
+          "follow up",
+          "check the original",
+          "contact the photographer"
+        ]
+      },
+      {
+        "point": "Give a realistic way to keep the system usable.",
+        "keywords": [
+          "review date",
+          "initials",
+          "weekly",
+          "sample",
+          "template",
+          "spreadsheet"
+        ]
+      }
+    ],
+    "metadata": {
+      "authored_model_level": "C1"
+    }
+  },
+  "children": []
+}

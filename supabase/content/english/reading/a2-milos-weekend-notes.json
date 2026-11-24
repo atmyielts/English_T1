@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a2-milos-weekend-notes",
+    "title": "Milo’s Weekend Notes",
+    "level": "A2",
+    "summary": "A message gives a weekend visitor practical instructions for looking after a pet.",
+    "content_markdown": "Thanks for staying with Milo while I visit my sister. When you arrive on Saturday morning, you can put your bag in the small room upstairs. Milo will probably be in the kitchen. The blue bowl beside the back door is his water bowl. The smaller white bowl is for his food.\n\nI have put his food in two paper bags, one for Saturday and one for Sunday. Give him the food after your breakfast. He usually eats slowly, so leave the bowl by the kitchen wall. If the back garden is wet in the afternoon, you can play with him in the hall instead. His yellow ball is in the basket under the stairs.\n\nOur neighbour Kamila will bring the newspaper to the door on Saturday. She already knows that I am away. If she asks for the book she lent me, it is on the table beside the green lamp. I should be home on Sunday at about four. Leave the front door key on the small shelf inside the door when you go.",
+    "category": "Everyday",
+    "theme": "pet-sitting notes",
+    "tone": "peach",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "personal instructions",
+      "word_count": 176
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "Why has Milo’s owner written these notes?",
+        "options": [
+          "To show where a new pet shop is",
+          "To invite a friend to lunch",
+          "To ask Kamila to bring a newspaper",
+          "To tell a visitor what to do while looking after Milo"
+        ],
+        "answer_index": 3,
+        "explanation": "The owner gives instructions about Milo’s bowls, food and play while away."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What is the white bowl for?",
+        "options": [
+          "Water",
+          "Milo’s food",
+          "The front door key",
+          "The newspaper"
+        ],
+        "answer_index": 1,
+        "explanation": "The first paragraph says the smaller white bowl is for food."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Where can the visitor play with Milo if the garden is wet?",
+        "options": [
+          "At Kamila’s house",
+          "Upstairs",
+          "Beside the green lamp",
+          "In the hall"
+        ],
+        "answer_index": 3,
+        "explanation": "The owner gives the hall as the indoor choice when the garden is wet."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What might Kamila ask the visitor to give her?",
+        "options": [
+          "A paper bag",
+          "The newspaper",
+          "A book",
+          "A ball"
+        ],
+        "answer_index": 2,
+        "explanation": "The owner says Kamila may ask for the book she lent."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The note tells the visitor where Milo usually sleeps.",
+        "answer": "not_given",
+        "explanation": "It says he will probably be in the kitchen when the visitor arrives. It does not say where he sleeps at night."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Before leaving, put the front door key on the small ___.",
+        "answers": [
+          [
+            "shelf"
+          ]
+        ],
+        "word_bank": [
+          "table",
+          "shelf",
+          "basket"
+        ],
+        "explanation": "The last line asks the visitor to leave the key on the small shelf inside the door."
+      }
+    ]
+  },
+  "children": []
+}

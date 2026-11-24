@@ -1,0 +1,80 @@
+{
+  "item": {
+    "slug": "b2-review-a-rooftop-garden-trial",
+    "title": "Review a rooftop garden trial",
+    "level": "B2",
+    "summary": "A coordinator explains what a small gardening pilot actually measured.",
+    "transcript_text": "Our roof garden has been running since April. The maintenance team reported that the stairwell below felt cooler, but no sensors were installed there. We did record the temperature on the roof. On six clear afternoons, the shaded pots stayed cooler than bare tiles. That's encouraging, though it tells us more about the surface than about the rooms underneath. The second phase will compare two similar stairwells with sensors before we decide whether to cover the whole roof. In the meantime, we'll extend the trial only where the existing maintenance team can reach the pots safely.",
+    "category": "Environment",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 135,
+    "duration_seconds": 43,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "environment",
+      "monologue"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "monologue",
+      "speakers": []
+    },
+    "questions": [
+      {
+        "prompt": "What did the team actually measure?",
+        "options": [
+          "People's comfort on the stairs",
+          "Energy use in the rooms",
+          "Surface temperatures on the roof",
+          "Growth across the whole roof"
+        ],
+        "answer_index": 2,
+        "explanation": "The team measured temperatures on the roof, with shaded pots compared against tiles."
+      },
+      {
+        "prompt": "Why will they compare two stairwells?",
+        "options": [
+          "To test a claim the first observations could not settle",
+          "To see who can reach the pots safely",
+          "To measure how well the maintenance team works",
+          "To find out whether clear weather is common"
+        ],
+        "answer_index": 0,
+        "explanation": "The report distinguishes roof surface temperature from any effect inside the building."
+      },
+      {
+        "prompt": "What controls the immediate extension?",
+        "options": [
+          "Whether six more afternoons are sunny",
+          "Whether stairwells have already been fitted with sensors",
+          "Whether the whole roof can be converted at once",
+          "Whether the team can safely reach the pots"
+        ],
+        "answer_index": 3,
+        "explanation": "The interim extension is limited to areas the maintenance team can reach safely."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "no sensors were installed there",
+      "focus_phrase": "no sensors",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "more about the surface than about the rooms underneath",
+      "focus_phrase": "the rooms underneath",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "compare two similar stairwells with sensors",
+      "focus_phrase": "similar stairwells",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

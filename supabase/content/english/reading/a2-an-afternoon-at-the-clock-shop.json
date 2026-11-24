@@ -1,0 +1,103 @@
+{
+  "item": {
+    "slug": "a2-an-afternoon-at-the-clock-shop",
+    "title": "An Afternoon at the Clock Shop",
+    "level": "A2",
+    "summary": "A shop assistant talks about learning to listen to old clocks.",
+    "content_markdown": "**Reporter:** When did you start working here?\n\n**Elina:** Last summer. At first I cleaned the glass on the clocks and put labels next to them. My uncle repairs the clocks. He said I could help with repairs later, after I had learned how to listen to the different sounds.\n\n**Reporter:** What did you listen for?\n\n**Elina:** He put two clocks on the same shelf. One made a regular sound: tick, tick, tick. The other went quiet for a moment between some of its ticks. I listened again with my eyes closed. Then I could tell which clock was the second one without seeing it.\n\n**Reporter:** Do you work on clocks by yourself now?\n\n**Elina:** Only on small jobs. Today I put a new glass cover on a clock. When I cannot find the cause of a problem, I write down what I heard or saw. My uncle reads my notes before he opens the clock. He says the notes help us remember what it was doing when it came in.",
+    "category": "Work",
+    "theme": "clock shop training",
+    "tone": "lime",
+    "read_time_minutes": 2,
+    "is_hot": false,
+    "metadata": {
+      "genre": "interview",
+      "word_count": 170
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What is the interview mainly about?",
+        "options": [
+          "How the reporter bought a clock",
+          "Why Elina wants to leave the shop",
+          "How Elina learned to notice problems in a new job",
+          "Why old clocks cost more than new clocks"
+        ],
+        "answer_index": 2,
+        "explanation": "Elina describes her first work, her listening lesson and how she takes repair notes now."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "What was one of Elina’s first jobs?",
+        "options": [
+          "Opening the shop on her own",
+          "Fixing the hands on the clocks",
+          "Putting labels next to clocks",
+          "Checking her uncle’s notes"
+        ],
+        "answer_index": 2,
+        "explanation": "She says that she first cleaned the glass and put labels next to the clocks."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "How was the second clock different?",
+        "options": [
+          "It was always louder.",
+          "Its ticking sometimes stopped for a moment.",
+          "Its hands did not move at all.",
+          "Its cover was missing."
+        ],
+        "answer_index": 1,
+        "explanation": "Elina says it went quiet for a moment between some ticks."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why might her uncle read the notes before opening a clock?",
+        "options": [
+          "To find out when Elina started work",
+          "To check that the clock is already fixed",
+          "To decide which labels to remove",
+          "To learn what Elina noticed before he begins"
+        ],
+        "answer_index": 3,
+        "explanation": "The notes describe what the clock was doing when it came to the shop."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "Elina can now do every repair without her uncle.",
+        "answer": "false",
+        "explanation": "She says she only does small jobs by herself."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Elina could tell which clock was different without ___ it.",
+        "answers": [
+          [
+            "seeing"
+          ]
+        ],
+        "word_bank": [
+          "fixing",
+          "seeing",
+          "cleaning"
+        ],
+        "explanation": "She closes her eyes and identifies the clock by its sound."
+      }
+    ]
+  },
+  "children": []
+}

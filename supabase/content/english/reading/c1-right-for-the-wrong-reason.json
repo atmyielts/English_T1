@@ -1,0 +1,139 @@
+{
+  "item": {
+    "slug": "c1-right-for-the-wrong-reason",
+    "title": "Right for the Wrong Reason",
+    "level": "C1",
+    "summary": "A reservoir team examines whether a good total can hide opposing errors in a forecast.",
+    "content_markdown": "In the weekly bulletin for the Bracken Reservoir, the expected inflow for Saturday was remarkably close to the measured result. The team had predicted 48 units of water; after the river gauges were checked, staff recorded 49. A manager copied both figures into a presentation as an example of forecasting accuracy. One of the analysts asked him to put the example at the end, after the maps showing where the water had actually come from.\n\nThe forecast separated the drainage area into two slopes. It had predicted that most of Saturday’s water would come from the east, where heavy rain was expected to fall on ground that was already wet. The gauges showed the opposite. The east slope produced only 17 units, well below its forecast of 34. The west slope produced 32 units instead of the predicted 14. The total missed by one, but that small difference was largely a result of the two component errors pointing in opposite directions.\n\nA reservoir manager could regard that as a harmless detail if the only question were whether the full reservoir would rise above a given mark. The team’s winter instructions, however, also required staff to decide where to watch for blocked feeder channels. A forecast that assigned a large share of the flow to the wrong slope would send a watch team to the wrong location, even if the water level later looked very close to the prediction.\n\nThe analysts did not suggest abandoning the total. It was useful for decisions made about the reservoir as a whole. They proposed recording the overall error alongside the separate errors before judging an individual forecast. They also wanted to compare several ordinary weeks and several wet weeks. One bad component on a single day could reflect problems with the gauge, a poor estimate of rainfall, or another feature of that day. Consistent errors on one slope would provide a better reason to investigate the model.\n\nThe manager kept his Saturday slide. Beneath the total he placed a smaller table with the east and west numbers. His team then added a note saying what decision each set of numbers could support. That change was more than a way of reporting a mistake honestly. It stopped a useful result for one task being allowed to carry authority over a second task that depended on different information. The forecast was close enough to inform decisions based on total inflow, but a different measure was needed to judge how well it had located the cause of that rise.",
+    "category": "Science",
+    "theme": "errors that cancel in forecasts",
+    "tone": "sky",
+    "read_time_minutes": 3,
+    "is_hot": false,
+    "metadata": {
+      "genre": "analytical report",
+      "word_count": 422
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "skill": "reading.main_idea",
+        "prompt": "What distinction is central to the article?",
+        "options": [
+          "A good total forecast and a good account of where the inflow will come from are different achievements.",
+          "A reservoir’s winter instructions are useful only when forecasts are inaccurate.",
+          "An individual prediction gives a better measure of model quality than several weeks of results.",
+          "A presentation should display component results only when the total is wrong."
+        ],
+        "answer_index": 0,
+        "explanation": "A close overall prediction hid east and west errors large enough to matter for a location-specific decision."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "skill": "reading.detail",
+        "prompt": "Which slope contributed more than expected on Saturday?",
+        "options": [
+          "The east slope",
+          "The west slope",
+          "Neither slope contributed more than expected.",
+          "Both slopes contributed more than expected."
+        ],
+        "answer_index": 1,
+        "explanation": "The west produced 32 units against a forecast of 14. The east was 17 units below its forecast."
+      },
+      {
+        "id": "q3",
+        "type": "mcq",
+        "skill": "reading.inference",
+        "prompt": "Why could using the total alone have an operational cost?",
+        "options": [
+          "It would force the watched channels to close for the winter.",
+          "It could give staff a false sense that the forecast identified the right feeder channel to watch.",
+          "It would prevent the team from calculating any future rainfall forecasts.",
+          "It would make the water level appear dramatically higher than it was."
+        ],
+        "answer_index": 1,
+        "explanation": "The teams had to choose where to check for blocked channels. Errors on opposite slopes nearly cancelled at reservoir level but still misidentified where the flow would be."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "skill": "reading.vocabulary",
+        "prompt": "What does “carry authority over” mean in the last paragraph?",
+        "options": [
+          "Be treated as sufficiently reliable evidence for",
+          "Make a higher prediction for one area",
+          "Set a legal rule for",
+          "Move a decision into the hands of the reservoir manager"
+        ],
+        "answer_index": 0,
+        "explanation": "A figure that is informative for one question can be wrongly treated as dependable for a separate question."
+      },
+      {
+        "id": "q5",
+        "type": "tfng",
+        "skill": "reading.detail",
+        "prompt": "The analysts identified faulty gauges as the cause of Saturday’s component errors.",
+        "answer": "not_given",
+        "explanation": "They list gauge problems among several possible causes of a one-day error. They do not identify which cause actually applied."
+      },
+      {
+        "id": "q6",
+        "type": "gap",
+        "skill": "reading.detail",
+        "prompt": "Complete the sentences with words from the passage.",
+        "text": "Forecast inflow from the east was 34 units. The gauges showed ___ units there and ___ units on the west.",
+        "answers": [
+          [
+            "17"
+          ],
+          [
+            "32"
+          ]
+        ],
+        "word_bank": [
+          "32",
+          "14",
+          "17",
+          "49"
+        ],
+        "explanation": "Paragraph 2 gives measured results of 17 east and 32 west. They total 49."
+      },
+      {
+        "id": "q7",
+        "type": "headings",
+        "skill": "reading.main_idea",
+        "prompt": "Choose the best heading for each numbered paragraph.",
+        "options": [
+          "Two errors in opposite directions",
+          "Reporting the results by their intended use",
+          "A total that exceeded the reservoir’s capacity",
+          "A wider basis for reviewing the model",
+          "Why location mattered to a separate task"
+        ],
+        "items": [
+          {
+            "paragraph": 2,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 3
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 1
+          }
+        ],
+        "explanation": "The article moves from an arithmetic explanation, to a task requiring location, to a model-review plan and a revised way of reporting."
+      }
+    ]
+  },
+  "children": []
+}

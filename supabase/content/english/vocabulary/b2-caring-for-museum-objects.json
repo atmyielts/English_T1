@@ -1,0 +1,213 @@
+{
+  "item": {
+    "id": "b2-caring-for-museum-objects",
+    "title": "Caring for Museum Objects",
+    "description": "Practise the words museum teams use to handle, label and display objects. Learn to describe an object's condition and explain how to protect it.",
+    "slug": "b2-caring-for-museum-objects",
+    "level": "B2",
+    "status": "published",
+    "topic": "museum conservation",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "restoration",
+      "part_of_speech": "noun",
+      "definition": "Work done to repair a damaged object and bring it closer to its earlier appearance.",
+      "example": "During the restoration of the painted screen, the team reattached broken fragments to recover the outline of the original design.",
+      "translation_ru": "реставрация",
+      "translation_uz": "restavratsiya",
+      "collocations": [
+        "careful restoration",
+        "restoration work",
+        "undergo restoration"
+      ],
+      "word_family": [
+        {
+          "word": "restore",
+          "part_of_speech": "verb"
+        }
+      ]
+    },
+    {
+      "word": "fragile",
+      "part_of_speech": "adjective",
+      "definition": "Likely to break or be damaged easily.",
+      "example": "The handle of the glass jug was too fragile to bear its weight.",
+      "translation_ru": "хрупкий",
+      "translation_uz": "moʻrt",
+      "collocations": [
+        "fragile glass",
+        "fragile objects",
+        "extremely fragile"
+      ]
+    },
+    {
+      "word": "replica",
+      "part_of_speech": "noun",
+      "definition": "A copy made to look as much like the original object as possible.",
+      "example": "Visitors could turn the handle of a working replica of the clock.",
+      "translation_ru": "точная копия",
+      "translation_uz": "aynan oʻxshatib yasalgan nusxa",
+      "collocations": [
+        "full-size replica",
+        "working replica",
+        "make a replica"
+      ]
+    },
+    {
+      "word": "condition report",
+      "part_of_speech": "noun",
+      "definition": "A written record of the physical state of an object at a particular time, including any damage.",
+      "example": "The condition report noted a small crack near the base of the bowl.",
+      "translation_ru": "отчёт о состоянии предмета",
+      "translation_uz": "buyumning holati haqidagi hisobot",
+      "collocations": [
+        "prepare a condition report",
+        "update a condition report",
+        "check the condition report"
+      ]
+    },
+    {
+      "word": "mount",
+      "part_of_speech": "noun",
+      "definition": "A support that holds an object in place while it is on display.",
+      "example": "A custom mount held the shell at an angle so visitors could see its underside.",
+      "translation_ru": "опора или крепление для экспоната",
+      "translation_uz": "eksponatni tutib turuvchi moslama",
+      "collocations": [
+        "custom mount",
+        "make a mount",
+        "fit a mount"
+      ]
+    },
+    {
+      "word": "display case",
+      "part_of_speech": "noun",
+      "definition": "A container with clear sides that protects objects while allowing people to see them.",
+      "example": "The team locked the display case after arranging the coins.",
+      "translation_ru": "витрина",
+      "translation_uz": "vitrina",
+      "collocations": [
+        "glass display case",
+        "locked display case",
+        "open a display case"
+      ]
+    },
+    {
+      "word": "object label",
+      "part_of_speech": "noun",
+      "definition": "A small sign next to an object that identifies it or tells visitors about it.",
+      "example": "The object label beside the jacket explained who had worn it and on what occasion.",
+      "translation_ru": "табличка с названием или описанием экспоната",
+      "translation_uz": "eksponat nomi yoki u haqdagi maʼlumot yozilgan lavhacha",
+      "collocations": [
+        "write an object label",
+        "read the object label",
+        "update an object label"
+      ]
+    },
+    {
+      "word": "handle with care",
+      "part_of_speech": "verb phrase",
+      "definition": "To touch, hold or move something gently so that it is not damaged.",
+      "example": "The packing note says to handle with care because the mirror has a loose corner.",
+      "translation_ru": "обращаться с предметом осторожно",
+      "translation_uz": "buyumni ehtiyotlab ushlamoq yoki joyidan siljitmoq",
+      "collocations": [
+        "handle with care when unpacking",
+        "handle with care at all times"
+      ],
+      "word_family": [
+        {
+          "word": "handling",
+          "part_of_speech": "noun"
+        }
+      ]
+    },
+    {
+      "word": "padding",
+      "part_of_speech": "noun",
+      "definition": "Soft material placed around or beneath something to protect it from knocks or pressure.",
+      "example": "We put extra padding under the sculpture before closing the crate.",
+      "translation_ru": "мягкий защитный материал",
+      "translation_uz": "yumshoq himoya materiali",
+      "collocations": [
+        "foam padding",
+        "extra padding",
+        "add padding"
+      ]
+    },
+    {
+      "word": "humidity",
+      "part_of_speech": "noun",
+      "definition": "The amount of moisture in the air.",
+      "example": "The technician checked the humidity inside the case before putting the wooden mask on display.",
+      "translation_ru": "влажность воздуха",
+      "translation_uz": "havo namligi",
+      "collocations": [
+        "high humidity",
+        "monitor humidity",
+        "control humidity"
+      ],
+      "word_family": [
+        {
+          "word": "humid",
+          "part_of_speech": "adjective"
+        }
+      ]
+    },
+    {
+      "word": "tarnish",
+      "part_of_speech": "verb",
+      "definition": "For metal to become dull or change colour as it reacts with substances in the surrounding air.",
+      "example": "The silver clasp had begun to tarnish around the edges.",
+      "translation_ru": "тускнеть или менять цвет в результате реакции металла с веществами в воздухе",
+      "translation_uz": "havodagi moddalar taʼsirida metall sirti xiralashmoq yoki uning rangi oʻzgarmoq",
+      "collocations": [
+        "tarnish over time",
+        "begin to tarnish",
+        "tarnish unevenly"
+      ]
+    },
+    {
+      "word": "accession number",
+      "part_of_speech": "noun",
+      "definition": "A unique code a museum assigns to an item it formally adds to its permanent collection.",
+      "example": "The registrar used the accession number to link a photograph of the bowl to its entry in the museum database.",
+      "translation_ru": "инвентарный номер музейного предмета",
+      "translation_uz": "muzey fondiga qabul qilingan buyumning inventar raqami",
+      "collocations": [
+        "assign an accession number",
+        "look up an accession number",
+        "record the accession number"
+      ]
+    },
+    {
+      "word": "residue",
+      "part_of_speech": "noun",
+      "definition": "A small amount of a substance that remains on a surface after something has been removed or has dried.",
+      "example": "The old tape left a sticky residue on the back of the frame.",
+      "translation_ru": "остатки вещества на поверхности",
+      "translation_uz": "sirtda qolgan oz miqdordagi modda",
+      "collocations": [
+        "sticky residue",
+        "adhesive residue",
+        "remove residue"
+      ]
+    },
+    {
+      "word": "glare",
+      "part_of_speech": "noun",
+      "definition": "Bright light that makes it difficult to see, especially when it reflects off a surface.",
+      "example": "We moved the spotlight to reduce the glare on the glass in front of the drawing.",
+      "translation_ru": "слепящий свет, в том числе отражённый",
+      "translation_uz": "koʻzni qamashtiradigan yorugʻlik",
+      "collocations": [
+        "reduce glare",
+        "glare from the lights",
+        "glare on the glass"
+      ]
+    }
+  ]
+}

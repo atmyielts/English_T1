@@ -1,0 +1,154 @@
+{
+  "item": {
+    "title": "Embedded questions at the maker space help desk",
+    "explanation_text": "At the maker space help desk, you can ask a direct question such as “Where are the clamps?” You can also put the question inside a longer one: “Could you tell me where the clamps are?” Keep the question word, then use statement order in the part that comes after it: subject before verb. If the direct question uses do, does, or did to form the question, drop that helping verb and put the main verb in the right form.\n\nFor a yes-or-no question, start the embedded part with if or whether and use statement order: “Do you know if the workshop is open?” When the question word is itself the subject, keep it before the verb: “Who checks the bookings?” becomes “Do you know who checks the bookings?”\n\nLook at the whole sentence to choose the end punctuation. “Could you tell me where the clamps are?” is a question. “I’d like to know where the clamps are.” is a statement.",
+    "contrast_text": "Compare the direct question “When does the tool room close?” with “Do you know when the tool room closes?” In the embedded part, the tool room comes before closes, and the main verb takes the -s.",
+    "common_error_pattern": "A common error is keeping direct-question order or keeping do, does, or did as a question helper inside the embedded part. In “Could you tell me where is the glue?”, change “where is the glue” to “where the glue is”.",
+    "tags": [
+      "b1-embedded-questions-at-the-help-desk",
+      "embedded questions",
+      "indirect questions",
+      "statement word order",
+      "if and whether",
+      "subject questions",
+      "question punctuation"
+    ],
+    "examples": [
+      {
+        "bad": "Could you tell me where are the spare batteries?",
+        "good": "Could you tell me where the spare batteries are?"
+      },
+      {
+        "bad": "Do you know does the tool room have a first aid kit?",
+        "good": "Do you know whether the tool room has a first aid kit?"
+      },
+      {
+        "bad": "Can you tell me how often does the attendant check the safety forms?",
+        "good": "Can you tell me how often the attendant checks the safety forms?"
+      },
+      {
+        "bad": "I would like to know when will the next tour start.",
+        "good": "I would like to know when the next tour will start."
+      }
+    ],
+    "slug": "b1-embedded-questions-at-the-help-desk",
+    "level": "B1",
+    "status": "published",
+    "focus_area": "embedded-questions",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Find the safety glasses",
+      "instructions": "Put the cue words in statement order. Enter only the words for the blank.",
+      "prompt_text": "Could you tell me where ___? (are / the safety glasses)",
+      "accepted_answers": [
+        "the safety glasses are"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check today's opening time",
+      "instructions": "Use the cue words in statement order. Use open in the present simple without a helping verb. Enter only the words for the blank.",
+      "prompt_text": "Do you know what time ___ today? (the front desk / open)",
+      "accepted_answers": [
+        "the front desk opens"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Check for a free workbench",
+      "instructions": "Complete the embedded yes-or-no question. Begin with if or whether and use the cue words without contractions. Enter only the words for the blank.",
+      "prompt_text": "Could you tell me ___ this afternoon? (a workbench / is / free)",
+      "accepted_answers": [
+        "if a workbench is free",
+        "whether a workbench is free"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Find the person who issues keys",
+      "instructions": "Complete the embedded question with who as the subject. Use the cue verb in the present simple. Enter only the words for the blank.",
+      "prompt_text": "Could you tell me ___ out the locker keys? (who / hand)",
+      "accepted_answers": [
+        "who hands"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Ask about a moved booking",
+      "instructions": "Use the cue words to complete the embedded question in the past simple. Enter only the words for the blank.",
+      "prompt_text": "I'd like to know why ___ my booking to Friday. (the team / move)",
+      "accepted_answers": [
+        "the team moved"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Ask where to put a project",
+      "instructions": "Rewrite the same sentence. Fix only the word order in the embedded question.",
+      "prompt_text": "Could you tell me where should I leave my project overnight?",
+      "accepted_answers": [
+        "Could you tell me where I should leave my project overnight?"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "End a statement",
+      "instructions": "Rewrite the whole sentence with statement order after whether. Keep the opening “I’m trying to find out whether”.",
+      "prompt_text": "I'm trying to find out whether does my membership include storage.",
+      "accepted_answers": [
+        "I'm trying to find out whether my membership includes storage."
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Ask which printer works with your material",
+      "instructions": "Embed the direct question in a polite question starting with “Could you tell me”. Keep “which printer” as the subject and keep the original meaning. Write the full question.",
+      "prompt_text": "Which printer can use this material?",
+      "accepted_answers": [
+        "Could you tell me which printer can use this material?"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "word_order",
+      "title": "Ask where the gloves are kept",
+      "instructions": "Put the tiles in order to make a question. Use every slash-delimited tile exactly once and keep the punctuation attached to its tile.",
+      "prompt_text": "the spare gloves / Do you know / are kept? / where",
+      "accepted_answers": [
+        "Do you know where the spare gloves are kept?"
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    },
+    {
+      "drill_type": "transformation",
+      "title": "Write a note to the help desk",
+      "instructions": "Turn the direct question into an embedded yes-or-no question in a statement. Start with “I need to know”, use if or whether, and keep the words “I can collect my kit after closing”. Write the full sentence.",
+      "prompt_text": "You may arrive after the front desk closes. Ask about your kit in a note to the help desk. “Can I collect my kit after closing?”",
+      "accepted_answers": [
+        "I need to know if I can collect my kit after closing.",
+        "I need to know whether I can collect my kit after closing."
+      ],
+      "target_skill_key": "grammar.embedded-questions",
+      "status": "published"
+    }
+  ]
+}

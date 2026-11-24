@@ -1,0 +1,195 @@
+{
+  "item": {
+    "id": "a2-home-repairs-and-tools",
+    "level": "A2",
+    "title": "Home repairs and tools",
+    "description": "Learn words for simple jobs at home, such as hanging a picture, tightening a screw and replacing a worn handle. Practise using these words in common phrases.",
+    "slug": "a2-home-repairs-and-tools",
+    "status": "published",
+    "topic": "simple repairs",
+    "sort_order": 320
+  },
+  "children": [
+    {
+      "word": "hang",
+      "part_of_speech": "verb",
+      "definition": "To put something up so that it is held from the top.",
+      "example": "We need to hang a small mirror by the front door.",
+      "translation_ru": "вешать",
+      "translation_uz": "osmoq",
+      "collocations": [
+        "hang a picture",
+        "hang a mirror",
+        "hang something on the wall"
+      ]
+    },
+    {
+      "word": "hook",
+      "part_of_speech": "noun",
+      "definition": "A curved or bent piece that holds things such as keys or coats.",
+      "example": "I put my keys on the hook by the door.",
+      "translation_ru": "крючок",
+      "translation_uz": "ilgak",
+      "collocations": [
+        "wall hook",
+        "coat hook",
+        "put up a hook"
+      ]
+    },
+    {
+      "word": "frame",
+      "part_of_speech": "noun",
+      "definition": "A separate border, often made of wood, metal or plastic, that holds a picture or photo.",
+      "example": "I put the school photo in a wooden frame.",
+      "translation_ru": "рамка",
+      "translation_uz": "ramka",
+      "collocations": [
+        "picture frame",
+        "wooden frame",
+        "put a photo in a frame"
+      ]
+    },
+    {
+      "word": "bracket",
+      "part_of_speech": "noun",
+      "definition": "A piece fixed under a shelf to hold it up.",
+      "example": "The metal bracket under the shelf is loose.",
+      "translation_ru": "кронштейн для полки",
+      "translation_uz": "tokchani ushlab turadigan tayanch",
+      "collocations": [
+        "a shelf bracket",
+        "a metal bracket"
+      ]
+    },
+    {
+      "word": "nail",
+      "part_of_speech": "noun",
+      "definition": "A thin piece of metal with a sharp point that you hit with a tool to hold something in place.",
+      "example": "There was already a nail in the wall, so I hung my small picture there.",
+      "translation_ru": "гвоздь",
+      "translation_uz": "mix",
+      "collocations": [
+        "small nail",
+        "drive in a nail",
+        "pull out a nail"
+      ]
+    },
+    {
+      "word": "hammer",
+      "part_of_speech": "noun",
+      "definition": "A tool with a heavy head that you use to hit things such as nails.",
+      "example": "I used a hammer to tap a nail into the wall.",
+      "translation_ru": "молоток",
+      "translation_uz": "bolgʻa",
+      "collocations": [
+        "small hammer",
+        "use a hammer",
+        "tap something with a hammer"
+      ]
+    },
+    {
+      "word": "screw",
+      "part_of_speech": "noun",
+      "definition": "A small, usually metal piece with a raised line that winds around it. You turn it to fasten things together.",
+      "example": "One of the screws fell out of the kitchen drawer handle.",
+      "translation_ru": "винт",
+      "translation_uz": "vint",
+      "collocations": [
+        "loose screw",
+        "tighten a screw",
+        "remove a screw"
+      ]
+    },
+    {
+      "word": "screwdriver",
+      "part_of_speech": "noun",
+      "definition": "A tool with a handle and a long metal part that you use to turn screws.",
+      "example": "I used a small screwdriver to tighten a screw in my glasses.",
+      "translation_ru": "отвёртка",
+      "translation_uz": "otvyortka",
+      "collocations": [
+        "small screwdriver",
+        "flat-head screwdriver",
+        "use a screwdriver"
+      ]
+    },
+    {
+      "word": "tighten",
+      "part_of_speech": "verb",
+      "definition": "To turn a screw, nut or similar part so it holds more firmly.",
+      "example": "I tightened the screw on the cupboard door handle.",
+      "translation_ru": "затягивать",
+      "translation_uz": "burab mahkamlamoq",
+      "collocations": [
+        "tighten a screw",
+        "tighten a bolt",
+        "tighten a nut"
+      ]
+    },
+    {
+      "word": "loose",
+      "part_of_speech": "adjective",
+      "definition": "Able to move because it is not fixed firmly or does not fit tightly.",
+      "example": "The bathroom door handle feels loose when I turn it.",
+      "translation_ru": "разболтанный",
+      "translation_uz": "boʻshab qolgan",
+      "collocations": [
+        "loose handle",
+        "loose screw",
+        "come loose"
+      ]
+    },
+    {
+      "word": "replace",
+      "part_of_speech": "verb",
+      "definition": "To take away an old or broken thing and put another one in its place.",
+      "example": "We replaced the old rubber feet on the stool.",
+      "translation_ru": "заменять",
+      "translation_uz": "almashtirmoq",
+      "collocations": [
+        "replace a handle",
+        "replace a worn part",
+        "replace something with a new one"
+      ]
+    },
+    {
+      "word": "worn",
+      "part_of_speech": "adjective",
+      "definition": "In poor condition after being used a lot.",
+      "example": "We bought a new doormat because the old one was worn.",
+      "translation_ru": "изношенный",
+      "translation_uz": "koʻp ishlatilganidan eskirgan",
+      "collocations": [
+        "worn handle",
+        "worn rubber",
+        "worn edges"
+      ]
+    },
+    {
+      "word": "handle",
+      "part_of_speech": "noun",
+      "definition": "The part of something that you hold to open, move or use it.",
+      "example": "I bought a new handle for the top drawer.",
+      "translation_ru": "ручка",
+      "translation_uz": "tutqich",
+      "collocations": [
+        "drawer handle",
+        "door handle",
+        "replace a handle"
+      ]
+    },
+    {
+      "word": "fix",
+      "part_of_speech": "verb",
+      "definition": "To make something work properly again when it is broken or does not work as it should.",
+      "example": "My sister fixed the drawer, and now it closes easily.",
+      "translation_ru": "чинить",
+      "translation_uz": "tuzatmoq",
+      "collocations": [
+        "fix a drawer",
+        "fix a broken clock",
+        "fix a cupboard door"
+      ]
+    }
+  ]
+}
