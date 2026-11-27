@@ -32,6 +32,7 @@ import {
   type ProjectDayResult,
   type ProjectDef,
   projectByKey,
+  projectDayMinutes,
   type ProjectRun,
   PROJECTS,
   projectState,
@@ -97,6 +98,8 @@ const publicDay = (project: ProjectDef, dayNumber: number, done: boolean) => {
     task: day.task,
     goal: day.goal,
     min_words: day.min_words,
+    estimated_minutes: projectDayMinutes(day),
+    preparation: day.preparation ?? [],
     points: day.points.map((point) => point.label),
     model_answer: done ? day.model_answer : null,
   };
@@ -262,13 +265,13 @@ const submitDay = async (ctx: ProjectContext, project: ProjectDef, dayNumber: nu
       skillKey: "immersion",
       subskillKeys: ["immersion.transfer", "immersion.communication"],
       cefrLevel: project.level,
-      estimatedMinutes: 8,
+      estimatedMinutes: projectDayMinutes(day),
       learningObjective: project.can_do,
       tags: ["project"],
     });
     const score = calculateAttemptScore({
       correctnessRatio: check.score,
-      estimatedMinutes: 8,
+      estimatedMinutes: projectDayMinutes(day),
       timeSpentSeconds: toNumber(ctx.body.time_spent_seconds),
       hintUsageCount: 0,
       retryCount: 0,

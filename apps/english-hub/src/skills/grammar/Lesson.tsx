@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { TapScope, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
@@ -12,6 +12,8 @@ export const GrammarLesson = () => {
   const t = useT();
   const errorText = useErrorMessage();
   const { slug = '' } = useParams();
+  const { state } = useLocation();
+  const masterySlug = typeof state?.masterySlug === 'string' ? state.masterySlug : null;
   const lesson = useResource((signal) => getUnit(slug, signal), [slug]);
   const elapsed = useElapsedSeconds();
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -61,6 +63,11 @@ export const GrammarLesson = () => {
       error={lesson.error}
       onRetry={lesson.reload}
     >
+      {masterySlug ? (
+        <div className="en-actions">
+          <Link className="en-button-quiet" to={`/mastery/${encodeURIComponent(masterySlug)}`}>{t('mastery.return')}</Link>
+        </div>
+      ) : null}
       {result ? (
         <ResultPanel
           skill="grammar"

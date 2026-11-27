@@ -13,6 +13,7 @@ import {
 } from "./english-exam-format.ts";
 import {
   decideExamStart,
+  examListeningReady,
   isOvertime,
   objectiveSection,
   parseObjectiveAnswers,
@@ -22,6 +23,7 @@ import {
   parseWritingMark,
   partItemIds,
   pickPaper,
+  publicListening,
   publicSection,
   scoreObjective,
   speakingCap,
@@ -120,6 +122,27 @@ Deno.test("public sections never carry answer keys", () => {
     const text = JSON.stringify(publicSection(p, section));
     assertEquals(/"answers?"\s*:/.test(text), false, section);
   }
+});
+
+Deno.test("National Exam Listening opens only when all prompts have recorded audio and keeps scripts for review", () => {
+  assertEquals(examListeningReady(paper()), false);
+  const raw = paper() as ExamPaper;
+  for (const part of raw.listening.parts) {
+    if (part.type === "dialogues") {
+      for (const item of part.items) item.audio_url = `https://media.example/${part.id}-${item.id}.mp3`;
+    } else part.audio_url = `https://media.example/${part.id}.mp3`;
+  }
+  const checked = validatePaper(raw);
+  assert(checked.ok);
+  assertEquals(examListeningReady(checked.paper), true);
+  const attempt = JSON.stringify(publicListening(checked.paper));
+  assert(attempt.includes(".mp3"));
+  assert(!attempt.includes('"script"'));
+  assert(JSON.stringify(publicListening(checked.paper, true)).includes('"script"'));
+  const lastPart = raw.listening.parts.at(-1)!;
+  if (lastPart.type === "dialogues") lastPart.items[0]!.audio_url = "http://media.example/stale.mp3";
+  else delete lastPart.audio_url;
+  assertEquals(examListeningReady(raw), false);
 });
 
 const allCorrect = (p: ExamPaper, section: "reading" | "listening"): Record<string, string> => {

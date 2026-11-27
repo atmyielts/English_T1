@@ -80,15 +80,15 @@ Deno.test("tg english: review cards hide answer keys, skip passed cards, items b
     ],
     exclude: [id(5)],
   });
-  assertEquals(cards.map((card) => card.id), [id(1), id(2), id(3), id(6)]);
+  assertEquals(cards.map((card) => card.id), [id(1), id(2), id(6)]);
   const json = JSON.stringify(cards);
   assert(!json.includes("goes"));
   assert(!json.includes("answer_index"));
   assert(!json.includes("Because"));
   assert(!json.includes("accepted"));
   assertEquals(cards[0], { kind: "item", id: id(1), step: 2, type: "grammar", prompt: "She ___ (go) home.", instructions: "Fill the gap", source_title: "Present simple", source_slug: "present" });
-  assertEquals((cards[2] as Record<string, unknown> | undefined)?.speak, "I like tea.");
-  assertEquals(cards[3], { kind: "word", id: id(6), word: "assess", definition: "to judge", example: null });
+  assert(!json.includes("I like tea"));
+  assertEquals(cards[2], { kind: "word", id: id(6), word: "assess", definition: "to judge", example: null });
   assertEquals(buildReviewCards({ items: [], words: Array.from({ length: 30 }, (_, n) => ({ id: id(100 + n), word: `w${n}` })), limit: 4 }).length, 4);
 });
 

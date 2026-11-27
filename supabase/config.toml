@@ -313,6 +313,9 @@ verify_jwt = false
 [functions.english-intensive]
 verify_jwt = false
 
+[functions.english-mastery]
+verify_jwt = false
+
 [functions.content-registry]
 verify_jwt = false
 

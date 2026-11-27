@@ -10,7 +10,7 @@ export const CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 /** 12 characters = 60 random bits: not guessable, short enough to type. */
 export const CODE_LENGTH = 12;
 
-/** The four skills the placement test and monthly check actually measure. */
+/** Skill columns supported by current and historical placement certificates. */
 export const TESTED_SKILLS = ["reading", "listening", "writing", "grammar"] as const;
 export type TestedSkill = (typeof TESTED_SKILLS)[number];
 
@@ -149,7 +149,7 @@ export const latestMeasurement = (history: LevelEntry[]): MeasurementLookup => {
       measured_by: latest.source === "check" ? "check" : "placement",
       measured_at: latest.at,
       overall: latest.overall,
-      per_skill: testedLevels(latest.per_skill),
+      per_skill: testedLevels(latest.measured_per_skill ?? latest.per_skill),
     },
   };
 };

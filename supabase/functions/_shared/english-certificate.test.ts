@@ -104,6 +104,20 @@ Deno.test("certificates come from the latest tested placement or check, never fr
   assertEquals(latestMeasurement([]), { status: "none" });
 });
 
+Deno.test("a retained Listening level is historical and stays outside a new measured result", () => {
+  const at = "2026-11-27T10:00:00.000Z";
+  const history = readLevelHistory({ level_history: [{
+    at, source: "check", method: "test", overall: "B2",
+    per_skill: { reading: "B2", listening: "A2" },
+    measured_per_skill: { reading: "B2" },
+  }] });
+  assertEquals(history[0]?.per_skill.listening, "A2");
+  assertEquals(latestMeasurement(history), {
+    status: "ok",
+    measurement: { measured_at: at, measured_by: "check", overall: "B2", per_skill: { reading: "B2" } },
+  });
+});
+
 Deno.test("the public payload has only what is printed on the certificate", () => {
   const row = {
     id: "8a3b5d8e-0000-4000-8000-000000000001",

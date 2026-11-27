@@ -1,10 +1,12 @@
 import { edge } from './api';
 
+export type ReviewRecording = { audio_url: string; starts_at_seconds: number; ends_at_seconds: number };
+
 /** A missed question or dictation sentence, due for review. No answer key. */
 export type ReviewItem =
   | { id: string; kind: string; step: number; type: 'grammar'; prompt: string; instructions: string; source_title: string; source_slug: string }
   | { id: string; kind: string; step: number; type: 'choice'; prompt: string; options: string[]; source_title: string; source_slug: string }
-  | { id: string; kind: string; step: number; type: 'dictation'; speak: string; source_title: string; source_slug: string };
+  | { id: string; kind: string; step: number; type: 'dictation'; recording?: ReviewRecording; source_title: string; source_slug: string };
 
 export type ReviewAnswer = {
   correct: boolean;
@@ -16,7 +18,7 @@ export type ReviewAnswer = {
 };
 
 export const getReviewItems = (signal?: AbortSignal) =>
-  edge<{ due: number; items: ReviewItem[] }>('hub', '/review/items', { query: { language_code: 'en', limit: 10 }, signal });
+  edge<{ due: number; items: ReviewItem[]; pending_audio?: boolean }>('hub', '/review/items', { query: { language_code: 'en', limit: 10 }, signal });
 
-export const answerReviewItem = (id: string, answer: string | number) =>
-  edge<ReviewAnswer>('hub', '/review/answer', { query: { language_code: 'en' }, body: { id, answer } });
+export const answerReviewItem = (id: string, answer: string | number, recording?: ReviewRecording) =>
+  edge<ReviewAnswer>('hub', '/review/answer', { query: { language_code: 'en' }, body: { id, answer, ...recording } });

@@ -30,26 +30,30 @@ Deno.test("each round keeps one clean question per tested skill", () => {
   assertEquals(questions.map((q) => q.skill), ["reading", "grammar"]);
   assertEquals(questions[1]!.choices.length, 4);
   const history = cleanCheckHistory([
-    ...Array.from({ length: 10 }, () => ({ question: { skill: "listening", prompt: "Q" }, answer: "A" })),
+    { question: { skill: "listening", prompt: "A browser-read script" }, answer: "legacy reply" },
+    ...Array.from({ length: 10 }, () => ({ question: { skill: "reading", prompt: "Q" }, answer: "A" })),
     { question: { skill: "nope", prompt: "Q" }, answer: "x" },
   ]);
-  assertEquals(history.length, 8);
+  assertEquals(history.length, 6);
+  assertEquals(history.map((entry) => entry.question.skill), Array(6).fill("reading"));
+  assertEquals(cleanCheckHistory([{ question: { skill: "listening", prompt: "Q" }, answer: "A" }], 3), []);
 });
 
 Deno.test("the check starts from the learner's own levels", () => {
   const meta = { placement: { per_skill: { reading: { level: "B2" }, grammar: "A2" } } };
   const levels = currentTestedLevels(meta, "B1");
-  assertEquals(levels.per_skill, { reading: "B2", listening: "B1", writing: "B1", grammar: "A2" });
+  assertEquals(levels.per_skill, { reading: "B2", writing: "B1", grammar: "A2" });
   assertEquals(checkStartLevel(levels), "B1");
   assertEquals(checkStartLevel(currentTestedLevels(meta, null)), "B2");
   assertEquals(checkStartLevel({ overall: null, per_skill: {} }), "B1");
 });
 
 Deno.test("the result keeps only valid levels", () => {
-  const result = parseCheckResult({ overall_level: "b2", per_skill: { reading: { level: "C1", evidence: "ok" }, writing: "Z9" }, next_steps: ["a", "b", "c", "d"] }, "B1");
+  const result = parseCheckResult({ overall_level: "b2", per_skill: { reading: { level: "C1", evidence: "ok" }, listening: "C1", writing: "Z9" }, next_steps: ["a", "b", "c", "d"] }, "B1");
   assertEquals(result.overall_level, "B2");
   assertEquals(result.per_skill.reading, { level: "C1", evidence: "ok" });
   assertEquals(result.per_skill.writing.level, "B2");
+  assertEquals("listening" in result.per_skill, false);
   assertEquals(result.next_steps.length, 3);
   assertEquals(parseCheckResult(null, "A2").overall_level, "A2");
 });

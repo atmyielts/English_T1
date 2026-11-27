@@ -1,50 +1,57 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-hub-intensive-60-minute-study",
+  "releaseId": "english-cross-skill-competency-evidence",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "english-hub"
-  ],
+  "frontends": ["english-hub"],
   "migrations": [
-    "20261124172000_english_intensive_schema.sql",
-    "20261124172100_english_intensive_units.sql"
+    "20261127140000_english_competency_evidence.sql",
+    "20261127140100_english_grammar_competency_bank.sql",
+    "20261127140200_english_production_evidence.sql",
+    "20261127140300_english_article_reference_writing_bank.sql",
+    "20261127140400_english_time_reference_speaking_bank.sql"
   ],
-  "edgeFunctions": [
-    "english-intensive",
-    "hub",
-    "listening-content"
-  ],
+  "edgeFunctions": ["english-mastery", "hub", "immersion-missions", "listening-content", "telegram-app"],
+  "sharedEdgeConsumers": ["hub", "immersion-missions", "listening-content", "telegram-app"],
   "workers": [],
-  "requiredSecrets": [
-    "ENGLISH_APP_URL"
-  ],
+  "requiredSecrets": ["ENGLISH_APP_URL", "TELEGRAM_INTERNAL_SECRET"],
   "rolloutOrder": [
     "pages",
-    "migration:20261124172000_english_intensive_schema.sql",
-    "migration:20261124172100_english_intensive_units.sql",
+    "migration:20261127140000_english_competency_evidence.sql",
+    "migration:20261127140100_english_grammar_competency_bank.sql",
+    "migration:20261127140200_english_production_evidence.sql",
+    "migration:20261127140300_english_article_reference_writing_bank.sql",
+    "migration:20261127140400_english_time_reference_speaking_bank.sql",
     "secret:ENGLISH_APP_URL",
-    "function:english-intensive",
+    "secret:TELEGRAM_INTERNAL_SECRET",
+    "function:english-mastery",
     "function:hub",
+    "function:immersion-missions",
     "function:listening-content",
-    "verify:english-intensive"
+    "function:telegram-app",
+    "verify:english-mastery"
   ],
   "manualFollowUps": [
-    "After the English Hub Pages build is live, run supabase db push --linked with only these two migrations pending. The Practice link stays hidden until the intensive service reports ready.",
-    "Run supabase functions deploy english-intensive, supabase functions deploy hub, and supabase functions deploy listening-content on the approved Schood project.",
-    "Keep the existing optional supabase secrets set ENGLISH_APP_URL= configuration or its production default. No secret rotation is needed."
+    "After Pages has shipped and the linked project and pending migration list are confirmed, run supabase db push --linked.",
+    "Keep the existing optional Hub configuration. Use supabase secrets set ENGLISH_APP_URL= only if the deployment already requires a non-default app URL.",
+    "Run supabase functions deploy english-mastery, then supabase functions deploy hub on the Schood project. Today and Up Next use the same server-side assessment projections.",
+    "Run supabase functions deploy immersion-missions on the Schood project after the database changes. Existing project runs continue to use their original definitions.",
+    "Run supabase functions deploy listening-content on the Schood project. Offline listening submissions are tied to the current recorded asset.",
+    "Confirm the existing Telegram secret is configured. Use supabase secrets set TELEGRAM_INTERNAL_SECRET= only if the linked project is missing the established value.",
+    "Run supabase functions deploy telegram-app to pause the mini-app’s graded dictation until it can play authored clips. Other review cards remain available."
   ],
   "verification": [
-    "Confirm 11 original themes for every level from A1 to C2, six active sessions per theme, and all intensive Listening sessions awaiting recorded audio.",
-    "Verify paid learner access, grading and draft persistence across all six active skills, and confirm each level clears 63 hours without Listening or review time.",
-    "Confirm the native Listening library and lesson routes show audio coming soon where recordings are absent, and production recommendations do not send learners to those lessons."
+    "Verify Grammar access for an entitled learner and that a learner without Grammar access cannot retrieve checks.",
+    "Work through an initial check, targeted lesson and fresh transfer. Confirm the next batch is withheld until the stored time and that Today and Up Next offer the earliest available delayed check.",
+    "Confirm free and paused skills, exhausted batches, and completed checks are excluded. Verify the normal plan remains usable if the projection is unavailable.",
+    "Confirm fresh attempts do not expose answer keys or the source correction before the baseline, and confirm submitted explanations and criterion observations persist after reload.",
+    "Confirm both cross-skill paths require their subscribed channel and a separate Grammar check before productive transfer. Verify distinct one-week and four-week holdout forms and evaluator abstention.",
+    "Open the new projects and study outcome map at every level. Verify the project stages, prior model-answer privacy and the Listening coming-soon state.",
+    "Open a real-life mission with an unrecorded Listening step. Confirm the remaining stages still work and the pending questions do not enter scoring.",
+    "Verify that National Exam Listening shows coming soon until every prompt has recorded audio, and that the other exam sections remain accessible. Verify a recorded offline clip plays with the network disconnected and that stale offline answers do not enter Listening history.",
+    "Verify placement and monthly checks assess Reading, Writing and Grammar while prior Listening levels remain visible as historical results. Verify graded review dictation waits for its authored recording and other review cards remain available."
   ],
   "rollback": {
-    "content": "Keep intensive content and progress available in the database. Previous Hub Pages and prior Edge builds are available through the recorded production deployment revisions."
-  },
-  "sharedEdgeConsumers": [
-    "english-intensive",
-    "hub",
-    "listening-content"
-  ]
+    "backend": "Restore the previous compatible versions of Hub, immersion-missions, listening-content, telegram-app and Pages as required. Retain private evidence tables, project runs and saved learner results."
+  }
 }

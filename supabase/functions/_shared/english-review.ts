@@ -9,6 +9,7 @@
 
 import { checkGrammarAnswer } from "./english-grammar.ts";
 import { scoreDictation } from "./english-listening.ts";
+import type { ReviewRecording } from "./english-review-recordings.ts";
 
 export type ReviewKind = "grammar" | "reading" | "listening";
 
@@ -55,15 +56,14 @@ export const scheduleAfterAnswer = (box: number, correct: boolean, now: Date): {
 };
 
 /** What the learner sees before answering: no answer key, no explanation. */
-export const publicReviewPayload = (payload: ReviewPayload): Record<string, unknown> => {
+export const publicReviewPayload = (payload: ReviewPayload, recording?: ReviewRecording): Record<string, unknown> => {
   if (payload.type === "grammar") {
     return { type: "grammar", prompt: payload.prompt, instructions: payload.instructions, source_title: payload.source_title, source_slug: payload.source_slug };
   }
   if (payload.type === "choice") {
     return { type: "choice", prompt: payload.prompt, options: payload.options, source_title: payload.source_title, source_slug: payload.source_slug };
   }
-  // The sentence is played aloud; the text is revealed only after answering.
-  return { type: "dictation", source_title: payload.source_title, source_slug: payload.source_slug, speak: payload.sentence };
+  return { type: "dictation", source_title: payload.source_title, source_slug: payload.source_slug, ...(recording ? { recording } : {}) };
 };
 
 export type ReviewCheck = { correct: boolean; expected: string; explanation: string | null; accuracy?: number };

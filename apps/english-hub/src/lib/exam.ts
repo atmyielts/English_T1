@@ -30,7 +30,7 @@ export type MockView = {
   paper_id: string;
   paper_title: string | null;
   started_at: string;
-  sections: Array<{ section: ExamSection; done: boolean; score: number | null; level: ExamLevel | null }>;
+  sections: Array<{ section: ExamSection; done: boolean; score: number | null; level: ExamLevel | null; audio_ready?: boolean }>;
 };
 
 export type MarkedPart = { score: number; max: number; comment: string | null };
@@ -67,6 +67,7 @@ export type MockResult = {
 export type ExamOverview = {
   paused: boolean;
   ai_available: boolean;
+  listening_audio_ready?: boolean;
   onboarded: boolean;
   target_level: CefrLevel | null;
   estimates: SectionEstimate[];
@@ -88,10 +89,11 @@ export type ReadingPartView =
   | { id: string; type: 'mcq'; level: CefrLevel; title: string; text: string; questions: McqView[] }
   | { id: string; type: 'headings'; level: CefrLevel; title: string; headings: Choice[]; paragraphs: Array<{ id: string; text: string }> };
 
+type RecordingView = { audio_url?: string; script?: string };
 export type ListeningPartView =
-  | { id: string; type: 'dialogues'; level: CefrLevel; title: string; items: Array<McqView & { script: string }> }
-  | { id: string; type: 'notes'; level: CefrLevel; title: string; script: string; notes: Array<{ id: string; before: string; after: string }> }
-  | { id: string; type: 'mcq'; level: CefrLevel; title: string; script: string; questions: McqView[] };
+  | { id: string; type: 'dialogues'; level: CefrLevel; title: string; items: Array<McqView & RecordingView> }
+  | ({ id: string; type: 'notes'; level: CefrLevel; title: string; notes: Array<{ id: string; before: string; after: string }> } & RecordingView)
+  | ({ id: string; type: 'mcq'; level: CefrLevel; title: string; questions: McqView[] } & RecordingView);
 
 export type WritingView = { input: { from: string; subject: string; body: string }; task11: string; task12: string; part2: string };
 export type SpeakingView = {
@@ -111,7 +113,10 @@ export type OpenSection = SectionContent & { mock_id: string; started_at: string
 
 export type SpeakingAnswerInput = { text: string; mode: 'speech' | 'typed'; seconds: number | null };
 
-export type SubmitResponse = { mock_id: string; section: ExamSection; section_result: SectionResult; finished: boolean; result: MockResult | null };
+export type SubmitResponse = {
+  mock_id: string; section: ExamSection; section_result: SectionResult; finished: boolean; result: MockResult | null;
+  listening_review?: { parts: ListeningPartView[] };
+};
 
 const query = { language_code: 'en' };
 

@@ -135,6 +135,7 @@ export const depthUz: Partial<Record<string, string>> = {
   'depth.project.kindSpeak': 'Gapirish',
   'depth.project.yesterday': 'Kecha siz yozgandingiz:',
   'depth.project.answerTitle': 'Javobingiz',
+  'depth.project.preparation': 'Javobingizni tayyorlang',
   'depth.project.check': 'Javobni tekshirish',
   'depth.project.dayDone': '{day}-kun bajarildi',
   'depth.project.tooShort': 'Javob qisqa. Taxminan {count} soʻzga moʻljal qiling.',

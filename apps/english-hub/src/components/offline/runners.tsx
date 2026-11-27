@@ -1,12 +1,9 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useI18n, useT } from '../../i18n';
-import type { OfflineActivity } from '../../lib/offline/model';
-import { canSpeak, speak } from '../../lib/speech';
+import { type OfflineActivity, offlineListeningState } from '../../lib/offline/model';
 import { useElapsedSeconds } from '../../lib/useResource';
 import { Panel } from '../../ui/kit';
 import { parsePassage, runsText } from '../../skills/reading/markdown';
-import { parseScript, speechChunks } from '../../skills/listening/script';
-import { usePlayer } from '../../skills/listening/usePlayer';
 import { buildQuiz } from '../../skills/vocabulary/quiz';
 import type { ReadingArticle } from '../../skills/reading/api';
 import type { DictationTarget, ListeningItem } from '../../skills/listening/api';
@@ -103,62 +100,67 @@ export const ReadingRunner = ({ activity, onFinish }: RunnerProps) => {
 export const ListeningRunner = ({ activity, onFinish }: RunnerProps) => {
   const t = useT();
   const elapsed = useElapsedSeconds();
-  const player = usePlayer();
   const item = (activity.content.item ?? {}) as Partial<ListeningItem>;
+  const readiness = offlineListeningState(activity);
   const targets = (activity.content.dictation ?? []) as DictationTarget[];
   const questions = item.questions ?? [];
-  const lines = useMemo(() => parseScript(item.transcript_text ?? '', item.metadata?.format === 'dialogue'), [item.transcript_text, item.metadata?.format]);
-  const chunks = useMemo(() => speechChunks(lines), [lines]);
-  const [readingMode, setReadingMode] = useState(() => !canSpeak());
+  const fullAudio = useRef<HTMLAudioElement>(null);
+  const clip = useRef<HTMLAudioElement>(null);
+  const clipEnd = useRef(0);
+  const [source, setSource] = useState<string>();
+  const [clipReady, setClipReady] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [plays, setPlays] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [typed, setTyped] = useState<Record<number, string>>({});
-  const playing = player.state.key === 'script';
-  const useDictation = !readingMode && targets.length > 0;
   const answered = questions.filter((question) => answers[question.id] !== undefined).length;
   const written = targets.filter((target) => (typed[target.segment_index] ?? '').trim()).length;
-  const heard = readingMode || plays > 0;
+
+  useEffect(() => {
+    if (readiness !== 'ready' || !activity.recorded_audio) return;
+    const url = URL.createObjectURL(activity.recorded_audio);
+    const fullPlayer = fullAudio.current;
+    const clipPlayer = clip.current;
+    setSource(url);
+    return () => {
+      fullPlayer?.pause();
+      clipPlayer?.pause();
+      URL.revokeObjectURL(url);
+    };
+  }, [activity.recorded_audio, readiness]);
+
+  if (readiness !== 'ready') return (
+    <Panel title={t(readiness === 'coming_soon' ? 'intensive.audioSoon' : 'offline.run.audioDownload')}>
+      <p role="status">{t(readiness === 'coming_soon' ? 'intensive.audioSoonBody' : 'offline.run.audioDownloadBody')}</p>
+    </Panel>
+  );
 
   return (
     <>
-      <Panel title={readingMode ? t('offline.run.script') : t('offline.run.listen')}>
-        {readingMode ? (
-          <>
-            {!canSpeak() ? <p className="en-notice" style={{ margin: 0 }}>{t('offline.run.noVoice')}</p> : null}
-            <div className="en-passage" lang="en">
-              {lines.map((line, index) => <p key={index}>{line.speaker ? <strong>{line.speaker}: </strong> : null}{line.text}</p>)}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="en-actions">
-              <button
-                type="button"
-                className="is-large"
-                aria-pressed={playing}
-                onClick={() => {
-                  if (playing) { player.stop(); return; }
-                  setPlays((count) => count + 1);
-                  void player.play('script', chunks, 1);
-                }}
-              >
-                {playing ? t('offline.run.stopListen') : t('offline.run.listen')}
-              </button>
-            </div>
-            <p className="hint" style={{ margin: 0 }}>
-              <button type="button" className="is-link" onClick={() => { player.stop(); setReadingMode(true); }}>{t('offline.run.readInstead')}</button>
-            </p>
-          </>
-        )}
+      <Panel title={t('offline.run.listen')}>
+        <audio ref={fullAudio} controls preload="none" src={source} aria-label={activity.title}
+          onPlaying={() => { clip.current?.pause(); setPlays((count) => count + 1); }}
+          onError={() => setFailed(true)} />
+        {failed ? <p role="status">{t('offline.run.audioDownloadBody')}</p> : null}
       </Panel>
 
-      {useDictation ? (
+      {targets.length ? (
         <Panel title={t('offline.run.dictation')}>
+          <audio ref={clip} src={source} preload="metadata" hidden
+            onLoadedMetadata={() => setClipReady(true)}
+            onTimeUpdate={(event) => { if (event.currentTarget.currentTime >= clipEnd.current) event.currentTarget.pause(); }} />
           {targets.map((target, index) => (
             <div key={target.segment_index} className="en-question">
               <p className="eyebrow" style={{ margin: 0 }}>{t('offline.run.dictationItem', { number: index + 1 })}</p>
               <div className="en-actions">
-                <button type="button" className="quiet" onClick={() => void speak(target.segment_text, { rate: 0.85 })}>
+                <button type="button" className="quiet" disabled={!clipReady} onClick={() => {
+                  const audio = clip.current;
+                  if (!audio || target.starts_at_seconds == null || target.ends_at_seconds == null) return;
+                  fullAudio.current?.pause();
+                  audio.currentTime = target.starts_at_seconds;
+                  clipEnd.current = target.ends_at_seconds;
+                  void audio.play().catch(() => setFailed(true));
+                }}>
                   ▶ {t('offline.run.playSentence', { number: index + 1 })}
                 </button>
               </div>
@@ -180,14 +182,16 @@ export const ListeningRunner = ({ activity, onFinish }: RunnerProps) => {
       <Panel title={t('offline.run.questions')}>
         <ChoiceQuestions questions={questions} answers={answers} onAnswer={(id, index) => setAnswers((current) => ({ ...current, [id]: index }))} />
         <FinishBar
-          disabled={!heard || (answered === 0 && !(useDictation && written > 0))}
+          disabled={failed || plays === 0 || (answered === 0 && written === 0)}
           note={answered > 0 && answered < questions.length ? t('offline.run.unanswered') : null}
           onFinish={() => {
-            player.stop();
+            fullAudio.current?.pause();
+            clip.current?.pause();
             onFinish({
-              mode: readingMode ? 'reading' : 'listening',
+              mode: 'listening',
+              offline_audio_url: item.audio_url,
               answers: Object.entries(answers).map(([question_id, option_index]) => ({ question_id, option_index })),
-              dictation: useDictation ? targets.map((target) => ({ segment_index: target.segment_index, text: typed[target.segment_index] ?? '' })) : [],
+              dictation: targets.map((target) => ({ segment_index: target.segment_index, text: typed[target.segment_index] ?? '' })),
               plays,
               time_spent_seconds: elapsed(),
             });

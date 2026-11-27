@@ -5,6 +5,7 @@ import { CEFR_LEVELS, skillByKey, type CefrLevel } from '../../lib/skills';
 import { useResource } from '../../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, Segmented, SkillDot, Tag } from '../../ui/kit';
 import { intensiveSkills, sessionMinutes } from '../../../../../supabase/functions/_shared/english-intensive';
+import { curriculumOutcomes } from '../../../../../supabase/functions/_shared/english-curriculum';
 import { getIntensive } from './api';
 import './intensive.css';
 
@@ -25,6 +26,7 @@ export const IntensiveLibrary = () => {
     return total + (library.data?.core_unit_minutes ?? 0) + (unit.listening_ready ? sessionMinutes('listening') : 0);
   }, 0);
   const listeningPending = units.some((unit) => !unit.listening_ready);
+  const outcomes = curriculumOutcomes[level].filter((entry) => units.some((unit) => unit.slug === entry.unit));
 
   const setLevel = (value: CefrLevel) => {
     const next = new URLSearchParams(params);
@@ -49,6 +51,28 @@ export const IntensiveLibrary = () => {
       {library.data && !units.length ? <EmptyState title={t('skill.library.empty')} /> : null}
       {minutes ? <p className="intensive-summary">{t('intensive.libraryCount', { count: units.length, hours: Math.floor(minutes / 60) })}</p> : null}
       {listeningPending && (!skill || skill === 'listening') ? <p className="hint">{t('intensive.audioSoonBody')}</p> : null}
+      {!skill && outcomes.length ? (
+        <Panel title={t('intensive.outcomesTitle')}>
+          <ul className="en-list">
+            {outcomes.map((entry) => {
+              const ready = library.data?.available_skills.includes(entry.skill);
+              const paused = library.data?.paused_skills.includes(entry.skill);
+              const copy = <span className="en-item-main">
+                <strong>{t(`intensive.mode.${entry.mode}`)}</strong>
+                <span lang="en">{entry.goal}</span>
+              </span>;
+              return (
+                <li key={entry.mode}>
+                  {ready ? <Link className="en-item" to={`/intensive/${entry.unit}/${entry.skill}`}>
+                    {copy}<span className="en-button-quiet">{t('intensive.openPractice')}</span>
+                  </Link> : paused ? <div className="en-item">{copy}<Tag>{t('intensive.paused')}</Tag></div>
+                    : <a className="en-item" href={pricingHref(entry.skill)}>{copy}<Tag>{t('practice.locked')}</Tag></a>}
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      ) : null}
       <div className="intensive-library">
         {units.map((unit) => {
           const finished = visibleSkills.filter((key) => progress.get(`${unit.slug}/${key}`)?.completed).length;

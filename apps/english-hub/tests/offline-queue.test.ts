@@ -8,6 +8,7 @@ import {
   MAX_TRIES,
   newClientAttemptId,
   newEntry,
+  offlineListeningState,
   planOffline,
   type PlanTask,
   type QueueEntry,
@@ -49,6 +50,16 @@ Deno.test("queued answers go to the same submit routes as online", () => {
   assertEquals(submitTarget("listening", "x"), { fn: "listening-content", path: "/items/x/submit" });
   assertEquals(submitTarget("grammar", "x"), { fn: "grammar-remediation", path: "/units/x/submit" });
   assertEquals(submitTarget("vocabulary", "x"), { fn: "vocabulary-notebook", path: "/decks/x/submit" });
+});
+
+Deno.test("offline Listening needs a downloaded authored recording, including cached legacy packs", () => {
+  const activity = { skill: "listening" as const, slug: "station", title: "At the station", level: "A1", minutes: 8 };
+  const item = { transcript_text: "Take the bus to the station.", audio_url: "https://media.example/station.mp3" };
+  assertEquals(offlineListeningState({ ...activity, content: { item: { ...item, audio_url: null } } }), "coming_soon");
+  assertEquals(offlineListeningState({ ...activity, content: { item } }), "download_required");
+  assertEquals(offlineListeningState({ ...activity, content: { item }, recorded_audio: new Blob(["clip"], { type: "audio/mpeg" }) }), "ready");
+  assertEquals(classifyFailure(409, "listening_audio_soon"), { action: "fail", reason: "audio_unavailable" });
+  assertEquals(classifyFailure(422, "listening_offline_audio_stale"), { action: "fail", reason: "audio_unavailable" });
 });
 
 Deno.test("client attempt ids are accepted by the server's format", () => {

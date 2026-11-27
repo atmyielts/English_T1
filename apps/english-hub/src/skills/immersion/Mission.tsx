@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useParams } from 'react-router-dom';
 import { TapScope, TapText, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
-import { canRecognize, canSpeak, listen, speak, stopSpeaking, type Listener } from '../../lib/speech';
+import { canRecognize, listen, type Listener } from '../../lib/speech';
+import { hasRecordedListening } from '../../../../../supabase/functions/_shared/english-recorded-listening';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
@@ -96,49 +97,6 @@ const Questions = ({
           </div>
         );
       })}
-    </div>
-  );
-};
-
-/** Plays a short message with the browser's voice. Falls back to text when it can't. */
-const ListenPlayer = ({ text, accent }: { text: string; accent: 'gb' | 'us' | null }) => {
-  const t = useT();
-  const [playing, setPlaying] = useState(false);
-  const [played, setPlayed] = useState(false);
-  useEffect(() => () => stopSpeaking(), []);
-
-  if (!canSpeak()) {
-    return (
-      <div className="en-stack" style={{ gap: '.5rem' }}>
-        <p className="hint">{t('immersion.listen.noAudio')}</p>
-        <MissionText className="en-passage im-text" text={text} />
-      </div>
-    );
-  }
-
-  const play = async (rate: number) => {
-    setPlaying(true);
-    await speak(text, { rate, accent: accent ?? 'any' });
-    setPlaying(false);
-    setPlayed(true);
-  };
-
-  return (
-    <div className="en-stack" style={{ gap: '.5rem' }}>
-      <div className="en-actions">
-        {playing ? (
-          <>
-            <span className="hint" role="status">{t('immersion.listen.playing')}</span>
-            <button type="button" className="quiet" onClick={() => { stopSpeaking(); setPlaying(false); }}>{t('immersion.listen.stop')}</button>
-          </>
-        ) : (
-          <>
-            <button type="button" className="is-large" onClick={() => void play(1)}>{played ? t('immersion.listen.again') : t('immersion.listen.play')}</button>
-            <button type="button" className="quiet" onClick={() => void play(0.8)}>{t('immersion.listen.slow')}</button>
-          </>
-        )}
-      </div>
-      <p className="hint">{t('immersion.listen.hint')}</p>
     </div>
   );
 };
@@ -277,7 +235,7 @@ const StepBody = ({
   if (step.kind === 'listen') {
     return (
       <>
-        <ListenPlayer key={step.id} text={step.text} accent={step.accent} />
+        <audio controls preload="none" src={step.audio_url ?? undefined} aria-label={step.title} />
         <Questions scope={step.id} questions={step.questions} chosen={draft.answers} onChoose={busy ? undefined : choose} />
       </>
     );
@@ -439,7 +397,11 @@ export const MissionPlayer = () => {
 
   const mission = resource.data?.mission;
   const personal = resource.data?.personal ?? null;
-  const steps = (resource.data?.steps ?? []).filter((step): step is MissionStep & { kind: StepKind } => step.kind !== null);
+  const allSteps = resource.data?.steps ?? [];
+  const steps = allSteps.filter((step): step is MissionStep & { kind: StepKind } =>
+    step.kind !== null && (step.kind !== 'listen' || hasRecordedListening(step.audio_url)));
+  const pendingListening = allSteps.length - steps.length;
+  const awaitingCompatibleGrader = pendingListening > 0 && mission?.pending_listening_steps === undefined;
   const step = steps[Math.min(current, Math.max(0, steps.length - 1))];
   const doneCount = steps.filter((entry) => isDone(entry, drafts[entry.id])).length;
   const tapSource = useMemo<TapSource>(() => ({ type: 'english-immersion', label: mission?.title ?? null, ref: slug }), [mission?.title, slug]);
@@ -453,13 +415,12 @@ export const MissionPlayer = () => {
   }, []);
 
   const goTo = (index: number) => {
-    stopSpeaking();
     setCurrent(index);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const check = async () => {
-    stopSpeaking();
+    if (awaitingCompatibleGrader) return;
     setBusy(true);
     setError(null);
     try {
@@ -564,6 +525,11 @@ export const MissionPlayer = () => {
 
           <PersonalTargetsPanel personal={personal} />
 
+          {pendingListening ? (
+            <p className="en-notice">
+              <strong>{t('intensive.audioSoon')}</strong>{' '}{t('intensive.audioSoonBody')}
+            </p>
+          ) : null}
           {step ? (
             <section className="en-panel">
               <ol className="en-steps" aria-label={t('immersion.steps.label')}>
@@ -594,7 +560,7 @@ export const MissionPlayer = () => {
                 {current < steps.length - 1 ? (
                   <button type="button" className="is-large" onClick={() => goTo(current + 1)}>{t('immersion.step.next')}</button>
                 ) : (
-                  <button type="button" className="is-large" disabled={busy || doneCount === 0} onClick={() => void check()}>
+                  <button type="button" className="is-large" disabled={busy || doneCount === 0 || awaitingCompatibleGrader} onClick={() => void check()}>
                     {busy ? t('immersion.submit.checking') : t('immersion.submit.check')}
                   </button>
                 )}

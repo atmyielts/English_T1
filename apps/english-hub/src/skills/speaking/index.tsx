@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
 import { useEnglish } from '../../app/EnglishContext';
 import { useT } from '../../i18n';
+import { TransferLink } from '../../components/TransferLink';
 import { PracticeLinks } from '../../components/PracticeLinks';
 import { SkillHome } from '../SkillHome';
 import { SpeakingActivity } from './Activity';
@@ -35,7 +36,7 @@ const SpeakingApp = () => {
         element={(
           <SkillHome
             skill="speaking"
-            extra={<><ShadowingLink /><PracticeLinks /></>}
+            extra={<><ShadowingLink /><PracticeLinks /><TransferLink skill="speaking" /></>}
             tools={[
               { id: 'pronunciation', title: t('speaking.tool.pronunciation'), hint: t('speaking.tool.pronunciationHint'), render: () => <PronunciationDrillCard accessToken={accessToken} /> },
               { id: 'conversation', title: t('speaking.tool.conversation'), hint: t('speaking.tool.conversationHint'), render: () => <VoiceConversationCard accessToken={accessToken} /> },

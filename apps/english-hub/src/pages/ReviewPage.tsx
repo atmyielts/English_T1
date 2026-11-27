@@ -19,9 +19,12 @@ export const ReviewPage = () => {
   const progress = useResource((signal) => getProgress(signal), []);
   const questions = useResource((signal) => getReviewItems(signal), []);
   const [finished, setFinished] = useState<number | null>(null);
-  const [questionsDone, setQuestionsDone] = useState<number | null>(null);
+  const [questionsDone, setQuestionsDone] = useState<{ right: number; attempted: number } | null>(null);
   const cards = due.data?.cards ?? [];
-  const reviewItems = questions.data?.items ?? [];
+  const available = questions.data?.items ?? [];
+  const reviewItems = available.filter((item) => item.type !== 'dictation' || item.recording);
+  const pendingAudio = questions.data?.pending_audio || available.length !== reviewItems.length;
+  const reviewScore = questionsDone?.attempted ? Math.round(questionsDone.right / questionsDone.attempted * 100) : null;
   const mistakes = (progress.data?.mistakes ?? []).slice(0, 8);
 
   return (
@@ -62,28 +65,28 @@ export const ReviewPage = () => {
 
         <Panel
           title={t('review.questions.title')}
-          aside={questions.data ? <span>{t('review.questions.count', { count: questions.data.due })}</span> : null}
+          aside={questions.data ? <span>{t('review.questions.count', { count: questions.data.due - (available.length - reviewItems.length) })}</span> : null}
         >
           <p className="hint">{t('review.questions.lead')}</p>
           {questions.loading && !questions.data ? <Loading lines={3} /> : null}
           {questions.error ? <ErrorState error={questions.error} onRetry={questions.reload} /> : null}
+          {pendingAudio ? <p className="hint" role="status">{t('review.questions.dictationPending')}</p> : null}
           {questionsDone !== null ? (
             <ResultSummary
               title={t('review.questions.doneTitle')}
-              score={reviewItems.length ? Math.round((questionsDone / reviewItems.length) * 100) : null}
-              summary={t('review.questions.doneBody', { right: questionsDone, total: reviewItems.length })}
-              // Every question here was due: each right answer earned review XP.
-              xp={{ amount: questionsDone * XP_PER_REVIEW_CORRECT }}
-              share={{ kind: 'review', score: reviewItems.length ? Math.round((questionsDone / reviewItems.length) * 100) : null }}
+              score={reviewScore}
+              summary={t('review.questions.doneBody', { right: questionsDone.right, total: questionsDone.attempted })}
+              xp={{ amount: questionsDone.right * XP_PER_REVIEW_CORRECT }}
+              share={{ kind: 'review', score: reviewScore }}
               upNext={{ skill: 'grammar' }}
               actions={<button type="button" onClick={() => { setQuestionsDone(null); questions.reload(); }}>{t('review.finished.more')}</button>}
             >
-              {questionsDone < reviewItems.length ? <p className="hint" style={{ margin: 0 }}>{t('glue.review.questionsAgain')}</p> : null}
+              {questionsDone.right < questionsDone.attempted ? <p className="hint" style={{ margin: 0 }}>{t('glue.review.questionsAgain')}</p> : null}
             </ResultSummary>
           ) : questions.data && reviewItems.length === 0 ? (
-            <p>{t('review.questions.none')}</p>
+            pendingAudio ? null : <p>{t('review.questions.none')}</p>
           ) : reviewItems.length ? (
-            <ReviewQuestions key={reviewItems[0]?.id} items={reviewItems} onFinished={setQuestionsDone} />
+            <ReviewQuestions key={reviewItems[0]?.id} items={reviewItems} onFinished={(right, attempted) => setQuestionsDone({ right, attempted })} />
           ) : null}
         </Panel>
         </div>

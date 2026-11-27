@@ -30,6 +30,7 @@ import {
   buildWritingRequest,
   decideExamStart,
   EXAM_RESUME_MS,
+  examListeningReady,
   type ExamPaper,
   isMockKind,
   isOvertime,
@@ -43,6 +44,7 @@ import {
   parseWritingAnswers,
   parseWritingMark,
   pickPaper,
+  publicListening,
   publicSection,
   readSectionResult,
   scoreObjective,
@@ -167,20 +169,25 @@ const aiReady = async (): Promise<boolean> =>
   (await englishAIAvailable("exam-writing")) && (await englishAIAvailable("exam-speaking"));
 
 const needsAI = (kind: MockKind): boolean => kind === "full" || kind === "writing" || kind === "speaking";
+const needsListening = (kind: MockKind): boolean => kind === "full" || kind === "listening";
+const audioComingSoon = () => json(409, { error: "Recorded audio is coming soon.", code: "listening_audio_soon" });
 
 // --- Views -------------------------------------------------------------------------------
 
-const publicMock = (row: Row, title: string | null) => {
+const publicMock = (row: Row, paper: ExamPaper | null) => {
   const kind = String(row.kind) as MockKind;
   return {
     id: String(row.id),
     kind,
     paper_id: String(row.paper_id),
-    paper_title: title,
+    paper_title: paper?.title ?? null,
     started_at: String(row.started_at),
     sections: sectionsOf(kind).map((section) => {
       const result = sectionResultOf(row, section);
-      return { section, done: Boolean(result), score: result?.score ?? null, level: result?.level ?? null };
+      return {
+        section, done: Boolean(result), score: result?.score ?? null, level: result?.level ?? null,
+        ...(section === "listening" ? { audio_ready: paper !== null && examListeningReady(paper) } : {}),
+      };
     }),
   };
 };
@@ -236,7 +243,7 @@ const practiceLinks = async (ctx: Ctx, weak: Array<{ section: ExamSection; level
 // --- GET /exam ----------------------------------------------------------------------------
 
 const overview = async (ctx: Ctx): Promise<Response> => {
-  const [goal, rows, access, ai] = await Promise.all([loadGoal(ctx), loadMocks(ctx), accessOf(ctx), aiReady()]);
+  const [goal, rows, access, ai, availablePapers] = await Promise.all([loadGoal(ctx), loadMocks(ctx), accessOf(ctx), aiReady(), loadPapers(ctx)]);
   const ratings = await ratingsFor(ctx, goal);
   const meta = isRec(goal?.metadata) ? goal!.metadata as Row : {};
   const track = readExamTrack(meta.exam_track);
@@ -254,6 +261,7 @@ const overview = async (ctx: Ctx): Promise<Response> => {
     ok: true,
     paused: access.paused,
     ai_available: ai,
+    listening_audio_ready: availablePapers.some(examListeningReady),
     onboarded: Boolean(goal),
     target_level: typeof goal?.target_cefr === "string" ? goal.target_cefr : null,
     estimates: readiness,
@@ -264,7 +272,7 @@ const overview = async (ctx: Ctx): Promise<Response> => {
       section: allowanceFor("reading", access, rows),
     },
     timing: { seconds: SECTION_SECONDS, speaking_talk: SPEAKING_TALK_SECONDS, speaking_prep: SPEAKING_PREP_SECONDS },
-    in_progress: open ? publicMock(open, papers?.title ?? null) : null,
+    in_progress: open ? publicMock(open, papers) : null,
     history: rows.filter((row) => row.status === "finished").slice(0, 10).map(historyEntry),
   });
 };
@@ -307,10 +315,15 @@ const start = async (ctx: Ctx): Promise<Response> => {
   const open = resumable(rows, kind);
   if (open) {
     const paper = await loadPaper(ctx, String(open.paper_id));
-    if (paper) return json(200, { ok: true, resumed: true, allowance: allowanceFor(kind, access, rows), mock: publicMock(open, paper.title) });
+    if (paper && (!needsListening(kind) || examListeningReady(paper))) {
+      return json(200, { ok: true, resumed: true, allowance: allowanceFor(kind, access, rows), mock: publicMock(open, paper) });
+    }
   }
+  const availablePapers = await loadPapers(ctx);
+  const papers = needsListening(kind) ? availablePapers.filter(examListeningReady) : availablePapers;
+  if (needsListening(kind) && !papers.length) return audioComingSoon();
   if (needsAI(kind) && !(await aiReady())) {
-    return json(503, { error: "Writing and speaking marking is not available right now. Reading and listening still work.", code: "english_ai_unavailable" });
+    return json(503, { error: "Writing and speaking marking is not available right now.", code: "english_ai_unavailable" });
   }
   const allowance = allowanceFor(kind, access, rows);
   if (!allowance.allowed) {
@@ -323,7 +336,6 @@ const start = async (ctx: Ctx): Promise<Response> => {
     });
   }
 
-  const papers = await loadPapers(ctx);
   const recent = rows.map((row) => String(row.paper_id));
   const seed = crypto.getRandomValues(new Uint32Array(1))[0] ?? Date.now();
   const paperId = pickPaper(papers.map((paper) => paper.id), recent, seededRandom(seed));
@@ -339,7 +351,7 @@ const start = async (ctx: Ctx): Promise<Response> => {
     ok: true,
     resumed: false,
     allowance: { ...allowance, left: Math.max(0, allowance.left - 1) },
-    mock: publicMock(data as Row, paper.title),
+    mock: publicMock(data as Row, paper),
   });
 };
 
@@ -379,6 +391,7 @@ const openSection = async (ctx: Ctx): Promise<Response> => {
   if (done) return json(409, { error: "You've already handed in this section.", code: "exam_section_done", result: done });
   const paper = await loadPaper(ctx, String(mock.paper_id));
   if (!paper) return json(404, { error: "Mock not found", code: "exam_mock_not_found" });
+  if (section === "listening" && !examListeningReady(paper)) return audioComingSoon();
 
   let startedAt = typeof sectionEntry(mock, section).started_at === "string" ? String(sectionEntry(mock, section).started_at) : null;
   if (!startedAt) {
@@ -456,10 +469,18 @@ const submit = async (ctx: Ctx): Promise<Response> => {
     return json(404, { error: "Mock not found", code: "exam_mock_not_found" });
   }
   const already = sectionResultOf(mock, section);
-  if (already) return json(200, { ok: true, mock_id: mock.id, section, section_result: already, finished: mock.status === "finished", result: mock.result ?? null });
+  if (already) {
+    const reviewedPaper = section === "listening" ? await loadPaper(ctx, String(mock.paper_id)) : null;
+    return json(200, {
+      ok: true, mock_id: mock.id, section, section_result: already,
+      finished: mock.status === "finished", result: mock.result ?? null,
+      ...(reviewedPaper ? { listening_review: publicListening(reviewedPaper, true) } : {}),
+    });
+  }
   if (mock.status !== "in_progress") return json(409, { error: "This mock is finished.", code: "exam_mock_finished" });
   const paper = await loadPaper(ctx, String(mock.paper_id));
   if (!paper) return json(404, { error: "Mock not found", code: "exam_mock_not_found" });
+  if (section === "listening" && !examListeningReady(paper)) return audioComingSoon();
 
   const startedAt = typeof sectionEntry(mock, section).started_at === "string" ? String(sectionEntry(mock, section).started_at) : null;
   const overtime = isOvertime(section, startedAt);
@@ -540,7 +561,11 @@ const submit = async (ctx: Ctx): Promise<Response> => {
     }
   }
 
-  return json(200, { ok: true, mock_id: saved.id, section, section_result: result, finished: Boolean(finishedResult), result: finishedResult });
+  return json(200, {
+    ok: true, mock_id: saved.id, section, section_result: result,
+    finished: Boolean(finishedResult), result: finishedResult,
+    ...(section === "listening" ? { listening_review: publicListening(paper, true) } : {}),
+  });
 };
 
 /** Handles the exam routes; null when the route is not one of them. */

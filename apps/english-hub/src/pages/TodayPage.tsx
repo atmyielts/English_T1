@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { competencyActionDetail, competencyActionHref } from '../../../../supabase/functions/_shared/english-competency-action';
 import { useEnglish } from '../app/EnglishContext';
 import { useI18n, useT } from '../i18n';
 import { getToday, taskHref, type TodayResponse, type TodayTask } from '../lib/hub';
 import type { SkillKey } from '../lib/skills';
+import { competencyActionReason } from '../lib/transfer';
 import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, Panel, ProgressBar, SkillDot, Tag } from '../ui/kit';
 import { Onboarding } from './Onboarding';
@@ -97,6 +99,7 @@ export const TodayPage = () => {
 
   const data = today.data;
   const tasks = data?.tasks ?? [];
+  const dueCompetency = data?.due_competency;
   const nextIndex = tasks.findIndex((task) => !task.done);
   const allDone = tasks.length > 0 && nextIndex === -1;
   const level = data?.level ?? onboarding.value?.level ?? null;
@@ -190,6 +193,20 @@ export const TodayPage = () => {
 
           {data && !data.free && tasks.length === 0 ? (
             <EmptyState title={t('today.empty.title')} body={t('today.empty.body')} action={<Link className="en-button" to="/practice">{t('today.empty.cta')}</Link>} />
+          ) : null}
+
+          {dueCompetency ? (
+            <Link className="en-item" to={competencyActionHref(dueCompetency)}>
+              <SkillDot skill={dueCompetency.skill} />
+              <span className="en-item-main">
+                <strong lang="en">{dueCompetency.title}</strong>
+                <span>{t(competencyActionReason(competencyActionDetail(dueCompetency)))}</span>
+              </span>
+              <span className="en-item-meta">
+                <LevelBadge level={dueCompetency.level} muted />
+                <span className="en-button-quiet">{t(dueCompetency.stage === 2 ? 'transfer.open' : 'mastery.dueAction')}</span>
+              </span>
+            </Link>
           ) : null}
 
           {tasks.length ? (
