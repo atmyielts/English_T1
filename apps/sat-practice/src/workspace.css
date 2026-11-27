@@ -9,7 +9,10 @@
   background: #f6f1e8;
 }
 body { background: #f6f1e8; }
-.app-shell { max-width: 1540px; margin: 0 auto; }
+.app-shell { max-width: none; margin: 0; }
+.app-shell:has(> .top-nav) { padding: 0; }
+.app-shell:has(> .top-nav) > .workspace { padding: clamp(16px, 2.65vw, 42px); }
+.app-shell > .top-nav { border-radius: 0; margin: 0; top: 0; }
 .top-nav,
 .panel,
 .kpi-card,
@@ -70,8 +73,8 @@ body { background: #f6f1e8; }
 .landing-page .feature-card h2 { margin: 8px 0 6px; }
 .landing-page .feature-card p { margin: 0; }
 @media (min-width: 981px) {
-  .app-shell:has(> .top-nav) { display: grid; align-items: start; grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(20px, 3vw, 44px); }
-  .app-shell .top-nav { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; margin: 0; padding: 16px 11px; gap: 14px; max-height: calc(100dvh - 32px); overflow-y: auto; background: #eee9df; }
+  .app-shell:has(> .top-nav) { display: grid; align-items: start; grid-template-columns: clamp(205px, 15vw, 253px) minmax(0, 1fr); gap: 0; }
+  .app-shell .top-nav { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; width: 100%; margin: 0; padding: 16px 11px; gap: 14px; height: 100dvh; max-height: 100dvh; overflow-y: auto; background: #eaf0e5; border-width: 0 1px 0 0; scrollbar-width: thin; overscroll-behavior-y: contain; }
   .app-shell .top-nav .brand { padding: 0 4px 12px; border-bottom: 1px solid var(--line); }
   .app-shell .top-nav .brand span { line-height: 1.25; }
   .app-shell .top-nav .nav-panel { display: grid; align-items: start; justify-content: stretch; gap: 12px; }

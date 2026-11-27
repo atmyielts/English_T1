@@ -161,7 +161,7 @@ export const Shell = ({ children, narrow, landing = false }: { children: ReactNo
   const t = useT();
   const { config } = usePlaybook();
   return (
-    <div className="app-shell" data-exam={config.exam}>
+    <div className={landing ? 'app-shell playbook-landing-shell' : 'app-shell'} data-exam={config.exam}>
       <a className="skip-link" href="#main">{t('nav.skip')}</a>
       {landing ? <LandingHeader /> : <TopNav />}
       <main id="main" className={`workspace${narrow ? ' narrow' : ''}`}>{children}</main>

@@ -8,9 +8,7 @@ import {
   Gauge,
   Headphones,
   PenLine,
-  Route,
   Sparkles,
-  Target,
   TrendingUp,
   type LucideIcon,
 } from 'lucide-react';
@@ -21,6 +19,7 @@ import { LandingChrome } from '../components/content/SiteChrome';
 import { useT } from '../i18n';
 
 const moduleIcons: LucideIcon[] = [BookOpenCheck, Compass, Headphones, PenLine, ClipboardCheck, FileText];
+const skillGuides = ['listening', 'reading', 'writing', 'speaking'] as const;
 
 export const LandingPage: React.FC = () => {
   const t = useT();
@@ -49,38 +48,37 @@ export const LandingPage: React.FC = () => {
 
   const modules = catalog?.modules ?? [];
   const recentSources = Array.isArray(updates?.recent_sources) ? (updates!.recent_sources as Array<Record<string, unknown>>).slice(0, 3) : [];
-  const skills = [t('skill.listening'), t('skill.reading'), t('skill.writing'), t('skill.speaking')];
 
   return (
     <LandingChrome>
-      <section className="playbook-hero">
-        <div className="hero-copy">
-          <p className="eyebrow">{t('landing.eyebrow')}</p>
-          <h1>IELTS Playbook</h1>
-          <p className="hero-summary">{t('landing.lead')}</p>
-          <div className="hero-actions">
-            <Link to="/onboarding" className="button button-primary">
-              <Sparkles size={17} />
-              {t('landing.start')}
-            </Link>
-            <a href={`${SIMULATOR_APP_URL}?source=playbook`} className="button button-secondary">
-              <Gauge size={17} />
-              {t('landing.openSimulator')}
-            </a>
+      <section className="playbook-hero ielts-handbook-hero">
+        <div className="ielts-handbook-frame">
+          <div className="hero-copy">
+            <p className="eyebrow">{t('landing.eyebrow')}</p>
+            <h1>IELTS <span>Playbook</span></h1>
+            <p className="hero-summary">{t('landing.lead')}</p>
+            <div className="hero-actions">
+              <Link to="/onboarding" className="button button-primary">
+                <Sparkles size={17} />
+                {t('landing.start')}
+              </Link>
+              <Link to="/essentials" className="button button-secondary">
+                <BookOpenCheck size={17} aria-hidden="true" />
+                {t('nav.essentials')}
+              </Link>
+            </div>
           </div>
-        </div>
 
-        <aside className="ielts-route-board" aria-labelledby="ielts-route-title">
-          <h2 id="ielts-route-title">{t('landing.board.skills')}</h2>
-          <ul className="skill-chip-list">
-            {skills.map(label => <li key={label}>{label}</li>)}
-          </ul>
-          <div className="route-links">
-            <a href="#modules"><BookOpenCheck size={18} aria-hidden="true" /><strong>{t('landing.library.eyebrow')}</strong><ArrowRight size={16} aria-hidden="true" /></a>
-            <Link to="/diagnostic"><Target size={18} aria-hidden="true" /><strong>{t('landing.board.priorityMap')}</strong><ArrowRight size={16} aria-hidden="true" /></Link>
-            <Link to="/test-types-booking"><Route size={18} aria-hidden="true" /><strong>{t('nav.testPath')}</strong><ArrowRight size={16} aria-hidden="true" /></Link>
-          </div>
-        </aside>
+          <aside className="ielts-route-board" aria-labelledby="ielts-route-title">
+            <h2 id="ielts-route-title">{t('landing.board.skills')}</h2>
+            <ol className="ielts-handbook-contents">
+              {skillGuides.map(skill => <li key={skill}>
+                <Link to={`/${skill}-master-guide`}><strong>{t(`skill.${skill}`)}</strong><ArrowRight size={17} aria-hidden="true" /></Link>
+              </li>)}
+            </ol>
+            <a href="#modules" className="ielts-handbook-all">{t('landing.library.eyebrow')} <ArrowRight size={15} aria-hidden="true" /></a>
+          </aside>
+        </div>
       </section>
 
       <section className="section-band" id="modules">

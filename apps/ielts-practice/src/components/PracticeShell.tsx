@@ -85,7 +85,7 @@ export const PracticeShell = ({ children, reviewsDueCount = 0, extraLinks = [], 
   };
 
   return (
-    <div className="practice-root">
+    <div className="practice-root practice-shell-root">
       <div className="practice-workspace">
         <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`} onKeyDown={event => {
           if (event.key === 'Escape' && sidebarOpen) { event.preventDefault(); closeSidebar(); sidebarToggle.current?.focus(); }

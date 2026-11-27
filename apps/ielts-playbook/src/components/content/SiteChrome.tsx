@@ -60,7 +60,7 @@ export const LandingChrome: React.FC<React.PropsWithChildren> = ({ children }) =
     ? <a href={ACCOUNT_URL}>{t('header.account')}</a>
     : signedIn === 'signed-out' ? <a href={signInUrl()}>{t('header.signIn')}</a> : null;
   return (
-    <div className="site-shell">
+    <div className="site-shell ielts-handbook-landing">
       <a className="skip-link" href="#main">{t('header.skip')}</a>
       <PublicExamHeader tone="ielts"
         labels={{ sections: t('header.primaryNav'), menu: t('header.menu'), more: t('header.more') }}

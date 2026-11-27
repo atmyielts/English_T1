@@ -1,0 +1,95 @@
+.practice-root.ielts-practice-landing {
+  --landing-gutter: clamp(18px, 4.1vw, 58px);
+  padding: 0;
+  background: #f6f6ee;
+}
+.ielts-practice-landing > .exam-public-header {
+  padding-inline: var(--landing-gutter);
+  margin: 0;
+  border-bottom-color: #d9dfd1;
+}
+.ielts-practice-landing .ielts-landing-frame {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  padding-inline: var(--landing-gutter);
+}
+.ielts-landing-stage {
+  background: #123d40;
+  color: #f8fbef;
+}
+.ielts-landing-stage .ielts-landing-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
+  align-items: center;
+  gap: clamp(25px, 6vw, 90px);
+  padding-block: clamp(35px, 5vw, 76px);
+}
+.ielts-practice-landing .ielts-landing-intro h1 {
+  margin: 0;
+  max-width: 13ch;
+  color: #fff9e7;
+  font-size: clamp(2.7rem, 5.4vw, 5.35rem);
+  letter-spacing: -.055em;
+  line-height: .99;
+  overflow-wrap: anywhere;
+}
+.ielts-practice-landing .ielts-landing-lead {
+  max-width: 50ch;
+  margin: 19px 0 0;
+  color: #e4eee6;
+  font-size: clamp(.98rem, 1.7vw, 1.15rem);
+}
+.ielts-practice-landing .ielts-landing-intro .hero-actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-block-start: 25px;
+}
+.ielts-practice-landing .ielts-landing-intro .btn { gap: 8px; min-height: 45px; font-weight: 750; }
+.ielts-practice-landing .ielts-landing-intro .btn.solid { background: #deedb7; border-color: #deedb7; color: #183824; }
+.ielts-practice-landing .ielts-landing-intro .btn.ghost { background: transparent; border-color: #9db7a8; color: #fff9e7; }
+.ielts-practice-landing .ielts-landing-intro .btn:focus-visible { outline: 2px solid #e3efb5; outline-offset: 3px; }
+.ielts-practice-landing .exam-question-preview {
+  --preview-paper: #fffbef; --preview-band: #e6eee1; --preview-line: #cbd8bd; --preview-accent: #37745f; --preview-ink: #203d35;
+}
+.ielts-practice-landing .exam-question-preview .exam-preview-prompt { font-family: inherit; font-size: 1.04rem; }
+.ielts-practice-landing .exam-question-preview .exam-preview-feedback { color: var(--preview-ink); }
+.ielts-practice-landing .exam-preview-answers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ielts-landing-skills { border-bottom: 1px solid #d0d8c6; background: #e8eedf; }
+.ielts-landing-skills .ielts-landing-frame { padding-block: 22px; }
+.ielts-landing-skills h2 { margin: 0 0 10px; font-size: 1.22rem; color: #203d35; }
+.ielts-landing-skill-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.ielts-landing-skill-grid > * {
+  display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 53px;
+  padding: 8px 13px; border-top: 1px solid #a8ba9e; color: #203d35;
+  text-decoration: none; overflow-wrap: anywhere;
+}
+.ielts-landing-skill-grid a:hover { background: #f8fbf3; }
+.ielts-landing-skill-grid a:focus-visible { outline: 2px solid #286151; outline-offset: -2px; }
+.ielts-landing-skill-grid svg { flex: none; }
+.ielts-landing-skill-grid a svg:last-child { margin-inline-start: auto; }
+.ielts-landing-audio small { display: block; color: #476351; }
+.ielts-landing-steps, .ielts-landing-faq { padding-block: clamp(24px, 4vw, 51px); }
+.ielts-landing-steps h2, .ielts-landing-faq h2 { margin: 0 0 17px; color: #203d35; }
+.ielts-landing-steps ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 19px; list-style-position: inside; margin: 0; padding: 0; }
+.ielts-landing-steps li { border-top: 2px solid #779e8b; padding-top: 10px; min-width: 0; }
+.ielts-landing-steps li::marker { color: #305e53; font-weight: 750; }
+.ielts-landing-steps h3 { margin: 4px 0 6px; }
+.ielts-landing-steps p, .ielts-landing-faq p { margin: 0; color: #4d5c50; }
+.ielts-landing-faq { display: grid; grid-template-columns: minmax(0, .55fr) minmax(0, 1.45fr); gap: 18px; border-top: 1px solid #d3ddcc; }
+.ielts-landing-faq details { border-bottom: 1px solid #d3ddcc; margin-bottom: 8px; padding: 8px 0; }
+.ielts-landing-faq summary { min-height: 38px; padding: 7px 0; cursor: pointer; font-weight: 700; }
+.ielts-landing-faq p { margin-bottom: 10px; }
+.ielts-landing-faq .btn { margin-top: 9px; }
+@media (max-width: 840px) {
+  .ielts-landing-stage .ielts-landing-intro { grid-template-columns: minmax(0, 1fr); }
+  .ielts-practice-landing .ielts-landing-intro h1 { max-width: 16ch; }
+  .ielts-landing-skill-grid, .ielts-landing-steps ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .ielts-landing-faq { grid-template-columns: minmax(0, 1fr); }
+  .ielts-landing-stage .ielts-landing-intro { padding-block: 30px; }
+  .ielts-landing-skill-grid { column-gap: 9px; }
+  .ielts-landing-skill-grid > * { padding-inline: 2px; }
+  .ielts-landing-skill-grid a svg:last-child { display: none; }
+}

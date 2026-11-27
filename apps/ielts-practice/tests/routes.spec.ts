@@ -197,7 +197,7 @@ test.describe('IELTS Practice routes on a phone', () => {
       await page.setViewportSize(viewport);
       await mockBackend(page);
       const pages: Array<{ path: string; ready: RegExp }> = [
-        { path: '/', ready: /From mock results to focused practice/i },
+        { path: '/', ready: /Turn your IELTS mistakes into progress/i },
         { path: '/today', ready: /Today’s plan/ },
         { path: '/dashboard', ready: /Welcome back, Aziza/ },
         { path: `/lab/${LAB_SESSION_ID}`, ready: /Main idea evidence locator/ },
