@@ -1,15 +1,6 @@
-import type { ProjectDay, ProjectDef, ProjectPoint } from './english-immersion-depth.ts';
-
-type ScenarioDay = Omit<ProjectDay, 'day' | 'estimated_minutes' | 'preparation'> & {
-  estimated_minutes: number;
-  preparation: [string, string];
-};
-
-const point = (label: string, ...any: string[]): ProjectPoint => ({ label, any });
-const scenario = (project: Omit<ProjectDef, 'days'>, days: ScenarioDay[]): ProjectDef => ({
-  ...project,
-  days: days.map((day, index) => ({ ...day, day: index + 1 })),
-});
+import type { ProjectDef } from './english-immersion-depth.ts';
+import { continuationScenarios } from './english-curriculum-scenario-continuation.ts';
+import { point, scenario } from './english-curriculum-scenario-definition.ts';
 
 export const scenarioProjects: readonly ProjectDef[] = [
   scenario({
@@ -187,7 +178,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
   }, [
     {
       kind: 'reply', estimated_minutes: 21, min_words: 59, title: 'Write the volunteer brief',
-      situation: 'Community centre request: clean adult coats in good condition; no shoes or children’s sizes. Drop-off is Saturday, 9–12, at East Hall. The centre wants bags labelled by size. Rosa and Dev can each cover 90 minutes, but Rosa must leave by 10:30.',
+      situation: 'Community centre request: clean adult coats in good condition. No shoes or children’s sizes. Drop-off is Saturday, 9–12, at East Hall. The centre wants bags labelled by size. Rosa and Dev can each cover 90 minutes, but Rosa must leave by 10:30.',
       preparation: ['Separate the donation rules from the staffing constraints in your notes. Sketch a rota that covers the whole period.', 'Draft a message with roles first and the sorting instruction second. Read it as a volunteer arriving in a hurry.'],
       task: 'Write to Rosa and Dev. Assign their shifts and explain what they will check and how they will mark each bag.',
       goal: 'The collection table is staffed throughout and the receiving team understands the labels.',
@@ -205,7 +196,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
     },
     {
       kind: 'speak', estimated_minutes: 22, min_words: 62, title: 'Reschedule a vehicle pickup',
-      situation: 'The driver says the van has broken down. A smaller car can take five bags today at 1 pm; seven bags are ready. Two bags can stay in a locked room until Sunday at 10 am. The charity has asked for adult sizes small through large first, because extra-large supplies arrived yesterday.',
+      situation: 'The driver says the van has broken down. A smaller car can take five bags today at 1 pm. Seven bags are ready. Two bags can stay in a locked room until Sunday at 10 am. The charity has asked for adult sizes small through large first, because extra-large supplies arrived yesterday.',
       preparation: ['Work out which five bags need priority and where to leave the other two. Check that a proposed pickup time fits the room access.', 'Rehearse a voice note using “today” and “tomorrow” with their exact times. Replace any detail that would be hard to follow without reading a text.'],
       task: 'Give the driver a revised two-trip plan, with priorities, times and safe storage.',
       goal: 'The driver can deliver the priority stock and collect the remainder.',
@@ -238,7 +229,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
     },
     {
       kind: 'reply', estimated_minutes: 24, min_words: 80, title: 'Find a route for a small group',
-      situation: 'A group of six arrives Thursday at 20:48; two members use wheelchairs. The south ramp closes at 21:00. The last train departs at 21:13. Staff can meet the group at the Museum Road gate from 20:45 if the group confirms before 18:00.',
+      situation: 'A group of six arrives Thursday at 20:48. Two members use wheelchairs. The south ramp closes at 21:00. The last train departs at 21:13. Staff can meet the group at the Museum Road gate from 20:45 if the group confirms before 18:00.',
       preparation: ['Calculate the margin between arrival, ramp closure, and the train. Identify the risk if the group is delayed by five or ten minutes.', 'Draft a recommendation and one backup. Re-read your answer as the group leader and make the confirmation deadline explicit.'],
       task: 'Reply to the group leader with the more reliable planned access arrangement, the confirmation deadline, and a fallback if they reach the station early.',
       goal: 'The group has confirmed accessible access plus a realistic backup route.',
@@ -261,7 +252,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
       task: 'Write the public update to clarify both alternate routes and the reopening uncertainty. Add a short separate instruction for staff.',
       goal: 'The notice corrects a misunderstanding and staff know what information to replace.',
       points: [point('explain that Monday is only completion', 'monday'), point('make reopening depend on inspection', 'inspection'), point('restate the day and evening routes', 'south ramp', 'museum road'), point('ask staff to replace old instructions', 'replace', 'update the sign', 'update the website')],
-      model_answer: 'Work on the north lift is now expected to finish on Monday. The lift will reopen once it passes an inspection, so please check for a confirmed date before travelling. The south ramp remains open during the day until 21:00. After that, staff can open the Museum Road gate for step-free access; please allow ten minutes. Arrangements through that gate worked for Thursday’s group.\n\nStaff: replace the old notice at both entrances and update the website with the confirmed lift reopening time as soon as it is available.',
+      model_answer: 'Work on the north lift is now expected to finish on Monday. The lift will reopen once it passes an inspection, so please check for a confirmed date before travelling. The south ramp remains open during the day until 21:00. After that, staff can open the Museum Road gate for step-free access. Please allow ten minutes. Arrangements through that gate worked for Thursday’s group.\n\nStaff: replace the old notice at both entrances and update the website with the confirmed lift reopening time as soon as it is available.',
     },
   ]),
   scenario({
@@ -276,7 +267,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
       task: 'Send the curator a short assessment that proposes defensible label wording and names one specific check worth making before opening.',
       goal: 'The curator can distinguish the legacy attribution from the best justified public wording.',
       points: [point('distinguish the later catalogue from a contemporaneous record', 'catalogue card', '1962'), point('register ambiguity about Bell’s role', 'paid', 'payment', 'copied'), point('propose appropriately qualified wording', 'attributed to', 'associated with', 'linked to'), point('suggest a useful next check', 'compare the handwriting', 'compare lettering', 'examine the lettering')],
-      model_answer: 'The 1962 catalogue card is evidence of a later attribution. The 1894 register is closer to the work, but its payment to Bell does not establish who drew this sheet. The note about two pencil hands gives us reason to be cautious without identifying either contributor. I would label it “Harbour plan, 1894, attributed to E. Bell; another hand may have contributed.” Before opening, ask the map specialist to compare the handwriting with a plan Bell signed. If that can only establish the lettering, we should keep the attribution qualified. A note in the internal catalogue can preserve the older wording for reference.',
+      model_answer: 'The 1962 catalogue card is evidence of a later attribution. The 1894 register is closer to the work, but its payment to Bell does not establish who drew this sheet. The note about two pencil hands gives us reason to be cautious without identifying either contributor. I would label it “Harbour plan, 1894, attributed to E. Bell. Another hand may have contributed.” Before opening, ask the map specialist to compare the handwriting with a plan Bell signed. If that can only establish the lettering, we should keep the attribution qualified. A note in the internal catalogue can preserve the older wording for reference.',
     },
     {
       kind: 'reply', estimated_minutes: 27, min_words: 98, title: 'Respond to a lender’s wording request',
@@ -298,12 +289,12 @@ export const scenarioProjects: readonly ProjectDef[] = [
     },
     {
       kind: 'reply', estimated_minutes: 28, min_words: 109, title: 'Record the revision without losing the history',
-      situation: 'The specialist finds that the place-names match Bell’s signed plans, but two distinct hands have drawn the coastline. They cannot identify the other hand. The gallery label and website can be changed tomorrow; the catalogue needs a dated entry that leaves the earlier history visible.',
+      situation: 'The specialist finds that the place-names match Bell’s signed plans, but two distinct hands have drawn the coastline. They cannot identify the other hand. The gallery label and website can be changed tomorrow. The catalogue needs a dated entry that leaves the earlier history visible.',
       preparation: ['Sort the new evidence by what it proves about lettering, what it suggests about the coastline and what it cannot establish about the assistant.', 'Write the proposed public wording first. Then revise the internal instruction so a colleague can recreate the reasoning a year from now.'],
       task: 'Write a curator’s change note containing revised public wording and an internal catalogue instruction.',
       goal: 'The record correctly distinguishes lettering from drawing, preserves the earlier attribution and documents the update.',
       points: [point('credit Bell’s lettering at the right confidence', 'lettering', 'place names'), point('distinguish the second drawing hand', 'two hands', 'second hand', 'another hand'), point('avoid identifying the assistant', 'not identified', 'unidentified', 'cannot identify'), point('retain the dated legacy record', 'dated entry', '1962 card', 'previous attribution')],
-      model_answer: 'Replace the gallery and website text with: “Harbour plan, 1894. The lettering matches examples by E. Bell; the coastline was drawn by two hands, one still unidentified.” Keep the lender’s credit as it stands. The comparison supports the narrower lettering claim. It does not establish that every mark usually assigned to Bell is his, or identify the assistant recorded in the register. Add a dated entry to the catalogue linking the specialist’s memorandum and the 1894 payment record. Retain the 1962 card and its former attribution in the record’s history, with a cross-reference to this change. That trail will help a future cataloguer distinguish a correction from a gap in the original record.',
+      model_answer: 'Replace the gallery and website text with: “Harbour plan, 1894. The lettering matches examples by E. Bell. The coastline was drawn by two hands, one still unidentified.” Keep the lender’s credit as it stands. The comparison supports the narrower lettering claim. It does not establish that every mark usually assigned to Bell is his, or identify the assistant recorded in the register. Add a dated entry to the catalogue linking the specialist’s memorandum and the 1894 payment record. Retain the 1962 card and its former attribution in the record’s history, with a cross-reference to this change. That trail will help a future cataloguer distinguish a correction from a gap in the original record.',
     },
   ]),
   scenario({
@@ -313,7 +304,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
   }, [
     {
       kind: 'reply', estimated_minutes: 28, min_words: 111, title: 'Write the opening decision brief',
-      situation: 'A housing association logged 84 window-draught reports in North Court and 46 in South Court. Each court has 600 homes. North tried a web form after a tenant campaign; South retained a staffed phone line open only during working hours. A survey of 20 homes in each court found draughts in nine North and 11 South homes, but invitations went to people who had already reported a fault. There is funding for inspections in 100 homes.',
+      situation: 'A housing association logged 84 window-draught reports in North Court and 46 in South Court. Each court has 600 homes. North tried a web form after a tenant campaign. South retained a staffed phone line open only during working hours. A survey of 20 homes in each court found draughts in nine North and 11 South homes, but invitations went to people who had already reported a fault. There is funding for inspections in 100 homes.',
       preparation: ['Identify the denominator for the logs and the selection rule for the visits. Draft the strongest warranted inference from each data source.', 'Compare an allocation based on complaints with one designed to learn about unmet need. Check what outcome would make you revise your preference.'],
       task: 'Send the board a decision brief recommending an inspection design, explaining why the observed reports cannot settle the comparison, and identifying a trigger for reallocation.',
       goal: 'The board can commission inspections that reveal unmet need and understand the limits of the current evidence.',
@@ -364,7 +355,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
     },
     {
       kind: 'reply', estimated_minutes: 14, min_words: 22, title: 'Ask the owner to describe it',
-      situation: 'Jo sends a message: “I lost a blue bag at the market. Have you got it?” You have two blue bags: one has a black handle; the other has two short white handles. You cannot tell which is Jo’s.',
+      situation: 'Jo sends a message: “I lost a blue bag at the market. Have you got it?” You have two blue bags: one has a black handle. The other has two short white handles. You cannot tell which is Jo’s.',
       preparation: ['Find the feature that distinguishes the two bags. Choose how to ask about it without naming either colour first.', 'Read the two questions in your reply aloud. Check that one is about appearance and the other is about place.'],
       task: 'Reply to Jo. Say you have two possible bags and ask two simple questions to help find the right one.',
       goal: 'The desk gets enough information before handing over any item.',
@@ -424,7 +415,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
     },
     {
       kind: 'reply', estimated_minutes: 18, min_words: 37, title: 'Confirm the final rota',
-      situation: 'Ali has agreed. The manager will be at the desk at 17:00; Ali arrives at 17:45 for training and takes over at 18:00. You will arrive at 19:00. Grace will work only at the kiosk that evening.',
+      situation: 'Ali has agreed. The manager will be at the desk at 17:00. Ali arrives at 17:45 for training and takes over at 18:00. You will arrive at 19:00. Grace will work only at the kiosk that evening.',
       preparation: ['Write a one-line summary for each person. Include the training time separately from the handover time.', 'Review your first rota message. Remove any instruction from the earlier version that would now send a colleague to the wrong place.'],
       task: 'Write the final staff notice with all ticket-desk transfers and the position Grace keeps. Say how the group should communicate a delay.',
       goal: 'The team can replace previous messages with one final plan and knows how to flag a problem.',
@@ -528,7 +519,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
       task: 'Write a correction to the groups who received the flyer. Explain account timing and the cash test with a practical example.',
       goal: 'A group with no account can decide whether to apply and knows what it needs before payment.',
       points: [point('allow an application via a named contact', 'named contact', 'contact person'), point('require an account before payment', 'before payment', 'before we pay'), point('preserve the unrestricted-cash threshold', 'unrestricted', '3 000', 'three thousand'), point('give a usable example', 'for example', 'for instance')],
-      model_answer: 'We are writing to correct last week’s grant flyer. You do not need a group bank account to apply; a named contact can submit the application. You do need an account before payment if the grant is awarded. The cash rule has not changed: your group must have less than £3,000 of unrestricted cash on the day you apply. For example, a group with £2,500 of unrestricted cash can apply through its treasurer and set up its account while the application is being considered.',
+      model_answer: 'We are writing to correct last week’s grant flyer. You do not need a group bank account to apply. A named contact can submit the application. You do need an account before payment if the grant is awarded. The cash rule has not changed: your group must have less than £3,000 of unrestricted cash on the day you apply. For example, a group with £2,500 of unrestricted cash can apply through its treasurer and set up its account while the application is being considered.',
     },
     {
       kind: 'reply', estimated_minutes: 24, min_words: 80, title: 'Respond to an ambiguous case',
@@ -537,7 +528,7 @@ export const scenarioProjects: readonly ProjectDef[] = [
       task: 'Reply to Meadow Art. Explain which amount to declare for the cash test, how the restriction affects the decision and what to include with the application.',
       goal: 'The applicant can distinguish its bank balance from assets it may freely spend.',
       points: [point('calculate unrestricted cash', '2 500', 'two thousand five hundred'), point('identify the concert venue restriction', 'venue hire', 'concert'), point('ask them to keep the donor letter', 'donor letter', 'donor’s letter'), point('qualify the assessment', 'on the application date', 'subject to')],
-      model_answer: 'Based on the information you provided, declare £2,500 of unrestricted cash. The £1,700 reserved for concert venue hire is separate even though it sits in your bank account. Keep the donor letter on file and include a brief note in the application explaining how the balances were calculated. On these figures Meadow Art is below the cash limit, subject to the balances on the application date. In the equipment section, describe the workbench and explain how people will use it; the donor’s restriction does not fund that purchase.',
+      model_answer: 'Based on the information you provided, declare £2,500 of unrestricted cash. The £1,700 reserved for concert venue hire is separate even though it sits in your bank account. Keep the donor letter on file and include a brief note in the application explaining how the balances were calculated. On these figures Meadow Art is below the cash limit, subject to the balances on the application date. In the equipment section, describe the workbench and explain how people will use it. The donor’s restriction does not fund that purchase.',
     },
     {
       kind: 'speak', estimated_minutes: 24, min_words: 79, title: 'Brief a colleague about a deadline exception',
@@ -936,4 +927,5 @@ export const scenarioProjects: readonly ProjectDef[] = [
       model_answer: 'The shakers are in the grey box under the piano now. The tambourine is still on the top shelf. We returned the other drum to Room 9.',
     },
   ]),
+  ...continuationScenarios,
 ];

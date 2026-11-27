@@ -63,13 +63,13 @@ Choose the third option. Keep the decision policy deterministic and inspectable.
 
 For every supported band, map reception, production, interaction and mediation outcomes to the existing modes and courses. List the prerequisite skills, a diagnostic, targeted practice, a transfer task and a held-out check for each outcome. Grammar and Vocabulary are mapped where learners actually use them. For example, an A2 learner can make a service request from a short notice, a B2 learner can compare two options and defend a recommendation, and a C2 learner can synthesize conflicting accounts while preserving uncertainty and whose claim is whose.
 
-The intensive library maps reception, production, interaction and mediation to 24 existing practice sessions across A1–C2. Twenty-eight original four-day projects add 112 stages to real-life coursework. The latest twenty-two give learners fresh source texts and preparation steps for comparison, rehearsal and revision before the assessed response. The audit below counts expected time from authored activities and their service estimates. A recorded-audio gate excludes pending Listening stages from native mission grading while keeping the other stages available.
+The intensive library maps reception, production, interaction and mediation to 24 existing practice sessions across A1–C2. Thirty-five original projects add 139 stages to real-life coursework. Twenty-nine projects give learners fresh source texts and preparation steps for comparison, rehearsal and revision before the assessed response. The audit below counts expected time from authored activities and their service estimates. A recorded-audio gate excludes pending Listening stages from native mission grading while keeping the other stages available.
 
 ```powershell
 deno run --no-lock --allow-read scripts/english-content/learning-inventory.ts
 ```
 
-The target is 72 hours per band, equivalent to 12 weeks at six one-hour sessions per week. A1, B2 and C2 now clear that target in the inventory. A2 has 68 hours 3 minutes, B1 has 69 hours 47 minutes and C1 has 71 hours. Actual time requires learner-session validation. Listening scripts remain prepared, and affected sessions display the coming-soon state until their recordings are ready.
+All six bands reach the 72-hour target in the inventory, equivalent to 12 weeks at six one-hour sessions per week. The estimate ranges from 72 hours 2 minutes at C2 to 73 hours at A2. Actual time requires learner-session validation. Listening scripts remain prepared, and affected sessions display the coming-soon state until their recordings are ready.
 
 ### 2. Deliver one cross-skill path end to end
 
