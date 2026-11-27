@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpenCheck, CalendarRange, Compass, Crown, Lock, Target } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, CalendarRange, Compass, Crown, Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shell } from '../components/TopNav';
@@ -7,6 +7,22 @@ import { useDynamicT, useT } from '../i18n';
 import type { Catalog, CatalogEntry } from '../lib/api';
 import { usePlaybook } from '../lib/context';
 import { pricingUrl } from '../lib/platformUrls';
+import { useI18n } from '../../../service-i18n/src/i18n.tsx';
+
+const introduction = {
+  en: {
+    sat: 'Learn how Reading and Writing and Math are tested. Read a strategy, work through an example, then use it in practice.',
+    toefl: 'See what each TOEFL iBT task asks you to do, understand the 1–6 band scale, and prepare one section at a time.',
+  },
+  ru: {
+    sat: 'Разберитесь, как устроены разделы чтения, письма и математики. Изучите приём, разберите пример и примените его на практике.',
+    toefl: 'Разберитесь в заданиях TOEFL iBT и шкале 1–6. Примеры и стратегии помогут подготовиться к каждому разделу.',
+  },
+  uz: {
+    sat: 'SAT o‘qish, yozish va matematika bo‘limlari qanday tuzilganini biling. Usulni o‘rganing, misolni yeching va amalda qo‘llang.',
+    toefl: 'TOEFL iBT topshiriqlari va 1–6 ballik shkalani tushunib oling. Misol va strategiyalar bilan har bir bo‘limga tayyorlaning.',
+  },
+} as const;
 
 export const useCatalog = () => {
   const { api } = usePlaybook();
@@ -48,6 +64,7 @@ export const ModuleCard = ({ entry, premium, parentTitle }: { entry: CatalogEntr
 export const LandingPage = () => {
   const t = useT();
   const dt = useDynamicT();
+  const { locale } = useI18n();
   const { config, access, api } = usePlaybook();
   const { catalog, failed, retry } = useCatalog();
 
@@ -59,45 +76,46 @@ export const LandingPage = () => {
 
   const bySlug = new Map((catalog?.modules ?? []).map((m) => [m.slug, m]));
   const firstModule = (slugs: string[]) => slugs.map((s) => bySlug.get(s)).find(Boolean) ?? null;
-  const sectionCards = config.sections.map((section) => ({ section, entry: firstModule(config.sectionModules[section] ?? []) }));
+  const sectionCards = config.sections.map((section) => {
+    const slugs = config.sectionModules[section] ?? [];
+    return { section, entry: firstModule(slugs), slug: slugs[0] };
+  });
   const essentials = bySlug.get(config.modules[0] ?? '');
 
   return (
     <Shell landing>
-      <section className="landing-hero">
-        <div>
-          <p className="eyebrow">{t('landing.eyebrow', { exam: config.examName })}</p>
-          <h1>{config.serviceName}</h1>
-          <p>{t(`landing.lead.${config.exam}` as 'landing.lead.sat')}</p>
-          <div className="hero-actions">
-            {essentials ? (
-              <Link to={`/${essentials.slug}`} className="btn solid">{t('landing.startFree')} <ArrowRight size={17} aria-hidden="true" /></Link>
-            ) : (
-              <Link to="/modules" className="btn solid">{t('landing.browse')} <ArrowRight size={17} aria-hidden="true" /></Link>
-            )}
-            <Link to={access.premium ? '/dashboard' : '/diagnostic'} className="btn ghost on-dark">{access.premium ? t('landing.openPlan') : t('landing.getDiagnostic')}</Link>
-          </div>
-        </div>
-        <aside className="playbook-skill-index" aria-labelledby="by-section">
-          <h2 id="by-section">{t('landing.bySectionTitle', { exam: config.examName })}</h2>
-          <ul>
-            {sectionCards.map(({ section, entry }) => {
-              const label = dt(`section.${section}`, section);
-              return <li key={section}>{entry ? (
-                <Link to={`/${entry.slug}`} className="playbook-skill-row">
-                  <Target size={17} aria-hidden="true" />
-                  <span><strong>{label}</strong><small>{entry.title}</small></span>
-                  <ArrowRight size={16} aria-hidden="true" />
-                </Link>
+      <section className="landing-hero playbook-masthead">
+        <div className="playbook-masthead-frame">
+          <div className="playbook-masthead-copy">
+            <p className="eyebrow">{t('landing.eyebrow', { exam: config.examName })}</p>
+            <h1>{config.serviceName}</h1>
+            <p>{introduction[locale][config.exam]}</p>
+            <div className="hero-actions">
+              {essentials ? (
+                <Link to={`/${essentials.slug}`} className="btn solid">{t('landing.startFree')} <ArrowRight size={17} aria-hidden="true" /></Link>
               ) : (
-                <div className="playbook-skill-row">
-                  <Target size={17} aria-hidden="true" />
-                  <span><strong>{label}</strong><small>{failed ? t('modules.loadFailed') : catalog ? t('landing.sectionSoon') : t('common.loading')}</small></span>
-                </div>
-              )}</li>;
-            })}
-          </ul>
-        </aside>
+                <Link to="/modules" className="btn solid">{t('landing.browse')} <ArrowRight size={17} aria-hidden="true" /></Link>
+              )}
+              <Link to={access.premium ? '/dashboard' : '/diagnostic'} className="btn ghost on-dark">{access.premium ? t('landing.openPlan') : t('landing.getDiagnostic')}</Link>
+            </div>
+          </div>
+          <aside className="playbook-skill-index playbook-section-list" aria-labelledby="by-section">
+            <h2 id="by-section">{t('landing.bySectionTitle', { exam: config.examName })}</h2>
+            <ol>
+              {sectionCards.map(({ section, entry, slug }, index) => {
+                const label = dt(`section.${section}`, section);
+                return <li key={section}>
+                  <Link to={slug ? `/${entry?.slug ?? slug}` : '/modules'} className="playbook-skill-row">
+                    <span className="playbook-section-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                    <span><strong>{label}</strong>{entry ? <small>{entry.title}</small> : null}</span>
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                </li>;
+              })}
+            </ol>
+            <Link className="playbook-section-all" to="/modules">{t('landing.allModules')} <ArrowRight size={15} aria-hidden="true" /></Link>
+          </aside>
+        </div>
       </section>
 
       <section className="panel" aria-labelledby="how">
