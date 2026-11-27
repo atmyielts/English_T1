@@ -27,6 +27,10 @@ create table public.english_competency_progress (
     check ((phase = 'retention') = (due_at is not null))
 );
 
+create index english_competency_retention_due_idx
+on public.english_competency_progress (user_id, due_at, competency_slug)
+where phase = 'retention';
+
 create table public.english_competency_evidence (
     user_id uuid not null references public.users(id) on delete cascade,
     competency_slug text not null,
@@ -224,10 +228,35 @@ begin
 end;
 $$;
 
+-- The same due-phase and fresh-batch conditions as the learner detail view.
+-- A recommendation never needs questions, feedback or the learner's responses.
+create function public.english_due_competency(p_user uuid, p_skills text[])
+returns jsonb
+language sql stable security invoker set search_path = ''
+as $$
+    select jsonb_build_object(
+        'slug', competency.slug,
+        'skill', competency.skill,
+        'level', competency.level,
+        'title', competency.title,
+        'due_at', progress.due_at
+    )
+    from public.english_competency_progress progress
+    join public.english_competencies competency on competency.slug = progress.competency_slug
+    join public.english_competency_batches batch on batch.competency_slug = progress.competency_slug
+        and batch.phase = progress.phase and batch.round = progress.round
+    where progress.user_id = p_user and competency.skill = any(p_skills)
+        and progress.phase = 'retention' and progress.due_at <= statement_timestamp()
+    order by progress.due_at, progress.competency_slug
+    limit 1;
+$$;
+
 revoke all on function public.english_competency_view(uuid, text, text) from public, anon, authenticated;
 revoke all on function public.english_competency_submit(uuid, text, text, text, smallint, uuid, jsonb) from public, anon, authenticated;
+revoke all on function public.english_due_competency(uuid, text[]) from public, anon, authenticated;
 grant execute on function public.english_competency_view(uuid, text, text) to service_role;
 grant execute on function public.english_competency_submit(uuid, text, text, text, smallint, uuid, jsonb) to service_role;
+grant execute on function public.english_due_competency(uuid, text[]) to service_role;
 
 -- Auth soft-deletion retains a scrubbed public.users row. Register both tables
 -- for erasure and use the shared guard to serialize writes with account closure.

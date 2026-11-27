@@ -1,11 +1,16 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { type NextInput, pickNextStep, rankWeakest } from "./english-next.ts";
+import { loadDueCompetency, type DueCompetency } from "./english-competency-action.ts";
 import { type CatalogItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 
 const item = (skill: TodaySkill, slug: string, level: CatalogItem["level"] = "B1"): CatalogItem =>
   ({ id: `${skill}-${slug}`, skill, slug, title: `${skill} ${slug}`, level, minutes: 10, difficulty: 0.5 });
 
 const ITEMS: CatalogItem[] = TODAY_SKILLS.flatMap((skill) => [item(skill, "one"), item(skill, "two")]);
+const dueCompetency: DueCompetency = {
+  slug: "article-reference", level: "A2", skill: "grammar",
+  title: "Introduce and identify things", due_at: "2026-11-27T06:00:00Z",
+};
 
 const base = (patch: Partial<NextInput> = {}): NextInput => ({
   items: ITEMS,
@@ -52,6 +57,43 @@ Deno.test("then a lesson for a repeated mistake", () => {
   const lesson = item("grammar", "articles");
   const { step } = pickNextStep(base({ items: [...ITEMS, lesson], fixes: [{ topic: "articles", count: 3, example: "a apple → an apple", item: lesson }] }));
   assertEquals([step?.reason, step?.slug, step?.detail], ["fix_mistake", "articles", "a apple → an apple"]);
+});
+
+Deno.test("an independent recheck is selected ahead of lesson retries without displacing due reviews", () => {
+  const lesson = item("grammar", "articles");
+  const input = base({
+    dueCompetency,
+    fixes: [{ topic: "articles", count: 3, example: "a apple → an apple", item: lesson }],
+    rechecks: [lesson],
+  });
+  const { step, locked } = pickNextStep(input);
+  assertEquals([step?.reason, step?.href, step?.content_item_id, step?.uses_free, locked],
+    ["competency_recheck", "/mastery/article-reference", null, false, null]);
+  assertEquals(pickNextStep({ ...input, dueReviews: 2 }).step?.reason, "review_due");
+  const free = pickNextStep({ ...input, fixes: [], rechecks: [], access: { owned: [], freeLeft: 1, freeItemIds: [] } });
+  assertEquals([free.step?.reason, free.locked], ["weakest_skill", null]);
+});
+
+Deno.test("due competency lookup uses paid, available skills and preserves the database decision", async () => {
+  const calls: unknown[] = [];
+  const db: Parameters<typeof loadDueCompetency>[0] = {
+    rpc: (name, args) => {
+      calls.push({ name, args });
+      return Promise.resolve({ data: dueCompetency, error: null });
+    },
+  };
+  assertEquals(await loadDueCompetency(db, "learner", [], ["grammar"]), null);
+  assertEquals(await loadDueCompetency(db, "learner", ["grammar"], []), null);
+  assertEquals(await loadDueCompetency(db, "learner", ["writing"], ["writing"]), null);
+  assertEquals(calls.length, 0);
+  assertEquals(await loadDueCompetency(db, "learner", ["grammar", "writing"], ["grammar", "writing"]), dueCompetency);
+  assertEquals(calls, [{ name: "english_due_competency", args: { p_user: "learner", p_skills: ["grammar"] } }]);
+});
+
+Deno.test("Today and Up Next still work with the pre-migration schema", async () => {
+  assertEquals(await loadDueCompetency({
+    rpc: () => Promise.resolve({ data: null, error: { code: "PGRST202" } }),
+  }, "learner", ["grammar"], ["grammar"]), null);
 });
 
 Deno.test("then the weakest skill against the goal, preferring its planned task", () => {

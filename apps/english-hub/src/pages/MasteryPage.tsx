@@ -4,6 +4,7 @@ import { useEnglish } from '../app/EnglishContext';
 import { ServicePaused } from '../components/ServicePaused';
 import { useI18n, useT } from '../i18n';
 import { ApiError } from '../lib/api';
+import { invalidateNext } from '../lib/engine';
 import { getCompetencies, getCompetency, submitCheck, type Batch, type Competency, type Evidence } from '../lib/mastery';
 import { useResource } from '../lib/useResource';
 import { ErrorState, LevelBadge, Loading, LockedPanel, PageHeader, Panel, Tag } from '../ui/kit';
@@ -160,6 +161,7 @@ const Check = ({ slug }: { slug: string }) => {
     setError(null);
     try {
       setSaved(await submitCheck(slug, request));
+      invalidateNext();
       setOpenTransfer(false);
       pending.current = null;
       setSending(false);

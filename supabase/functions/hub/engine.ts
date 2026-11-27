@@ -17,6 +17,7 @@ import { json, loadNotebookStats, parseBody, toText } from "../_shared/english-l
 import { playableCatalog } from "../_shared/english-recorded-listening.ts";
 import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
 import { checkActivityAccess } from "../_shared/english-allowance.ts";
+import { loadDueCompetency } from "../_shared/english-competency-action.ts";
 import { testResultRecord } from "../_shared/english-certificate.ts";
 import { perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
@@ -329,22 +330,25 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
   const slug = toText(url.searchParams.get("slug"), 160);
   const finished = slug && isSkill(fromSkill) ? items.find((item) => item.skill === fromSkill && item.slug === slug) : undefined;
 
-  const [ratings, assignments] = await Promise.all([
+  const owned = access.admin ? [...TODAY_SKILLS] : access.entitled_skills.filter(isSkill);
+  const assessable = owned.filter((skill) => access.admin || !access.paused_services.includes(skill));
+  const [ratings, assignments, dueCompetency] = await Promise.all([
     ratingsFor(ctx, goal, attempts),
     loadAssignmentNextSteps({ ...ctx, items, attempts, levelFor }),
+    loadDueCompetency(ctx.sb, ctx.userId, owned, assessable),
   ]);
-  const owned = access.entitled_skills.filter(isSkill);
   const result = pickNextStep({
     items,
     attempts,
     dueReviews: (Number(notebook.dueCount ?? 0) || 0) + (Number(reviewDueRes.count ?? 0) || 0),
     fixes,
     rechecks,
+    dueCompetency,
     ratings: ratings.skills,
     targetLevel: isCefr(goal?.target_cefr) ? goal!.target_cefr as Cefr : null,
     levelFor,
     planTasks,
-    access: { owned: access.basis === "admin" ? [...TODAY_SKILLS] : owned, freeLeft: access.free_left, freeItemIds: access.free_item_ids },
+    access: { owned, freeLeft: access.free_left, freeItemIds: access.free_item_ids },
     excludeItemId: finished?.id ?? null,
     fromSkill: isSkill(fromSkill) ? fromSkill : null,
     goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],

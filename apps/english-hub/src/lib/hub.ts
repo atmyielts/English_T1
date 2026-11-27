@@ -1,5 +1,6 @@
 import { edge } from './api';
 import type { CefrLevel, SkillKey } from './skills';
+import type { DueCompetency } from '../../../../supabase/functions/_shared/english-competency-action';
 
 export type TodayReason = 'review_due' | 'fix_mistake' | 'not_started' | 'weakest' | 'keep_fresh' | 'balance';
 export type TodayItemKind = 'new' | 'stretch' | 'retry' | 'easier';
@@ -31,6 +32,7 @@ export type TodayResponse = {
   placement_done: boolean;
   level_check?: LevelCheck;
   available_skills: SkillKey[];
+  due_competency?: DueCompetency | null;
   /** Present for learners without a plan: today's free activities. */
   free?: { left: number; per_day: number } | null;
   tasks: TodayTask[];

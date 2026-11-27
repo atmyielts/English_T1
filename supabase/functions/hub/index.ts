@@ -48,6 +48,7 @@ import {
   weekStrip,
 } from "../_shared/english-today.ts";
 import { checkActivityAccess } from "../_shared/english-allowance.ts";
+import { loadDueCompetency } from "../_shared/english-competency-action.ts";
 import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
@@ -731,28 +732,31 @@ serve(async (req) => {
 
       // Persist so the selection stays stable all day and Student Center can show it.
       const appUrl = (Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online").replace(/\/$/, "");
-      await sb.from("learner_language_daily_plans").upsert({
-        user_id: auth.userId,
-        language_id: scope.languageId,
-        plan_date: planDate,
-        minutes_budget: Math.max(5, Math.min(240, Math.round(dailyMinutes))),
-        total_estimated_minutes: plan.minutes_total,
-        status: plan.tasks.length > 0 && plan.done_count === plan.tasks.length ? "completed" : "active",
-        tasks: plan.tasks.map((task) => ({
-          id: task.id,
-          service_key: task.skill,
-          service_label: task.skill.slice(0, 1).toUpperCase() + task.skill.slice(1),
-          title: task.kind === "review" ? "Review due vocabulary" : task.title,
-          reason: task.reason,
-          intent: task.kind,
-          skill: task.skill,
-          estimated_minutes: task.minutes,
-          content_item_id: task.content_item_id,
-          href: task.kind === "review" ? `${appUrl}/review` : `${appUrl}/${task.skill}/${task.slug ?? ""}`,
-          done: task.done,
-        })),
-        summary: { generated_by: "hub.today.v1", plan_key: planKey, today_tasks: plan.tasks, done_count: plan.done_count },
-      }, { onConflict: "user_id,language_id,plan_date" });
+      const [dueCompetency] = await Promise.all([
+        loadDueCompetency(sb, auth.userId, ownedSkills, availableSkills),
+        sb.from("learner_language_daily_plans").upsert({
+          user_id: auth.userId,
+          language_id: scope.languageId,
+          plan_date: planDate,
+          minutes_budget: Math.max(5, Math.min(240, Math.round(dailyMinutes))),
+          total_estimated_minutes: plan.minutes_total,
+          status: plan.tasks.length > 0 && plan.done_count === plan.tasks.length ? "completed" : "active",
+          tasks: plan.tasks.map((task) => ({
+            id: task.id,
+            service_key: task.skill,
+            service_label: task.skill.slice(0, 1).toUpperCase() + task.skill.slice(1),
+            title: task.kind === "review" ? "Review due vocabulary" : task.title,
+            reason: task.reason,
+            intent: task.kind,
+            skill: task.skill,
+            estimated_minutes: task.minutes,
+            content_item_id: task.content_item_id,
+            href: task.kind === "review" ? `${appUrl}/review` : `${appUrl}/${task.skill}/${task.slug ?? ""}`,
+            done: task.done,
+          })),
+          summary: { generated_by: "hub.today.v1", plan_key: planKey, today_tasks: plan.tasks, done_count: plan.done_count },
+        }, { onConflict: "user_id,language_id,plan_date" }),
+      ]);
 
       return json(200, {
         ok: true,
@@ -765,6 +769,7 @@ serve(async (req) => {
         placement_done: Boolean(placement?.completed_at),
         level_check: levelCheckStatus(meta),
         available_skills: availableSkills,
+        due_competency: dueCompetency,
         free: allowance ? { left: allowance.free_left, per_day: allowance.free_per_day } : null,
         tasks: plan.tasks,
         minutes_total: plan.minutes_total,

@@ -37,6 +37,7 @@ begin
         or has_table_privilege('anon', 'public.english_competency_evidence', 'SELECT')
         or has_function_privilege('authenticated', 'public.english_competency_view(uuid,text,text)', 'EXECUTE')
         or has_function_privilege('authenticated', 'public.english_competency_submit(uuid,text,text,text,smallint,uuid,jsonb)', 'EXECUTE')
+        or has_function_privilege('authenticated', 'public.english_due_competency(uuid,text[])', 'EXECUTE')
         or has_table_privilege('service_role', 'public.english_competency_evidence', 'UPDATE') then
         raise exception 'Private answers, evidence or mutation privileges are exposed';
     end if;
@@ -87,11 +88,34 @@ begin
         or first_due - (detail#>>'{history,2,checked_at}')::timestamptz is distinct from interval '24 hours' then
         raise exception 'The first delayed check was exposed or scheduled incorrectly';
     end if;
+    if public.english_due_competency(learner, array['grammar']) is not null then
+        raise exception 'A scheduled check was recommended before it was due';
+    end if;
     reply := public.english_competency_submit(learner, 'grammar', slug, 'retention', 1::smallint, gen_random_uuid(), '[3,"does not accept"]');
     if reply->>'code' is distinct from 'not_due' then raise exception 'An early submission advanced mastery'; end if;
 
     -- Shift the local fixture’s schedule without adding a client-controlled clock.
     update public.english_competency_progress set due_at = now() - interval '1 day' where user_id = learner;
+    detail := public.english_due_competency(learner, array['grammar']);
+    if detail->>'slug' is distinct from slug or detail->>'level' is distinct from 'A1'
+        or detail ?| array['batch','questions','history','feedback']
+        or public.english_due_competency(other_learner, array['grammar']) is not null
+        or public.english_due_competency(learner, array['reading']) is not null then
+        raise exception 'Due projection omitted an open action or crossed a learner or skill boundary';
+    end if;
+
+    -- A later-level check with an earlier due time is recommended first.
+    insert into public.english_competency_progress (user_id, competency_slug, phase, due_at)
+    values (learner, 'hedge-the-right-claim', 'retention', now() - interval '2 days');
+    if public.english_due_competency(learner, array['grammar'])->>'slug' is distinct from 'hedge-the-right-claim' then
+        raise exception 'The oldest due check should win regardless of CEFR level';
+    end if;
+    -- An exhausted assessment bank does not create a dead-end recommendation.
+    update public.english_competency_progress set round = 3
+    where user_id = learner and competency_slug = 'hedge-the-right-claim';
+    if public.english_due_competency(learner, array['grammar'])->>'slug' is distinct from slug then
+        raise exception 'A competency with no fresh batch is offered for a recheck';
+    end if;
     if not exists (
         select from jsonb_array_elements(public.english_competency_view(learner, 'grammar')) entry
         where entry->>'slug' = slug and entry->>'status' = 'retention' and not (entry ?| array['batch','history'])
@@ -109,6 +133,9 @@ begin
     if detail->>'status' is distinct from 'demonstrated' or detail->>'batch' is not null
         or detail->>'due_at' is not null or jsonb_array_length(detail->'history') <> 5 then
         raise exception 'The final state or its retained evidence differs';
+    end if;
+    if public.english_due_competency(learner, array['grammar']) is not null then
+        raise exception 'A completed check is still recommended';
     end if;
 
     perform public.english_competency_submit(other_learner, 'grammar', slug, 'diagnostic', 1::smallint, gen_random_uuid(), '[0,"do not work"]');

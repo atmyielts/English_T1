@@ -8,26 +8,31 @@
     "20261127140000_english_competency_evidence.sql",
     "20261127140100_english_grammar_competency_bank.sql"
   ],
-  "edgeFunctions": ["english-mastery"],
+  "edgeFunctions": ["english-mastery", "hub"],
+  "sharedEdgeConsumers": ["hub"],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": ["ENGLISH_APP_URL"],
   "rolloutOrder": [
     "pages",
     "migration:20261127140000_english_competency_evidence.sql",
     "migration:20261127140100_english_grammar_competency_bank.sql",
+    "secret:ENGLISH_APP_URL",
     "function:english-mastery",
+    "function:hub",
     "verify:english-mastery"
   ],
   "manualFollowUps": [
     "After Pages has shipped and the linked project and pending migration list are confirmed, run supabase db push --linked.",
-    "Run supabase functions deploy english-mastery on the Schood project. Grammar, Progress and Today discover the feature from the paid catalog response."
+    "Keep the existing optional Hub configuration. Use supabase secrets set ENGLISH_APP_URL= only if the deployment already requires a non-default app URL.",
+    "Run supabase functions deploy english-mastery, then supabase functions deploy hub on the Schood project. Today and Up Next use the same server-side due projection."
   ],
   "verification": [
     "Verify Grammar access for an entitled learner and that a learner without Grammar access cannot retrieve checks.",
-    "Work through an initial check, targeted lesson and fresh transfer. Confirm the next batch is withheld until the stored time and that the delayed check appears on Today once due.",
+    "Work through an initial check, targeted lesson and fresh transfer. Confirm the next batch is withheld until the stored time and that Today and Up Next offer the earliest available delayed check.",
+    "Confirm free and paused skills, exhausted batches, and completed checks are excluded. Verify the normal plan remains usable if the projection is unavailable.",
     "Confirm fresh attempts do not expose answer keys, and confirm submitted explanations and scores persist after reload."
   ],
   "rollback": {
-    "backend": "Redeploy the previous Pages version or disable the english-mastery function to hide the entry points. Retain the private competence and learner evidence tables."
+    "backend": "Redeploy the previous Hub and Pages versions to remove recommendations and entry points. Retain the private competency and learner evidence tables."
   }
 }

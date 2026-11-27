@@ -19,7 +19,6 @@ import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
 import { getStreak } from '../lib/engine';
 import { ClassAssignmentsCard } from '../components/ClassAssignmentsCard';
 import { ShareCardButton } from '../components/ShareCardButton';
-import { GrammarCheckLink } from '../components/GrammarCheckLink';
 
 /** Streak lengths worth a share card on the day they are reached. */
 const STREAK_MILESTONES = [7, 30, 100];
@@ -98,6 +97,7 @@ export const TodayPage = () => {
 
   const data = today.data;
   const tasks = data?.tasks ?? [];
+  const dueCompetency = data?.due_competency;
   const nextIndex = tasks.findIndex((task) => !task.done);
   const allDone = tasks.length > 0 && nextIndex === -1;
   const level = data?.level ?? onboarding.value?.level ?? null;
@@ -123,7 +123,6 @@ export const TodayPage = () => {
       </div>
 
       <ContinueCard />
-      <GrammarCheckLink dueOnly />
 
       <NewBadges />
 
@@ -192,6 +191,20 @@ export const TodayPage = () => {
 
           {data && !data.free && tasks.length === 0 ? (
             <EmptyState title={t('today.empty.title')} body={t('today.empty.body')} action={<Link className="en-button" to="/practice">{t('today.empty.cta')}</Link>} />
+          ) : null}
+
+          {dueCompetency ? (
+            <Link className="en-item" to={`/mastery/${encodeURIComponent(dueCompetency.slug)}`}>
+              <SkillDot skill={dueCompetency.skill} />
+              <span className="en-item-main">
+                <strong lang="en">{dueCompetency.title}</strong>
+                <span>{t('mastery.dueReason')}</span>
+              </span>
+              <span className="en-item-meta">
+                <LevelBadge level={dueCompetency.level} muted />
+                <span className="en-button-quiet">{t('mastery.dueAction')}</span>
+              </span>
+            </Link>
           ) : null}
 
           {tasks.length ? (

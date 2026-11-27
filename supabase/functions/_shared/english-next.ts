@@ -7,7 +7,8 @@
 //      teacher (english-classes.ts builds these steps)
 //   1. due reviews (words and missed questions; always free)
 //   1b. any other open class assignment
-//   2. a lesson for a mistake the learner keeps making, then a grammar unit due
+//   2. a due independent competency check
+//   2b. a lesson for a mistake the learner keeps making, then a grammar unit due
 //      for its spaced re-check (english-grammar-mastery.ts)
 //      (then, with an exam date set, this week's exam focus section)
 //   3. the weakest skill against the goal level (by the per-skill rating)
@@ -21,8 +22,9 @@
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
 import { examPrepCandidates, type ExamNextContext } from "./english-exam-next.ts";
+import type { DueCompetency } from "./english-competency-action.ts";
 
-export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep" | "grammar_recheck";
+export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep" | "grammar_recheck" | "competency_recheck";
 
 export type NextStep = {
   /** practice: a role-play or the speaking mock, opened by `href` (those pages apply their own allowance). */
@@ -64,7 +66,9 @@ export type NextInput = {
   attempts: AttemptRow[];
   dueReviews: number;
   fixes: FixCandidate[];
-  /** Grammar units due for a re-check, most overdue first. */
+  /** Independent check already filtered for availability and due time by the database. */
+  dueCompetency?: DueCompetency | null;
+  /** Grammar lessons due to be repeated, most overdue first. */
   rechecks?: CatalogItem[];
   ratings: Partial<Record<TodaySkill, Pick<SkillRating, "value" | "level" | "progress" | "attempts">>>;
   targetLevel: Cefr | null;
@@ -211,7 +215,25 @@ export const pickNextStep = (input: NextInput): NextResult => {
   // 1b. Other open class assignments.
   candidates.push(...assignmentSteps.filter((step) => !urgent(step)));
 
-  // 2. Repeated mistakes.
+  // 2. A fresh check is a paid action and has no ordinary content-item ID.
+  const dueCompetency = input.dueCompetency;
+  if (dueCompetency && owned.has(dueCompetency.skill)) {
+    candidates.push({
+      kind: "activity",
+      skill: dueCompetency.skill,
+      content_item_id: null,
+      slug: dueCompetency.slug,
+      title: dueCompetency.title,
+      level: dueCompetency.level,
+      minutes: 5,
+      reason: "competency_recheck",
+      detail: null,
+      uses_free: false,
+      href: `/mastery/${encodeURIComponent(dueCompetency.slug)}`,
+    });
+  }
+
+  // 2b. Repeated mistakes.
   for (const fix of input.fixes) {
     if (fix.item.id === exclude) continue;
     candidates.push(activityStep(fix.item, "fix_mistake", { detail: fix.example || null }));

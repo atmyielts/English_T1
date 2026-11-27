@@ -39,6 +39,8 @@ export const stepReason = (step: NextStep, t: T): string => {
       return t('exam.next.reason', { count: Number(step.detail) || 0, skill });
     case 'grammar_recheck':
       return t('depth.next.grammar_recheck');
+    case 'competency_recheck':
+      return t('mastery.dueReason');
     case 'today_plan':
       return t('engine.next.reason.today_plan');
     case 'class_assignment':
