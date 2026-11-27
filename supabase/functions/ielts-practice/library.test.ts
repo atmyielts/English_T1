@@ -1,6 +1,45 @@
 import { assertEquals } from 'jsr:@std/assert';
 import { checkLibraryReading, practiceLibraryRequest } from './library.ts';
 
+Deno.test('IELTS Library returns content and learner progress beyond the first page', async () => {
+  const sets = Array.from({ length: 405 }, (_, i) => ({ slug: `set-${i}` }));
+  const progress = sets.slice(0, 402).map(({ slug }) => ({ set_slug: slug, best_correct: 5, question_total: 6 }));
+  const db = {
+    from(table: string) {
+      const setTable = table === 'ielts_practice_library_sets';
+      const order: string[] = [];
+      const query = {
+        select(fields: string) {
+          assertEquals(fields.includes('review_content'), false);
+          return query;
+        },
+        eq(field: string, value: unknown) {
+          assertEquals([field, value], setTable ? ['is_published', true] : ['user_id', 'reader-1']);
+          return query;
+        },
+        lte(field: string, value: number) {
+          assertEquals([field, value], ['response_format_version', 2]);
+          return query;
+        },
+        order(field: string) {
+          order.push(field);
+          return query;
+        },
+        range(first: number, last: number) {
+          assertEquals(order, setTable ? ['display_order', 'slug'] : ['set_slug']);
+          return { data: (setTable ? sets : progress).slice(first, last + 1), error: null };
+        },
+      };
+      return query;
+    },
+  };
+  const response = await practiceLibraryRequest(db, 'reader-1', 'GET', '/library', undefined, 2);
+  const result = (response.body as { sets: unknown[] }).sets;
+  assertEquals(result.length, 405);
+  assertEquals(result[401], { slug: 'set-401', progress: { best_correct: 5, question_total: 6 } });
+  assertEquals(result[404], { slug: 'set-404', progress: null });
+});
+
 Deno.test('IELTS Library grades complete reading answers and includes evidence in feedback', () => {
   const keys = [{ key: 2, explanation: 'The lease covers summer only.', evidence: 'Paragraph B' }];
   const questions = [{ options: ['Winter', 'All year', 'Summer', 'Autumn'] }];
