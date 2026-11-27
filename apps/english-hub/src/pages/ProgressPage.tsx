@@ -12,6 +12,7 @@ import { BadgesPanel } from '../components/Badges';
 import { SkillRatingsPanel } from './SkillRatingsPanel';
 import { TrapsPanel } from './TrapsPanel';
 import { ShareCardButton } from '../components/ShareCardButton';
+import { GrammarCheckLink } from '../components/GrammarCheckLink';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -95,6 +96,8 @@ export const ProgressPage = () => {
       <GoalPlanPanel />
 
       <SkillRatingsPanel reloadKey={moved ? `${moved.skill}:${moved.level}` : ''} />
+
+      <GrammarCheckLink />
 
       <div className="en-grid-2">
         <Panel title={t('progress.skills.title')}>

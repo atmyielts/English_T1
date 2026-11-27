@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useEnglish } from '../../app/EnglishContext';
+import { GrammarCheckLink } from '../../components/GrammarCheckLink';
 import { useT } from '../../i18n';
 import { SkillHome } from '../SkillHome';
 import { GrammarMasteryPanel } from './Depth';
@@ -20,7 +21,7 @@ const GrammarApp = () => {
         element={(
           <SkillHome
             skill="grammar"
-            extra={<GrammarMasteryPanel />}
+            extra={<><GrammarCheckLink /><GrammarMasteryPanel /></>}
             tools={[{ id: 'decoder', title: t('grammar.tool.decoder'), hint: t('grammar.tool.decoderHint'), render: () => <GrammarDecoderCard accessToken={accessToken} /> }]}
           />
         )}

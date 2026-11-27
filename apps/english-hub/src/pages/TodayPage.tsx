@@ -19,6 +19,7 @@ import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
 import { getStreak } from '../lib/engine';
 import { ClassAssignmentsCard } from '../components/ClassAssignmentsCard';
 import { ShareCardButton } from '../components/ShareCardButton';
+import { GrammarCheckLink } from '../components/GrammarCheckLink';
 
 /** Streak lengths worth a share card on the day they are reached. */
 const STREAK_MILESTONES = [7, 30, 100];
@@ -122,6 +123,7 @@ export const TodayPage = () => {
       </div>
 
       <ContinueCard />
+      <GrammarCheckLink dueOnly />
 
       <NewBadges />
 

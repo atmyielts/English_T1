@@ -1,50 +1,33 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-hub-intensive-60-minute-study",
+  "releaseId": "english-grammar-competency-evidence",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "english-hub"
-  ],
+  "frontends": ["english-hub"],
   "migrations": [
-    "20261124172000_english_intensive_schema.sql",
-    "20261124172100_english_intensive_units.sql"
+    "20261127140000_english_competency_evidence.sql",
+    "20261127140100_english_grammar_competency_bank.sql"
   ],
-  "edgeFunctions": [
-    "english-intensive",
-    "hub",
-    "listening-content"
-  ],
+  "edgeFunctions": ["english-mastery"],
   "workers": [],
-  "requiredSecrets": [
-    "ENGLISH_APP_URL"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261124172000_english_intensive_schema.sql",
-    "migration:20261124172100_english_intensive_units.sql",
-    "secret:ENGLISH_APP_URL",
-    "function:english-intensive",
-    "function:hub",
-    "function:listening-content",
-    "verify:english-intensive"
+    "migration:20261127140000_english_competency_evidence.sql",
+    "migration:20261127140100_english_grammar_competency_bank.sql",
+    "function:english-mastery",
+    "verify:english-mastery"
   ],
   "manualFollowUps": [
-    "After the English Hub Pages build is live, run supabase db push --linked with only these two migrations pending. The Practice link stays hidden until the intensive service reports ready.",
-    "Run supabase functions deploy english-intensive, supabase functions deploy hub, and supabase functions deploy listening-content on the approved Schood project.",
-    "Keep the existing optional supabase secrets set ENGLISH_APP_URL= configuration or its production default. No secret rotation is needed."
+    "After Pages has shipped and the linked project and pending migration list are confirmed, run supabase db push --linked.",
+    "Run supabase functions deploy english-mastery on the Schood project. Grammar, Progress and Today discover the feature from the paid catalog response."
   ],
   "verification": [
-    "Confirm 11 original themes for every level from A1 to C2, six active sessions per theme, and all intensive Listening sessions awaiting recorded audio.",
-    "Verify paid learner access, grading and draft persistence across all six active skills, and confirm each level clears 63 hours without Listening or review time.",
-    "Confirm the native Listening library and lesson routes show audio coming soon where recordings are absent, and production recommendations do not send learners to those lessons."
+    "Verify Grammar access for an entitled learner and that a learner without Grammar access cannot retrieve checks.",
+    "Work through an initial check, targeted lesson and fresh transfer. Confirm the next batch is withheld until the stored time and that the delayed check appears on Today once due.",
+    "Confirm fresh attempts do not expose answer keys, and confirm submitted explanations and scores persist after reload."
   ],
   "rollback": {
-    "content": "Keep intensive content and progress available in the database. Previous Hub Pages and prior Edge builds are available through the recorded production deployment revisions."
-  },
-  "sharedEdgeConsumers": [
-    "english-intensive",
-    "hub",
-    "listening-content"
-  ]
+    "backend": "Redeploy the previous Pages version or disable the english-mastery function to hide the entry points. Retain the private competence and learner evidence tables."
+  }
 }

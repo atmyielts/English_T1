@@ -18,6 +18,7 @@ const IntensiveWorkspace = lazy(() => import('./pages/intensive/Workspace').then
 const PracticePage = lazy(() => import('./pages/PracticePage').then((m) => ({ default: m.PracticePage })));
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 const ProgressPage = lazy(() => import('./pages/ProgressPage').then((m) => ({ default: m.ProgressPage })));
+const MasteryPage = lazy(() => import('./pages/MasteryPage').then((m) => ({ default: m.MasteryPage })));
 const TutorPage = lazy(() => import('./pages/TutorPage').then((m) => ({ default: m.TutorPage })));
 const LeaguePage = lazy(() => import('./pages/LeaguePage').then((m) => ({ default: m.LeaguePage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
@@ -138,6 +139,7 @@ const App = () => {
         <Route path="/intensive/:slug/:skill" element={hub(<IntensiveWorkspace />)} />
         <Route path="/review" element={hub(<ReviewPage />)} />
         <Route path="/progress" element={hub(<ProgressPage />)} />
+        <Route path="/mastery/:slug?" element={hub(<MasteryPage />)} />
         <Route path="/tutor" element={hub(<TutorPage />)} />
         <Route path="/league" element={hub(<LeaguePage />)} />
         <Route path="/settings" element={hub(<SettingsPage />)} />
