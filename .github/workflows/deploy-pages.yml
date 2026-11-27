@@ -192,7 +192,7 @@ jobs:
 
       - name: English Edge typecheck
         if: ${{ matrix.label == 'english-hub' }}
-        run: deno check supabase/functions/hub/index.ts
+        run: npm run check:english:edge
 
       - name: English mass-readiness contracts
         if: ${{ matrix.label == 'english-hub' }}

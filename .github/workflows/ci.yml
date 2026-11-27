@@ -82,7 +82,7 @@ jobs:
         run: npm run test:guide && npm run check:guide
 
       - name: English Edge typecheck
-        run: deno check supabase/functions/hub/index.ts
+        run: npm run check:english:edge
 
       - name: IELTS Practice Edge, access and catalog tests
         run: deno test --no-lock --allow-env supabase/functions/_shared/ielts-practice-core.test.ts supabase/functions/_shared/ielts-practice-blueprints.test.ts supabase/functions/_shared/ielts-practice-mock.test.ts supabase/functions/_shared/ielts-practice-item-srs.test.ts supabase/functions/_shared/ielts-practice-access.test.ts supabase/functions/_shared/ielts-practice-speaking.test.ts apps/ielts-practice/tests/i18n-catalog.test.ts && deno check --no-lock supabase/functions/ielts-practice/index.ts supabase/functions/ielts-srs/index.ts
