@@ -17,6 +17,7 @@ import {
   watchResult,
 } from "./english-immersion-depth.ts";
 import { basicReplyCheck, matchPoints, normalizeText, parsePoints } from "./english-immersion.ts";
+import { scenarioProjects } from "./english-curriculum-scenarios.ts";
 
 Deno.test("watch items come only from the learner's own 'wrong → right' sentences", () => {
   assertEquals(splitWatchMistake("I am agree → I agree"), { wrong: "I am agree", right: "I agree" });
@@ -58,6 +59,20 @@ Deno.test("every project day can be checked without AI: each point has a phrase 
       assert(normalizeText(day.model_answer).split(" ").length >= day.min_words, `${project.key} day ${day.day} model answer too short`);
     }
   }
+});
+
+Deno.test("scenario projects use distinct source situations, work plans and model answers in each band", () => {
+  const stages = scenarioProjects.flatMap((project) => project.days);
+  for (const feature of ["situation", "task", "model_answer"] as const) {
+    assertEquals(new Set(stages.map((stage) => normalizeText(stage[feature]))).size, stages.length);
+  }
+  for (const stage of stages) {
+    assertEquals(stage.preparation?.length, 2);
+    assert(stage.preparation?.every((instruction) => instruction.length > 25));
+    assert(stage.estimated_minutes && stage.estimated_minutes > 0);
+  }
+  assertEquals([...new Set(scenarioProjects.map((project) => project.level))].sort(), ["A1", "A2", "B1", "B2", "C1", "C2"]);
+  assertEquals(scenarioProjects.every((project) => project.days.some((day) => day.kind === "speak")), true);
 });
 
 const result = (day: number, doneOn: string, score = 80): ProjectDayResult => ({

@@ -12,6 +12,7 @@
 //    on the following learner day.
 //
 import { curriculumProjects } from "./english-curriculum-projects.ts";
+import { scenarioProjects } from "./english-curriculum-scenarios.ts";
 
 // ---------------------------------------------------------------------------
 // Personal targets
@@ -93,6 +94,7 @@ export type ProjectDay = {
   min_words: number;
   model_answer: string;
   estimated_minutes?: number;
+  preparation?: string[];
 };
 
 export type ProjectDef = {
@@ -287,6 +289,7 @@ export const PROJECTS: readonly ProjectDef[] = [
     ],
   },
   ...curriculumProjects,
+  ...scenarioProjects,
 ];
 
 export const projectByKey = (key: string): ProjectDef | null => PROJECTS.find((project) => project.key === key) ?? null;

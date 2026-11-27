@@ -63,13 +63,13 @@ Choose the third option. Keep the decision policy deterministic and inspectable.
 
 For every supported band, map reception, production, interaction and mediation outcomes to the existing modes and courses. List the prerequisite skills, a diagnostic, targeted practice, a transfer task and a held-out check for each outcome. Grammar and Vocabulary are mapped where learners actually use them. For example, an A2 learner can make a service request from a short notice, a B2 learner can compare two options and defend a recommendation, and a C2 learner can synthesize conflicting accounts while preserving uncertainty and whose claim is whose.
 
-The intensive library maps reception, production, interaction and mediation to 24 existing practice sessions across A1–C2. Six original four-day projects add 24 further practice stages through the existing real-life coursework. The audit below counts expected time from authored activities and their service estimates. A recorded-audio gate excludes pending Listening stages from native mission grading while keeping the other stages available.
+The intensive library maps reception, production, interaction and mediation to 24 existing practice sessions across A1–C2. Sixteen original four-day projects add 64 stages to real-life coursework. The latest ten give learners fresh source texts and preparation steps for comparison, rehearsal and revision before the assessed response. The audit below counts expected time from authored activities and their service estimates. A recorded-audio gate excludes pending Listening stages from native mission grading while keeping the other stages available.
 
 ```powershell
 deno run --no-lock --allow-read scripts/english-content/learning-inventory.ts
 ```
 
-The target remains 72 hours per band, equivalent to 12 weeks at six one-hour sessions per week. The current estimate is about 64–68 hours per band. Actual time requires learner-session validation. Until Schood’s recordings are available, the Listening scripts remain prepared, and affected sessions display the coming-soon state.
+The target is 72 hours per band, equivalent to 12 weeks at six one-hour sessions per week. The current estimate ranges from 66 hours 53 minutes to 70 hours 2 minutes. Actual time requires learner-session validation. Listening scripts remain prepared, and affected sessions display the coming-soon state until their recordings are ready.
 
 ### 2. Deliver one cross-skill path end to end
 

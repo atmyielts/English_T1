@@ -135,6 +135,7 @@ export const depthRu: Partial<Record<string, string>> = {
   'depth.project.kindSpeak': 'Сказать',
   'depth.project.yesterday': 'Вчера вы написали:',
   'depth.project.answerTitle': 'Ваш ответ',
+  'depth.project.preparation': 'Подготовьте ответ',
   'depth.project.check': 'Проверить ответ',
   'depth.project.dayDone': 'День {day} выполнен',
   'depth.project.tooShort': 'Ответ короткий. Ориентируйтесь примерно на {count} слов.',

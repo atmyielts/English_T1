@@ -287,11 +287,17 @@ export const ProjectPage = () => {
           {activeDay && !completed ? (
             <>
               <Panel title={t('depth.project.dayTitle', { day: activeDay.day, title: activeDay.title })} aside={<Tag>{t(activeDay.kind === 'speak' ? 'depth.project.kindSpeak' : 'depth.project.kindReply')}</Tag>}>
-                <p className="en-passage" lang="en" style={{ margin: 0, fontSize: '1rem' }}>{activeDay.situation}</p>
+                <p className="en-passage" lang="en" style={{ margin: 0, fontSize: '1rem', whiteSpace: 'pre-line' }}>{activeDay.situation}</p>
                 {data?.previous_excerpt && activeDay.day > 1 ? (
                   <p className="en-explain" style={{ margin: 0 }}>
                     <strong>{t('depth.project.yesterday')}</strong> <span lang="en">“{data.previous_excerpt}”</span>
                   </p>
+                ) : null}
+                {activeDay.preparation?.length ? (
+                  <div className="en-explain" style={{ margin: 0 }}>
+                    <strong>{t('depth.project.preparation')}</strong>
+                    <ol lang="en">{activeDay.preparation.map((step) => <li key={step}>{step}</li>)}</ol>
+                  </div>
                 ) : null}
                 <p style={{ margin: 0 }} lang="en"><strong>{activeDay.task}</strong></p>
                 <ul className="wr-checklist" lang="en">

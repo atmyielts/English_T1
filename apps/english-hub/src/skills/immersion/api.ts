@@ -120,6 +120,7 @@ export type ProjectDayPublic = {
   goal: string;
   min_words: number;
   estimated_minutes?: number;
+  preparation?: string[];
   points: string[];
   model_answer: string | null;
 };

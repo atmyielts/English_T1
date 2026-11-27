@@ -99,6 +99,7 @@ const publicDay = (project: ProjectDef, dayNumber: number, done: boolean) => {
     goal: day.goal,
     min_words: day.min_words,
     estimated_minutes: projectDayMinutes(day),
+    preparation: day.preparation ?? [],
     points: day.points.map((point) => point.label),
     model_answer: done ? day.model_answer : null,
   };

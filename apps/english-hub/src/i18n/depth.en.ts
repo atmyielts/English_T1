@@ -147,6 +147,7 @@ export const depthEn: Record<string, string> = {
   'depth.project.kindSpeak': 'Speak',
   'depth.project.yesterday': 'Yesterday you wrote:',
   'depth.project.answerTitle': 'Your answer',
+  'depth.project.preparation': 'Prepare your response',
   'depth.project.check': 'Check my answer',
   'depth.project.dayDone': 'Day {day} done',
   'depth.project.tooShort': 'This answer is short. Aim for about {count} words.',
