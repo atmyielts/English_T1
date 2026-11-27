@@ -44,7 +44,7 @@
     "verify:english:load": "node scripts/verify-english-load.mjs",
     "test:sat": "npm --workspace sat-simulator run test",
     "test:academy:routes": "npm --workspace apps/academy run test:routes -- --workers=2 --fully-parallel",
-    "test:academy:assessments": "deno test supabase/functions/academy/assessment-services.test.ts && node scripts/test-academy-assessments.mjs",
+    "test:academy:assessments": "deno test --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy/assessment-services.test.ts && node scripts/test-academy-assessments.mjs",
     "test:academy:assessments:integration": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-academy-assessment-integration.ps1",
     "test:platform:routes": "npm --workspace apps/platform run test:routes",
     "test:platform:return": "deno test --no-lock apps/platform/logic-tests/return-target.test.ts && npm --workspace apps/platform exec -- playwright test tests/auth-return.spec.ts --reporter=list && npm run test:ui:recovery",
