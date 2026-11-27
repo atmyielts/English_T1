@@ -91,13 +91,13 @@ jobs:
         run: npm run --if-present test:english:mass-readiness
 
       - name: Academy Edge typecheck
-        run: deno check supabase/functions/academy/index.ts
+        run: deno check --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy/index.ts
 
       - name: Academy Edge contract tests
         run: npm run test:academy:edge
 
       - name: Homework OS and Courses Edge typecheck and tests
-        run: deno check supabase/functions/academy-learning/index.ts && npm run test:academy-learning:edge
+        run: deno check --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy-learning/index.ts && npm run test:academy-learning:edge
 
       - name: Audit runtime dependencies
         # Fail closed on high/critical findings. The wrapper permits only the
