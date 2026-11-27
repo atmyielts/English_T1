@@ -16,6 +16,12 @@ export const TopNav = () => {
   const { pathname } = useLocation();
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 980px)');
+    const close = () => setOpen(false);
+    viewport.addEventListener('change', close);
+    return () => viewport.removeEventListener('change', close);
+  }, []);
+  useEffect(() => {
     if (!open) return;
     const outside = (event: PointerEvent) => {
       if (event.target instanceof Node && !header.current?.contains(event.target)) setOpen(false);
@@ -122,10 +128,14 @@ export const TopNav = () => {
   );
 };
 
-export const Shell = ({ children, narrow }: { children: ReactNode; narrow?: boolean }) => (
-  <div className="app-shell">
-    <a className="skip-link" href="#main">{useT()('nav.skip')}</a>
-    <TopNav />
-    <main id="main" className={`workspace${narrow ? ' narrow' : ''}`}>{children}</main>
-  </div>
-);
+export const Shell = ({ children, narrow }: { children: ReactNode; narrow?: boolean }) => {
+  const t = useT();
+  const { config } = usePlaybook();
+  return (
+    <div className="app-shell" data-exam={config.exam}>
+      <a className="skip-link" href="#main">{t('nav.skip')}</a>
+      <TopNav />
+      <main id="main" className={`workspace${narrow ? ' narrow' : ''}`}>{children}</main>
+    </div>
+  );
+};

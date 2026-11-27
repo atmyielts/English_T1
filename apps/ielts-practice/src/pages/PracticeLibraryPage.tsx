@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, AudioLines, BookOpen, CalendarDays, Mic, PenLine } from 'lucide-react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { PracticeShell } from '../components/PracticeShell';
 import { LibraryStudyCalendar } from '../components/LibraryStudyCalendar';
@@ -7,6 +8,7 @@ import { getPracticeLibrary, getPracticeLibrarySet, reviewPracticeLibrarySet, ty
 import { useAccess } from '../lib/useAccess';
 
 const skills = ['reading', 'writing', 'speaking'] as const;
+const skillIcons = { reading: BookOpen, writing: PenLine, speaking: Mic, listening: AudioLines } as const;
 const pageSize = 8;
 
 export function PracticeLibraryPage() {
@@ -52,18 +54,26 @@ export function PracticeLibraryPage() {
     return () => { active = false; };
   }, [accessToken, slug, retry]);
 
-  return <PracticeShell><main className="practice-library">
-    <header className="glass dashboard-card">
-      {slug ? <Link to={`/library${query}`}>{t(calendar ? 'library.calendarTitle' : 'library.title')}</Link> : null}
-      {!slug && calendar ? <Link to={`/library?track=${track === 'general' ? 'general' : 'academic'}`}>{t('library.title')}</Link> : null}
-      <h1>{current?.slug === slug && current ? current.title : t(calendar ? 'library.calendarTitle' : 'library.title')}</h1>
-      {!slug ? <p>{t(calendar ? 'library.calendarIntro' : 'library.intro')}</p> : null}
-      {!slug && !calendar ? <Link className="btn ghost" to={`/library?plan=8-weeks&track=${track === 'general' ? 'general' : 'academic'}`}>{t('library.calendarTitle')}</Link> : null}
+  return <PracticeShell><div className="practice-library">
+    <header className="glass dashboard-card library-header">
+      <div>
+        {slug ? <Link className="library-back" to={`/library${query}`}><ArrowLeft size={16} aria-hidden="true" />{t(calendar ? 'library.calendarTitle' : 'library.title')}</Link> : null}
+        {!slug && calendar ? <Link className="library-back" to={`/library?track=${track === 'general' ? 'general' : 'academic'}`}><ArrowLeft size={16} aria-hidden="true" />{t('library.title')}</Link> : null}
+        <h1>{current?.slug === slug && current ? current.title : t(calendar ? 'library.calendarTitle' : 'library.title')}</h1>
+        {!slug ? <p>{t(calendar ? 'library.calendarIntro' : 'library.intro')}</p> : null}
+      </div>
+      {!slug && !calendar ? <Link className="btn ghost" to={`/library?plan=8-weeks&track=${track === 'general' ? 'general' : 'academic'}`}><CalendarDays size={17} aria-hidden="true" />{t('library.calendarTitle')}</Link> : null}
     </header>
     {loading ? <p role="status">{t('shell.loadingPage')}</p> : null}
     {error ? <div className="glass dashboard-card" role="alert"><p>{t('common.error.generic')}</p><button type="button" className="btn ghost" onClick={() => setRetry(n => n + 1)}>{t('common.retry')}</button></div> : null}
     {!slug && !loading && !error && calendar ? <LibraryStudyCalendar sets={sets} /> : null}
     {!slug && !loading && !error && !calendar ? <>
+      <nav className="library-skill-links" aria-label={t('library.title')}>
+        {[...skills, 'listening' as const].map(skill => {
+          const Icon = skillIcons[skill];
+          return <a key={skill} href={`#library-${skill}`}><Icon size={17} aria-hidden="true" />{t(`section.${skill}`)}</a>;
+        })}
+      </nav>
       <div className="glass dashboard-card library-filters">
         <label>{t('library.track')}
           <select value={track} onChange={event => changeFilter('track', event.currentTarget.value, 'both')}>
@@ -84,23 +94,28 @@ export function PracticeLibraryPage() {
         const available = sets.filter(set => set.skill === skill && (track === 'both' || set.track === track || set.track === 'both'));
         const matches = available.filter(set => progress === 'any' || (progress === 'reviewed') === Boolean(set.progress));
         const count = shown[skill] ?? pageSize;
-        return <section className="glass dashboard-card" key={skill}>
-          <h2>{t(`section.${skill}`)}</h2>
-          <p>{t('library.remaining', { count: available.filter(set => !set.progress).length, total: available.length })}</p>
+        return <section className="glass dashboard-card library-skill" id={`library-${skill}`} key={skill}>
+          <div className="library-skill-header">
+            <h2>{t(`section.${skill}`)}</h2>
+            <p>{t('library.remaining', { count: available.filter(set => !set.progress).length, total: available.length })}</p>
+          </div>
           {matches.length ? <ul className="library-sets">{matches.slice(0, count).map(set => <li key={set.slug}>
-            <Link to={`/library/${set.slug}${query}`}>{set.title}</Link>
-            <span>{t(`library.${set.track}`)} · {t('library.minutes', { count: set.minutes })}{set.progress ? ` · ${set.progress.best_correct == null
-              ? t('library.reviewed') : t('library.best', { correct: set.progress.best_correct, total: set.progress.question_total ?? 0 })}` : ''}</span>
+            <Link className="library-set-link" to={`/library/${set.slug}${query}`}>
+              <strong>{set.title}</strong>
+              <span>{t(`library.${set.track}`)} · {t('library.minutes', { count: set.minutes })}{set.progress ? ` · ${set.progress.best_correct == null
+                ? t('library.reviewed') : t('library.best', { correct: set.progress.best_correct, total: set.progress.question_total ?? 0 })}` : ''}</span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </li>)}</ul> : <p>{t('library.empty')}</p>}
           {matches.length > count ? <button className="btn ghost" type="button" onClick={() => setShown(previous => ({ ...previous, [skill]: count + pageSize }))}>
             {t('library.showMore', { skill: t(`section.${skill}`), count: Math.min(pageSize, matches.length - count) })}
           </button> : null}
         </section>;
       })}
-      <section className="glass dashboard-card"><h2>{t('section.listening')}</h2><p>{t('library.listeningSoon')}</p></section>
+      <section className="glass dashboard-card library-listening library-skill" id="library-listening"><h2>{t('section.listening')}</h2><p>{t('library.listeningSoon')}</p></section>
     </> : null}
     {current && current.slug === slug && accessToken && !loading ? <LibraryExercise key={slug} set={current} token={accessToken} /> : null}
-  </main></PracticeShell>;
+  </div></PracticeShell>;
 }
 
 function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: LibraryContent }; token: string }) {
@@ -108,9 +123,12 @@ function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: 
   const [answers, setAnswers] = useState<Record<number, LibraryAnswer>>({});
   const [response, setResponse] = useState('');
   const [review, setReview] = useState<LibraryReview | null>(null);
+  const reviewSummary = useRef<HTMLElement>(null);
+  const questionList = useRef<HTMLDivElement>(null);
   const [retryResponse, setRetryResponse] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  useEffect(() => { if (review) reviewSummary.current?.focus(); }, [review]);
   const content = set.learner_content;
   const questions = content.questions ?? [];
   const answered = questions.every((_, index) => typeof answers[index] === 'number' || String(answers[index] ?? '').trim() !== '');
@@ -124,26 +142,28 @@ function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: 
   };
 
   return <section className="glass dashboard-card">
-    <p>{t(`section.${set.skill}`)} · {t(`library.${set.track}`)} · {t('library.minutes', { count: set.minutes })}</p>
-    {content.passage ? <div style={{ whiteSpace: 'pre-wrap' }}>{content.passage}</div> : null}
-    {questions.map((question, index) => {
-      const feedback = review?.items?.[index];
-      const key = feedback?.key;
-      const correctAnswer = typeof key === 'number' ? question.options?.[key] : key?.join(' / ');
-      return <fieldset key={question.prompt} disabled={busy || !!review}>
-        <legend>{index + 1}. {question.prompt}</legend>
-        {question.options ? question.options.map((option, optionIndex) => <label className="library-option" key={option}>
-          <input type="radio" name={`question-${index}`} checked={answers[index] === optionIndex} onChange={() => changeAnswer(index, optionIndex)} /> {option}
-        </label>) : <label className="library-option">{t('library.textAnswer')}
-          <input type="text" value={String(answers[index] ?? '')} maxLength={80} autoComplete="off" onChange={event => changeAnswer(index, event.currentTarget.value)} />
-        </label>}
-        {feedback ? <p>
-          <strong>{t(feedback.correct ? 'library.correct' : 'library.incorrect')}</strong>{' '}
-          {correctAnswer ? t('library.answer', { answer: correctAnswer }) : ''}{' '}
-          {feedback.explanation} {feedback.evidence}
-        </p> : null}
-      </fieldset>;
-    })}
+    <p className="library-exercise-meta">{t(`section.${set.skill}`)} · {t(`library.${set.track}`)} · {t('library.minutes', { count: set.minutes })}</p>
+    <div className={`library-reading-grid${content.passage ? ' has-passage' : ''}`}>
+      {content.passage ? <div className="library-passage" lang="en"><p>{content.passage}</p></div> : null}
+      <div ref={questionList} className="library-questions">{questions.map((question, index) => {
+        const feedback = review?.items?.[index];
+        const key = feedback?.key;
+        const correctAnswer = typeof key === 'number' ? question.options?.[key] : key?.join(' / ');
+        return <fieldset className="library-question" key={question.prompt} disabled={busy || !!review}>
+          <legend lang="en">{index + 1}. {question.prompt}</legend>
+          {question.options ? question.options.map((option, optionIndex) => <label className="library-option" key={option} lang="en">
+            <input type="radio" name={`question-${index}`} checked={answers[index] === optionIndex} onChange={() => changeAnswer(index, optionIndex)} /> {option}
+          </label>) : <label className="library-option">{t('library.textAnswer')}
+            <input type="text" lang="en" value={String(answers[index] ?? '')} maxLength={80} autoComplete="off" onChange={event => changeAnswer(index, event.currentTarget.value)} />
+          </label>}
+          {feedback ? <p className="library-feedback" data-correct={feedback.correct}>
+            <strong>{t(feedback.correct ? 'library.correct' : 'library.incorrect')}</strong>{' '}
+            {correctAnswer ? t('library.answer', { answer: correctAnswer }) : ''}{' '}
+            <span lang="en">{feedback.explanation} {feedback.evidence}</span>
+          </p> : null}
+        </fieldset>;
+      })}</div>
+    </div>
     {content.prompt ? <p style={{ whiteSpace: 'pre-wrap' }}>{content.prompt}</p> : null}
     {content.table ? <PracticeTable table={content.table} label={set.title} /> : null}
     {set.skill === 'writing' ? <WritingResponse value={response} onChange={setResponse} minimum={content.minimum_words ?? 0} /> : null}
@@ -152,9 +172,13 @@ function LibraryExercise({ set, token }: { set: LibrarySet & { learner_content: 
     {content.part3 ? <><h2>Part 3</h2><ol>{content.part3.map(item => <li key={item}>{item}</li>)}</ol></> : null}
     {!review ? <button className="btn solid" type="button" disabled={busy || (set.skill === 'reading' && !answered)} onClick={() => void reviewSet()}>
       {busy ? t('common.opening') : t(set.skill === 'reading' ? 'library.check' : 'library.model')}
-    </button> : <section aria-live="polite">
+    </button> : <section ref={reviewSummary} tabIndex={-1} className="library-review-summary" aria-live="polite">
       {review.score != null ? <p>{t('library.score', { correct: review.score, total: review.total ?? 0 })}</p> : null}
-      {review.score != null ? <button className="btn ghost" type="button" onClick={() => { setAnswers({}); setReview(null); }}>{t('library.tryAgain')}</button> : null}
+      {review.score != null ? <button className="btn ghost" type="button" onClick={() => {
+        setAnswers({});
+        setReview(null);
+        requestAnimationFrame(() => questionList.current?.querySelector('input')?.focus());
+      }}>{t('library.tryAgain')}</button> : null}
       {review.model ? <><h2>{t('library.modelTitle')}</h2><div style={{ whiteSpace: 'pre-wrap' }}>{review.model}</div></> : null}
       {[review.planning, review.notes].map((note, index) => note?.length ? <ul key={index}>{note.map(item => <li key={item}>{item}</li>)}</ul> : null)}
       {set.skill === 'writing' && review.revision ? <section>

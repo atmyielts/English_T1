@@ -1,0 +1,101 @@
+/* SAT Practice shares the simulator's warm canvas and dark exam controls. */
+:root {
+  --panel: #fffdf8;
+  --panel-solid: #fffdf8;
+  --line: #ddd8cd;
+  --emerald: #087451;
+  --emerald-dark: #075a41;
+  --shadow: 0 2px 5px rgb(22 34 30 / 5%);
+  background: #f6f1e8;
+}
+body { background: #f6f1e8; }
+.app-shell { max-width: 1540px; margin: 0 auto; }
+.top-nav,
+.landing-nav,
+.panel,
+.kpi-card,
+.question-card,
+.score-impact,
+.filter-bar { border-radius: 16px; backdrop-filter: none; }
+.app-shell .workspace { min-width: 0; }
+.app-shell .page-header { border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+.app-shell .page-header h1 { letter-spacing: -.038em; }
+.app-shell .btn { border-radius: 10px; }
+.app-shell .nav-link { border-radius: 9px; }
+.app-shell .nav-link.active { background: #192923; border-color: #192923; color: #fff; }
+.app-shell .nav-link:hover:not(.active) { background: #e9efe5; color: #162923; }
+.app-shell .nav-link span { min-width: 0; overflow-wrap: anywhere; }
+.app-shell .nav-link svg { flex: none; }
+.app-shell .btn:focus-visible,
+.app-shell input:focus-visible,
+.app-shell select:focus-visible,
+.app-shell .nav-cell:focus-visible,
+.landing-page a:focus-visible { outline: 3px solid #087451; outline-offset: 3px; }
+.app-shell .daily-work { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+.app-shell .daily-work .module-callout { background: #edf3e8; border-color: #c7d5c4; }
+.app-shell .module-question-bar { background: #192923; color: #fff; padding: 7px 12px; border-radius: 10px; }
+.app-shell .module-question-bar .btn { background: #fffdf8; color: #192923; }
+.app-shell .module-question-bar .flag-on { background: #fff0cb; }
+.app-shell .question-shell { scroll-margin-top: 100px; }
+.app-shell .module-nav { padding: 8px 0; }
+.app-shell .module-nav .btn,
+.app-shell .navigator-grid .nav-cell { min-height: 44px; }
+.app-shell .sat-answer-progress { width: min(100%, 20rem); margin-top: 9px; height: 5px; }
+.app-shell .sat-answer-progress .progress-fill { background: #087451; }
+.landing-page { align-content: start; max-width: 1280px; }
+.landing-page .landing-nav { justify-content: flex-start; gap: 10px; flex-wrap: wrap; }
+.landing-page .landing-nav strong { flex: 1 1 9rem; }
+.landing-page .landing-hero {
+  background: #192923;
+  color: #fff;
+  min-height: 0;
+  padding: clamp(26px, 5vw, 62px);
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(16rem, .85fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: center;
+}
+.landing-page .landing-hero h1 { font-size: clamp(2.5rem, 5.2vw, 5rem); line-height: 1; max-width: 13ch; }
+.landing-page .landing-hero p:not(.eyebrow) { font-size: 1.03rem; }
+.landing-page .landing-hero .btn { border-radius: 10px; }
+.landing-page .landing-hero .btn.solid { background: #e5f4d3; color: #172923; }
+.landing-page .landing-hero .btn.ghost { background: transparent; color: white; border-color: #a9b8a9; }
+.landing-page .landing-hero a:focus-visible { outline-color: #e5f4d3; }
+.sat-landing-actions { display: grid; gap: 1px; background: #52645b; padding: 1px; border-radius: 11px; }
+.sat-landing-action { min-height: 65px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #263a31; color: #fff; border-radius: 10px; text-decoration: none; }
+.sat-landing-action:hover { background: #344d3f; }
+.sat-landing-action strong { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.sat-landing-action svg { flex: none; color: #c9ecaf; }
+.landing-page .feature-card { min-height: 0; padding: 18px; border-radius: 12px; background: #fffdf8; }
+.landing-page .feature-card h2 { margin: 8px 0 6px; }
+.landing-page .feature-card p { margin: 0; }
+@media (min-width: 981px) {
+  .app-shell:has(> .top-nav) { display: grid; align-items: start; grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(20px, 3vw, 44px); }
+  .app-shell .top-nav { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; margin: 0; padding: 16px 11px; gap: 14px; max-height: calc(100dvh - 32px); overflow-y: auto; background: #eee9df; }
+  .app-shell .top-nav .brand { padding: 0 4px 12px; border-bottom: 1px solid var(--line); }
+  .app-shell .top-nav .brand span { line-height: 1.25; }
+  .app-shell .top-nav .nav-panel { display: grid; align-items: start; justify-content: stretch; gap: 12px; }
+  .app-shell .top-nav .nav-links { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; gap: 4px; }
+  .app-shell .top-nav .nav-utility { display: grid; justify-content: stretch; grid-template-columns: minmax(0, 1fr); padding-top: 10px; border-top: 1px solid var(--line); gap: 3px; }
+  .app-shell .top-nav .nav-metrics { flex-wrap: wrap; justify-content: flex-start; }
+  .app-shell .top-nav .locale-switcher select { width: 100%; }
+  .app-shell .top-nav .nav-link { text-align: start; min-height: 41px; }
+  .app-shell .workspace.with-calculator { grid-template-columns: minmax(0, 1fr) minmax(245px, .65fr); }
+  .app-shell .question-shell { scroll-margin-top: 16px; }
+  .app-shell .calculator-panel { top: 16px; }
+  .app-shell .workspace.narrow { width: 100%; }
+}
+@media (max-width: 980px) {
+  .app-shell .daily-work { grid-template-columns: 1fr; }
+  .app-shell .top-nav { background: #fffdf8; }
+  .app-shell .top-nav .nav-panel.mobile-open { max-height: calc(100dvh - 85px); overflow-y: auto; }
+  .landing-page .landing-hero { grid-template-columns: minmax(0, 1fr); }
+  .landing-page .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .landing-page .feature-grid { grid-template-columns: minmax(0, 1fr); }
+  .landing-page .landing-nav .btn { min-height: 44px; }
+  .app-shell .top-nav .nav-link { min-width: 0; }
+  .app-shell .module-nav .btn { flex: 1 1 auto; }
+}

@@ -28,6 +28,11 @@ export const LandingPage = () => {
           <a className="btn ghost" href={SAT_SIMULATOR_URL}>{t('landing.mock')}</a>
         </div>
       </div>
+      <div className="sat-landing-actions">
+        <Link to="/short-sets" className="sat-landing-action"><Sparkles size={20} aria-hidden="true" /><strong>{t('shortSets.title')}</strong><ArrowRight size={17} aria-hidden="true" /></Link>
+        <Link to="/modules" className="sat-landing-action"><Timer size={20} aria-hidden="true" /><strong>{t('landing.f2.title')}</strong><ArrowRight size={17} aria-hidden="true" /></Link>
+        <Link to="/notebook" className="sat-landing-action"><NotebookTabs size={20} aria-hidden="true" /><strong>{t('nav.notebook')}</strong><ArrowRight size={17} aria-hidden="true" /></Link>
+      </div>
     </section>
     <section className="feature-grid" aria-label={t('landing.features')}>
       {FEATURES.map(({ icon: Icon, key }) => <article className="feature-card" key={key}>

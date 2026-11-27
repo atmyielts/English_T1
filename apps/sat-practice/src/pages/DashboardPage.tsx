@@ -82,6 +82,13 @@ export const DashboardPage = () => {
           <div><h2>{t('dashboard.setGoal.title')}</h2><p>{t('dashboard.setGoal.body')}</p></div>
           <Link className="btn solid" to="/onboarding">{t('dashboard.setGoal.cta')}</Link>
         </section> : null}
+        <section className="two-col daily-work">
+          <DailyPlanCard items={dashboard.plan_items} busy={busy || plan.busy !== null} onStart={item => void plan.start(item)} onRegenerate={() => void regenerate()} />
+          <section className="panel module-callout">
+            <div><p className="eyebrow">{t('nav.modules')}</p><h2>{t('dashboard.module.title')}</h2><p>{t('dashboard.module.body')}</p></div>
+            <Link className="btn solid" to="/modules">{t('dashboard.module.cta')}</Link>
+          </section>
+        </section>
         <section className="kpi-grid">
           <article className="kpi-card"><span>{t('dashboard.kpi.mastery')}</span><strong>{dashboard.mastery_percent == null ? t('dashboard.kpi.noData') : `${dashboard.mastery_percent}%`}</strong><small>{t('dashboard.kpi.masteryHint')}</small></article>
           <article className="kpi-card"><span>{t('dashboard.kpi.minutes')}</span><strong>{t('dashboard.kpi.minutesValue', { minutes: dashboard.activity.weekly_minutes, goal: dashboard.activity.weekly_goal_minutes })}</strong><small>{t('dashboard.kpi.minutesHint')}</small></article>
@@ -89,13 +96,6 @@ export const DashboardPage = () => {
             <div className="progress-track"><div className="progress-fill" style={{ width: `${progress.total ? Math.round((progress.completed / progress.total) * 100) : 0}%` }} /></div></article>
         </section>
         <ScoreImpactCallout impact={dashboard.score_impact} />
-        <section className="two-col">
-          <DailyPlanCard items={dashboard.plan_items} busy={busy || plan.busy !== null} onStart={item => void plan.start(item)} onRegenerate={() => void regenerate()} />
-          <section className="panel module-callout">
-            <div><p className="eyebrow">{t('nav.modules')}</p><h2>{t('dashboard.module.title')}</h2><p>{t('dashboard.module.body')}</p></div>
-            <Link className="btn solid" to="/modules">{t('dashboard.module.cta')}</Link>
-          </section>
-        </section>
         <DomainInsights domains={dashboard.insights?.domains ?? []} />
         {dashboard.official_mastery ? <MasteryMap mastery={dashboard.official_mastery} /> : null}
         <section className="panel">

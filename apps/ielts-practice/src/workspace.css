@@ -1,0 +1,113 @@
+/* IELTS Practice uses the simulator's ink navigation beside a paper reading surface. */
+.practice-root .practice-workspace { align-items: start; gap: clamp(16px, 2.5vw, 32px); }
+.practice-root .practice-sidebar {
+  --card-border: #393b37;
+  --text: #fffdf8;
+  --ink-2: #dfded5;
+  --muted: #dfded5;
+  --accent: #eae4d0;
+  --card-subtle: #2e302b;
+  color: var(--text);
+  background: #20221e;
+  padding: 16px;
+  border-color: #292b26;
+  border-radius: 13px;
+  box-shadow: none;
+  scrollbar-color: #696b62 #20221e;
+}
+.practice-sidebar .practice-sidebar-brand strong { color: #fffdf8; }
+.practice-root .practice-sidebar a:focus-visible,
+.practice-root .practice-sidebar button:focus-visible,
+.practice-root .practice-sidebar select:focus-visible { outline: 2px solid #f2d08e; outline-offset: 2px; }
+.practice-root .practice-sidebar .sidebar-link {
+  min-height: 44px;
+  justify-content: flex-start;
+  gap: 9px;
+  border-color: transparent;
+  background: transparent;
+  color: #eae7db;
+}
+.practice-root .practice-sidebar .sidebar-link svg { flex: none; }
+.practice-root .practice-sidebar .sidebar-link::after { margin-inline-start: auto; }
+.practice-root .practice-sidebar .sidebar-link:hover { background: #393c32; color: #fff; }
+.practice-root .practice-sidebar .sidebar-link.active { background: #f1ebda; color: #26281f; font-weight: 700; }
+.practice-root .practice-sidebar .sidebar-nav-label { color: #d0cbbb; }
+.practice-root .practice-sidebar .sidebar-panel { border-color: #53544a; background: #2c2e28; }
+.practice-root .practice-sidebar .sidebar-panel .btn,
+.practice-root .practice-sidebar .sidebar-panel select,
+.practice-root .practice-sidebar .sidebar-menu-button { background: #fdfbf2; color: #262820; border-color: #e2dccf; }
+.practice-root .practice-sidebar .sidebar-panel p,
+.practice-root .practice-sidebar .sidebar-panel strong { color: #eeeadd; }
+.practice-root .practice-sidebar .sidebar-panel progress { color: #f1ebda; }
+.practice-root .practice-main { min-width: 0; }
+.practice-root .practice-header,
+.practice-root .practice-page-head { border-bottom: 1px solid #d9d2be; padding-bottom: 16px; }
+.practice-root .practice-main .glass { border-radius: 10px; backdrop-filter: none; }
+.practice-root .practice-main .p2-step { min-width: 0; overflow-wrap: anywhere; }
+.practice-root .practice-main :is(button, a, input, textarea, select):focus-visible { outline: 2px solid #0e4955; outline-offset: 3px; }
+.practice-library { display: grid; gap: 16px; align-content: start; }
+.practice-root .library-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: clamp(16px, 3vw, 28px);
+  background: #f8f4e7;
+  border-color: #ddd4bc;
+}
+.library-header h1 { margin: 7px 0; overflow-wrap: anywhere; }
+.library-header p { max-width: 64ch; margin: 0; }
+.library-back { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 650; min-height: 40px; }
+.practice-root .library-filters { align-items: end; padding: 14px 16px; }
+.library-filters label { min-width: min(12rem, 100%); font-size: .875rem; font-weight: 650; }
+.library-filters select { min-height: 44px; }
+.library-skill-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.library-skill-links a { display: inline-flex; gap: 6px; align-items: center; min-height: 44px; padding: 5px 10px; border: 1px solid #ddd4bc; border-radius: 8px; background: #fffcf4; color: #28362f; font-weight: 650; text-decoration: none; }
+.library-skill-links svg { flex: none; color: #0e4955; }
+.library-skill-links a:hover { background: #eaf0e8; border-color: #b9cdaa; }
+.practice-root .library-skill { scroll-margin-top: 18px; }
+.library-skill-header { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.library-skill-header p { margin: 0; }
+.practice-library .library-sets { margin: 8px 0; }
+.practice-library .library-sets li { display: block; padding: 0; border-color: #e6e1d3; }
+.library-set-link { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 3px 14px; min-height: 50px; padding: 10px 8px; color: var(--text); border-radius: 7px; text-decoration: none; }
+.library-set-link:hover { background: #f3f5ec; }
+.library-set-link strong, .library-set-link span { min-width: 0; overflow-wrap: anywhere; }
+.library-set-link svg { grid-column: 2; grid-row: 1 / span 2; color: var(--accent); }
+.library-set-link span { color: #625c4d; }
+.practice-root .library-listening { background: #f5f1e7; border-style: dashed; }
+.library-listening p { margin: 0; }
+.library-exercise-meta { margin: 0 0 14px; font-size: .91rem; color: #605b50; }
+.library-reading-grid { display: grid; gap: 16px; min-width: 0; margin-bottom: 16px; }
+.library-reading-grid:empty { display: none; }
+.library-passage { padding: clamp(14px, 2vw, 24px); max-height: none; border: 1px solid #e4dbc5; border-radius: 8px; background: #fbf7e9; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.72; }
+.library-passage p { margin: 0; }
+.library-questions { display: grid; gap: 12px; min-width: 0; }
+.library-questions:empty { display: none; }
+.library-question { margin: 0; border: 1px solid #ddd9cb; border-radius: 8px; padding: 10px 12px 12px; min-width: 0; }
+.library-question legend { padding: 0 5px; font-weight: 700; overflow-wrap: anywhere; max-width: 100%; }
+.practice-library .library-option { display: flex; align-items: start; gap: 8px; min-height: 44px; padding: 8px; margin-top: 5px; border: 1px solid #e8e1d4; border-radius: 6px; cursor: pointer; overflow-wrap: anywhere; }
+.practice-library .library-option input[type='radio'] { flex: none; width: 16px; height: 16px; margin-top: 3px; accent-color: #0e4955; }
+.practice-library .library-option:has(input:checked) { border-color: #0e4955; background: #ecf4f3; }
+.practice-library .library-option:has(input[type='text']) { display: block; cursor: auto; }
+.library-feedback { margin: 10px 0 0; border-inline-start: 3px solid #b2523a; padding: 8px; background: #fbf0e6; }
+.library-feedback[data-correct='true'] { border-color: #32734e; background: #edf5e8; }
+.library-review-summary { margin-top: 18px; padding-top: 16px; border-top: 1px solid #ddd4bc; }
+.library-review-summary summary { min-height: 44px; padding: 12px 0; cursor: pointer; font-weight: 650; }
+@media (min-width: 1240px) {
+  .library-reading-grid.has-passage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .library-passage { position: sticky; top: 16px; max-height: calc(100dvh - 32px); overflow: auto; }
+}
+@media (min-width: 761px) and (max-width: 1120px) {
+  .practice-root .practice-sidebar { gap: 0; }
+  .practice-root .practice-sidebar .sidebar-menu-button { display: inline-flex; }
+  .practice-root .practice-sidebar:not(.mobile-open) .practice-sidebar-menu { display: none; }
+  .practice-root .practice-sidebar.mobile-open .practice-sidebar-menu { padding-top: 12px; max-height: min(65dvh, 720px); overflow-y: auto; }
+}
+@media (max-width: 760px) {
+  .practice-root .practice-sidebar { padding: 12px; }
+  .practice-root .practice-sidebar.mobile-open .practice-sidebar-menu { max-height: min(75dvh, 900px); overflow-y: auto; }
+  .library-header { align-items: start; }
+  .library-skill-links { gap: 6px; }
+}

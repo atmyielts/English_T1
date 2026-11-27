@@ -7,6 +7,7 @@ import App from './App';
 import { I18nProvider } from '../../../packages/service-i18n/src/i18n.tsx';
 import { catalogs } from './i18n';
 import './index.css';
+import './workspace.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Failed to find root element');

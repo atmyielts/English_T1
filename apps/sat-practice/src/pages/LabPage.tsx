@@ -177,6 +177,9 @@ const LabWorkspace = ({ accessToken, userId, attemptId }: { accessToken: string;
               <p className="eyebrow">{t(isModule ? 'lab.eyebrow.module' : 'lab.eyebrow.drill')}</p>
               <h1>{isModule ? t('lab.title.module', { section: sectionLabel(t, section) }) : t(isDone ? 'lab.title.done' : 'lab.title.drill')}</h1>
               <p>{loading ? t('lab.loading') : t('lab.answered', { answered, total })}</p>
+              {total > 0 ? <div className="progress-track sat-answer-progress" role="progressbar" aria-label={t('lab.answered', { answered, total })} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered}>
+                <div className="progress-fill" style={{ width: `${100 * answered / total}%` }} />
+              </div> : null}
             </div>
             <div className="lab-tools">
               {remaining !== null && !isDone ? <div className={`module-timer${remaining <= warningSeconds ? ' warning' : ''}`} role="timer" aria-live="off">

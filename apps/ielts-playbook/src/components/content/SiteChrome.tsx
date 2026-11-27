@@ -1,6 +1,6 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, BookOpenCheck, Home, LogIn, LogOut, Menu, UserRound, X } from 'lucide-react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { LocaleSwitcher } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { useT, type Key } from '../../i18n';
 import { ACCOUNT_URL, SCHOOD_HOME_URL, signInUrl } from '../../lib/access';
@@ -56,7 +56,17 @@ export const SiteChrome: React.FC<React.PropsWithChildren<{ compact?: boolean }>
   const t = useT();
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileNavId = useId();
+  const menuToggle = useRef<HTMLButtonElement>(null);
+  const { pathname } = useLocation();
   const closeMobileNav = () => setMobileOpen(false);
+
+  useEffect(() => setMobileOpen(false), [pathname]);
+  useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 920px)');
+    const close = () => setMobileOpen(false);
+    viewport.addEventListener('change', close);
+    return () => viewport.removeEventListener('change', close);
+  }, []);
 
   return (
     <div className={`site-shell${compact ? ' compact-shell' : ''}`}>
@@ -75,7 +85,9 @@ export const SiteChrome: React.FC<React.PropsWithChildren<{ compact?: boolean }>
         </div>
         <LocaleSwitcher label={t('locale.label')} />
       </div>
-      <header className={`site-header${mobileOpen ? ' mobile-open' : ''}`}>
+      <header className={`site-header${mobileOpen ? ' mobile-open' : ''}`} onKeyDown={event => {
+        if (event.key === 'Escape' && mobileOpen) { event.preventDefault(); closeMobileNav(); menuToggle.current?.focus(); }
+      }}>
         <div className="site-header-row">
           <Link to="/" className="brand-mark" onClick={closeMobileNav}>
             <span className="brand-knot" aria-hidden="true">
@@ -101,6 +113,7 @@ export const SiteChrome: React.FC<React.PropsWithChildren<{ compact?: boolean }>
             <button
               type="button"
               className="nav-menu-button"
+              ref={menuToggle}
               onClick={() => setMobileOpen((open) => !open)}
               aria-expanded={mobileOpen}
               aria-controls={mobileNavId}

@@ -1,0 +1,93 @@
+/* The shared Playbook reader keeps each simulator's own accent and interaction cues. */
+.app-shell[data-exam] {
+  --canvas: #f6f1e8;
+  --panel: #fffdf8;
+  --panel-solid: #fffdf8;
+  --line: #ded8cd;
+  --ink: #162522;
+  --muted: #4f5d57;
+  --theme-accent: #12634c;
+  --theme-tint: #e8eee4;
+  --theme-deep: #192923;
+  --theme-lift: #2b3d33;
+  --theme-bright: #d9eccd;
+  --shadow: 0 2px 6px rgb(34 29 20 / 5%);
+  background: var(--canvas);
+}
+.app-shell[data-exam='toefl'] {
+  --ink: #2b211a;
+  --muted: #665448;
+  --theme-accent: #9f3717;
+  --theme-tint: #fae9dd;
+  --theme-deep: #43281e;
+  --theme-lift: #58372a;
+  --theme-bright: #ffdbc0;
+}
+.app-shell[data-exam] :is(.top-nav, .panel, .kpi-card, .question-card, .feature-card, .filter-bar, .empty-state) { border-radius: 12px; backdrop-filter: none; }
+.app-shell[data-exam] .top-nav { background: #fffdf8; }
+.app-shell[data-exam] .nav-link { border-radius: 8px; }
+.app-shell[data-exam] .nav-link.active { background: var(--theme-deep); color: white; }
+.app-shell[data-exam] .nav-link:hover:not(.active) { color: var(--theme-accent); background: var(--theme-tint); }
+.app-shell[data-exam] .nav-link svg { flex: none; }
+.app-shell[data-exam] .nav-link span { min-width: 0; overflow-wrap: anywhere; }
+.app-shell[data-exam] .btn { min-height: 44px; border-radius: 9px; }
+.app-shell[data-exam] .btn.solid { background: var(--theme-deep); border-color: var(--theme-deep); color: #fff; box-shadow: none; }
+.app-shell[data-exam] .btn.solid:hover { background: var(--theme-lift); }
+.app-shell[data-exam] :is(a, button, summary, input, select, textarea):focus-visible { outline: 3px solid var(--theme-accent); outline-offset: 3px; }
+.app-shell[data-exam] .page-header { padding-block: 9px 18px; border-bottom: 1px solid var(--line); }
+.app-shell[data-exam] h1 { letter-spacing: -.035em; overflow-wrap: anywhere; }
+.app-shell[data-exam] .landing-hero {
+  min-height: 0;
+  padding: clamp(22px, 5vw, 59px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(17rem, .9fr);
+  gap: clamp(22px, 5vw, 60px);
+  align-items: center;
+  border-radius: 15px;
+  background: var(--theme-deep);
+}
+.app-shell[data-exam] .landing-hero h1 { max-width: 14ch; font-size: clamp(2.55rem, 5.2vw, 5rem); line-height: 1; }
+.app-shell[data-exam] .landing-hero p:not(.eyebrow) { font-size: 1.04rem; }
+.app-shell[data-exam] .landing-hero .eyebrow { color: var(--theme-bright); }
+.app-shell[data-exam] .landing-hero .btn.solid { border-color: var(--theme-bright); background: var(--theme-bright); color: var(--theme-deep); }
+.app-shell[data-exam] .landing-hero .btn.ghost { background: transparent; color: #fff; border-color: #b8afa2; }
+.app-shell[data-exam] .landing-hero :is(a, button):focus-visible { outline-color: var(--theme-bright); }
+.playbook-skill-index { min-width: 0; }
+.playbook-skill-index > h2 { margin: 0 0 10px; font-size: 1.08rem; color: #fff; }
+.playbook-skill-index ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.playbook-skill-index li { min-width: 0; }
+.playbook-skill-row {
+  display: grid; align-items: center; grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 52px; gap: 10px; padding: 10px 12px; border-radius: 8px;
+  color: #fff; background: var(--theme-lift); text-decoration: none;
+}
+a.playbook-skill-row:hover { background: color-mix(in srgb, var(--theme-lift) 80%, white); }
+.playbook-skill-row span { min-width: 0; overflow-wrap: anywhere; }
+.playbook-skill-row small { display: block; margin-top: 2px; color: #f5e8de; font-size: .81rem; }
+.playbook-skill-row svg { color: var(--theme-bright); }
+.app-shell[data-exam] .feature-card.link-card { min-height: 0; border-top: 2px solid var(--theme-bright); background: var(--panel); }
+.app-shell[data-exam] .feature-card.link-card:hover { border-color: var(--theme-accent); box-shadow: 0 4px 9px rgb(22 37 34 / 10%); }
+.app-shell[data-exam] .content-layout:not(:has(.toc)) { grid-template-columns: minmax(0, 1fr); }
+.app-shell[data-exam] .toc details { border-radius: 9px; background: var(--theme-tint); }
+.app-shell[data-exam] .toc summary { min-height: 40px; }
+.app-shell[data-exam] .toc a { line-height: 1.45; overflow-wrap: anywhere; }
+.app-shell[data-exam] .content-layout :is(section, article)[id] { scroll-margin-top: 160px; }
+.app-shell[data-exam] .progress-fill { background: var(--theme-accent); }
+.app-shell[data-exam] .card-cta { color: var(--theme-accent); }
+@media (min-width: 981px) {
+  .app-shell[data-exam] .top-nav {
+    grid-template-columns: minmax(11rem, .64fr) minmax(0, 1.36fr);
+    grid-template-rows: auto auto;
+    gap: 3px 16px;
+    padding: 10px 16px 7px;
+  }
+  .app-shell[data-exam] .nav-panel { display: contents; }
+  .app-shell[data-exam] .nav-links { grid-row: 2; grid-column: 1 / -1; padding-top: 4px; border-top: 1px solid var(--line); justify-content: start; }
+  .app-shell[data-exam] .nav-metrics { grid-row: 1; grid-column: 2; justify-content: end; padding: 2px 0; }
+  .app-shell[data-exam] .toc { top: 155px; max-height: calc(100dvh - 172px); overflow: auto; }
+}
+@media (max-width: 980px) {
+  .app-shell[data-exam] .landing-hero { grid-template-columns: minmax(0, 1fr); }
+  .app-shell[data-exam] .nav-panel.mobile-open { max-height: calc(100dvh - 83px); overflow-y: auto; }
+  .app-shell[data-exam] .content-layout :is(section, article)[id] { scroll-margin-top: 96px; }
+}
