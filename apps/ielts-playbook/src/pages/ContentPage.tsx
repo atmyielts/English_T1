@@ -25,7 +25,7 @@ import {
   type ViewerTier,
 } from '../components/PlaybookPremium';
 import { SiteChrome } from '../components/content/SiteChrome';
-import { PageBlocks } from '../components/content/PageBlocks';
+import { PageBlocks, sectionAnchor } from '../components/content/PageBlocks';
 import { useT } from '../i18n';
 import { hasPlaybookPremium } from '../lib/access';
 import { readCachedPage, writeCachedPage } from '../lib/pageCache';
@@ -118,6 +118,7 @@ export const ContentPage: React.FC = () => {
 
   const page = (payload?.page ?? null) as Payload | null;
   const sections = Array.isArray(payload?.sections) ? (payload?.sections as Payload[]) : [];
+  const sectionLinks = sections.flatMap((section, index) => typeof section.heading === 'string' && section.heading.trim() ? [{ id: sectionAnchor(section, index), label: section.heading }] : []);
   const childPages = Array.isArray(payload?.child_pages) ? (payload?.child_pages as Payload[]) : [];
   const sources = Array.isArray(payload?.sources) ? (payload?.sources as Payload[]) : [];
   const visibility = page ? String(page.visibility ?? 'public') : locked ? 'premium' : 'public';
@@ -187,14 +188,22 @@ export const ContentPage: React.FC = () => {
       {slug === 'test-types-booking' && page ? <MarketGuidePanel /> : null}
 
       {!locked && !notFound ? (
-        <article ref={articleRef as React.RefObject<HTMLElement>} className="article-body">
-          {page ? (
-            <PageBlocks sections={sections} accessToken={accessToken} pageSlug={slug} enableSectionCoach={premiumTools && isPremiumPage} />
-          ) : (
-            <PageSkeleton />
-          )}
-          {premiumTools ? <PlaybookHighlighter accessToken={accessToken} pageSlug={slug!} containerRef={articleRef} /> : null}
-        </article>
+        <div className="ielts-reader">
+          {sectionLinks.length > 1 ? <aside>
+            <details open>
+              <summary>{t('content.toc')}</summary>
+              <ol>{sectionLinks.map(link => <li key={link.id}><a href={`#${link.id}`}>{link.label}</a></li>)}</ol>
+            </details>
+          </aside> : null}
+          <article ref={articleRef as React.RefObject<HTMLElement>} className="article-body">
+            {page ? (
+              <PageBlocks sections={sections} accessToken={accessToken} pageSlug={slug} enableSectionCoach={premiumTools && isPremiumPage} />
+            ) : (
+              <PageSkeleton />
+            )}
+            {premiumTools ? <PlaybookHighlighter accessToken={accessToken} pageSlug={slug!} containerRef={articleRef} /> : null}
+          </article>
+        </div>
       ) : null}
 
       {page && !isPremiumPage ? <PremiumFeaturesCard tier={tier} /> : null}

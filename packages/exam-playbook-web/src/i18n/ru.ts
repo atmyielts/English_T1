@@ -15,6 +15,7 @@ export const ru: Record<keyof typeof en, string> = {
   'nav.account': 'Аккаунт',
   'nav.signIn': 'Войти',
   'nav.signOut': 'Выйти',
+  'nav.more': 'Ещё',
   'nav.language': 'Язык',
   'nav.openMenu': 'Открыть меню',
   'nav.closeMenu': 'Закрыть меню',

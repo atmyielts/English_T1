@@ -2,6 +2,7 @@ import { BookOpenCheck, CalendarRange, Compass, ExternalLink, Home, LineChart, L
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LocaleSwitcher } from '../../../service-i18n/src/i18n.tsx';
+import { PublicExamHeader } from '../../../service-design/src/PublicExamHeader';
 import { useT } from '../i18n';
 import { usePlaybook } from '../lib/context';
 import { accountUrl, homeUrl, signInUrl } from '../lib/platformUrls';
@@ -15,6 +16,12 @@ export const TopNav = () => {
   const toggle = useRef<HTMLButtonElement>(null);
   const { pathname } = useLocation();
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    const viewport = window.matchMedia('(max-width: 980px)');
+    const close = () => setOpen(false);
+    viewport.addEventListener('change', close);
+    return () => viewport.removeEventListener('change', close);
+  }, []);
   useEffect(() => {
     if (!open) return;
     const outside = (event: PointerEvent) => {
@@ -122,10 +129,42 @@ export const TopNav = () => {
   );
 };
 
-export const Shell = ({ children, narrow }: { children: ReactNode; narrow?: boolean }) => (
-  <div className="app-shell">
-    <a className="skip-link" href="#main">{useT()('nav.skip')}</a>
-    <TopNav />
-    <main id="main" className={`workspace${narrow ? ' narrow' : ''}`}>{children}</main>
-  </div>
-);
+const LandingHeader = () => {
+  const t = useT();
+  const { config, access } = usePlaybook();
+  const signedIn = access.status === 'signed_in';
+  const account = signedIn
+    ? <a href={accountUrl()}>{t('nav.account')}</a>
+    : access.status === 'anonymous' ? <a href={signInUrl(config.productSlug)}>{t('nav.signIn')}</a> : null;
+  return <PublicExamHeader tone={config.exam}
+    labels={{ sections: config.serviceName, menu: t('nav.openMenu'), more: t('nav.more') }}
+    brand={<Link to="/"><img src="/schood-logo.png" alt="" />{config.serviceName}</Link>}
+    primary={<>
+      <Link to="/modules">{t('nav.modules')}</Link>
+      <Link to="/plans">{t('nav.plans')}</Link>
+      <Link to="/diagnostic">{t('nav.diagnostic')}</Link>
+    </>}
+    secondary={<>
+      {access.premium ? <><Link to="/dashboard">{t('nav.dashboard')}</Link><Link to="/notes">{t('nav.notes')}</Link></> : null}
+      {access.isAdmin ? <Link to="/admin">{t('nav.admin')}</Link> : null}
+      <a href={config.simulator.url}>{t('nav.simulator', { exam: config.examName })}</a>
+      {config.practice.kind === 'product' ? <a href={config.practice.url}>{t(config.practice.nameKey as 'product.satPractice')}</a> : null}
+      <a href={homeUrl()}>{t('nav.home')}</a>
+      {signedIn ? <button type="button" onClick={() => void access.signOut()}>{t('nav.signOut')}</button> : null}
+    </>}
+    locale={<LocaleSwitcher label={t('nav.language')} />}
+    account={account}
+  />;
+};
+
+export const Shell = ({ children, narrow, landing = false }: { children: ReactNode; narrow?: boolean; landing?: boolean }) => {
+  const t = useT();
+  const { config } = usePlaybook();
+  return (
+    <div className="app-shell" data-exam={config.exam}>
+      <a className="skip-link" href="#main">{t('nav.skip')}</a>
+      {landing ? <LandingHeader /> : <TopNav />}
+      <main id="main" className={`workspace${narrow ? ' narrow' : ''}`}>{children}</main>
+    </div>
+  );
+};

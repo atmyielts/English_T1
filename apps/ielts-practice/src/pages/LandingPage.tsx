@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ClipboardList, Sparkles, Target, TrendingUp } from 'lucide-react';
 import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
-import { PracticeTopNav, type PracticeNavAction } from '../components/PracticeTopNav';
+import { PublicExamHeader } from '../../../../packages/service-design/src/PublicExamHeader';
 import { IELTS_PRACTICE_PRODUCT_SLUG } from '../lib/constants';
 import { buildPlatformUrl, platformBase } from '../lib/platformUrls';
 import { supabase } from '../lib/supabase';
@@ -40,24 +40,28 @@ export const LandingPage = () => {
     }
   };
 
-  const actions: PracticeNavAction[] = [
-    { id: 'home', label: t('land.nav.home'), href: SCHOOD_HOME_URL },
-    { id: 'account', label: t('land.nav.account'), href: `${SCHOOD_HOME_URL}/account` },
-    authed
-      ? { id: 'today', label: t('land.nav.continue'), to: '/today' }
-      : { id: 'signin', label: t('land.nav.signin'), href: authHref },
-    ...(authed ? [{ id: 'signout', label: t('land.nav.signout'), onClick: () => void signOut() }] : []),
-    { id: 'access', label: t('land.nav.access'), href: pricingHref, variant: 'solid' },
-  ];
+  const simulatorUrl = 'https://ielts.schood.online/dashboard';
+  const playbookUrl = 'https://playbook.ielts.schood.online/dashboard?source=practice';
 
   return (
     <div className="practice-root">
-      <PracticeTopNav
-        title={t('land.title')}
-        subtitle={t('land.subtitle')}
-        brandHref={SCHOOD_HOME_URL}
-        leadingNode={<LocaleSwitcher label={t('shell.language')} />}
-        actions={actions}
+      <PublicExamHeader tone="ielts"
+        labels={{ sections: t('shell.nav.label'), menu: t('shell.menu'), more: t('shell.nav.more') }}
+        brand={<Link to="/"><img src="/schood-logo.png" alt="" />{t('shell.brand')}</Link>}
+        primary={<>
+          <Link to="/today">{t('shell.nav.today')}</Link>
+          <Link to="/library">{t('library.title')}</Link>
+          <a href={simulatorUrl}>{t('shell.nav.simulator')}</a>
+        </>}
+        secondary={<>
+          <a href={playbookUrl}>{t('shell.nav.playbook')}</a>
+          <a href={pricingHref}>{t('land.nav.access')}</a>
+          <a href={SCHOOD_HOME_URL}>{t('land.nav.home')}</a>
+          <a href={`${SCHOOD_HOME_URL}/account`}>{t('land.nav.account')}</a>
+          {authed ? <button type="button" onClick={() => void signOut()}>{t('land.nav.signout')}</button> : null}
+        </>}
+        locale={<LocaleSwitcher label={t('shell.language')} />}
+        account={authed ? <Link to="/today">{t('land.nav.continue')}</Link> : <a href={authHref}>{t('land.nav.signin')}</a>}
       />
 
       <main className="landing-grid">

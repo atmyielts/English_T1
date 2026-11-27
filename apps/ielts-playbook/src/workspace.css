@@ -1,0 +1,86 @@
+/* IELTS Playbook pairs the simulator's dark navigation with an editorial reader. */
+:root {
+  --bg: #f4f0e6;
+  --surface-soft: #ecefe3;
+  --line: #ded8ca;
+  --green: #25674a;
+  --green-dark: #20523a;
+  --radius: 11px;
+  --shadow-md: 0 5px 14px rgb(43 37 27 / 8%);
+  background: var(--bg);
+}
+.site-shell .site-header {
+  background: #20221e;
+  color: #fffef9;
+  border-color: #20221e;
+  backdrop-filter: none;
+}
+.site-header .brand-knot { background: #eee9d8; color: #252721; }
+.site-header .brand-mark span span { color: #d6d1c1; }
+.site-header .nav-link { color: #eeebdf; border-color: transparent; }
+.site-header .nav-link:hover { background: #383a32; color: #fff; }
+.site-header .nav-link.active { background: #efe8d6; color: #20221e; border-color: transparent; }
+.site-header :is(.nav-cta, .mobile-nav-cta) { background: #e9efda; color: #203226; border-color: #e9efda; }
+.site-header .nav-menu-button { background: #f8f4e8; color: #20221e; border-color: transparent; }
+.site-header .mobile-nav-panel { border-color: #585b51; }
+.site-header .mobile-nav-link { min-height: 44px; background: #2b2e26; border-color: #414438; color: #fffdf7; }
+.site-header .mobile-nav-link.active { background: #e9e4d4; color: #262821; }
+.site-shell :is(a, button, summary, select, textarea, input):focus-visible { outline: 3px solid #25674a; outline-offset: 3px; }
+.site-shell .site-header :is(a, button):focus-visible { outline-color: #f1cf8a; }
+.site-shell .playbook-hero {
+  grid-template-columns: minmax(0, 1.18fr) minmax(16rem, .82fr);
+  align-items: center;
+  gap: clamp(20px, 5vw, 65px);
+  min-height: 0;
+  padding: clamp(18px, 5vw, 62px);
+  background: #fbf7eb;
+}
+.playbook-hero .hero-copy { padding: 0; }
+.playbook-hero .hero-copy h1 { font-family: Georgia, Cambria, 'Times New Roman', serif; max-width: 11ch; font-size: clamp(2.6rem, 6vw, 5.2rem); letter-spacing: -.05em; }
+.playbook-hero .hero-copy .hero-summary { color: #555146; }
+.site-shell .hero-actions .button { min-height: 44px; }
+.ielts-route-board {
+  min-width: 0;
+  padding: clamp(13px, 2vw, 23px);
+  border-radius: 11px;
+  background: #252820;
+  color: #f9f5e9;
+}
+.ielts-route-board h2 { margin: 0 0 9px; font-size: 1.1rem; }
+.ielts-route-board .skill-chip-list { margin: 0 0 12px; display: flex; gap: 4px; flex-wrap: wrap; }
+.ielts-route-board .skill-chip-list li { padding: 3px 7px; background: #414a38; color: #f2efdf; border: 1px solid #626e55; }
+.ielts-route-board .route-links { display: grid; gap: 5px; }
+.ielts-route-board a { display: grid; align-items: center; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; padding: 9px 11px; min-height: 48px; border-radius: 7px; background: #363b2f; overflow-wrap: anywhere; }
+.ielts-route-board a:hover { background: #46513d; }
+.ielts-route-board a:focus-visible { outline-color: #f1cf8a; }
+.ielts-route-board a svg { color: #e1d8b8; }
+.landing-module-index .module-card { background: #fffdf7; border-top: 2px solid #c8bfaa; }
+.landing-module-index .module-card:hover { border-color: #25674a; }
+.site-shell .article-hero { background: #fbf7eb; }
+.site-shell .article-hero h1 { font-family: Georgia, Cambria, 'Times New Roman', serif; letter-spacing: -.037em; }
+.site-shell .article-rail { background: #eeebde; }
+.ielts-reader { display: grid; gap: 16px; align-items: start; margin-top: 16px; }
+.ielts-reader > article { min-width: 0; }
+.ielts-reader aside {
+  padding: 10px 14px;
+  border: 1px solid #dcd5c4;
+  border-radius: 9px;
+  background: #f9f5e8;
+}
+.ielts-reader summary { min-height: 36px; display: list-item; padding-block: 7px; font-weight: 700; cursor: pointer; }
+.ielts-reader ol { padding-inline-start: 1.15rem; margin: 4px 0 8px; }
+.ielts-reader ol li { padding: 3px 0; font-size: .9rem; }
+.ielts-reader ol a { overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; }
+.ielts-reader ol a:hover { color: #25674a; }
+.ielts-reader .page-blocks > [id] { scroll-margin-top: 110px; }
+@media (min-width: 1080px) {
+  .ielts-reader:has(> aside) { grid-template-columns: minmax(12rem, .34fr) minmax(0, 1fr); }
+  .ielts-reader > aside { position: sticky; top: 104px; max-height: calc(100dvh - 125px); overflow-y: auto; }
+}
+@media (max-width: 920px) {
+  .site-shell .playbook-hero { grid-template-columns: minmax(0, 1fr); }
+  .site-shell .mobile-nav-panel { max-height: calc(100dvh - 140px); overflow-y: auto; }
+}
+@media (max-width: 640px) {
+  .ielts-reader .page-blocks > [id] { scroll-margin-top: 18px; }
+}

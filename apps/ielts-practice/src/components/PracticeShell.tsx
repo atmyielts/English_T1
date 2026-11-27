@@ -1,6 +1,6 @@
-import { useEffect, useId, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { BarChart3, BookOpen, CalendarDays, ClipboardList, FileText, Menu, Mic, PenLine, Repeat, X, type LucideIcon } from 'lucide-react';
 import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
 import { useAppT, type AppKey } from '../i18n';
 import { supabase } from '../lib/supabase';
@@ -21,20 +21,20 @@ interface PracticeShellProps {
 }
 
 // Three primary tabs map to the learner's three intents: DO / REVIEW / CONFIGURE.
-const PRIMARY_NAV: Array<{ label: AppKey; hint: AppKey; to: string }> = [
-  { label: 'shell.nav.today', hint: 'shell.nav.today.hint', to: '/today' },
-  { label: 'shell.nav.progress', hint: 'shell.nav.progress.hint', to: '/dashboard' },
-  { label: 'shell.nav.plan', hint: 'shell.nav.plan.hint', to: '/plan' },
+const PRIMARY_NAV: Array<{ label: AppKey; hint: AppKey; to: string; icon: LucideIcon }> = [
+  { label: 'shell.nav.today', hint: 'shell.nav.today.hint', to: '/today', icon: CalendarDays },
+  { label: 'shell.nav.progress', hint: 'shell.nav.progress.hint', to: '/dashboard', icon: BarChart3 },
+  { label: 'shell.nav.plan', hint: 'shell.nav.plan.hint', to: '/plan', icon: ClipboardList },
 ];
 
 // Secondary tools — reachable but not competing with the daily path.
-const MORE_NAV: Array<{ label: AppKey; to: string }> = [
-  { label: 'library.title', to: '/library' },
-  { label: 'shell.nav.reviews', to: '/practice/reviews' },
-  { label: 'shell.nav.stats', to: '/practice/stats/by-type' },
-  { label: 'shell.nav.speaking', to: '/speaking' },
-  { label: 'shell.nav.writingPrep', to: '/writing-prep' },
-  { label: 'shell.nav.generator', to: '/generator' },
+const MORE_NAV: Array<{ label: AppKey; to: string; icon: LucideIcon }> = [
+  { label: 'library.title', to: '/library', icon: BookOpen },
+  { label: 'shell.nav.reviews', to: '/practice/reviews', icon: Repeat },
+  { label: 'shell.nav.stats', to: '/practice/stats/by-type', icon: BarChart3 },
+  { label: 'shell.nav.speaking', to: '/speaking', icon: Mic },
+  { label: 'shell.nav.writingPrep', to: '/writing-prep', icon: PenLine },
+  { label: 'shell.nav.generator', to: '/generator', icon: FileText },
 ];
 
 const EXTERNAL_NAV: Array<{ label: AppKey; href: string }> = [
@@ -64,6 +64,7 @@ const useSessionEmail = (): string | null | undefined => {
 export const PracticeShell = ({ children, reviewsDueCount = 0, extraLinks = [], sidebarExtra }: PracticeShellProps) => {
   const t = useAppT();
   const sidebarMenuId = useId();
+  const sidebarToggle = useRef<HTMLButtonElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const location = useLocation();
@@ -86,7 +87,9 @@ export const PracticeShell = ({ children, reviewsDueCount = 0, extraLinks = [], 
   return (
     <div className="practice-root">
       <div className="practice-workspace">
-        <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`}>
+        <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`} onKeyDown={event => {
+          if (event.key === 'Escape' && sidebarOpen) { event.preventDefault(); closeSidebar(); sidebarToggle.current?.focus(); }
+        }}>
           <div className="practice-sidebar-head">
             <Link to="/today" className="practice-sidebar-brand" onClick={closeSidebar}>
               <img src="/schood-logo.png" alt="Schood" />
@@ -97,6 +100,7 @@ export const PracticeShell = ({ children, reviewsDueCount = 0, extraLinks = [], 
             </Link>
             <button
               className="sidebar-menu-button"
+              ref={sidebarToggle}
               type="button"
               onClick={() => setSidebarOpen((open) => !open)}
               aria-expanded={sidebarOpen}
@@ -120,14 +124,15 @@ export const PracticeShell = ({ children, reviewsDueCount = 0, extraLinks = [], 
                     title={t(item.hint)}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    {t(item.label)}
+                    <item.icon size={17} aria-hidden="true" />
+                    <span>{t(item.label)}</span>
                   </Link>
                 );
               })}
 
               <span className="sidebar-nav-label">{t('shell.nav.more')}</span>
               {MORE_NAV.map((item) => {
-                const isActive = location.pathname === item.to;
+                const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
                 const label = item.to === '/practice/reviews' && reviewsDueCount > 0
                   ? t('shell.nav.reviewsCount', { count: reviewsDueCount })
                   : t(item.label);
@@ -139,7 +144,8 @@ export const PracticeShell = ({ children, reviewsDueCount = 0, extraLinks = [], 
                     onClick={closeSidebar}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    {label}
+                    <item.icon size={17} aria-hidden="true" />
+                    <span>{label}</span>
                   </Link>
                 );
               })}

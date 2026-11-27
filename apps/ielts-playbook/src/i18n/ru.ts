@@ -11,6 +11,7 @@ export const ru: Record<keyof typeof en, string> = {
   'header.bySchood': 'от Schood',
   'header.primaryNav': 'Разделы Playbook',
   'header.buildPlan': 'Составить план',
+  'header.more': 'Ещё',
   'header.menu': 'Меню',
   'nav.essentials': 'Основы',
   'nav.testPath': 'Выбор экзамена',
@@ -62,6 +63,7 @@ export const ru: Record<keyof typeof en, string> = {
   'premium.locked.lead': 'Премиум-руководства глубже бесплатных модулей: разобранные примеры уровня 7–8, задания на время с ответами и чёткие правила выбора.',
   'premium.locked.inside': 'Внутри {count|one:# раздел|few:# раздела|many:# разделов|other:# раздела}',
 
+  'content.toc': 'В этом модуле',
   'content.meta': 'О модуле',
   'content.premiumGuide': 'Премиум-руководство',
   'content.publicModule': 'Бесплатный модуль',

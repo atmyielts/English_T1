@@ -10,6 +10,7 @@ export const en = {
   'header.bySchood': 'by Schood',
   'header.primaryNav': 'Playbook sections',
   'header.buildPlan': 'Build my plan',
+  'header.more': 'More',
   'header.menu': 'Menu',
   'nav.essentials': 'Essentials',
   'nav.testPath': 'Test path',
@@ -61,6 +62,7 @@ export const en = {
   'premium.locked.lead': 'Premium guides go deeper than the free modules: worked band 7–8 examples, timed drills with answers and clear decision rules.',
   'premium.locked.inside': '{count|one:# section inside|other:# sections inside}',
 
+  'content.toc': 'In this module',
   'content.meta': 'Module details',
   'content.premiumGuide': 'Premium guide',
   'content.publicModule': 'Free module',

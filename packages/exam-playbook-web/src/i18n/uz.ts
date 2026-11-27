@@ -15,6 +15,7 @@ export const uz: Record<keyof typeof en, string> = {
   'nav.account': 'Hisob',
   'nav.signIn': 'Kirish',
   'nav.signOut': 'Chiqish',
+  'nav.more': 'Yana',
   'nav.language': 'Til',
   'nav.openMenu': 'Menyuni ochish',
   'nav.closeMenu': 'Menyuni yopish',

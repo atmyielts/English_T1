@@ -45,6 +45,7 @@ const toRecordList = (value: unknown): Array<Record<string, unknown>> =>
     : [];
 
 const blockId = (section: Record<string, unknown>, index: number) => String(section.id ?? `${section.block_type ?? 'section'}-${index}`);
+export const sectionAnchor = (section: Record<string, unknown>, index: number) => `module-${blockId(section, index)}`;
 
 interface PageBlocksProps {
   sections: Array<Record<string, unknown>>;
@@ -74,7 +75,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
 
       if (type === 'checklist') {
         return (
-          <section key={id} className="content-card checklist-card">
+          <section key={id} id={sectionAnchor(section, index)} className="content-card checklist-card">
             {heading ? <h2>{heading}</h2> : null}
             <ul className="checklist-grid">
               {toList(content.items).map((item) => (
@@ -90,7 +91,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
 
       if (type === 'cta_strip') {
         return (
-          <section key={id} className="cta-strip">
+          <section key={id} id={sectionAnchor(section, index)} className="cta-strip">
             <div>
               {heading ? <p className="eyebrow">{heading}</p> : null}
               <h2>{String(content.label ?? t('blocks.nextStep'))}</h2>
@@ -111,7 +112,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
 
       if (type === 'faq') {
         return (
-          <section key={id} className="content-card faq-card">
+          <section key={id} id={sectionAnchor(section, index)} className="content-card faq-card">
             {heading ? <h2>{heading}</h2> : null}
             <div className="faq-list">
               {toRecordList(content.items).map((item, itemIndex) => (
@@ -130,7 +131,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
 
       if (type === 'comparison_table' || type === 'band_grid' || type === 'timeline' || type === 'resource_cards' || type === 'stat_grid') {
         return (
-          <section key={id} className="content-card">
+          <section key={id} id={sectionAnchor(section, index)} className="content-card">
             {heading ? <h2>{heading}</h2> : null}
             <div className="data-grid">
               {toRecordList(content.items).map((item, itemIndex) => (
@@ -146,7 +147,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
 
       if (type === 'callout') {
         return (
-          <section key={id} className="callout-card">
+          <section key={id} id={sectionAnchor(section, index)} className="callout-card">
             {heading ? <p className="eyebrow">{heading}</p> : null}
             <h2>{String(content.label ?? content.title ?? t('blocks.important'))}</h2>
             <p>{String(content.body ?? content.description ?? content.note ?? '')}</p>
@@ -192,7 +193,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
           : <p key={key}>{text}</p>;
 
       return (
-        <section key={id} className="content-card prose-card">
+        <section key={id} id={sectionAnchor(section, index)} className="content-card prose-card">
           {heading ? <h2>{heading}</h2> : null}
           {proseLead
             ? (looksLikeMarkdown(proseLead)

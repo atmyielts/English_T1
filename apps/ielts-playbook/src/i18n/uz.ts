@@ -12,6 +12,7 @@ export const uz: Record<keyof typeof en, string> = {
   'header.bySchood': 'Schood’dan',
   'header.primaryNav': 'Playbook bo‘limlari',
   'header.buildPlan': 'Rejamni tuzish',
+  'header.more': 'Yana',
   'header.menu': 'Menyu',
   'nav.essentials': 'Asoslar',
   'nav.testPath': 'Imtihon yo‘li',
@@ -63,6 +64,7 @@ export const uz: Record<keyof typeof en, string> = {
   'premium.locked.lead': 'Premium qo‘llanmalar bepul modullardan chuqurroq: 7–8 ball darajasidagi tahlil qilingan namunalar, javoblari bilan vaqtli mashqlar va aniq qaror qoidalari.',
   'premium.locked.inside': 'Ichida {count|one:# bo‘lim|other:# bo‘lim}',
 
+  'content.toc': 'Ushbu modulda',
   'content.meta': 'Modul ma’lumotlari',
   'content.premiumGuide': 'Premium qo‘llanma',
   'content.publicModule': 'Bepul modul',

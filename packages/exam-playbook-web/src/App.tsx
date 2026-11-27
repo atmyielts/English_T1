@@ -10,6 +10,7 @@ import { buildPlatformUrl } from './lib/platformUrls';
 import { LandingPage } from './pages/LandingPage';
 import './styles.css';
 import './engine.css';
+import './workspace.css';
 
 const ContentPage = lazy(async () => ({ default: (await import('./pages/ContentPage')).ContentPage }));
 const ModulesPage = lazy(async () => ({ default: (await import('./pages/ModulesPage')).ModulesPage }));

@@ -17,7 +17,7 @@ import {
 import { Link } from 'react-router-dom';
 import { playbookCatalogGet, playbookUpdatesGet, type PlaybookCatalog } from '../lib/api';
 import { PRACTICE_APP_URL, SIMULATOR_APP_URL } from '../lib/constants';
-import { SiteChrome } from '../components/content/SiteChrome';
+import { LandingChrome } from '../components/content/SiteChrome';
 import { useT } from '../i18n';
 
 const moduleIcons: LucideIcon[] = [BookOpenCheck, Compass, Headphones, PenLine, ClipboardCheck, FileText];
@@ -52,7 +52,7 @@ export const LandingPage: React.FC = () => {
   const skills = [t('skill.listening'), t('skill.reading'), t('skill.writing'), t('skill.speaking')];
 
   return (
-    <SiteChrome>
+    <LandingChrome>
       <section className="playbook-hero">
         <div className="hero-copy">
           <p className="eyebrow">{t('landing.eyebrow')}</p>
@@ -70,41 +70,17 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="hero-board" aria-label={t('landing.boardLabel')}>
-          <article className="board-panel board-primary">
-            <div className="board-topline">
-              <span>{t('landing.board.today')}</span>
-              <span>{t('landing.board.live')}</span>
-            </div>
-            <h2>{t('landing.board.title')}</h2>
-            <p>{t('landing.board.lead')}</p>
-            {/* Illustration only: no scores are shown until the learner has real evidence. */}
-            <ul className="skill-chip-list" aria-label={t('landing.board.skills')}>
-              {skills.map((label) => (
-                <li key={label}>{label}</li>
-              ))}
-            </ul>
-          </article>
-
-          <Link to="/diagnostic" className="board-panel board-action">
-            <Target size={22} />
-            <span>{t('landing.board.next')}</span>
-            <strong>{t('landing.board.priorityMap')}</strong>
-            <ArrowRight size={18} className="panel-arrow" />
-          </Link>
-
-          <Link to="/test-types-booking" className="board-panel board-route">
-            <Route size={22} />
-            <span>{t('landing.board.beforeBooking')}</span>
-            <strong>{t('landing.board.paths')}</strong>
-          </Link>
-
-          <article className="board-panel board-tags">
-            {['Band 7+', 'Task 2', 'TFNG', 'Part 3', 'Retake', 'Deadline'].map((tag) => (
-              <span key={tag}>{tag}</span>
-            ))}
-          </article>
-        </div>
+        <aside className="ielts-route-board" aria-labelledby="ielts-route-title">
+          <h2 id="ielts-route-title">{t('landing.board.skills')}</h2>
+          <ul className="skill-chip-list">
+            {skills.map(label => <li key={label}>{label}</li>)}
+          </ul>
+          <div className="route-links">
+            <a href="#modules"><BookOpenCheck size={18} aria-hidden="true" /><strong>{t('landing.library.eyebrow')}</strong><ArrowRight size={16} aria-hidden="true" /></a>
+            <Link to="/diagnostic"><Target size={18} aria-hidden="true" /><strong>{t('landing.board.priorityMap')}</strong><ArrowRight size={16} aria-hidden="true" /></Link>
+            <Link to="/test-types-booking"><Route size={18} aria-hidden="true" /><strong>{t('nav.testPath')}</strong><ArrowRight size={16} aria-hidden="true" /></Link>
+          </div>
+        </aside>
       </section>
 
       <section className="section-band" id="modules">
@@ -114,7 +90,7 @@ export const LandingPage: React.FC = () => {
           <p>{t('landing.library.lead')}</p>
         </div>
         {error ? <p className="notice-banner" role="status">{t('landing.catalogError')}</p> : null}
-        <div className="module-showcase">
+        <div className="module-showcase landing-module-index">
           {!catalog && !error
             ? [0, 1, 2, 3].map((i) => <span key={i} className="module-card p2-skeleton" style={{ minHeight: 180 }} aria-hidden="true" />)
             : modules.map((module, index) => {
@@ -188,6 +164,6 @@ export const LandingPage: React.FC = () => {
           </div>
         </article>
       </section>
-    </SiteChrome>
+    </LandingChrome>
   );
 };

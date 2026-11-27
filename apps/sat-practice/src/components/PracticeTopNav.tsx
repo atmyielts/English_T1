@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
 import { useAppT } from '../i18n';
-import { PLATFORM_URL, SAT_PLAYBOOK_URL } from '../lib/constants';
+import { PLATFORM_URL, SAT_PLAYBOOK_URL, SAT_SIMULATOR_URL } from '../lib/constants';
 import { buildPlatformUrl, getReturnTo } from '../lib/platformUrls';
 import { supabase } from '../lib/supabase';
 
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/dashboard', key: 'nav.dashboard', icon: LineChart },
   { to: '/today', key: 'nav.today', icon: CalendarDays },
   { to: '/bank', key: 'nav.bank', icon: BookOpenCheck },
+  { to: '/short-sets', key: 'shortSets.title', icon: Sparkles },
   { to: '/modules', key: 'nav.modules', icon: Timer },
   { to: '/notebook', key: 'nav.notebook', icon: NotebookTabs },
   { to: '/reviews', key: 'nav.reviews', icon: Repeat },
@@ -87,6 +88,7 @@ export const PracticeTopNav = (props: { streakDays?: number; xp?: number }) => {
           {props.streakDays != null ? <span title={t('nav.streak')}><Flame size={16} aria-hidden="true" />{t('nav.streakValue', { days: props.streakDays })}</span> : null}
           {props.xp != null ? <span title={t('nav.xp')}><Sparkles size={16} aria-hidden="true" />{t('nav.xpValue', { xp: props.xp })}</span> : null}
         </div> : null}
+        <a className="nav-link" href={SAT_SIMULATOR_URL}><ExternalLink size={16} aria-hidden="true" /><span>{t('landing.mock')}</span></a>
         <a className="nav-link" href={SAT_PLAYBOOK_URL}><ExternalLink size={16} aria-hidden="true" /><span>{t('nav.playbook')}</span></a>
         <a className="nav-link" href={PLATFORM_URL}><Home size={16} aria-hidden="true" /><span>{t('nav.home')}</span></a>
         <a className="nav-link" href={`${PLATFORM_URL}/account`}><UserRound size={16} aria-hidden="true" /><span>{t('nav.account')}</span></a>

@@ -63,7 +63,7 @@ export const LandingPage = () => {
   const essentials = bySlug.get(config.modules[0] ?? '');
 
   return (
-    <Shell>
+    <Shell landing>
       <section className="landing-hero">
         <div>
           <p className="eyebrow">{t('landing.eyebrow', { exam: config.examName })}</p>
@@ -78,33 +78,26 @@ export const LandingPage = () => {
             <Link to={access.premium ? '/dashboard' : '/diagnostic'} className="btn ghost on-dark">{access.premium ? t('landing.openPlan') : t('landing.getDiagnostic')}</Link>
           </div>
         </div>
-      </section>
-
-      <section className="panel" aria-labelledby="by-section">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">{t('landing.bySection')}</p>
-            <h2 id="by-section">{t('landing.bySectionTitle', { exam: config.examName })}</h2>
-          </div>
-        </div>
-        <div className="feature-grid">
-          {sectionCards.map(({ section, entry }) =>
-            entry ? (
-              <Link key={section} to={`/${entry.slug}`} className="feature-card link-card">
-                <Target size={22} aria-hidden="true" />
-                <h3>{dt(`section.${section}`, section)}</h3>
-                <p>{entry.title}</p>
-                <span className="card-cta">{t('modules.read')} <ArrowRight size={14} aria-hidden="true" /></span>
-              </Link>
-            ) : (
-              <article key={section} className="feature-card muted">
-                <Target size={22} aria-hidden="true" />
-                <h3>{dt(`section.${section}`, section)}</h3>
-                <p>{catalog ? t('landing.sectionSoon') : t('common.loading')}</p>
-              </article>
-            ),
-          )}
-        </div>
+        <aside className="playbook-skill-index" aria-labelledby="by-section">
+          <h2 id="by-section">{t('landing.bySectionTitle', { exam: config.examName })}</h2>
+          <ul>
+            {sectionCards.map(({ section, entry }) => {
+              const label = dt(`section.${section}`, section);
+              return <li key={section}>{entry ? (
+                <Link to={`/${entry.slug}`} className="playbook-skill-row">
+                  <Target size={17} aria-hidden="true" />
+                  <span><strong>{label}</strong><small>{entry.title}</small></span>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              ) : (
+                <div className="playbook-skill-row">
+                  <Target size={17} aria-hidden="true" />
+                  <span><strong>{label}</strong><small>{failed ? t('modules.loadFailed') : catalog ? t('landing.sectionSoon') : t('common.loading')}</small></span>
+                </div>
+              )}</li>;
+            })}
+          </ul>
+        </aside>
       </section>
 
       <section className="panel" aria-labelledby="how">
