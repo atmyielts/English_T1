@@ -63,7 +63,6 @@ a {
 }
 
 .top-nav,
-.landing-nav,
 .panel,
 .kpi-card,
 .question-card,
@@ -89,16 +88,14 @@ a {
   padding: 12px 14px;
 }
 
-.brand,
-.landing-nav {
+.brand {
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
 }
 
-.brand img,
-.landing-nav img {
+.brand img {
   width: 40px;
   height: 40px;
   border-radius: 12px;
@@ -460,15 +457,6 @@ a {
   padding: 24px;
   max-width: 1180px;
   margin: 0 auto;
-}
-
-.landing-nav {
-  justify-content: space-between;
-  padding: 12px 14px;
-}
-
-.landing-nav strong {
-  margin-right: auto;
 }
 
 .landing-hero {

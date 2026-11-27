@@ -25,6 +25,7 @@ export const ru: Record<keyof typeof en, string> = {
   'nav.signedInAs': 'Вы вошли как {email}',
   'nav.openMenu': 'Открыть меню',
   'nav.closeMenu': 'Закрыть меню',
+  'nav.more': 'Ещё',
   'nav.language': 'Язык',
   'nav.streak': 'Текущая серия',
   'nav.streakValue': '{days} дн.',

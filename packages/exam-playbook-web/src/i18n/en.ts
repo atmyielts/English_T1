@@ -14,6 +14,7 @@ export const en = {
   'nav.account': 'Account',
   'nav.signIn': 'Sign in',
   'nav.signOut': 'Sign out',
+  'nav.more': 'More',
   'nav.language': 'Language',
   'nav.openMenu': 'Open menu',
   'nav.closeMenu': 'Close menu',

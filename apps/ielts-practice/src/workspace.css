@@ -1,4 +1,5 @@
 /* IELTS Practice uses the simulator's ink navigation beside a paper reading surface. */
+.practice-root > .exam-public-header { max-width: none; }
 .practice-root .practice-workspace { align-items: start; gap: clamp(16px, 2.5vw, 32px); }
 .practice-root .practice-sidebar {
   --card-border: #393b37;

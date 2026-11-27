@@ -154,10 +154,25 @@ test('landing: section cards link to real modules, public modules are listed, pr
   await expect(page.getByRole('heading', { name: 'How it works' }).or(page.getByText('How it works'))).toBeVisible();
   const pricing = page.getByRole('link', { name: 'See pricing' }).first();
   await expect(pricing).toHaveAttribute('href', /\/pricing\?.*product=sat-playbook/);
-  // Schood home, account/sign-in and language in the nav.
-  await expect(page.getByRole('link', { name: 'Schood home' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
+  const header = page.locator('.exam-public-header');
+  const more = header.getByRole('button', { name: 'More' });
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(header.getByRole('link', { name: 'Sign in' })).toBeVisible();
+  await more.click();
+  await expect(header.getByRole('link', { name: 'Schood home' })).toBeVisible();
+  await expect(header.getByRole('link', { name: 'SAT simulator' })).toHaveAttribute('href', 'https://sat.schood.online');
+  await header.getByRole('link', { name: 'Schood home' }).press('Escape');
+  await expect(more).toHaveAttribute('aria-expanded', 'false');
+  await expect(more).toBeFocused();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const menu = header.getByRole('button', { name: 'Open menu' });
+  await menu.click();
+  await expect(header.getByRole('link', { name: 'Modules' })).toBeVisible();
+  await expect(header.getByRole('combobox', { name: 'Language' })).toBeVisible();
+  await header.getByRole('link', { name: 'Modules' }).press('Escape');
+  await expect(menu).toHaveAttribute('aria-expanded', 'false');
+  await expect(menu).toBeFocused();
+  await expect(header.getByRole('combobox', { name: 'Language' })).toBeHidden();
   expect(calls.some((c) => c.path === '/sat-playbook/events' && (c.body as { event_name?: string })?.event_name === 'page_view')).toBe(true);
   for (const width of [375, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -291,6 +306,7 @@ test('i18n: ?lang=uz and ?lang=ru translate the chrome; content stays English', 
   await expect(page.getByRole('link', { name: 'Schood bosh sahifasi' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Math: Algebra', level: 1 })).toBeVisible();
   await page.goto('/?lang=ru');
+  await page.getByRole('button', { name: 'Ещё' }).click();
   await expect(page.getByRole('link', { name: 'Главная Schood' })).toBeVisible();
   await expect(page.getByText('Как это работает')).toBeVisible();
 });

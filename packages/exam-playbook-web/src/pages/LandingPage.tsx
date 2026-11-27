@@ -63,7 +63,7 @@ export const LandingPage = () => {
   const essentials = bySlug.get(config.modules[0] ?? '');
 
   return (
-    <Shell>
+    <Shell landing>
       <section className="landing-hero">
         <div>
           <p className="eyebrow">{t('landing.eyebrow', { exam: config.examName })}</p>

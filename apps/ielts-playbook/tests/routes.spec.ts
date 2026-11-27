@@ -191,9 +191,15 @@ test.describe('IELTS Playbook routes (mocked API)', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'IELTS Playbook', level: 1 })).toBeVisible();
     await expect(page.getByRole('link', { name: 'IELTS Essentials' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Schood home' })).toHaveAttribute('href', 'https://schood.online');
-    await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
-    await expect(page.getByLabel('Language')).toBeVisible();
+    const header = page.locator('.exam-public-header');
+    const menu = header.getByRole('button', { name: 'Menu' });
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await menu.click();
+    await expect(header.getByRole('link', { name: 'Sign in' })).toBeVisible();
+    await expect(header.getByRole('link', { name: 'Schood home' })).toHaveAttribute('href', 'https://schood.online');
+    await expect(header.getByLabel('Language')).toBeVisible();
+    await header.getByRole('link', { name: 'Schood home' }).press('Escape');
+    await expect(menu).toBeFocused();
     await expectNoHorizontalOverflow(page);
     await page.setViewportSize({ width: 320, height: 700 });
     await expectNoHorizontalOverflow(page);
@@ -202,9 +208,11 @@ test.describe('IELTS Playbook routes (mocked API)', () => {
   test('locale switch follows ?lang= and changes the UI, not the content', async ({ page }) => {
     await setup(page, 'anonymous');
     await page.goto('/?lang=uz');
+    await page.getByRole('button', { name: 'Yana' }).click();
     await expect(page.getByRole('link', { name: 'Schood bosh sahifa' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'IELTS Essentials' })).toBeVisible();
     await page.getByLabel('Til').selectOption('ru');
+    await expect(page.getByRole('button', { name: 'Ещё' })).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByRole('link', { name: 'Главная Schood' })).toBeVisible();
   });
 

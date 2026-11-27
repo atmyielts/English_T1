@@ -25,6 +25,7 @@ export const uz: Record<keyof typeof en, string> = {
   'nav.signedInAs': '{email} sifatida kirgansiz',
   'nav.openMenu': 'Menyuni ochish',
   'nav.closeMenu': 'Menyuni yopish',
+  'nav.more': 'Yana',
   'nav.language': 'Til',
   'nav.streak': 'Joriy seriya',
   'nav.streakValue': '{days} kun',

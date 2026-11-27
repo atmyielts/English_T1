@@ -11,6 +11,7 @@ export const ru: Record<keyof typeof en, string> = {
   'header.bySchood': 'от Schood',
   'header.primaryNav': 'Разделы Playbook',
   'header.buildPlan': 'Составить план',
+  'header.more': 'Ещё',
   'header.menu': 'Меню',
   'nav.essentials': 'Основы',
   'nav.testPath': 'Выбор экзамена',

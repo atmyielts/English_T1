@@ -23,6 +23,7 @@ export const en = {
   'nav.signedInAs': 'Signed in as {email}',
   'nav.openMenu': 'Open menu',
   'nav.closeMenu': 'Close menu',
+  'nav.more': 'More',
   'nav.language': 'Language',
   'nav.streak': 'Current streak',
   'nav.streakValue': '{days} d',

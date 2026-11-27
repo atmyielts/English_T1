@@ -11,7 +11,6 @@
 body { background: #f6f1e8; }
 .app-shell { max-width: 1540px; margin: 0 auto; }
 .top-nav,
-.landing-nav,
 .panel,
 .kpi-card,
 .question-card,
@@ -43,8 +42,8 @@ body { background: #f6f1e8; }
 .app-shell .sat-answer-progress { width: min(100%, 20rem); margin-top: 9px; height: 5px; }
 .app-shell .sat-answer-progress .progress-fill { background: #087451; }
 .landing-page { align-content: start; max-width: 1280px; }
-.landing-page .landing-nav { justify-content: flex-start; gap: 10px; flex-wrap: wrap; }
-.landing-page .landing-nav strong { flex: 1 1 9rem; }
+.landing-page > .exam-public-header { max-width: none; }
+.sat-landing-content { display: grid; min-width: 0; gap: 22px; }
 .landing-page .landing-hero {
   background: #192923;
   color: #fff;
@@ -95,7 +94,7 @@ body { background: #f6f1e8; }
 }
 @media (max-width: 560px) {
   .landing-page .feature-grid { grid-template-columns: minmax(0, 1fr); }
-  .landing-page .landing-nav .btn { min-height: 44px; }
+  .sat-landing-content .landing-hero .btn { min-height: 44px; }
   .app-shell .top-nav .nav-link { min-width: 0; }
   .app-shell .module-nav .btn { flex: 1 1 auto; }
 }

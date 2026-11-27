@@ -17,7 +17,7 @@ import {
 import { Link } from 'react-router-dom';
 import { playbookCatalogGet, playbookUpdatesGet, type PlaybookCatalog } from '../lib/api';
 import { PRACTICE_APP_URL, SIMULATOR_APP_URL } from '../lib/constants';
-import { SiteChrome } from '../components/content/SiteChrome';
+import { LandingChrome } from '../components/content/SiteChrome';
 import { useT } from '../i18n';
 
 const moduleIcons: LucideIcon[] = [BookOpenCheck, Compass, Headphones, PenLine, ClipboardCheck, FileText];
@@ -52,7 +52,7 @@ export const LandingPage: React.FC = () => {
   const skills = [t('skill.listening'), t('skill.reading'), t('skill.writing'), t('skill.speaking')];
 
   return (
-    <SiteChrome>
+    <LandingChrome>
       <section className="playbook-hero">
         <div className="hero-copy">
           <p className="eyebrow">{t('landing.eyebrow')}</p>
@@ -164,6 +164,6 @@ export const LandingPage: React.FC = () => {
           </div>
         </article>
       </section>
-    </SiteChrome>
+    </LandingChrome>
   );
 };

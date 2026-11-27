@@ -25,6 +25,7 @@
 }
 .app-shell[data-exam] :is(.top-nav, .panel, .kpi-card, .question-card, .feature-card, .filter-bar, .empty-state) { border-radius: 12px; backdrop-filter: none; }
 .app-shell[data-exam] .top-nav { background: #fffdf8; }
+.app-shell[data-exam] > .exam-public-header { margin-block-end: 16px; }
 .app-shell[data-exam] .nav-link { border-radius: 8px; }
 .app-shell[data-exam] .nav-link.active { background: var(--theme-deep); color: white; }
 .app-shell[data-exam] .nav-link:hover:not(.active) { color: var(--theme-accent); background: var(--theme-tint); }

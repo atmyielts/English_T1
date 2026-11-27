@@ -10,6 +10,7 @@ export const en = {
   'header.bySchood': 'by Schood',
   'header.primaryNav': 'Playbook sections',
   'header.buildPlan': 'Build my plan',
+  'header.more': 'More',
   'header.menu': 'Menu',
   'nav.essentials': 'Essentials',
   'nav.testPath': 'Test path',

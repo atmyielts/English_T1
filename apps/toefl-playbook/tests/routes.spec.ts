@@ -158,7 +158,10 @@ test('landing: TOEFL copy, section cards for all four skills, pricing CTA target
     await expect(page.locator(`a.link-card[href="${href}"]`).filter({ hasText: name }).first()).toBeVisible();
   }
   await expect(page.getByRole('link', { name: 'See pricing' }).first()).toHaveAttribute('href', /product=toefl-playbook/);
+  const more = page.locator('.exam-public-header').getByRole('button', { name: 'More' });
+  await more.click();
   await expect(page.getByRole('link', { name: 'TOEFL simulator' })).toHaveAttribute('href', 'https://toefl.schood.online');
+  await more.press('Escape');
   await expect(page.getByRole('link', { name: 'SAT Practice' })).toHaveCount(0);
   for (const width of [375, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -270,6 +273,7 @@ test('admin console uses exam=toefl', async ({ page }) => {
 test('i18n: Uzbek and Russian chrome', async ({ page }) => {
   await mock(page, 'anonymous');
   await page.goto('/?lang=uz');
+  await page.getByRole('button', { name: 'Yana' }).click();
   await expect(page.getByRole('link', { name: 'Schood bosh sahifasi' })).toBeVisible();
   await page.goto('/reading-complete-the-words?lang=ru');
   await expect(page.getByRole('link', { name: 'Главная Schood' })).toBeVisible();

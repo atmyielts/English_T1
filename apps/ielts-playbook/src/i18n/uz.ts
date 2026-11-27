@@ -12,6 +12,7 @@ export const uz: Record<keyof typeof en, string> = {
   'header.bySchood': 'Schood’dan',
   'header.primaryNav': 'Playbook bo‘limlari',
   'header.buildPlan': 'Rejamni tuzish',
+  'header.more': 'Yana',
   'header.menu': 'Menyu',
   'nav.essentials': 'Asoslar',
   'nav.testPath': 'Imtihon yo‘li',

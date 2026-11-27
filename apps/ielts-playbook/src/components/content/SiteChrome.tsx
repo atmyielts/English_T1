@@ -2,9 +2,10 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, BookOpenCheck, Home, LogIn, LogOut, Menu, UserRound, X } from 'lucide-react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { LocaleSwitcher } from '../../../../../packages/service-i18n/src/i18n.tsx';
+import { PublicExamHeader } from '../../../../../packages/service-design/src/PublicExamHeader';
 import { useT, type Key } from '../../i18n';
 import { ACCOUNT_URL, SCHOOD_HOME_URL, signInUrl } from '../../lib/access';
-import { PRACTICE_APP_URL } from '../../lib/constants';
+import { PRACTICE_APP_URL, SIMULATOR_APP_URL } from '../../lib/constants';
 import { signOut, useSignedIn } from '../../lib/useSession';
 
 const navItems: Array<{ to: string; label: Key }> = [
@@ -49,6 +50,40 @@ const AccountControls: React.FC<{ onNavigate?: () => void; mobile?: boolean }> =
         {t('header.signOut')}
       </button>
     </>
+  );
+};
+
+export const LandingChrome: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const t = useT();
+  const signedIn = useSignedIn();
+  const account = signedIn === 'signed-in'
+    ? <a href={ACCOUNT_URL}>{t('header.account')}</a>
+    : signedIn === 'signed-out' ? <a href={signInUrl()}>{t('header.signIn')}</a> : null;
+  return (
+    <div className="site-shell">
+      <a className="skip-link" href="#main">{t('header.skip')}</a>
+      <PublicExamHeader tone="ielts"
+        labels={{ sections: t('header.primaryNav'), menu: t('header.menu'), more: t('header.more') }}
+        brand={<Link to="/"><img src="/schood-logo.png" alt="" />IELTS Playbook</Link>}
+        primary={<>
+          <Link to="/essentials">{t('nav.essentials')}</Link>
+          <Link to="/test-types-booking">{t('nav.testPath')}</Link>
+          <Link to="/study-plans">{t('nav.studyPlans')}</Link>
+        </>}
+        secondary={<>
+          <Link to="/onboarding">{t('header.buildPlan')}</Link>
+          <Link to="/updates">{t('nav.updates')}</Link>
+          <Link to="/dashboard">{t('nav.dashboard')}</Link>
+          <a href={`${PRACTICE_APP_URL}/?source=playbook`}>{t('header.practice')}</a>
+          <a href={`${SIMULATOR_APP_URL}?source=playbook`}>{t('service.simulator')}</a>
+          <a href={SCHOOD_HOME_URL}>{t('header.home')}</a>
+          {signedIn === 'signed-in' ? <button type="button" onClick={() => void signOut().finally(() => window.location.assign('/'))}>{t('header.signOut')}</button> : null}
+        </>}
+        locale={<LocaleSwitcher label={t('locale.label')} />}
+        account={account}
+      />
+      <main id="main">{children}</main>
+    </div>
   );
 };
 
