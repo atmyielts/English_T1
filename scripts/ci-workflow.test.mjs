@@ -101,7 +101,7 @@ test('security, typecheck and audit gates remain in the checks job', () => {
     'npm ci', 'npm run verify:prod', "npm run verify:release -- --base origin/${{ github.base_ref || 'main' }}",
     'npm run verify:academy', 'npm --workspace apps/academy run lint',
     'npm run test:guide && npm run check:guide',
-    'deno check supabase/functions/hub/index.ts', 'npm run --if-present test:english:mass-readiness',
+    'npm run check:english:edge', 'npm run --if-present test:english:mass-readiness',
     'deno check supabase/functions/academy/index.ts', 'npm run test:academy:edge',
     'node scripts/audit-runtime-dependencies.mjs',
   ]) assert(checks.includes(`run: ${command}\n`), `Missing gate: ${command}`);
