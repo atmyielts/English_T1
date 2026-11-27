@@ -195,6 +195,9 @@ serve(dedupeSubmits({
       // Reading mode = the browser could not play audio and the learner read the text.
       // Questions are checked, but nothing is recorded as listening practice.
       const mode = body.mode === "reading" ? "reading" : "listening";
+      if (mode === "listening" && body.client_attempt_id && (body.offline_audio_url !== item.audio_url || clampInt(body.plays, 0, 50, 0) < 1)) {
+        return json(422, { error: "Download the current recording and try again.", code: "listening_offline_audio_stale" });
+      }
       const usedTargets = mode === "reading" ? [] : targets;
       if (!questions.length && !usedTargets.length) return json(422, { error: "This activity has nothing to check yet" });
 
@@ -406,6 +409,7 @@ serve(dedupeSubmits({
 
       const item = await loadItem(sb, productId, scope.languageId, identifier);
       if (!item) return json(404, { error: "Listening item not found" });
+      if (!hasRecordedListening(item.audio_url)) return audioComingSoon();
 
       const transcript = toText(item.transcript_text, 8000);
       const result = scoreDictation(transcript, responseText);

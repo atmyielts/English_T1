@@ -8,8 +8,10 @@ import { getArticle } from '../../skills/reading/api';
 import { getItem } from '../../skills/listening/api';
 import { getUnit } from '../../skills/grammar/api';
 import { getDeck } from '../../skills/vocabulary/api';
+import { hasRecordedListening } from '../../../../../supabase/functions/_shared/english-recorded-listening';
 import {
   expiredEntries,
+  offlineListeningState,
   type OfflineActivity,
   type OfflinePack,
   type OfflineSkill,
@@ -35,6 +37,21 @@ const fetchContent = async (skill: OfflineSkill, slug: string): Promise<Record<s
   }
 };
 
+const MAX_RECORDING_BYTES = 20 * 1024 * 1024;
+
+const fetchRecording = async (audioUrl: unknown): Promise<Blob | undefined> => {
+  if (!hasRecordedListening(audioUrl)) return undefined;
+  try {
+    const response = await fetch(audioUrl as string, { credentials: 'omit', signal: AbortSignal.timeout(20_000) });
+    if (!response.ok || Number(response.headers.get('content-length')) > MAX_RECORDING_BYTES) return undefined;
+    const audio = await response.blob();
+    if (audio.size && audio.size <= MAX_RECORDING_BYTES && /^(audio\/|application\/octet-stream$)/i.test(audio.type)) return audio;
+  } catch {
+    // The activity remains usable online once the recording can be loaded.
+  }
+  return undefined;
+};
+
 export type DownloadResult = { saved: number; skipped: number; online: number };
 
 /**
@@ -49,12 +66,19 @@ export const downloadToday = async (userId: string, onProgress?: (done: number, 
   let skipped = 0;
   onProgress?.(0, plan.download.length);
   for (const [index, task] of plan.download.entries()) {
+    const activity = { skill: task.skill as OfflineSkill, slug: task.slug!, title: task.title, level: task.level, minutes: task.minutes };
     try {
       const content = await fetchContent(task.skill as OfflineSkill, task.slug!);
-      activities.push({ skill: task.skill as OfflineSkill, slug: task.slug!, title: task.title, level: task.level, minutes: task.minutes, content });
+      const audioUrl = (content.item as { audio_url?: unknown } | undefined)?.audio_url;
+      const recordedAudio = activity.skill === 'listening' ? await fetchRecording(audioUrl) : undefined;
+      activities.push({ ...activity, content, ...(recordedAudio ? { recorded_audio: recordedAudio } : {}) });
     } catch (error) {
       if (error instanceof ApiError && error.status === 0) throw error;
-      skipped += 1;
+      if (activity.skill === 'listening' && error instanceof ApiError && error.code === 'listening_audio_soon') {
+        activities.push({ ...activity, content: {} });
+      } else {
+        skipped += 1;
+      }
     }
     onProgress?.(index + 1, plan.download.length);
   }
@@ -78,7 +102,8 @@ export const downloadToday = async (userId: string, onProgress?: (done: number, 
   } catch {
     // The download is still saved; the page may need one more online visit to cache.
   }
-  return { saved: activities.length, skipped, online: plan.online.length };
+  const playable = activities.filter((activity) => activity.skill !== 'listening' || offlineListeningState(activity) === 'ready').length;
+  return { saved: playable, skipped: skipped + activities.length - playable, online: plan.online.length };
 };
 
 /** Sends one queued answer through the activity's normal submit route, with its client attempt id. */

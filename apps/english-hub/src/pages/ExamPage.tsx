@@ -177,7 +177,8 @@ export const ExamPage = () => {
       setRunning(response.mock);
       window.scrollTo({ top: 0 });
     } catch (cause) {
-      setError(cause instanceof ApiError && ['exam_mock_limit_reached', 'english_ai_unavailable', 'exam_papers_missing', 'service_paused'].includes(cause.code ?? '') ? cause.message : errorText(cause));
+      setError(cause instanceof ApiError && cause.code === 'listening_audio_soon' ? t('intensive.audioSoonBody')
+        : cause instanceof ApiError && ['exam_mock_limit_reached', 'english_ai_unavailable', 'exam_papers_missing', 'service_paused'].includes(cause.code ?? '') ? cause.message : errorText(cause));
     } finally {
       setStarting(null);
     }
@@ -250,6 +251,7 @@ export const ExamPage = () => {
                 <p className="hint" style={{ margin: 0 }}>{allowanceLine(view.allowance.section, 'section', t)}</p>
                 {view.allowance.full.basis === 'free' ? <p className="hint" style={{ margin: 0 }}><a href={pricingHref()}>{t('exam.allowance.more')}</a></p> : null}
                 {!view.ai_available ? <p className="en-explain" role="status" style={{ margin: 0 }}>{t('exam.aiOff')}</p> : null}
+                {view.listening_audio_ready !== true ? <p className="en-explain" role="status" style={{ margin: 0 }}><strong>{t('intensive.audioSoon')}</strong>{' '}{t('intensive.audioSoonBody')}</p> : null}
                 {error ? <div className="error" role="alert">{error}</div> : null}
                 {view.in_progress ? (
                   <div className="en-exam-email">
@@ -262,12 +264,13 @@ export const ExamPage = () => {
                   {KINDS.map((kind) => {
                     const allowance = kind === 'full' ? view.allowance.full : view.allowance.section;
                     const needsAi = kind === 'full' || kind === 'writing' || kind === 'speaking';
+                    const needsAudio = kind === 'full' || kind === 'listening';
                     return (
                       <button
                         key={kind}
                         type="button"
                         className={kind === 'full' ? 'is-large' : 'quiet'}
-                        disabled={view.paused || starting !== null || !allowance.allowed || (needsAi && !view.ai_available)}
+                        disabled={view.paused || starting !== null || !allowance.allowed || (needsAi && !view.ai_available) || (needsAudio && view.listening_audio_ready !== true)}
                         onClick={() => void start(kind)}
                       >
                         {starting === kind ? t('exam.starting') : t(`exam.kind.${kind}`)}

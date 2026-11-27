@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { formatClock, SpeakOrType } from '../../components/SpeakOrType';
 import { useT } from '../../i18n';
 import { type SpeakingView, type WritingView, wordCount } from '../../lib/exam';
-import { canSpeak, speak, stopSpeaking } from '../../lib/speech';
 import { Panel } from '../../ui/kit';
 
 export type WritingDraft = { task11: string; task12: string; part2: string };
@@ -95,14 +94,11 @@ export const SpeakingSection = ({ content, draft, onChange, talkSeconds, prepSec
   const [talking, setTalking] = useState(step.prep === 0);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
 
-  useEffect(() => () => stopSpeaking(), []);
-
-  // Each question is read out and focused, as the examiner would ask it.
+  // Focus each written prompt when it replaces the previous question.
   useEffect(() => {
     setPrepLeft(step.prep);
     setTalking(step.prep === 0 || (draft[position]?.text ?? '') !== '');
     headingRef.current?.focus();
-    if (canSpeak()) void speak(step.part === '3' ? content.part3.statement : step.question, { rate: 0.95 });
     // Once per question.
   }, [position]);
 
@@ -164,10 +160,10 @@ export const SpeakingSection = ({ content, draft, onChange, talkSeconds, prepSec
         )}
 
         <div className="en-actions">
-          {position > 0 ? <button type="button" className="quiet" disabled={disabled} onClick={() => { stopSpeaking(); setPosition(position - 1); }}>{t('exam.back')}</button> : null}
+          {position > 0 ? <button type="button" className="quiet" disabled={disabled} onClick={() => setPosition(position - 1)}>{t('exam.back')}</button> : null}
           {isLast
-            ? <button type="button" disabled={disabled} onClick={() => { stopSpeaking(); onFinished(); }}>{t('exam.submitSection')}</button>
-            : <button type="button" disabled={disabled || !talking} onClick={() => { stopSpeaking(); setPosition(position + 1); }}>{t('exam.next')}</button>}
+            ? <button type="button" disabled={disabled} onClick={onFinished}>{t('exam.submitSection')}</button>
+            : <button type="button" disabled={disabled || !talking} onClick={() => setPosition(position + 1)}>{t('exam.next')}</button>}
         </div>
       </div>
     </Panel>

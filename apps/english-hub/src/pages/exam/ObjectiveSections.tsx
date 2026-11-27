@@ -1,9 +1,6 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useT } from '../../i18n';
 import type { ListeningPartView, McqView, ReadingPartView, SectionResult } from '../../lib/exam';
-import { canSpeak } from '../../lib/speech';
-import { parseScript, speechChunks } from '../../skills/listening/script';
-import { usePlayer } from '../../skills/listening/usePlayer';
 import { LevelBadge, Panel } from '../../ui/kit';
 import { Passage } from './parts';
 
@@ -135,28 +132,26 @@ export const ReadingSection = ({ parts, answers, onAnswer, result }: { parts: Re
   );
 };
 
-/** Plays a script with browser speech, at most `maxPlays` times. */
-const PlayButton = ({ id, script, dialogue, plays, onPlayed, maxPlays, player }: {
-  id: string;
-  script: string;
-  dialogue: boolean;
+const PlayButton = ({ audioUrl, plays, play, stop, maxPlays, playing, anotherPlaying }: {
+  audioUrl?: string;
   plays: number;
-  onPlayed: () => void;
+  play: (url: string) => void;
+  stop: () => void;
   maxPlays: number;
-  player: ReturnType<typeof usePlayer>;
+  playing: boolean;
+  anotherPlaying: boolean;
 }) => {
   const t = useT();
-  const playing = player.state.key === id;
-  if (!canSpeak()) return <p className="hint" style={{ margin: 0 }}>{t('exam.listening.noAudio')}</p>;
+  if (!audioUrl) return <p className="hint" style={{ margin: 0 }}>{t('intensive.audioSoon')}</p>;
   return (
     <div className="en-exam-play">
       {playing ? (
-        <button type="button" className="quiet" onClick={player.stop}>{t('exam.listening.stop')}</button>
+        <button type="button" className="quiet" onClick={stop}>{t('exam.listening.stop')}</button>
       ) : (
         <button
           type="button"
-          disabled={plays >= maxPlays || (player.state.key !== null && !playing)}
-          onClick={() => { onPlayed(); void player.play(id, speechChunks(parseScript(script, dialogue)), 0.95); }}
+          disabled={plays >= maxPlays || anotherPlaying}
+          onClick={() => play(audioUrl)}
         >
           ▶ {plays === 0 ? t('exam.listening.play') : t('exam.listening.playAgain')}
         </button>
@@ -176,19 +171,43 @@ export const ListeningSection = ({ parts, answers, onAnswer, plays, onPlayed, re
   result: SectionResult | null;
 }) => {
   const t = useT();
-  const player = usePlayer();
+  const audio = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const review = reviewOf(result);
   const [shown, setShown] = useState<Record<string, boolean>>({});
   const maxPlays = review ? 99 : 2;
-  const transcript = (id: string, script: string) => review ? (
+  useEffect(() => {
+    const player = audio.current;
+    return () => player?.pause();
+  }, []);
+  const transcript = (id: string, script?: string) => review && script ? (
     <details open={shown[id]} onToggle={(event) => setShown((current) => ({ ...current, [id]: (event.target as HTMLDetailsElement).open }))}>
       <summary style={{ cursor: 'pointer' }}>{t('exam.listening.transcript')}</summary>
       <p className="en-exam-script" lang="en">{script}</p>
     </details>
   ) : null;
+  const playback = (id: string, audioUrl?: string) => (
+    <PlayButton audioUrl={audioUrl} plays={plays[id] ?? 0} playing={playing === id} anotherPlaying={playing !== null && playing !== id} maxPlays={maxPlays}
+      stop={() => { audio.current?.pause(); setPlaying(null); }}
+      play={(url) => {
+        const player = audio.current;
+        if (!player) return;
+        setFailed(false);
+        setPlaying(id);
+        player.src = url;
+        void player.play().then(() => onPlayed(id)).catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          setFailed(true);
+          setPlaying(null);
+        });
+      }} />
+  );
 
   return (
     <>
+      <audio ref={audio} preload="none" hidden onEnded={() => setPlaying(null)} />
+      {failed ? <p role="status">{t('listening.listen.noAudioElement')}</p> : null}
       {parts.map((part) => (
         <Panel key={part.id} title={<span lang="en">{part.title}</span>} aside={<LevelBadge level={part.level} />}>
           {part.type === 'dialogues' ? (
@@ -197,7 +216,7 @@ export const ListeningSection = ({ parts, answers, onAnswer, plays, onPlayed, re
                 const id = `${part.id}.${item.id}`;
                 return (
                   <div key={item.id} className="en-stack" style={{ gap: '.4rem' }}>
-                    <PlayButton id={id} script={item.script} dialogue plays={plays[id] ?? 0} onPlayed={() => onPlayed(id)} maxPlays={maxPlays} player={player} />
+                    {playback(id, item.audio_url)}
                     <Mcq question={item} name={id} value={answers[id]} onChange={(value) => onAnswer(id, value)} review={review} number={index + 1} />
                     {transcript(id, item.script)}
                   </div>
@@ -206,7 +225,7 @@ export const ListeningSection = ({ parts, answers, onAnswer, plays, onPlayed, re
             </div>
           ) : (
             <div className="en-stack">
-              <PlayButton id={part.id} script={part.script} dialogue={part.type === 'mcq' && /^[A-Z][A-Za-z .']{0,30}:\s/m.test(part.script)} plays={plays[part.id] ?? 0} onPlayed={() => onPlayed(part.id)} maxPlays={maxPlays} player={player} />
+              {playback(part.id, part.audio_url)}
               {part.type === 'notes' ? (
                 <ul className="en-exam-notes" lang="en">
                   {part.notes.map((note) => {

@@ -3,6 +3,7 @@ import { useT } from '../../i18n';
 import { ApiError } from '../../lib/api';
 import {
   type ExamSection,
+  type ListeningPartView,
   itemKeys,
   type MockResult,
   type MockView,
@@ -11,6 +12,7 @@ import {
   readDraft,
   type SectionResult,
   submitExamSection,
+  type SubmitResponse,
   writeDraft,
 } from '../../lib/exam';
 import { Loading, Panel, useErrorMessage } from '../../ui/kit';
@@ -36,7 +38,7 @@ const emptyDraft = (): Draft => ({
 });
 
 /** One open section: its content, the clock and the hand-in. */
-const SectionRunner = ({ open, timing, onDone }: { open: OpenSection; timing: Timing; onDone: (response: { section_result: SectionResult; finished: boolean; result: MockResult | null }) => void }) => {
+const SectionRunner = ({ open, timing, onDone }: { open: OpenSection; timing: Timing; onDone: (response: SubmitResponse) => void }) => {
   const t = useT();
   const errorText = useErrorMessage();
   const draftKey = `${open.mock_id}:${open.section}`;
@@ -129,9 +131,10 @@ export const ExamRunner = ({ mock, timing, onFinished, onLeave }: { mock: MockVi
     Object.fromEntries(mock.sections.filter((entry) => entry.done).map((entry) => [entry.section, { score: entry.score }])));
   const [open, setOpen] = useState<OpenSection | null>(null);
   const [opening, setOpening] = useState(false);
-  const [last, setLast] = useState<{ result: SectionResult; open: OpenSection } | null>(null);
+  const [last, setLast] = useState<{ result: SectionResult; open: OpenSection; listeningReview?: ListeningPartView[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const next = mock.sections.find((entry) => !done[entry.section])?.section ?? null;
+  const audioPending = mock.sections.some((entry) => entry.section === 'listening' && !done.listening && entry.audio_ready !== true);
+  const next = mock.sections.find((entry) => !done[entry.section] && (entry.section !== 'listening' || !audioPending))?.section ?? null;
 
   const begin = async (section: ExamSection) => {
     setOpening(true);
@@ -141,7 +144,7 @@ export const ExamRunner = ({ mock, timing, onFinished, onLeave }: { mock: MockVi
       setLast(null);
       window.scrollTo({ top: 0 });
     } catch (cause) {
-      setError(errorText(cause));
+      setError(cause instanceof ApiError && cause.code === 'listening_audio_soon' ? t('intensive.audioSoonBody') : errorText(cause));
     } finally {
       setOpening(false);
     }
@@ -152,6 +155,7 @@ export const ExamRunner = ({ mock, timing, onFinished, onLeave }: { mock: MockVi
       {mock.sections.map((entry) => (
         <li key={entry.section} className={done[entry.section] ? 'is-done' : ''} aria-current={open?.section === entry.section ? 'step' : undefined}>
           {t(`exam.section.${entry.section}`)}{done[entry.section]?.score !== undefined && done[entry.section]?.score !== null ? ` · ${done[entry.section]!.score}` : ''}
+          {entry.section === 'listening' && audioPending ? ` · ${t('intensive.audioSoon')}` : null}
         </li>
       ))}
     </ol>
@@ -167,7 +171,7 @@ export const ExamRunner = ({ mock, timing, onFinished, onLeave }: { mock: MockVi
           timing={timing}
           onDone={(response) => {
             setDone((current) => ({ ...current, [open.section]: { score: response.section_result.score } }));
-            setLast({ result: response.section_result, open });
+            setLast({ result: response.section_result, open, listeningReview: response.listening_review?.parts });
             setOpen(null);
             window.scrollTo({ top: 0 });
             if (response.finished && response.result) onFinished(response.result);
@@ -199,10 +203,12 @@ export const ExamRunner = ({ mock, timing, onFinished, onLeave }: { mock: MockVi
         <Panel title={t('exam.runner.sectionDone', { section: t(`exam.section.${last.result.section}`) })}>
           <SectionResultView result={last.result} />
           {last.open.section === 'reading' ? <details style={{ marginTop: '1rem' }}><summary style={{ cursor: 'pointer' }}>{t('exam.review.title')}</summary><ReadingSection parts={last.open.content.parts} answers={Object.fromEntries((last.result.objective?.items ?? []).map((item) => [item.id, item.given]))} onAnswer={() => undefined} result={last.result} /></details> : null}
-          {last.open.section === 'listening' ? <details style={{ marginTop: '1rem' }}><summary style={{ cursor: 'pointer' }}>{t('exam.review.title')}</summary><ListeningSection parts={last.open.content.parts} answers={Object.fromEntries((last.result.objective?.items ?? []).map((item) => [item.id, item.given]))} onAnswer={() => undefined} plays={{}} onPlayed={() => undefined} result={last.result} /></details> : null}
+          {last.listeningReview ? <details style={{ marginTop: '1rem' }}><summary style={{ cursor: 'pointer' }}>{t('exam.review.title')}</summary><ListeningSection parts={last.listeningReview} answers={Object.fromEntries((last.result.objective?.items ?? []).map((item) => [item.id, item.given]))} onAnswer={() => undefined} plays={{}} onPlayed={() => undefined} result={last.result} /></details> : null}
         </Panel>
       ) : null}
-      {intro ?? (last ? null : <Panel><Loading lines={3} /></Panel>)}
+      {intro ?? (audioPending
+        ? <Panel title={t('intensive.audioSoon')}><p>{t('intensive.audioSoonBody')}</p><button type="button" onClick={onLeave}>{t('exam.backToOverview')}</button></Panel>
+        : last ? null : <Panel><Loading lines={3} /></Panel>)}
     </div>
   );
 };

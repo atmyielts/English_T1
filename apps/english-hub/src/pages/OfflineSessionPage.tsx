@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useI18n, useT } from '../i18n';
-import { entryForActivity, newEntry, type OfflineActivity, type QueueEntry } from '../lib/offline/model';
+import { entryForActivity, newEntry, type OfflineActivity, offlineListeningState, type QueueEntry } from '../lib/offline/model';
 import { deleteEntries, listEntries, putEntry } from '../lib/offline/store';
 import { syncNow } from '../lib/offline/sync';
 import { useOfflineState, useOnline } from '../lib/offline/useOffline';
@@ -132,6 +132,8 @@ export const OfflineSessionPage = () => {
             const entry = entryForActivity(entries, pack, activity);
             const reason = entry ? reasonText(entry, t) : null;
             const skill = skillByKey(activity.skill);
+            const audio = activity.skill === 'listening' ? offlineListeningState(activity) : null;
+            const pending = audio === 'coming_soon' ? t('intensive.audioSoon') : audio === 'download_required' ? t('offline.run.audioDownload') : null;
             return (
               <li key={`${activity.skill}/${activity.slug}`}>
                 <div className={`en-item ${entry?.status === 'synced' ? 'is-done' : ''}`.trim()}>
@@ -142,11 +144,11 @@ export const OfflineSessionPage = () => {
                       <small style={{ fontWeight: 700, color: 'var(--muted)', fontSize: '.75rem' }}>{skill ? t(`skill.${skill.key}`) : activity.skill}</small>
                     </span>
                     <strong>{activity.title}</strong>
-                    <span>{statusText(entry, t)}{reason ? ` · ${reason}` : ''}</span>
+                    <span>{entry || !pending ? statusText(entry, t) : pending}{reason ? ` · ${reason}` : ''}</span>
                   </span>
                   <span className="en-item-meta">
                     {activity.level ? <LevelBadge level={activity.level} muted /> : null}
-                    <Tag>{t('common.minutesShort', { count: activity.minutes })}</Tag>
+                    {pending ? null : <Tag>{t('common.minutesShort', { count: activity.minutes })}</Tag>}
                     <button type="button" className={entry ? 'quiet' : undefined} onClick={() => { setNotice(null); setActive(activity); }}>
                       {entry ? t('offline.page.redo') : t('offline.page.start')}
                     </button>

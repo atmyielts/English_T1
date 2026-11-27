@@ -21,6 +21,7 @@ import {
 } from "./english-exam-format.ts";
 import { grammarTopicFor, isGrammarTopic, topicSubskill } from "./english-mistakes.ts";
 import { matchL1Notes } from "./english-l1-notes.ts";
+import { hasRecordedListening } from "./english-recorded-listening.ts";
 
 type Rec = Record<string, unknown>;
 const isRec = (value: unknown): value is Rec => !!value && typeof value === "object" && !Array.isArray(value);
@@ -41,10 +42,17 @@ export type ReadingPart =
   | { id: string; type: "mcq"; level: PaperLevel; title: string; text: string; questions: McqQuestion[] }
   | { id: string; type: "headings"; level: PaperLevel; title: string; headings: Choice[]; paragraphs: Array<{ id: string; text: string; answer: string }> };
 
+type RecordedPrompt = { script: string; audio_url?: string };
+
 export type ListeningPart =
-  | { id: string; type: "dialogues"; level: PaperLevel; title: string; items: Array<McqQuestion & { script: string }> }
-  | { id: string; type: "notes"; level: PaperLevel; title: string; script: string; notes: Array<{ id: string; before: string; after: string; answers: string[] }> }
-  | { id: string; type: "mcq"; level: PaperLevel; title: string; script: string; questions: McqQuestion[] };
+  | { id: string; type: "dialogues"; level: PaperLevel; title: string; items: Array<McqQuestion & RecordedPrompt> }
+  | ({ id: string; type: "notes"; level: PaperLevel; title: string; notes: Array<{ id: string; before: string; after: string; answers: string[] }> } & RecordedPrompt)
+  | ({ id: string; type: "mcq"; level: PaperLevel; title: string; questions: McqQuestion[] } & RecordedPrompt);
+
+export const examListeningReady = (paper: ExamPaper): boolean =>
+  paper.listening.parts.length > 0 && paper.listening.parts.every((part) =>
+    part.type === "dialogues" ? part.items.length > 0 && part.items.every((item) => hasRecordedListening(item.audio_url)) : hasRecordedListening(part.audio_url)
+  );
 
 export type WritingPaper = {
   input: { from: string; subject: string; body: string };
@@ -84,7 +92,7 @@ const readChoices = (value: unknown, field: string, problems: PaperProblem[]): C
   return choices;
 };
 
-const readMcq = (value: unknown, field: string, problems: PaperProblem[], withScript = false): Array<McqQuestion & { script: string }> =>
+const readMcq = (value: unknown, field: string, problems: PaperProblem[], withScript = false): Array<McqQuestion & RecordedPrompt> =>
   (Array.isArray(value) ? value : []).filter(isRec).map((entry, index) => {
     const at = `${field}[${index}]`;
     const question = {
@@ -93,6 +101,7 @@ const readMcq = (value: unknown, field: string, problems: PaperProblem[], withSc
       options: readChoices(entry.options, `${at}.options`, problems),
       answer: str(entry.answer, 8),
       script: withScript ? text(entry.script, 2000) : "",
+      ...(withScript && hasRecordedListening(entry.audio_url) ? { audio_url: entry.audio_url as string } : {}),
     };
     if (!question.id || !question.prompt) problems.push({ field: at, message: "needs id and prompt" });
     if (!question.options.some((option) => option.id === question.answer)) problems.push({ field: at, message: "answer must be one of the option ids" });
@@ -159,6 +168,7 @@ const readListeningPart = (raw: Rec, field: string, problems: PaperProblem[]): L
     return { id, type: "dialogues", level, title, items };
   }
   const script = text(raw.script, 8000);
+  const audio_url = hasRecordedListening(raw.audio_url) ? raw.audio_url as string : undefined;
   if (!script) problems.push({ field, message: "needs a script" });
   if (raw.type === "notes") {
     const notes = (Array.isArray(raw.notes) ? raw.notes : []).filter(isRec).map((entry) => ({
@@ -173,12 +183,12 @@ const readListeningPart = (raw: Rec, field: string, problems: PaperProblem[]): L
       if (!note.id || !note.answers.length) problems.push({ field, message: "every note needs id and answers" });
       if (note.answers[0] && !heard.includes(normalizeAnswer(note.answers[0]))) problems.push({ field: `${field}.${note.id}`, message: `"${note.answers[0]}" must be said in the script` });
     }
-    return { id, type: "notes", level, title, script, notes };
+    return { id, type: "notes", level, title, script, audio_url, notes };
   }
   if (raw.type === "mcq") {
     const questions = readMcq(raw.questions, `${field}.questions`, problems).map(({ script: _script, ...question }) => question);
     if (questions.length < 4) problems.push({ field, message: "needs at least 4 questions" });
-    return { id, type: "mcq", level, title, script, questions };
+    return { id, type: "mcq", level, title, script, audio_url, questions };
   }
   problems.push({ field, message: "type must be dialogues, notes or mcq" });
   return null;
@@ -329,12 +339,16 @@ export const publicReading = (paper: ExamPaper) => ({
   }),
 });
 
-/** Scripts are sent so the browser can read them aloud; the page shows them only after submitting. */
-export const publicListening = (paper: ExamPaper) => ({
+export const publicListening = (paper: ExamPaper, review = false) => ({
   parts: paper.listening.parts.map((part) => {
-    if (part.type === "dialogues") return { id: part.id, type: part.type, level: part.level, title: part.title, items: part.items.map((item) => ({ ...publicMcq(item), script: item.script })) };
-    if (part.type === "notes") return { id: part.id, type: part.type, level: part.level, title: part.title, script: part.script, notes: part.notes.map(({ id, before, after }) => ({ id, before, after })) };
-    return { id: part.id, type: part.type, level: part.level, title: part.title, script: part.script, questions: part.questions.map(publicMcq) };
+    const base = { id: part.id, level: part.level, title: part.title };
+    if (part.type === "dialogues") return {
+      ...base, type: part.type,
+      items: part.items.map((item) => ({ ...publicMcq(item), audio_url: item.audio_url, ...(review ? { script: item.script } : {}) })),
+    };
+    const recording = { audio_url: part.audio_url, ...(review ? { script: part.script } : {}) };
+    if (part.type === "notes") return { ...base, ...recording, type: part.type, notes: part.notes.map(({ id, before, after }) => ({ id, before, after })) };
+    return { ...base, ...recording, type: part.type, questions: part.questions.map(publicMcq) };
   }),
 });
 

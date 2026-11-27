@@ -8,6 +8,8 @@
 // response for a repeat (supabase/functions/_shared/english-client-attempt.ts),
 // so a sync cut off half-way can simply be run again.
 
+import { hasRecordedListening } from '../../../../../supabase/functions/_shared/english-recorded-listening.ts';
+
 export const OFFLINE_SKILLS = ['reading', 'listening', 'grammar', 'vocabulary'] as const;
 export type OfflineSkill = (typeof OFFLINE_SKILLS)[number];
 
@@ -74,6 +76,13 @@ export type OfflineActivity = {
   minutes: number;
   /** The same JSON the skill's GET route returns (article / item + dictation / unit + drills / deck + words). */
   content: Record<string, unknown>;
+  recorded_audio?: Blob;
+};
+
+export const offlineListeningState = (activity: OfflineActivity): 'coming_soon' | 'download_required' | 'ready' => {
+  const item = activity.content.item as { audio_url?: unknown } | undefined;
+  if (!hasRecordedListening(item?.audio_url)) return 'coming_soon';
+  return activity.recorded_audio instanceof Blob && activity.recorded_audio.size > 0 ? 'ready' : 'download_required';
 };
 
 export type OfflinePack = {
@@ -87,7 +96,7 @@ export type OfflinePack = {
 };
 
 export type QueueStatus = 'queued' | 'synced' | 'failed';
-export type QueueReason = 'free_used' | 'not_found' | 'invalid' | 'no_access' | 'server' | 'busy' | 'paused';
+export type QueueReason = 'free_used' | 'not_found' | 'invalid' | 'no_access' | 'server' | 'busy' | 'paused' | 'audio_unavailable';
 
 export type QueueResult = { score: number | null; correct: number | null; total: number | null; recorded: boolean };
 
@@ -159,6 +168,7 @@ export const classifyFailure = (status: number, code: string | null = null): Fai
   if (status === 402 || code === 'english_free_limit_reached') return { action: 'fail', reason: 'free_used' };
   if (status === 403) return { action: 'fail', reason: 'no_access' };
   if (status === 404) return { action: 'fail', reason: 'not_found' };
+  if (code === 'listening_audio_soon' || code === 'listening_offline_audio_stale') return { action: 'fail', reason: 'audio_unavailable' };
   if (status === 409) return { action: 'retry', reason: 'busy' };
   if (status === 503 && code === 'service_paused') return { action: 'retry', reason: 'paused' };
   if (status === 400 || status === 422) return { action: 'fail', reason: 'invalid' };
