@@ -71,6 +71,8 @@ deno run --no-lock --allow-read scripts/english-content/learning-inventory.ts
 
 All six bands reach the 72-hour target in the inventory, equivalent to 12 weeks at six one-hour sessions per week. The estimate ranges from 72 hours 2 minutes at C2 to 73 hours at A2. Actual time requires learner-session validation. Listening scripts remain prepared, and affected sessions display the coming-soon state until their recordings are ready.
 
+Placement and monthly checks currently measure Reading, Writing and Grammar. Existing Listening results remain in the learner’s record. New review dictation scores require a matching timed excerpt of the published recording. National Exam attempts can continue from Listening results saved before the hold.
+
 ### 2. Deliver one cross-skill path end to end
 
 Start with a specific A2 article-reference error in Writing. Verify that the error quotes the learner accurately and maps to a reviewed Grammar competency without counting as a Grammar assessment result. The Hub offers the diagnostic, assigns practice on the pattern, then uses a different Writing brief containing naturally occurring opportunities to use identifiable and new referents. The held-out brief controls for task difficulty and avoids teaching the expected phrasing. Compare actual errors per opportunity on first and later tasks. Include a useful next action for inconclusive results.

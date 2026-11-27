@@ -3,9 +3,11 @@ import {
   checkReviewAnswer,
   parseReviewPayload,
   publicReviewPayload,
+  type DictationReviewPayload,
   type ReviewPayload,
   scheduleAfterAnswer,
 } from "./english-review.ts";
+import { reviewDictationRecording } from "./english-review-recordings.ts";
 
 const now = new Date("2026-10-22T12:00:00.000Z");
 const days = (iso: string) => Math.round((Date.parse(iso) - now.getTime()) / 86_400_000);
@@ -43,12 +45,32 @@ const choice: ReviewPayload = {
   source_title: "Study group",
   source_slug: "study-group",
 };
-const dictation: ReviewPayload = {
+const dictation: DictationReviewPayload = {
   type: "dictation",
   sentence: "The next train will leave from platform four.",
   source_title: "Platform change",
   source_slug: "platform",
 };
+
+Deno.test("graded dictation uses the published timed recording of the exact queued sentence", () => {
+  const source = {
+    slug: "platform",
+    audio_url: "https://audio.example/platform.mp3",
+    listening_segments: [{ segment_index: 4, segment_text: dictation.sentence, starts_at_seconds: 6.25, ends_at_seconds: 8 }],
+  };
+  const key = "listening:platform:dictation:4";
+  const clip = reviewDictationRecording(dictation, key, source);
+  assertEquals(clip, { audio_url: source.audio_url, starts_at_seconds: 6.25, ends_at_seconds: 8 });
+  const view = publicReviewPayload(dictation, clip ?? undefined);
+  assertEquals(view.recording, clip);
+  assert(!JSON.stringify(view).includes(dictation.sentence));
+  assertEquals(reviewDictationRecording(dictation, key, { ...source, audio_url: null }), null);
+  assertEquals(reviewDictationRecording(dictation, "listening:platform:dictation:5", source), null);
+  assertEquals(reviewDictationRecording({ ...dictation, sentence: "The train has changed." }, key, source), null);
+  assertEquals(reviewDictationRecording(dictation, key, {
+    ...source, listening_segments: [{ ...source.listening_segments[0]!, ends_at_seconds: 4 }],
+  }), null);
+});
 
 Deno.test("answer keys are never in the public payload", () => {
   const publicGrammar = JSON.stringify(publicReviewPayload(grammar));
@@ -56,7 +78,7 @@ Deno.test("answer keys are never in the public payload", () => {
   const publicChoice = publicReviewPayload(choice);
   assertEquals(publicChoice.answer_index, undefined);
   assertEquals(publicChoice.explanation, undefined);
-  assertEquals(publicReviewPayload(dictation).speak, "The next train will leave from platform four.");
+  assert(!JSON.stringify(publicReviewPayload(dictation)).includes("platform four"));
 });
 
 Deno.test("answers are checked by the same rules as the original activity", () => {

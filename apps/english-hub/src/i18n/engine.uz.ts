@@ -64,5 +64,5 @@ export const engineUz: Record<string, string> = {
   // Oylik tekshiruv
   'engine.check.readyTitle': 'Natijani tekshirish vaqti keldi',
   'engine.check.readyBody': 'Toʻrt hafta oʻtdi. Taxminan 8–10 daqiqalik qisqa aralash tekshiruv har bir koʻnikmada nima oʻzgarganini koʻrsatadi va darajalaringizni yangilaydi.',
-  'engine.check.lead': 'Oʻqish, tinglash, yozish va grammatika boʻyicha sakkizta qisqa savol, joriy darajangizdan boshlab. Natijani oldingisi bilan solishtirib, darajalaringizni yangilaymiz.',
+  'engine.check.lead': 'Oʻqish, yozish va grammatika boʻyicha joriy darajangizga mos oltita qisqa savol. Natijani oldingi tekshiruv bilan solishtiramiz.',
 };

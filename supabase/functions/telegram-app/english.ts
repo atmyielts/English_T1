@@ -190,6 +190,7 @@ const loadReviewCards = async (sb: any, userId: string, languageId: string, excl
       .select("id, kind, payload, box")
       .eq("user_id", userId)
       .eq("language_id", languageId)
+      .neq("payload->>type", "dictation")
       .lt("box", RETIRED_BOX)
       .lte("next_due_at", nowIso)
       .order("next_due_at", { ascending: true })
@@ -206,6 +207,7 @@ const loadReviewCards = async (sb: any, userId: string, languageId: string, excl
       .select("id", { head: true, count: "exact" })
       .eq("user_id", userId)
       .eq("language_id", languageId)
+      .neq("payload->>type", "dictation")
       .lt("box", RETIRED_BOX)
       .lte("next_due_at", nowIso),
     sb.from("user_vocabulary_notebook_entries")
@@ -258,6 +260,9 @@ const answerItem = async (sb: any, userId: string, languageId: string, id: strin
   if (error) throw new Error(`Failed to load review item: ${error.message}`);
   const payload = row ? parseReviewPayload((row as Row).payload) : null;
   if (!row || !payload) return { status: 404, body: { error: "Review item not found" } };
+  if (payload.type === "dictation") return {
+    status: 409, body: { error: "Open English Hub to use the authored recording when it is available.", code: "listening_audio_soon" },
+  };
   const now = new Date();
   const checked = checkReviewAnswer(payload, answer);
   const next = reviewItemPatch(row as Row, checked.correct, now);

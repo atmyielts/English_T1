@@ -10,6 +10,8 @@ export type LevelEntry = {
   source: LevelSource;
   overall: Cefr | null;
   per_skill: Record<string, Cefr>;
+  /** Skills directly assessed in this result, separate from levels retained from earlier dates. */
+  measured_per_skill?: Record<string, Cefr>;
   /** How a placement or check was made: the test, or a level the learner chose. Absent on older entries. */
   method?: "test" | "self";
 };
@@ -42,6 +44,8 @@ export const readLevelHistory = (meta: Meta): LevelEntry[] => {
       source: (["placement", "check", "level_up"].includes(String(entry.source)) ? entry.source : "placement") as LevelSource,
       overall: isCefr(entry.overall) ? entry.overall : null,
       per_skill: perSkillLevels({ per_skill: entry.per_skill }),
+      ...(entry.measured_per_skill && typeof entry.measured_per_skill === "object"
+        ? { measured_per_skill: perSkillLevels({ per_skill: entry.measured_per_skill }) } : {}),
       ...(entry.method === "test" || entry.method === "self" ? { method: entry.method as "test" | "self" } : {}),
     }));
   if (history.length) return history;

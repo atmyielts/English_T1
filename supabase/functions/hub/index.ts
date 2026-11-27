@@ -50,6 +50,7 @@ import {
 import { checkActivityAccess } from "../_shared/english-allowance.ts";
 import { loadDueCompetency } from "../_shared/english-competency-action.ts";
 import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
+import { loadReviewRecordingSources, reviewDictationRecording } from "../_shared/english-review-recordings.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
@@ -61,6 +62,7 @@ import { handleWordLookup } from "./word-lookup.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
+import { ACTIVE_PLACEMENT_SKILLS, cleanCheckHistory, cleanCheckQuestions } from "../_shared/english-progress-check.ts";
 import { handlePracticeRoute } from "./practice.ts";
 import { handleClassesRoute, runClassReminders } from "./classes.ts";
 import { handleShadowingRoute } from "./shadowing.ts";
@@ -906,28 +908,41 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/review/items") {
       const limit = Math.max(1, Math.min(20, Number(url.searchParams.get("limit") ?? 10) || 10));
       const nowIso = new Date().toISOString();
-      const [dueRes, countRes] = await Promise.all([
-        sb.from("learner_review_items")
-          .select("id, kind, payload, box")
+      const dueItems = () => sb.from("learner_review_items")
+          .select("id, item_key, kind, payload, box, next_due_at", { count: "exact" })
           .eq("user_id", auth.userId)
           .eq("language_id", scope.languageId)
           .lt("box", RETIRED_BOX)
           .lte("next_due_at", nowIso)
-          .order("next_due_at", { ascending: true })
-          .limit(limit),
-        sb.from("learner_review_items")
-          .select("id", { head: true, count: "exact" })
-          .eq("user_id", auth.userId)
-          .eq("language_id", scope.languageId)
-          .lt("box", RETIRED_BOX)
-          .lte("next_due_at", nowIso),
+          .order("next_due_at", { ascending: true });
+      const [dueRes, audioRes] = await Promise.all([
+        dueItems().neq("payload->>type", "dictation").limit(limit),
+        dueItems().eq("payload->>type", "dictation").limit(2 * limit),
       ]);
       if (dueRes.error) throw new Error(`Failed to load review items: ${dueRes.error.message}`);
-      const items = ((dueRes.data ?? []) as Array<Record<string, unknown>>).flatMap((row) => {
-        const payload = parseReviewPayload(row.payload);
-        return payload ? [{ id: String(row.id), kind: String(row.kind), step: Number(row.box ?? 1), ...publicReviewPayload(payload) }] : [];
+      const audioRows = (audioRes.data ?? []) as Array<Record<string, unknown>>;
+      const sources = await loadReviewRecordingSources(sb, products.listening?.productId, scope.languageId,
+        audioRows.flatMap((row) => {
+          const payload = parseReviewPayload(row.payload);
+          return payload?.type === "dictation" ? [payload.source_slug] : [];
+        }));
+      let availableDictation = 0;
+      const items = [...(dueRes.data ?? []), ...audioRows]
+        .sort((a, b) => String(a.next_due_at).localeCompare(String(b.next_due_at)))
+        .flatMap((row) => {
+          const payload = parseReviewPayload(row.payload);
+          if (!payload) return [];
+          const recording = payload.type === "dictation" ? reviewDictationRecording(payload, String(row.item_key), sources.get(payload.source_slug)) : undefined;
+          if (payload.type === "dictation" && !recording) return [];
+          if (recording) availableDictation++;
+          return [{ id: String(row.id), kind: String(row.kind), step: Number(row.box ?? 1), ...publicReviewPayload(payload, recording ?? undefined) }];
+        });
+      return json(200, {
+        ok: true,
+        due: Number(dueRes.count ?? 0) + availableDictation,
+        pending_audio: Boolean(audioRes.error) || availableDictation < audioRows.length,
+        items: items.slice(0, limit),
       });
-      return json(200, { ok: true, due: Number(countRes.count ?? items.length), items });
     }
 
     if (req.method === "POST" && route === "/review/answer") {
@@ -935,13 +950,22 @@ serve(async (req) => {
       const id = toText(body.id, 64);
       if (!id) return json(422, { error: "id is required" });
       const { data: row, error } = await sb.from("learner_review_items")
-        .select("id, payload, box, times_reviewed, next_due_at")
+        .select("id, item_key, payload, box, times_reviewed, next_due_at")
         .eq("id", id)
         .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
         .maybeSingle();
       if (error) throw new Error(`Failed to load review item: ${error.message}`);
       const payload = row ? parseReviewPayload((row as Record<string, unknown>).payload) : null;
       if (!row || !payload) return json(404, { error: "Review item not found" });
+      if (payload.type === "dictation") {
+        const sources = await loadReviewRecordingSources(sb, products.listening?.productId, scope.languageId, [payload.source_slug]);
+        const recording = reviewDictationRecording(payload, String(row.item_key), sources.get(payload.source_slug));
+        if (!recording) return json(409, { error: "Recorded audio is coming soon.", code: "listening_audio_soon" });
+        if (body.audio_url !== recording.audio_url || body.starts_at_seconds !== recording.starts_at_seconds || body.ends_at_seconds !== recording.ends_at_seconds) {
+          return json(409, { error: "Open the current recording first.", code: "listening_recording_changed" });
+        }
+      }
       const checked = checkReviewAnswer(payload, body.answer);
       const next = scheduleAfterAnswer(Number((row as Record<string, unknown>).box ?? 1), checked.correct, new Date());
       const { error: updateError } = await sb.from("learner_review_items")
@@ -1047,16 +1071,19 @@ serve(async (req) => {
       if (placementIn) {
         const overall = toText(placementIn.overall_level, 8).toUpperCase();
         const isCheck = body.source === "check";
-        const tested = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
-          ? placementIn.per_skill as Record<string, unknown>
-          : {};
+        const proposed = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
+          ? placementIn.per_skill as Record<string, unknown> : {};
+        const tested = Object.fromEntries(ACTIVE_PLACEMENT_SKILLS.filter((skill) => skill in proposed).map((skill) => [skill, proposed[skill]]));
         // A monthly check re-measures the skills it tested and keeps the rest.
         const previousPerSkill = (meta.placement && typeof meta.placement === "object"
           ? (meta.placement as Record<string, unknown>).per_skill
           : null) as Record<string, unknown> | null;
-        const perSkill = isCheck && previousPerSkill && typeof previousPerSkill === "object"
-          ? { ...previousPerSkill, ...tested }
-          : tested;
+        const keptListening = previousPerSkill?.listening;
+        const perSkill = {
+          ...(isCheck ? previousPerSkill ?? {} : {}),
+          ...(keptListening !== undefined ? { listening: keptListening } : {}),
+          ...tested,
+        };
         if (isCefr(overall)) row.current_cefr_estimate = overall;
         const completedAt = new Date().toISOString();
         // Measured by the test only if this is the result the hub itself produced
@@ -1068,6 +1095,7 @@ serve(async (req) => {
           source: isCheck ? "check" : "placement",
           overall: isCefr(overall) ? overall as Cefr : null,
           per_skill: perSkillLevels({ per_skill: perSkill }),
+          ...(method === "test" ? { measured_per_skill: perSkillLevels({ per_skill: tested }) } : {}),
           method,
         });
         meta.placement = {
@@ -2411,22 +2439,17 @@ serve(async (req) => {
     }
 
     // Tier A #7 — Adaptive CEFR placement test. Stateless multi-round flow:
-    //   round 0  → POST {} → AI returns 4 calibration questions targeting
-    //                          a guess level (start at B1) across 4 skills
+    //   round 0  → POST {} → AI returns 3 calibration questions targeting
+    //                          a guess level (start at B1) across 3 skills
     //   round N  → POST {answers, history} → AI grades + either generates
     //                          another round narrower in band, OR finalizes
     //                          with per-skill estimates + overall CEFR.
     // Frontend tracks the conversation state in component memory; backend
-    // is purely a function of the request body. Hard cap of 3 rounds (12 Q).
+    // is purely a function of the request body. Hard cap of 3 rounds (9 Q).
     if (req.method === "POST" && route === "/ai/placement-test") {
       const body = await parseBody(req);
       const round = Math.max(0, Math.min(3, Number((body as Record<string, unknown>).round) || 0));
-      const historyRaw = (body as Record<string, unknown>).history;
-      const history = Array.isArray(historyRaw)
-        ? (historyRaw as unknown[])
-            .filter((h): h is Record<string, unknown> => !!h && typeof h === "object" && !Array.isArray(h))
-            .slice(0, 8)
-        : [];
+      const history = cleanCheckHistory((body as Record<string, unknown>).history, 3);
       const finalize = Boolean((body as Record<string, unknown>).finalize) || round >= 3;
 
       if (!finalize) {
@@ -2438,29 +2461,14 @@ serve(async (req) => {
         }>(
           {
             systemPrompt:
-              "You are an adaptive CEFR placement examiner. Based on the conversation history (prior questions + the learner's answers, possibly empty for round 0), produce the NEXT round of EXACTLY 4 short questions, ONE per skill (reading, writing, listening, grammar). For listening, give a short script the frontend will speak via TTS plus the question about it; for reading, give a 2-3 sentence passage + question; for writing, give a sentence-completion or short rewrite prompt; for grammar, give a multiple-choice question with 4 options. Calibrate difficulty: round 0 target B1; subsequent rounds narrow in band based on prior performance. Return strict JSON: {target_level_guess: CEFR letter+digit (e.g. 'B1'), rationale: 1 sentence on why this band, questions: array of EXACTLY 4 objects {skill: 'reading'|'writing'|'listening'|'grammar', prompt: the question/instruction, passage: optional supporting text or listening script, choices: optional array of 2-4 strings (only for grammar MCQ), expected_answer_pattern: 1 line describing what 'correct' looks like (used for AI grading next round)}}.",
+              "You are an adaptive CEFR placement examiner. Based on the prior questions and answers, produce exactly 3 short questions, one each for reading, writing and grammar. Reading uses a 2–3 sentence passage. Writing uses a sentence completion or short rewrite. Grammar uses four multiple-choice options. The first round targets B1. Later rounds adjust to prior performance. Return strict JSON: {target_level_guess: CEFR level, rationale: one sentence, questions: [{skill: 'reading'|'writing'|'grammar', prompt, passage: optional text, choices: optional array of strings, expected_answer_pattern: one line}]}.",
             userPayload: JSON.stringify({ round, history }),
             temperature: 0.5,
           },
           { target_level_guess: "B1", questions: [], rationale: "" },
         );
 
-        const allowed = ["reading", "writing", "listening", "grammar"];
-        const questions = Array.isArray(result.questions)
-          ? (result.questions as unknown[])
-              .filter((q): q is Record<string, unknown> => !!q && typeof q === "object" && !Array.isArray(q))
-              .map((q) => ({
-                skill: allowed.includes(String(q.skill ?? "").toLowerCase()) ? String(q.skill).toLowerCase() : "reading",
-                prompt: toText(q.prompt, 600),
-                passage: toText(q.passage, 1200),
-                choices: Array.isArray(q.choices)
-                  ? (q.choices as unknown[]).map((c) => toText(c, 200)).filter(Boolean).slice(0, 5)
-                  : [],
-                expected_answer_pattern: toText(q.expected_answer_pattern, 400),
-              }))
-              .filter((q) => q.prompt)
-              .slice(0, 4)
-          : [];
+        const questions = cleanCheckQuestions(result.questions);
 
         return json(200, {
           ok: true,
@@ -2478,6 +2486,7 @@ serve(async (req) => {
       }
 
       // Finalize: AI grades the full transcript + emits a CEFR estimate.
+      if (!history.length) return json(422, { error: "Answer the questions first", code: "check_no_answers" });
       const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
         overall_level?: unknown;
         per_skill?: unknown;
@@ -2486,7 +2495,7 @@ serve(async (req) => {
       }>(
         {
           systemPrompt:
-            "You are a CEFR placement examiner finalizing a learner's level after a short adaptive interview. Read the full history (questions, the learner's answers, expected_answer_patterns) and produce a calibrated assessment. Be honest — a learner who clearly struggles at B1 should land at A2, not B1. Return strict JSON: {overall_level: 'A1'|'A2'|'B1'|'B2'|'C1'|'C2', per_skill: object with keys reading, writing, listening, grammar — each value an object {level, evidence: 1 line citing the answer that anchored this estimate}, narrative: 2-3 sentence summary of the learner's profile, next_steps: array (max 4) of concrete recommendations for closing the gap to the next CEFR band}.",
+            "You are a CEFR placement examiner finishing a short adaptive interview. Base the estimate, narrative and recommendations on the reading, writing and grammar questions and the learner's answers only. Return strict JSON: {overall_level: 'A1'|'A2'|'B1'|'B2'|'C1'|'C2', per_skill: {reading, writing, grammar: {level, evidence: one line citing the answer}}, narrative: 2–3 sentences, next_steps: up to four recommendations}.",
           userPayload: JSON.stringify({ history }),
           temperature: 0.3,
         },
@@ -2501,9 +2510,8 @@ serve(async (req) => {
       const perSkillRaw = (result.per_skill && typeof result.per_skill === "object" && !Array.isArray(result.per_skill))
         ? (result.per_skill as Record<string, unknown>)
         : {};
-      const skills = ["reading", "writing", "listening", "grammar"] as const;
       const perSkill: Record<string, { level: string; evidence: string }> = {};
-      for (const s of skills) {
+      for (const s of ACTIVE_PLACEMENT_SKILLS) {
         const row = perSkillRaw[s];
         if (row && typeof row === "object" && !Array.isArray(row)) {
           const r = row as Record<string, unknown>;

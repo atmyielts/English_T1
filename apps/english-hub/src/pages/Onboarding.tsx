@@ -6,7 +6,6 @@ import { edge } from '../lib/api';
 import { saveGoal } from '../lib/goal';
 import { saveOnboarding } from '../lib/hub';
 import { CEFR_LEVELS, isCefr, type CefrLevel } from '../lib/skills';
-import { speak, canSpeak } from '../lib/speech';
 import { ErrorState, Loading, PageHeader, Panel } from '../ui/kit';
 import { GoalDateStep } from './goal/GoalDateStep';
 import { ResultSummary } from '../components/ResultSummary';
@@ -17,11 +16,11 @@ type Goal = (typeof GOALS)[number];
 const MINUTES = [10, 20, 30, 45] as const;
 const SELF_LEVELS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const ROUNDS = 3;
-/** The monthly progress check is the shorter form: two rounds of four. */
+/** The monthly progress check is the shorter form. */
 const CHECK_ROUNDS = 2;
 
 type Question = {
-  skill: 'reading' | 'writing' | 'listening' | 'grammar';
+  skill: 'reading' | 'writing' | 'grammar';
   prompt: string;
   passage: string;
   choices: string[];
@@ -52,7 +51,7 @@ const LevelChange = ({ before, now }: { before: CefrLevel | null | undefined; no
   );
 };
 
-const LEVEL_SKILLS = ['reading', 'listening', 'writing', 'grammar'] as const;
+const LEVEL_SKILLS = ['reading', 'writing', 'grammar'] as const;
 
 /**
  * First-run flow: goal and daily time, then a placement test or a self-chosen level.
@@ -135,17 +134,19 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
         return;
       }
       if (response.finalized) {
-        setResult(response);
+        const perSkill = Object.fromEntries(LEVEL_SKILLS.flatMap((skill) => response.per_skill[skill] ? [[skill, response.per_skill[skill]]] : []));
+        setResult({ ...response, per_skill: perSkill });
         setStep('result');
         return;
       }
-      if (!response.questions.length) {
+      const active = response.questions.filter((question) => LEVEL_SKILLS.includes(question.skill));
+      if (!active.length) {
         setTestUnavailable(true);
         setStep('self');
         return;
       }
-      setQuestions(response.questions);
-      setAnswers(response.questions.map(() => ''));
+      setQuestions(active);
+      setAnswers(active.map(() => ''));
       setRound(nextRound);
       setStep('test');
     } catch (cause) {
@@ -238,7 +239,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
         <div className="en-grid-cards">
           <section className="en-panel en-tone-lime">
             <h2>{t('onboarding.test.title')}</h2>
-            <p>{t('onboarding.test.body')}</p>
+            <p>{t(check ? 'engine.check.lead' : 'onboarding.test.body')}</p>
             <div className="en-actions">
               <button type="button" disabled={busy} onClick={() => void loadRound(0, [])}>
                 {busy ? t('onboarding.test.preparing') : t('onboarding.test.start')}
@@ -263,17 +264,11 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
 
       {step === 'test' ? (
         <Panel title={t('onboarding.test.round', { round: round + 1, total: rounds })} aside={<span>{t('onboarding.test.noPressure')}</span>}>
+          {round === 0 ? <p className="hint" role="status">{t('skill.listening')} · {t('intensive.audioSoon')}</p> : null}
           {questions.map((question, index) => (
             <div key={`${round}-${index}`} className="en-question">
               <p className="eyebrow">{t(`skill.${question.skill}`)}</p>
-              {question.skill === 'listening' && question.passage ? (
-                <div className="en-row">
-                  <button type="button" className="quiet" onClick={() => speak(question.passage)} disabled={!canSpeak()}>
-                    ▶ {t('onboarding.test.play')}
-                  </button>
-                  {!canSpeak() ? <span className="hint">{t('onboarding.test.noAudio')}</span> : null}
-                </div>
-              ) : question.passage ? (
+              {question.passage ? (
                 <blockquote className="en-explain">{question.passage}</blockquote>
               ) : null}
               <p className="en-question-prompt">{question.prompt}</p>
@@ -336,6 +331,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
 
       {step === 'result' && result ? (
         <Panel tone="lime" title={t('onboarding.result.title', { level: result.overall_level })}>
+          <p className="hint">{t('skill.listening')} · {t('intensive.audioSoon')}</p>
           <p>{t(`level.${isCefr(result.overall_level) ? result.overall_level : 'B1'}.can`)}</p>
           {result.narrative ? <p>{result.narrative}</p> : null}
           {check && before ? (

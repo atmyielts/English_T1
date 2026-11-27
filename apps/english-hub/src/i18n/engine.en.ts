@@ -64,5 +64,5 @@ export const engineEn: Record<string, string> = {
   // Monthly progress check
   'engine.check.readyTitle': 'Progress check is ready',
   'engine.check.readyBody': "It's been four weeks. A short mixed check, about 8–10 minutes, shows what changed in each skill and updates your levels.",
-  'engine.check.lead': 'Eight short questions across reading, listening, writing and grammar, starting at your current levels. We compare the result with last time and update your levels.',
+  'engine.check.lead': 'Six short questions on reading, writing and grammar, starting at your current levels. We compare the result with your previous check.',
 };

@@ -117,7 +117,8 @@ export const buildReviewCards = (input: {
     const id = String(row.id ?? "");
     if (!isUuid(id) || skip.has(id)) continue;
     const payload = parseReviewPayload(row.payload);
-    if (!payload) continue;
+    // The mini-app only supports text review cards and on-demand word pronunciation.
+    if (!payload || payload.type === "dictation") continue;
     cards.push({ kind: "item", id, step: Math.max(1, Number(row.box ?? 1) || 1), ...publicReviewPayload(payload) });
   }
   for (const row of input.words) {
