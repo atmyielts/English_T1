@@ -26,17 +26,30 @@ export function checkLibraryReading(questions: unknown, answers: unknown, learne
 
 const inventory = 'slug,skill,track,title,minutes';
 
+async function listAll<T>(fetchPage: (first: number, last: number) => PromiseLike<{ data: T[] | null; error: unknown }>) {
+  const pageSize = 200;
+  const rows: T[] = [];
+  for (let first = 0; ; first += pageSize) {
+    const { data, error } = await fetchPage(first, first + pageSize - 1);
+    if (error || !data) throw new Error('Failed to load the IELTS practice library');
+    rows.push(...data);
+    if (data.length < pageSize) return rows;
+  }
+}
+
 export async function practiceLibraryRequest(db: any, userId: string, method: string, route: string, body?: JsonObject, responseFormatVersion = 1) {
   const published = (fields: string) => db.from('ielts_practice_library_sets').select(fields)
     .eq('is_published', true).lte('response_format_version', responseFormatVersion);
   if (method === 'GET' && route === '/library') {
     const [sets, progress] = await Promise.all([
-      published(inventory).order('display_order').order('slug').limit(200),
-      db.from('ielts_practice_library_progress').select('set_slug,reviewed_at,best_correct,question_total').eq('user_id', userId),
+      listAll<{ slug: string }>((first, last) =>
+        published(inventory).order('display_order').order('slug').range(first, last)),
+      listAll<{ set_slug: string }>((first, last) =>
+        db.from('ielts_practice_library_progress').select('set_slug,reviewed_at,best_correct,question_total')
+          .eq('user_id', userId).order('set_slug').range(first, last)),
     ]);
-    if (sets.error || progress.error) throw new Error('Failed to load the IELTS practice library');
-    const bySlug = new Map((progress.data ?? []).map(({ set_slug, ...rest }: { set_slug: string }) => [set_slug, rest]));
-    return { status: 200, body: { sets: ((sets.data ?? []) as { slug: string }[]).map(set => ({ ...set, progress: bySlug.get(set.slug) ?? null })) } };
+    const bySlug = new Map(progress.map(({ set_slug, ...rest }) => [set_slug, rest]));
+    return { status: 200, body: { sets: sets.map(set => ({ ...set, progress: bySlug.get(set.slug) ?? null })) } };
   }
   const match = /^\/library\/([a-z0-9]+(?:-[a-z0-9]+)*)(\/review)?$/.exec(route);
   if (!match || match[1].length > 100 || (match[2] ? method !== 'POST' : method !== 'GET')) {
