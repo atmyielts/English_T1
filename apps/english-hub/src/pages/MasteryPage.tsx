@@ -1,12 +1,14 @@
 import { useId, useRef, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { ServicePaused } from '../components/ServicePaused';
+import { TransferLink } from '../components/TransferLink';
 import { useI18n, useT } from '../i18n';
 import { ApiError } from '../lib/api';
 import { invalidateNext } from '../lib/engine';
 import { getCompetencies, getCompetency, submitCheck, type Batch, type Competency, type Evidence } from '../lib/mastery';
 import { useResource } from '../lib/useResource';
+import { articleTransfer, timeReferenceTransfer } from '../lib/transfer';
 import { ErrorState, LevelBadge, Loading, LockedPanel, PageHeader, Panel, Tag } from '../ui/kit';
 import './mastery.css';
 
@@ -34,6 +36,8 @@ const Catalog = () => {
       <PageHeader back={{ to: '/grammar', label: t('skill.grammar') }} title={t('mastery.title')} lead={t('mastery.lead')} />
       {list.error ? <CheckError error={list.error} reload={list.reload} /> : null}
       {list.loading && !list.data ? <Loading lines={5} /> : null}
+      <TransferLink />
+      <TransferLink skill="speaking" />
       <div className="en-grid-2">
         {entries.map((entry) => (
           <Panel key={entry.slug} title={<span lang="en">{entry.title}</span>} aside={<LevelBadge level={entry.level} />}>
@@ -126,6 +130,7 @@ const CheckEvidence = ({ history, expanded }: { history: Evidence[]; expanded: E
 
 const Check = ({ slug }: { slug: string }) => {
   const t = useT();
+  const location = useLocation();
   const resource = useResource((signal) => getCompetency(slug, signal), [slug]);
   const [saved, setSaved] = useState<Awaited<ReturnType<typeof getCompetency>> | null>(null);
   const [openTransfer, setOpenTransfer] = useState(false);
@@ -182,6 +187,11 @@ const Check = ({ slug }: { slug: string }) => {
       <PageHeader back={{ to: '/mastery', label: t('mastery.title') }} title={data ? <span lang="en">{data.title}</span> : t('mastery.title')}
         lead={data ? <span lang="en">{data.goal}</span> : undefined}
         actions={data ? <><LevelBadge level={data.level} /><CheckStatus entry={data} /></> : undefined} />
+      {location.state?.transferHref === articleTransfer.href || location.state?.transferHref === timeReferenceTransfer.href ? (
+        <Link className="en-button-quiet" to={location.state.transferHref}>
+          {t(location.state.transferHref === articleTransfer.href ? 'transfer.open' : 'transfer.speech.open')}
+        </Link>
+      ) : null}
       {resource.error ? <CheckError error={resource.error} reload={reload} /> : null}
       {resource.loading && !data ? <Loading lines={4} /> : null}
       {!resource.error && !resource.loading && data ? (

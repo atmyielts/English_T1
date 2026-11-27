@@ -1,6 +1,6 @@
 # English Hub learning architecture
 
-**Status** Proposed platform architecture. The Grammar evidence and recommendation path is implemented on the feature branch.
+**Status** Platform architecture with the Grammar checks, two cross-skill pathways, mapped practice and new projects implemented on the feature branch.
 
 **Date** 27 November 2026
 
@@ -43,7 +43,9 @@ Track the strength and age of the evidence separately from the study level and e
 4. A delayed pass is evidence for that competency and interval. Exhausted items direct the learner back to practice. Published lesson reviews and their existing progress remain available.
 5. Up Next keeps resumptions, assignments and due review ahead of the competency check. It ranks an available competency recheck ahead of ordinary mistake drills and reviews of the same lesson. Today renders the same due selection alongside the stable practice plan. The check does not modify the plan’s stored completion counters.
 
-The current bank has one Grammar competency at each level, 30 distinct batches and 60 questions. Batch identity and the stored response and feedback provide the audit trail for its fixed scoring rules. Learners currently have one delayed pass milestone. Further retention intervals, task-family identity across services, versioned scoring rubrics and band-level evidence remain implementation work.
+The current Grammar bank has one competency at each level, 30 distinct batches and 60 questions. Batch identity and stored feedback preserve the fixed scoring record. The A2 article-reference Writing pathway and the B1 time-reference spoken-wording pathway each add a baseline, a Grammar prerequisite, a fresh productive task and distinct follow-ups due at least one and four weeks after productive transfer. Each stage has two separate task families. The active family is chosen on the server, and the private result stores its family, rubric version, input mode, check date and observed errors per usable opportunity.
+
+The Writing recommendation comes from a recent first A2 Writing attempt. It uses an exact learner quote and one attributable correction whose changed word is an article. The baseline appears without the correction, and the quote is retained privately with the follow-up. The B1 pathway uses wording from browser transcripts that learners confirm against what they said. Typed rehearsal stays on the page and creates no evidence. These checks measure constrained article or tense choices. Pronunciation, fluency, listening comprehension and broader writing or CEFR scores require separate evidence.
 
 ## Alternatives considered
 
@@ -61,7 +63,13 @@ Choose the third option. Keep the decision policy deterministic and inspectable.
 
 For every supported band, map reception, production, interaction and mediation outcomes to the existing modes and courses. List the prerequisite skills, a diagnostic, targeted practice, a transfer task and a held-out check for each outcome. Grammar and Vocabulary are mapped where learners actually use them. For example, an A2 learner can make a service request from a short notice, a B2 learner can compare two options and defend a recommendation, and a C2 learner can synthesize conflicting accounts while preserving uncertainty and whose claim is whose.
 
-Maintain an inventory by outcome, band, skill, task family and minutes. Count a repeated task family once toward new content. Set the initial target at 72 hours of unique active work per band, which supports 12 weeks at six one-hour sessions per week. Validate actual time with learner sessions and cover the major skills throughout the sequence. Until Schood’s recordings are available, preserve the Listening preparation, display it as coming soon, and exclude those tasks from independent Listening evidence and playable time.
+The intensive library maps reception, production, interaction and mediation to 24 existing practice sessions across A1–C2. Six original four-day projects add 24 further practice stages through the existing real-life coursework. The audit below counts expected time from authored activities and their service estimates. A recorded-audio gate excludes pending Listening stages from native mission grading while keeping the other stages available.
+
+```powershell
+deno run --no-lock --allow-read scripts/english-content/learning-inventory.ts
+```
+
+The target remains 72 hours per band, equivalent to 12 weeks at six one-hour sessions per week. The current estimate is about 64–68 hours per band. Actual time requires learner-session validation. Until Schood’s recordings are available, the Listening scripts remain prepared, and affected sessions display the coming-soon state.
 
 ### 2. Deliver one cross-skill path end to end
 
@@ -71,7 +79,9 @@ Version the criterion and its task-family mappings before allowing Writing obser
 
 ### 3. Expand to productive skills and multi-week retention
 
-Add calibrated rubrics for Writing and Speaking with human-reviewed anchor samples, double scoring on a representative sample, and an explicit inconclusive result for low confidence, poor transcription or service failure. Keep corrected drafts and revisions inspectable. Use a fresh brief or role-play with a different communicative goal before counting improvement. Only score features supported by the captured modality. Text cannot establish pronunciation or listening comprehension.
+The two initial pathway rubrics use versioned deterministic checks backed by 48 authored positive anchors and explicit negative and ambiguous cases. The checks return inconclusive when the learner uses a construction the assessor cannot classify. An incomplete sample gets a fresh alternate brief, with a further 24-hour wait if the learner saw feedback on a delayed check. A second incomplete sample remains inconclusive and offers a practice route. A submitted family cannot be reused for a score.
+
+Wider assessment still needs human-reviewed anchor samples, double scoring on representative learner responses, and a validated way to estimate agreement, abstention and relative difficulty across variants. Treat the new projects and completed practice as useful work in their own right. These activities do not create independent competency evidence.
 
 Add additional held-out task families for checks after one week and four weeks. Use the results to decide whether an ability still has recent evidence or needs another sample. Track per skill and band the share of learners who complete a fresh transfer attempt, pass a delayed held-out task, and reduce recurring errors in independent work. Report eligible counts and missing outcomes. Establish baselines before committing to improvement targets or making claims about replacing tutoring.
 

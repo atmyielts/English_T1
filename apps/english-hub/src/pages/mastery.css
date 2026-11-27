@@ -45,3 +45,16 @@
 .mastery-feedback li { margin-block: .75rem; }
 .mastery-feedback li > span { display: block; }
 .mastery-feedback p { margin-block: .35rem 0; }
+
+.mastery-transfer-comparison {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: .5rem 1rem;
+}
+
+.mastery-transfer-comparison th,
+.mastery-transfer-comparison td {
+  text-align: start;
+  padding: .5rem .25rem;
+  border-bottom: 1px solid var(--line, #ddd);
+}

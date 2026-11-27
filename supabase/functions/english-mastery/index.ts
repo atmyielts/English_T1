@@ -6,6 +6,7 @@ import { isServicePaused, loadEnglishSettings } from '../_shared/english-setting
 const functionPath = '/english-mastery';
 const phases = ['diagnostic', 'transfer', 'retention'];
 const slugPath = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/;
+const productionPath = /^\/transfer\/([a-z0-9]+(?:-[a-z0-9]+)*)$/;
 const uuid = /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i;
 
 const reply = (status: number, body: Record<string, unknown>) => {
@@ -19,8 +20,9 @@ Deno.serve(async (req) => {
   if (req.method !== 'GET' && req.method !== 'POST') return reply(405, { error: 'Method not allowed' });
   const path = extractRoute(new URL(req.url), functionPath);
   const slug = slugPath.exec(path)?.[1] ?? null;
+  const transfer = productionPath.exec(path)?.[1] ?? null;
   const catalog = req.method === 'GET' && (path === '' || path === '/');
-  if (!catalog && (!slug || slug.length > 80)) return reply(404, { error: 'Competency not found' });
+  if (!catalog && (!(transfer ?? slug) || (transfer ?? slug)!.length > 80)) return reply(404, { error: 'Competency not found' });
 
   try {
     const sb = createClient(getEnv('SUPABASE_URL'), getEnv('SUPABASE_SERVICE_ROLE_KEY'), { auth: { persistSession: false } });
@@ -37,6 +39,48 @@ Deno.serve(async (req) => {
     }
     if (!access.admin && !access.entitlementProductIds.includes(String(products.grammar?.productId ?? ''))) {
       return reply(403, { error: 'Grammar mastery checks require Grammar access', code: 'mastery_entitlement' });
+    }
+
+    if (transfer) {
+      const available = await sb.from('english_production_paths').select('skill').eq('slug', transfer).maybeSingle();
+      if (available.error?.code === 'PGRST205') {
+        return reply(404, { error: 'The assessment is unavailable', code: 'transfer_unavailable' });
+      }
+      if (available.error) throw available.error;
+      const skill: unknown = available.data?.skill;
+      if (skill !== 'writing' && skill !== 'speaking') return reply(404, { error: 'Assessment not found' });
+      if (!access.admin && isServicePaused(settings, skill)) {
+        return reply(403, { error: 'This assessment is paused', code: `${skill}_paused` });
+      }
+      if (!access.admin && !access.entitlementProductIds.includes(String(products[skill]?.productId ?? ''))) {
+        return reply(403, { error: 'This assessment requires service access', code: `${skill}_entitlement` });
+      }
+      const scope = { p_user: user.userId, p_slug: transfer };
+      let receipt = null;
+      if (req.method === 'POST') {
+        const { family, request_id, responses, input_mode } = await parseBody(req);
+        if (typeof family !== 'string' || family.length > 80 || !slugPath.test(`/${family}`) ||
+            typeof request_id !== 'string' || !uuid.test(request_id) ||
+            input_mode !== (skill === 'speaking' ? 'confirmed_transcript' : 'text') ||
+            !Array.isArray(responses) || responses.length !== 3 ||
+            responses.some((response) => typeof response !== 'string' || response.trim().length < 4 || response.length > 400)) {
+          return reply(422, { error: 'Write one sentence for each situation', code: 'invalid_answers' });
+        }
+        const { data, error } = await sb.rpc('english_production_submit', {
+          ...scope, p_family: family, p_request: request_id, p_responses: responses, p_input_mode: input_mode,
+        });
+        if (error?.code === 'PGRST202') return reply(404, { error: 'The assessment is unavailable', code: 'transfer_unavailable' });
+        if (error) throw error;
+        if (data?.code === 'invalid_answers') return reply(422, { error: 'Write one sentence for each situation', code: data.code });
+        if (data?.code === 'not_found') return reply(404, { error: 'Assessment not found' });
+        if (data?.code) return reply(409, { error: 'This assessment has changed', code: data.code });
+        if (!data?.receipt) throw new Error('Missing production evidence receipt');
+        receipt = data.receipt;
+      }
+      const { data, error } = await sb.rpc('english_production_view', scope);
+      if (error?.code === 'PGRST202' || (!error && !data)) return reply(404, { error: 'The assessment is unavailable', code: 'transfer_unavailable' });
+      if (error) throw error;
+      return reply(200, { pathway: data, receipt });
     }
 
     const scope = { p_user: user.userId, p_skill: 'grammar', p_slug: slug };

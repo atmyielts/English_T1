@@ -15,6 +15,7 @@ export type Mission = {
   success_conditions: string[];
   estimated_minutes: number;
   step_count: number;
+  pending_listening_steps?: number;
 };
 
 export type MissionQuestion = { id: string; prompt: string; options: string[] };
@@ -25,8 +26,9 @@ export type MissionStep = {
   kind: StepKind | null;
   title: string;
   instructions: string;
-  /** read: the notice; listen: the script read aloud (shown after checking); reply/speak: the cue. */
+  /** The notice or productive cue. Listening receives a recording URL. */
   text: string;
+  audio_url?: string | null;
   estimated_minutes: number;
   questions: MissionQuestion[];
   min_words: number | null;
@@ -117,6 +119,7 @@ export type ProjectDayPublic = {
   task: string;
   goal: string;
   min_words: number;
+  estimated_minutes?: number;
   points: string[];
   model_answer: string | null;
 };

@@ -1,4 +1,5 @@
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import { missionStepAudio, playableMissionSteps } from '../immersion-missions/recorded.ts';
 import {
   applyJudgement,
   basicCorrections,
@@ -164,4 +165,14 @@ Deno.test("AI judgement without usable fields falls back; AI cannot rescue a cop
 Deno.test("mission score is the mean of step scores", () => {
   assertEquals(missionScore([1, 0.5, 0]), 0.5);
   assertEquals(missionScore([]), 0);
+});
+// The study-time inventory and mission grading share the recorded-audio gate.
+Deno.test('mission steps hold missing audio without blocking the rest of the mission', () => {
+  const ready = { step_type: 'listen', metadata: { audio_url: 'https://example.invalid/clip.mp3' } };
+  const pending = { step_type: 'listen', metadata: { audio_url: 'browser' } };
+  const pendingLegacy = { step_type: 'listening' };
+  const read = { step_type: 'read' };
+  assertEquals(missionStepAudio(ready), 'https://example.invalid/clip.mp3');
+  assertEquals(missionStepAudio({ step_type: 'listen', metadata: { audio_url: 'http://example.invalid/plain.mp3' } }), null);
+  assertEquals(playableMissionSteps([read, pending, pendingLegacy, ready]), [read, ready]);
 });

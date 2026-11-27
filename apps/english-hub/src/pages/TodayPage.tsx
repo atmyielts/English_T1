@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { competencyActionDetail, competencyActionHref } from '../../../../supabase/functions/_shared/english-competency-action';
 import { useEnglish } from '../app/EnglishContext';
 import { useI18n, useT } from '../i18n';
 import { getToday, taskHref, type TodayResponse, type TodayTask } from '../lib/hub';
 import type { SkillKey } from '../lib/skills';
+import { competencyActionReason } from '../lib/transfer';
 import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, Panel, ProgressBar, SkillDot, Tag } from '../ui/kit';
 import { Onboarding } from './Onboarding';
@@ -194,15 +196,15 @@ export const TodayPage = () => {
           ) : null}
 
           {dueCompetency ? (
-            <Link className="en-item" to={`/mastery/${encodeURIComponent(dueCompetency.slug)}`}>
+            <Link className="en-item" to={competencyActionHref(dueCompetency)}>
               <SkillDot skill={dueCompetency.skill} />
               <span className="en-item-main">
                 <strong lang="en">{dueCompetency.title}</strong>
-                <span>{t('mastery.dueReason')}</span>
+                <span>{t(competencyActionReason(competencyActionDetail(dueCompetency)))}</span>
               </span>
               <span className="en-item-meta">
                 <LevelBadge level={dueCompetency.level} muted />
-                <span className="en-button-quiet">{t('mastery.dueAction')}</span>
+                <span className="en-button-quiet">{t(dueCompetency.stage === 2 ? 'transfer.open' : 'mastery.dueAction')}</span>
               </span>
             </Link>
           ) : null}

@@ -44,7 +44,8 @@ Deno.test("watch result: repeated, avoided or not seen; the wrong form inside th
 Deno.test("every project day can be checked without AI: each point has a phrase not already in the task", () => {
   assert(PROJECTS.length >= 3);
   for (const project of PROJECTS) {
-    assertEquals(project.days.map((day) => day.day), [1, 2, 3], project.key);
+    assert(project.days.length >= 3, project.key);
+    assertEquals(project.days.map((day) => day.day), project.days.map((_, index) => index + 1), project.key);
     for (const day of project.days) {
       const points = parsePoints(dayExpected(day));
       assertEquals(points.length, day.points.length, `${project.key} day ${day.day}: malformed point`);

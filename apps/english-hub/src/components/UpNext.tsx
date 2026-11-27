@@ -4,6 +4,7 @@ import { useI18n, useT } from '../i18n';
 import { getNext, invalidateNext, nextHref, type NextStep } from '../lib/engine';
 import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
+import { competencyActionReason } from '../lib/transfer';
 import { LevelBadge, SkillDot, Tag } from '../ui/kit';
 import '../engine.css';
 
@@ -40,7 +41,7 @@ export const stepReason = (step: NextStep, t: T): string => {
     case 'grammar_recheck':
       return t('depth.next.grammar_recheck');
     case 'competency_recheck':
-      return t('mastery.dueReason');
+      return t(competencyActionReason(step.detail));
     case 'today_plan':
       return t('engine.next.reason.today_plan');
     case 'class_assignment':

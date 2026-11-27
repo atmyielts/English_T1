@@ -39,6 +39,7 @@ import {
 } from "../_shared/english-immersion.ts";
 import { loadPersonalTargets, personalResult } from "./personal.ts";
 import { handleProjectRoute } from "./projects.ts";
+import { missionStepAudio, playableMissionSteps } from "./recorded.ts";
 
 type JsonRecord = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -70,35 +71,41 @@ const stepMinutes = (steps: Row[]): number =>
   steps.reduce((sum, step) => sum + Math.max(1, Math.floor(toNumber(step.estimated_minutes) ?? 3)), 0);
 
 /** Mission fields a learner sees before starting. The tip is saved for the result. */
-const publicMission = (mission: Row, steps: Row[]) => ({
-  id: String(mission.id),
-  slug: toText(mission.slug, 160),
-  title: toText(mission.title, 220),
-  context_text: toText(mission.context_text, 2000),
-  objective_text: toText(mission.objective_text, 900),
-  mission_type: toText(mission.mission_type, 40),
-  level: toText(mission.level, 8) || null,
-  target_vocabulary: stringList(mission.target_vocabulary),
-  success_conditions: stringList(mission.success_conditions_json),
-  estimated_minutes: stepMinutes(steps),
-  step_count: steps.length,
-});
+const publicMission = (mission: Row, steps: Row[]) => {
+  const ready = playableMissionSteps(steps);
+  return {
+    id: String(mission.id),
+    slug: toText(mission.slug, 160),
+    title: toText(mission.title, 220),
+    context_text: toText(mission.context_text, 2000),
+    objective_text: toText(mission.objective_text, 900),
+    mission_type: toText(mission.mission_type, 40),
+    level: toText(mission.level, 8) || null,
+    target_vocabulary: stringList(mission.target_vocabulary),
+    success_conditions: stringList(mission.success_conditions_json),
+    estimated_minutes: stepMinutes(ready),
+    step_count: ready.length,
+    pending_listening_steps: steps.length - ready.length,
+  };
+};
 
 /** A step as sent before submitting: no answer key, no model answer. */
 const publicStep = (step: Row, level: string | null) => {
   const kind = stepKind(step.step_type);
   const meta = asRecord(step.metadata);
   const accent = meta.accent === "gb" || meta.accent === "us" ? meta.accent : null;
+  const audio = missionStepAudio(step);
   return {
     id: String(step.id),
     step_index: Number(step.step_index ?? 0),
     kind,
     title: toText(step.title, 220),
     instructions: toText(step.instructions, 900),
-    // read: the notice; listen: the script the browser reads aloud (shown only after checking); reply/speak: the cue.
-    text: String(step.prompt_text ?? "").slice(0, 4000),
+    // A Listening transcript is available with feedback after a recorded step.
+    text: kind === "listen" ? "" : String(step.prompt_text ?? "").slice(0, 4000),
+    audio_url: audio,
     estimated_minutes: Math.max(1, Math.floor(toNumber(step.estimated_minutes) ?? 3)),
-    questions: kind === "read" || kind === "listen" ? publicQuestions(step.expected_answer_json) : [],
+    questions: kind === "read" || (kind === "listen" && audio) ? publicQuestions(step.expected_answer_json) : [],
     min_words: kind === "reply" || kind === "speak" ? minWordsFor(kind, level, step.expected_answer_json) : null,
     accent,
   };
@@ -184,7 +191,7 @@ serve(async (req) => {
       const missions = (data ?? []) as Row[];
       const ids = missions.map((mission) => String(mission.id));
       const stepsRes = ids.length
-        ? await sb.from("immersion_mission_steps").select("id, mission_id, step_type, estimated_minutes").in("mission_id", ids).eq("status", "published")
+        ? await sb.from("immersion_mission_steps").select("id, mission_id, step_type, estimated_minutes, metadata").in("mission_id", ids).eq("status", "published")
         : { data: [] };
       const byMission = new Map<string, Row[]>();
       for (const step of (stepsRes.data ?? []) as Row[]) {
@@ -203,16 +210,18 @@ serve(async (req) => {
       const identifier = decodeURIComponent(route.slice("/missions/".length, -"/submit".length)).trim();
       const loaded = identifier ? await loadMission(sb, productId, scope.languageId, identifier) : null;
       if (!loaded) return json(404, { error: "Task not found" });
-      const { mission, steps } = loaded;
-      if (!steps.length) return json(422, { error: "This task has no steps yet" });
+      const { mission } = loaded;
+      const steps = playableMissionSteps(loaded.steps);
+      if (!steps.length) return json(422, { error: "The recording for this task is not ready" });
 
       const level = toText(mission.level, 8) || null;
       const situation = toText(mission.context_text, 2000);
+      const readyStepIds = new Set(steps.map((step) => String(step.id)));
       const submitted = new Map<string, JsonRecord>();
       for (const entry of Array.isArray(body.steps) ? body.steps : []) {
         const rec = asRecord(entry);
         const id = toText(rec.step_id, 120);
-        if (id) submitted.set(id, rec);
+        if (readyStepIds.has(id)) submitted.set(id, rec);
       }
       if (!submitted.size) return json(422, { error: "Please complete at least one step" });
 
@@ -353,7 +362,7 @@ serve(async (req) => {
 
       const score = calculateAttemptScore({
         correctnessRatio,
-        estimatedMinutes: Number(contentItem.estimated_minutes ?? minutes),
+        estimatedMinutes: minutes,
         timeSpentSeconds: toNumber(body.time_spent_seconds),
         hintUsageCount: 0,
         retryCount: 0,

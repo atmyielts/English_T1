@@ -22,7 +22,7 @@
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
 import { examPrepCandidates, type ExamNextContext } from "./english-exam-next.ts";
-import type { DueCompetency } from "./english-competency-action.ts";
+import { competencyActionDetail, competencyActionHref, type DueCompetency } from "./english-competency-action.ts";
 
 export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep" | "grammar_recheck" | "competency_recheck";
 
@@ -227,9 +227,9 @@ export const pickNextStep = (input: NextInput): NextResult => {
       level: dueCompetency.level,
       minutes: 5,
       reason: "competency_recheck",
-      detail: null,
+      detail: competencyActionDetail(dueCompetency),
       uses_free: false,
-      href: `/mastery/${encodeURIComponent(dueCompetency.slug)}`,
+      href: competencyActionHref(dueCompetency),
     });
   }
 

@@ -5,13 +5,13 @@
 //    the learner's recent mistakes to watch out for. After checking, each
 //    watched mistake is "repeated" (the wrong form is back), "avoided" (the
 //    right form is used and the wrong one is not) or "not_seen".
-// 2. Multi-day projects: a small real goal done in three steps on three
+// 2. Multi-day projects: a real goal worked through in separate steps on
 //    learner days (UTC+5). Each day is a reply or a spoken message judged by
 //    the same checker as mission steps, and builds on the previous day's
 //    answer. A day can be redone on the day it was done; the next day opens
 //    on the following learner day.
 //
-// Pure module with no imports.
+import { curriculumProjects } from "./english-curriculum-projects.ts";
 
 // ---------------------------------------------------------------------------
 // Personal targets
@@ -92,12 +92,13 @@ export type ProjectDay = {
   points: ProjectPoint[];
   min_words: number;
   model_answer: string;
+  estimated_minutes?: number;
 };
 
 export type ProjectDef = {
   key: string;
   title: string;
-  level: "A2" | "B1";
+  level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
   summary: string;
   /** What the learner can say they can do after finishing. */
   can_do: string;
@@ -285,9 +286,12 @@ export const PROJECTS: readonly ProjectDef[] = [
       },
     ],
   },
+  ...curriculumProjects,
 ];
 
 export const projectByKey = (key: string): ProjectDef | null => PROJECTS.find((project) => project.key === key) ?? null;
+
+export const projectDayMinutes = (day: ProjectDay): number => day.estimated_minutes ?? 8;
 
 /** The day's expected answer for the step checker (immersion judge). */
 export const dayExpected = (day: ProjectDay): Record<string, unknown> => ({

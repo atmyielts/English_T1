@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { TransferLink } from '../../components/TransferLink';
 import { useT } from '../../i18n';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, useErrorMessage } from '../../ui/kit';
@@ -193,6 +194,7 @@ export const WritingTask = () => {
           {serverPrevious ? <RevisionCompare previous={serverPrevious} text={submittedText} feedback={result.feedback} revision={result.revision} /> : null}
           <YourWordsResult suggested={yourWords} used={result.your_words_used ?? []} />
           <FeedbackDetail feedback={result.feedback} text={submittedText} saveLabel={prompt?.title ?? null} />
+          {prompt?.level === 'A2' && result.attempt_id ? <TransferLink attemptId={result.attempt_id} /> : null}
           <ModelAnswer slug={slug} />
           <RubricHistory compact />
           <div className="en-actions">

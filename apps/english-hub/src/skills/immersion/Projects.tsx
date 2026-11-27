@@ -243,7 +243,7 @@ export const ProjectPage = () => {
       skill="immersion"
       title={project?.title}
       level={project?.level}
-      minutes={8}
+      minutes={activeDay?.estimated_minutes ?? 8}
       lead={project?.summary}
       loading={resource.loading && !resource.data}
       error={resource.error}

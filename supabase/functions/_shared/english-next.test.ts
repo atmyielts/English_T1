@@ -79,7 +79,7 @@ Deno.test("due competency lookup uses paid, available skills and preserves the d
   const db: Parameters<typeof loadDueCompetency>[0] = {
     rpc: (name, args) => {
       calls.push({ name, args });
-      return Promise.resolve({ data: dueCompetency, error: null });
+      return Promise.resolve({ data: name === "english_due_competency" ? dueCompetency : null, error: null });
     },
   };
   assertEquals(await loadDueCompetency(db, "learner", [], ["grammar"]), null);
@@ -87,7 +87,26 @@ Deno.test("due competency lookup uses paid, available skills and preserves the d
   assertEquals(await loadDueCompetency(db, "learner", ["writing"], ["writing"]), null);
   assertEquals(calls.length, 0);
   assertEquals(await loadDueCompetency(db, "learner", ["grammar", "writing"], ["grammar", "writing"]), dueCompetency);
-  assertEquals(calls, [{ name: "english_due_competency", args: { p_user: "learner", p_skills: ["grammar"] } }]);
+  assertEquals(calls, [
+    { name: "english_due_competency", args: { p_user: "learner", p_skills: ["grammar"] } },
+    { name: "english_due_production", args: { p_user: "learner", p_skills: ["grammar", "writing"] } },
+  ]);
+});
+
+Deno.test("the shared projections return the oldest eligible delayed task before an open first transfer", async () => {
+  const writing = {
+    ...dueCompetency, slug: "article-reference-writing", skill: "writing", kind: "production",
+    stage: 3, due_at: "2000-01-01T00:00:00.000Z",
+  } as const;
+  const setup = (stage: 2 | 3): Parameters<typeof loadDueCompetency>[0] => ({
+    rpc: (name) => Promise.resolve({ data: name === "english_due_competency" ? dueCompetency : { ...writing, stage }, error: null }),
+  });
+  const skills = ["grammar", "writing"] as TodaySkill[];
+  assertEquals(await loadDueCompetency(setup(2), "learner", skills, skills), dueCompetency);
+  assertEquals(await loadDueCompetency(setup(3), "learner", skills, skills), writing);
+  const step = pickNextStep(base({ dueCompetency: writing })).step;
+  assertEquals(step?.href, "/mastery/transfer/article-reference-writing");
+  assertEquals(step?.detail, "writing_recheck");
 });
 
 Deno.test("Today and Up Next still work with the pre-migration schema", async () => {
