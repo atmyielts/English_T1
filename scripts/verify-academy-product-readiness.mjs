@@ -820,7 +820,7 @@ addCheck(
     ciWorkflow.includes('npm run test:academy:routes') &&
     ciWorkflow.includes('npm run test:academy:edge') &&
     ciWorkflow.includes('npm run smoke:academy') &&
-    ciWorkflow.includes('deno check supabase/functions/academy/index.ts'),
+    ciWorkflow.includes('deno check --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy/index.ts'),
 );
 
 addCheck(
@@ -832,7 +832,7 @@ addCheck(
     deployWorkflow.includes('npm run test:academy:routes') &&
     deployWorkflow.includes('npm run test:academy:edge') &&
     deployWorkflow.includes('npm run smoke:academy') &&
-    deployWorkflow.includes('deno check supabase/functions/academy/index.ts'),
+    deployWorkflow.includes('deno check --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy/index.ts'),
 );
 
 addCheck(
