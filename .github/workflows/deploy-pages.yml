@@ -168,7 +168,7 @@ jobs:
 
       - name: Academy Edge typecheck
         if: ${{ matrix.label == 'academy' }}
-        run: deno check supabase/functions/academy/index.ts
+        run: deno check --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy/index.ts
 
       - name: Academy Edge contract tests
         if: ${{ matrix.label == 'academy' }}
@@ -176,7 +176,7 @@ jobs:
 
       - name: Homework OS and Courses Edge typecheck and tests
         if: ${{ matrix.label == 'academy' }}
-        run: deno check supabase/functions/academy-learning/index.ts && npm run test:academy-learning:edge
+        run: deno check --import-map=scripts/deno-deploy-import-map.json supabase/functions/academy-learning/index.ts && npm run test:academy-learning:edge
 
       - name: Academy lint
         if: ${{ matrix.label == 'academy' }}
